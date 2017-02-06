@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title><%= title_ja %> <%= title_en %></title>
+<!--
+    gmailはstyle要素とlink要素を無効にするので全タグにstyle属性を付けるしかない
+    https://www.campaignmonitor.com/css/    
+-->
+</head>
+<body>
+
+<div style="background-color:#fff;height:80px;text-align:center;">
+    <img src="cid:logo" alt="東京タワー" >
+</div>
+
+
+<div style="padding:0 30px;font-family:'游ゴシック',meiryo,sans-serif;">
+    <h1 style="margin:0;font-size:20px;text-align:center;"><%= title_ja %></h1>
+    <h2 style="margin:0;font-size:16px;text-align:center;"><%= title_en %></h2>
+
+    <p style="font-weight:bold;"><%= to %> 様</p>
+    <p style="font-weight:bold;font-size:12px;">Dear <%= to %>,</p>
+
+    <p style="font-size:14px;">
+        <%- reservations[0].get('purchaser_name_ja') %>様より東京タワーのチケットが届いております。下記の内容をご確認ください。<br>
+        ご入場の際に本メールのQRコードが必要となりますので、ご鑑賞当日は必ずお持ちください。<br>
+        QRコードは画像保存または印刷していただくと便利です。<br>
+        <% if (reservations[0].get('purchaser_group') === ReservationUtil.PURCHASER_GROUP_SPONSOR
+            || reservations[0].get('purchaser_group') === ReservationUtil.PURCHASER_GROUP_STAFF) { %>
+        また、万一チケットがご不要になった場合は、お手数ですが必ず手配元へご連絡ください。<br>
+        <% } %>
+        尚、お取り扱いには十分ご注意ください。<br>
+        ＊本メールはご鑑賞後まで、大切に保管してください。
+    </p>
+    <p style="font-size:12px;">
+        Please find the attached ticket for Tokyo International Film Festival from Mr./Ms. <%- reservations[0].get('purchaser_name_en') %> and confirm the following details.<br>
+        Be sure to bring the QR code attached to the email with you when attending because it is required for admission. <br>
+        It is recommended to save the QR code as image data or print it for your convenience. <br>
+        <% if (reservations[0].get('purchaser_group') === ReservationUtil.PURCHASER_GROUP_SPONSOR
+            || reservations[0].get('purchaser_group') === ReservationUtil.PURCHASER_GROUP_STAFF) { %>
+        Please contact the person who arranged this ticket in the case when you do not need this ticket.<br>
+        <% } %>
+        Handle carefully.<br>
+        *Please retain this email until after you have seen the movie.
+    </p>
+
+
+    <hr style="margin:1em 0;">
+
+
+    <div style="margin-bottom:1em;">
+        <h3 style="font-weight:normal;font-size:14px;margin:0;">作品名 (Title) :</h3>
+        <strong><%- reservations[0].get('film_name_ja') %></strong><br>
+        <span style="font-size:12px;"><%- reservations[0].get('film_name_en') %></span>
+    </div>
+
+
+    <div style="margin-bottom:1em;">
+        <h3 style="font-weight:normal;font-size:14px;margin:0;">購入番号 (Transaction number) :</h3>
+        <strong><%- reservations[0].get('payment_no') %></strong>
+    </div>
+
+
+    <div style="margin-bottom:1em;">
+        <h3 style="font-weight:normal;font-size:14px;margin:0;">劇場 (Location) :</h3>
+        <strong><%- reservations[0].get('location_str_ja') %></strong><br>
+        <%- reservations[0].get('theater_address_ja') %><br>
+        <p style="font-size:12px;">
+            <%- reservations[0].get('theater_name_en') %> <%- reservations[0].get('screen_name_en') %><br>
+            <%- reservations[0].get('theater_address_en') %>
+        </p>
+    </div>
+
+
+    <div style="margin-bottom:1em;">
+        <h3 style="font-weight:normal;font-size:14px;margin:0;">時間 (Date and time) :</h3>
+        <strong><%- reservations[0].get('performance_start_str_ja') %></strong><br>
+        <span style="font-size:12px;"><%- reservations[0].get('performance_start_str_en') %></span>
+    </div>
+
+
+    <div style="margin-bottom:1em;page-break-inside:avoid;">
+        <h3 style="font-weight:normal;font-size:14px;margin:0;">QRコード (QR-code) :</h3>
+
+        <% reservations.forEach((reservation, index) => { %>
+        <p>
+            <strong><%- reservation.seat_code %></strong><br>
+            <img src="cid:qrcode_<%- reservation.get('_id').toString() %>" alt="<%- reservation.seat_code %>">
+        </p>
+        <% }) %>
+
+    </div>
+
+
+    <p style="font-size:12px;">
+        ※学生（小学生は除く）の方は、劇場へのご入場の際に、必ず学生証または生徒手帳のご提示をお願いします。<br>
+        <% if (reservations[0].get('purchaser_group') === ReservationUtil.PURCHASER_GROUP_SPONSOR
+            || reservations[0].get('purchaser_group') === ReservationUtil.PURCHASER_GROUP_STAFF) { %>
+        ※なお不可抗力により表記公演の興行を中止する場合の払い戻しは、所定の期間内に所定の方法にて行います。<br>
+        <% } else { %>
+        ※交通渋滞による来場遅延、その他いかなる場合でも、ご購入後のチケットの変更およびキャンセル・払い戻しはいたしません。なお不可抗力により表記公演の興行を中止する場合の払い戻しは、所定の期間内に所定の方法にて行います。<br>
+        <% } %>
+        *Students (excluding elementary school students) are asked to show their student ID card or student handbook before entering the cinema.<br>
+        <% if (reservations[0].get('purchaser_group') === ReservationUtil.PURCHASER_GROUP_SPONSOR
+            && reservations[0].get('purchaser_group') === ReservationUtil.PURCHASER_GROUP_STAFF) { %>
+        *If the event is canceled due to any unforeseen causes, tickets will be refunded by the prescribed methods during the prescribed period of time.
+        <% } else { %>
+        *Once tickets are purchased, they cannot be changed, canceled or refunded under any circumstance, including delayed arrival due to traffic congestion. If the event is canceled due to any unforeseen causes, tickets will be refunded by the prescribed methods during the prescribed period of time.
+        <% } %>
+    </p>
+
+
+    <hr>
+
+
+    <strong style="font-size:14px;">東京タワー  TTTS 2016</strong>
+    <p style="font-size:14px;">
+        本メールアドレスは送信専用です。返信はできませんのであらかじめご了承ください。<br>
+        本メールに心当たりのない方やチケットに関してご不明な点は、下記電話番号までお問い合わせください。<br>
+        チケットのお問合せ：050-3786-0368　/12:00～18:00（休業：土/日/祝日　東京タワー開催期間中は無休）<br>
+        オフィシャルサイト： <a href="<%= conf.get('official_website_url') %>" target="_blank" style="color:#000;"><%= conf.get('official_website_url') %></a>
+    </p>
+    <p style="font-size:10px;">
+        This email was sent from a send-only address. Please do not reply to this message.<br>
+        If you are not the intended recipient of this email or have any questions about tickets, contact us at the telephone number below.<br>
+        For inquiries about tickets: 050-3786-0368/12:00 p.m. to 6:00 p.m. (Closed on Saturdays, Sundays, and national holidays, except during TTTS)<br>
+        Official website: <a href="<%= conf.get('official_website_url') %>" target="_blank" style="color:#000;"><%= conf.get('official_website_url') %></a>
+    </p>
+</div>
+
+
+
+
+</body>
+</html>

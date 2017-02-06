@@ -1,0 +1,6 @@
+set NPM_TOKEN=730c4855-ef65-4901-a8ac-d26c5ba117c9
+REM set MONGOLAB_URI=mongodb://testsasakiticketmongodbuser:aZHGD262LNsBTQgG9UGQpA6QvbFkKbAhBfxf3vvz@ds056379-a0.mlab.com:56379,ds056379-a1.mlab.com:56372/testsasakiticketmongodb?replicaSet=rs-ds056379
+set SENDGRID_API_KEY=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
+set TTTS_PERFORMANCE_STATUSES_REDIS_HOST=devtttsfrontendprototype.redis.cache.windows.net
+set TTTS_PERFORMANCE_STATUSES_REDIS_PORT=6380
+set TTTS_PERFORMANCE_STATUSES_REDIS_KEY=QLnxXJC0srbSaabgac+4tzlmN6abiNdkNvVco7954xc=

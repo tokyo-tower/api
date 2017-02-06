@@ -1,0 +1,9 @@
+iisnode.yml
+lock/*
+logs/*
+node_modules/*
+typings/*
+iisnode/*
+
+!.gitignore
+!.gitkeep
