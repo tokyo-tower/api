@@ -22,6 +22,12 @@ passport.use(new BearerStrategy((token, cb) => {
     });
 }));
 let app = express();
+app.use((req, res, next) => {
+    console.log(req.connection.remoteAddress);
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'X-Requested-With');
+    next();
+});
 if (process.env.NODE_ENV === 'dev') {
     app.use(logger_1.default);
 }

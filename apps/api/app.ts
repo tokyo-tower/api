@@ -28,6 +28,15 @@ passport.use(new BearerStrategy(
 
 let app = express();
 
+// CORS settings.
+// TODO 調整
+app.use((req, res, next) => {
+    console.log(req.connection.remoteAddress)
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'X-Requested-With');
+    next();
+});
+
 if (process.env.NODE_ENV === 'dev') {
     app.use(logger); // ロガー
 }
