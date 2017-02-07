@@ -1,10 +1,8 @@
-import BaseController from '../BaseController';
+import express = require('express');
 
-export default class OtherController extends BaseController {
-    public environmentVariables(): void {
-        this.res.json({
-            success: true,
-            variables: process.env
-        });
-    }
+export function environmentVariables(_req: express.Request, res: express.Response): void {
+    res.json({
+        success: true,
+        variables: process.env
+    });
 }

@@ -1,5 +1,6 @@
 import express = require('express');
 import bodyParser = require('body-parser');
+import cors from './middlewares/cors';
 import logger from './middlewares/logger';
 import benchmarks from './middlewares/benchmarks';
 import conf = require('config');
@@ -28,14 +29,7 @@ passport.use(new BearerStrategy(
 
 let app = express();
 
-// CORS settings.
-// TODO 調整
-app.use((req, res, next) => {
-    console.log(req.connection.remoteAddress)
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'X-Requested-With');
-    next();
-});
+app.use(cors);
 
 if (process.env.NODE_ENV === 'dev') {
     app.use(logger); // ロガー
@@ -75,13 +69,6 @@ app.set('view engine', 'ejs');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-
-// for parsing multipart/form-data
-// let storage = multer.memoryStorage()
-// app.use(multer({ storage: storage }).any());
-
-// app.use(cookieParser());
-
 
 
 

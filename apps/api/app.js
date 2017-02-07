@@ -1,6 +1,7 @@
 "use strict";
 const express = require("express");
 const bodyParser = require("body-parser");
+const cors_1 = require("./middlewares/cors");
 const logger_1 = require("./middlewares/logger");
 const benchmarks_1 = require("./middlewares/benchmarks");
 const conf = require("config");
@@ -22,12 +23,7 @@ passport.use(new BearerStrategy((token, cb) => {
     });
 }));
 let app = express();
-app.use((req, res, next) => {
-    console.log(req.connection.remoteAddress);
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'X-Requested-With');
-    next();
-});
+app.use(cors_1.default);
 if (process.env.NODE_ENV === 'dev') {
     app.use(logger_1.default);
 }
