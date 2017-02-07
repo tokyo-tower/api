@@ -6,7 +6,7 @@
     "start": "node ./index.js"
   },
   "dependencies": {
-    "@motionpicture/ttts-domain": "^1.0.4",
+    "@motionpicture/ttts-domain": "^1.0.5",
     "@types/body-parser": "0.0.33",
     "@types/commander": "^2.3.31",
     "@types/config": "0.0.31",
