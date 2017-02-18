@@ -4,6 +4,7 @@ logs/*
 node_modules/*
 typings/*
 iisnode/*
+env_dev.bat
 
 !.gitignore
 !.gitkeep

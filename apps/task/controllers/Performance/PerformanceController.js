@@ -58,7 +58,7 @@ class PerformanceController extends BaseController_1.default {
                 process.exit(0);
                 return;
             }
-            let performanceStatusesModel = new ttts_domain_1.PerformanceStatusesModel();
+            let performanceStatusesModel = ttts_domain_1.PerformanceStatusesModel.create();
             this.logger.info('aggregating...');
             ttts_domain_1.Models.Reservation.aggregate([
                 {
@@ -86,7 +86,7 @@ class PerformanceController extends BaseController_1.default {
                     performanceStatusesModel.setStatus(performance._id.toString(), status);
                 });
                 this.logger.info('saving performanceStatusesModel...', performanceStatusesModel);
-                performanceStatusesModel.save((err) => {
+                ttts_domain_1.PerformanceStatusesModel.store(performanceStatusesModel, (err) => {
                     this.logger.info('performanceStatusesModel saved.', err);
                     mongoose.disconnect();
                     process.exit(0);

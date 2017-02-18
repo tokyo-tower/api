@@ -1,12 +1,15 @@
 {
-  "name": "ttts_src_api",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "start": "node ./index.js"
+  "author": {
+    "name": "Motionpicture co.,ltd."
   },
+  "contributors": [
+    {
+      "name": "Tetsu Yamazaki",
+      "email": "yamazaki@motionpicture.jp"
+    }
+  ],
   "dependencies": {
-    "@motionpicture/ttts-domain": "^1.0.5",
+    "@motionpicture/ttts-domain": "^2.0.0",
     "@types/body-parser": "0.0.33",
     "@types/commander": "^2.3.31",
     "@types/config": "0.0.31",
@@ -15,11 +18,9 @@
     "@types/fs-extra": "0.0.37",
     "@types/i18n": "^0.5.20",
     "@types/log4js": "0.0.32",
-    "@types/mongoose": "^4.7.3",
     "@types/numeral": "0.0.19",
     "@types/passport": "^0.3.2",
     "@types/passport-http-bearer": "^1.0.30",
-    "@types/redis": "^0.12.35",
     "@types/request": "0.0.39",
     "@types/validator": "^5.7.35",
     "body-parser": "^1.15.2",
@@ -32,26 +33,30 @@
     "i18n": "^0.8.3",
     "log4js": "^0.6.38",
     "moment": "^2.15.0",
-    "mongodb": "^2.2.9",
-    "mongoose": "^4.6.0",
     "numeral": "^1.5.3",
     "passport": "^0.3.2",
     "passport-http-bearer": "^1.0.1",
     "qr-image": "^3.1.0",
-    "redis": "^2.6.2",
     "request": "^2.74.0",
     "sendgrid": "^4.7.1",
     "validator": "^5.5.0"
   },
-  "main": "index.js",
+  "description": "This is a repogitory for TTTS API.",
   "devDependencies": {},
-  "repository": {},
-  "keywords": [],
-  "author": "Tetsu Yamazaki <yamazaki@motionpicture.jp>",
-  "license": "UNLICENSED",
   "engines": {
     "node": ">=7.4.0",
     "npm": ">=4.0.0"
   },
-  "description": "This is a repogitory for TTTS API."
+  "keywords": [],
+  "license": "UNLICENSED",
+  "main": "index.js",
+  "name": "ttts-api",
+  "private": true,
+  "repository": {},
+  "scripts": {
+    "start": "node ./index.js",
+    "test": "mocha --no-timeouts --recursive",
+    "tslint": "tslint -c tslint.json index.ts apps/**/*.ts bin/**/*.ts"
+  },
+  "version": "1.0.0"
 }

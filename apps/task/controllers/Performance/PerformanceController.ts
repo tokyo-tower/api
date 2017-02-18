@@ -2,7 +2,7 @@ import BaseController from '../BaseController';
 import conf = require('config');
 import mongoose = require('mongoose');
 import fs = require('fs-extra');
-import {Models, PerformanceStatusesModel} from "@motionpicture/ttts-domain";
+import { Models, PerformanceStatusesModel } from "@motionpicture/ttts-domain";
 
 let MONGOLAB_URI = conf.get<string>('mongolab_uri');
 
@@ -16,7 +16,7 @@ export default class PerformanceController extends BaseController {
 
             Models.Screen.find({}, 'name theater').populate('theater', 'name').exec((err, screens) => {
                 if (err) throw err;
- 
+
                 // あれば更新、なければ追加
                 let promises = performances.map((performance) => {
                     return new Promise((resolve, reject) => {
@@ -31,7 +31,7 @@ export default class PerformanceController extends BaseController {
 
                         this.logger.debug('updating performance...');
                         Models.Performance.findOneAndUpdate(
-                            {_id: performance._id},
+                            { _id: performance._id },
                             performance,
                             {
                                 new: true,
@@ -69,63 +69,63 @@ export default class PerformanceController extends BaseController {
             {},
             'day start_time screen'
         )
-        .populate('screen', 'seats_number')
-        .exec((err, performances) => {
-            this.logger.info('performances found.', err);
-            if (err) {
-                mongoose.disconnect();
-                process.exit(0);
-                return;
-            }
-
-            let performanceStatusesModel = new PerformanceStatusesModel();
-
-            this.logger.info('aggregating...');
-            Models.Reservation.aggregate(
-                [
-                    {
-                        $group: {
-                            _id: "$performance",
-                            count: {$sum: 1}
-                        }
-                    }
-                ],
-                (err: any, results: Array<any>) => {
-                    this.logger.info('aggregated.', err);
-                    if (err) {
-                        mongoose.disconnect();
-                        process.exit(0);
-                        return;
-                    }
-
-                    // パフォーマンスIDごとに
-                    let reservationNumbers: {
-                        [key: string]: number
-                    } = {};
-                    for (let result of results) {
-                        reservationNumbers[result._id] = parseInt(result.count);
-                    }
-
-                    performances.forEach((performance) => {
-                        // パフォーマンスごとに空席ステータスを算出する
-                        if (!reservationNumbers.hasOwnProperty(performance.get('_id').toString())) {
-                            reservationNumbers[performance.get('_id').toString()] = 0;
-                        }
-
-                        // TODO anyで逃げているが、型定義をちゃんとかけばもっとよく書ける
-                        let status = (<any>performance)['getSeatStatus'](reservationNumbers[performance.get('_id').toString()]);
-                        performanceStatusesModel.setStatus(performance._id.toString(), status);
-                    });
-
-                    this.logger.info('saving performanceStatusesModel...', performanceStatusesModel);
-                    performanceStatusesModel.save((err) => {
-                        this.logger.info('performanceStatusesModel saved.', err);
-                        mongoose.disconnect();
-                        process.exit(0);
-                    });
+            .populate('screen', 'seats_number')
+            .exec((err, performances) => {
+                this.logger.info('performances found.', err);
+                if (err) {
+                    mongoose.disconnect();
+                    process.exit(0);
+                    return;
                 }
-            );
-        });
+
+                let performanceStatusesModel = PerformanceStatusesModel.create();
+
+                this.logger.info('aggregating...');
+                Models.Reservation.aggregate(
+                    [
+                        {
+                            $group: {
+                                _id: "$performance",
+                                count: { $sum: 1 }
+                            }
+                        }
+                    ],
+                    (err: any, results: Array<any>) => {
+                        this.logger.info('aggregated.', err);
+                        if (err) {
+                            mongoose.disconnect();
+                            process.exit(0);
+                            return;
+                        }
+
+                        // パフォーマンスIDごとに
+                        let reservationNumbers: {
+                            [key: string]: number
+                        } = {};
+                        for (let result of results) {
+                            reservationNumbers[result._id] = parseInt(result.count);
+                        }
+
+                        performances.forEach((performance) => {
+                            // パフォーマンスごとに空席ステータスを算出する
+                            if (!reservationNumbers.hasOwnProperty(performance.get('_id').toString())) {
+                                reservationNumbers[performance.get('_id').toString()] = 0;
+                            }
+
+                            // TODO anyで逃げているが、型定義をちゃんとかけばもっとよく書ける
+                            let status = (<any>performance)['getSeatStatus'](reservationNumbers[performance.get('_id').toString()]);
+                            performanceStatusesModel.setStatus(performance._id.toString(), status);
+                        });
+
+                        this.logger.info('saving performanceStatusesModel...', performanceStatusesModel);
+                        PerformanceStatusesModel.store(performanceStatusesModel, (err) => {
+                            this.logger.info('performanceStatusesModel saved.', err);
+                            mongoose.disconnect();
+                            process.exit(0);
+                        });
+                    }
+                );
+            });
     }
 
     /**
@@ -138,10 +138,10 @@ export default class PerformanceController extends BaseController {
         Models.Performance.findOneAndUpdate({
             _id: performanceId
         }, {
-            canceled: false
-        }, {
-            new: true,
-        }, (err, performance) => {
+                canceled: false
+            }, {
+                new: true,
+            }, (err, performance) => {
                 this.logger.info('performance updated', err, performance);
                 mongoose.disconnect();
                 process.exit(0);
