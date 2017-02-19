@@ -1,16 +1,24 @@
-import * as express from 'express';
+/**
+ * 座席予約コントローラー
+ *
+ * @namespace ReservationController
+ */
+
 import { Models } from '@motionpicture/ttts-domain';
 import { ReservationUtil } from '@motionpicture/ttts-domain';
-import * as sendgrid from 'sendgrid';
+
 import * as conf from 'config';
-import * as validator from 'validator';
-import * as qr from 'qr-image';
-import * as moment from 'moment';
+import * as express from 'express';
 import * as fs from 'fs-extra';
+import * as moment from 'moment';
+import * as qr from 'qr-image';
+import * as sendgrid from 'sendgrid';
+import * as validator from 'validator';
 
 /**
  * 予約情報メールを送信する
  */
+// tslint:disable-next-line:max-func-body-length
 export function email(req: express.Request, res: express.Response): void {
     const id = req.body.id;
     const to = req.body.to;
@@ -45,77 +53,83 @@ export function email(req: express.Request, res: express.Response): void {
                 return;
             }
 
-            const title_ja = `${reservation.get('purchaser_name_ja')}様より東京タワーのチケットが届いております`;
-            const title_en = `This is a notification that you have been invited to Tokyo International Film Festival by Mr./Ms. ${reservation.get('purchaser_name_en')}.`;
+            const titleJa = `${reservation.get('purchaser_name_ja')}様より東京タワーのチケットが届いております`;
+            const titleEn = `This is a notification that you have been invited to Tokyo International Film Festival by Mr./Ms. ${reservation.get('purchaser_name_en')}.`;
 
-            res.render('email/resevation', {
-                layout: false,
-                reservations: [reservation],
-                to: to,
-                moment: moment,
-                conf: conf,
-                title_ja: title_ja,
-                title_en: title_en,
-                ReservationUtil: ReservationUtil
-            },         (err, html) => {
-                if (err) {
-                    res.json({
-                        success: false,
-                        message: req.__('Message.UnexpectedError')
+            res.render(
+                'email/resevation', {
+                    layout: false,
+                    reservations: [reservation],
+                    to: to,
+                    moment: moment,
+                    conf: conf,
+                    title_ja: titleJa,
+                    title_en: titleEn,
+                    ReservationUtil: ReservationUtil
+                },
+                (renderErr, html) => {
+                    if (renderErr) {
+                        res.json({
+                            success: false,
+                            message: req.__('Message.UnexpectedError')
+                        });
+                        return;
+                    }
+
+                    const mail = new sendgrid.mail.Mail(
+                        new sendgrid.mail.Email(conf.get<string>('email.from'), conf.get<string>('email.fromname')),
+                        `${titleJa} ${titleEn}`,
+                        new sendgrid.mail.Email(to),
+                        new sendgrid.mail.Content('text/html', html)
+                    );
+
+                    const reservationId = reservation.get('_id').toString();
+                    const attachmentQR = new sendgrid.mail.Attachment();
+                    attachmentQR.setFilename(`QR_${reservationId}.png`);
+                    attachmentQR.setType('image/png');
+                    attachmentQR.setContent(qr.imageSync(reservation.get('qr_str'), { type: 'png' }).toString('base64'));
+                    attachmentQR.setDisposition('inline');
+                    attachmentQR.setContentId(`qrcode_${reservationId}`);
+                    mail.addAttachment(attachmentQR);
+
+                    // logo
+                    const attachment = new sendgrid.mail.Attachment();
+                    attachment.setFilename('logo.png');
+                    attachment.setType('image/png');
+                    attachment.setContent(fs.readFileSync(`${__dirname}/../../../../public/images/email/logo.png`).toString('base64'));
+                    attachment.setDisposition('inline');
+                    attachment.setContentId('logo');
+                    mail.addAttachment(attachment);
+
+                    console.log('sending an email...email:', mail);
+                    const sg = sendgrid(process.env.SENDGRID_API_KEY);
+                    const request = sg.emptyRequest({
+                        host: 'api.sendgrid.com',
+                        method: 'POST',
+                        path: '/v3/mail/send',
+                        headers: {},
+                        body: mail.toJSON(),
+                        queryParams: {},
+                        test: false,
+                        port: ''
                     });
-                    return;
+                    sg.API(request).then(
+                        (response) => {
+                            console.log('an email sent.', response);
+                            res.json({
+                                success: true
+                            });
+                        },
+                        (sendErr) => {
+                            console.error('an email unsent.', sendErr);
+                            res.json({
+                                success: false,
+                                message: sendErr.message
+                            });
+                        }
+                    );
                 }
-
-                const mail = new sendgrid.mail.Mail(
-                    new sendgrid.mail.Email(conf.get<string>('email.from'), conf.get<string>('email.fromname')),
-                    `${title_ja} ${title_en}`,
-                    new sendgrid.mail.Email(to),
-                    new sendgrid.mail.Content('text/html', html)
-                );
-
-                const reservationId = reservation.get('_id').toString();
-                const attachmentQR = new sendgrid.mail.Attachment();
-                attachmentQR.setFilename(`QR_${reservationId}.png`);
-                attachmentQR.setType('image/png');
-                attachmentQR.setContent(qr.imageSync(reservation.get('qr_str'), { type: 'png' }).toString('base64'));
-                attachmentQR.setDisposition('inline');
-                attachmentQR.setContentId(`qrcode_${reservationId}`);
-                mail.addAttachment(attachmentQR);
-
-                // logo
-                const attachment = new sendgrid.mail.Attachment();
-                attachment.setFilename(`logo.png`);
-                attachment.setType('image/png');
-                attachment.setContent(fs.readFileSync(`${__dirname}/../../../../public/images/email/logo.png`).toString('base64'));
-                attachment.setDisposition('inline');
-                attachment.setContentId('logo');
-                mail.addAttachment(attachment);
-
-                console.log('sending an email...email:', mail);
-                const sg = sendgrid(process.env.SENDGRID_API_KEY);
-                const request = sg.emptyRequest({
-                    host: 'api.sendgrid.com',
-                    method: 'POST',
-                    path: '/v3/mail/send',
-                    headers: {},
-                    body: mail.toJSON(),
-                    queryParams: {},
-                    test: false,
-                    port: ''
-                });
-                sg.API(request).then((response) => {
-                    console.log('an email sent.', response);
-                    res.json({
-                        success: true
-                    });
-                },                   (err) => {
-                    console.error('an email unsent.', err);
-                    res.json({
-                        success: false,
-                        message: err.message
-                    });
-                });
-            });
+            );
         }
     );
 }
@@ -146,13 +160,15 @@ export function enter(req: express.Request, res: express.Response): void {
     );
 }
 
+// tslint:disable-next-line:variable-name
 export function findByMvtkUser(_req: express.Request, res: express.Response): void {
     // ひとまずデモ段階では、一般予約を10件返す
+    const LIMIT = 10;
     Models.Reservation.find(
         {
             purchaser_group: ReservationUtil.PURCHASER_GROUP_CUSTOMER,
             status: ReservationUtil.STATUS_RESERVED
-        }).limit(10).exec((err, reservations) => {
+        }).limit(LIMIT).exec((err, reservations) => {
             if (err) {
                 res.json({
                     success: false,

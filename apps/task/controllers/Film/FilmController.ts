@@ -1,11 +1,13 @@
-import {Models} from '@motionpicture/ttts-domain';
+import { Models } from '@motionpicture/ttts-domain';
 import BaseController from '../BaseController';
+
 import * as conf from 'config';
+import * as fs from 'fs-extra';
 import * as mongoose from 'mongoose';
 import * as request from 'request';
-import * as fs from 'fs-extra';
 
 const MONGOLAB_URI = conf.get<string>('mongolab_uri');
+const STATUS_CODE_OK = 200;
 
 /**
  * 作品タスクコントローラー
@@ -23,14 +25,14 @@ export default class FilmController extends BaseController {
             const groups = JSON.parse(data);
 
             this.logger.info('removing all groups...');
-            Models.TicketTypeGroup.remove({}, (err) => {
-                if (err) throw err;
+            Models.TicketTypeGroup.remove({}, (removeErr) => {
+                if (removeErr) throw removeErr;
 
                 this.logger.debug('creating groups...');
                 Models.TicketTypeGroup.create(
                     groups,
-                    (err) => {
-                        this.logger.info('groups created.', err);
+                    (createErr) => {
+                        this.logger.info('groups created.', createErr);
                         mongoose.disconnect();
                         process.exit(0);
                     }
@@ -58,23 +60,26 @@ export default class FilmController extends BaseController {
                             new: true,
                             upsert: true
                         },
-                        (err) => {
-                            this.logger.debug('film updated', err);
-                            (err) ? reject(err) : resolve();
+                        (updateFilmErr) => {
+                            this.logger.debug('film updated', updateFilmErr);
+                            (updateFilmErr) ? reject(updateFilmErr) : resolve();
                         }
                     );
                 });
             });
 
-            Promise.all(promises).then(() => {
-                this.logger.info('promised.');
-                mongoose.disconnect();
-                process.exit(0);
-            },                         (err) => {
-                this.logger.error('promised.', err);
-                mongoose.disconnect();
-                process.exit(0);
-            });
+            Promise.all(promises).then(
+                () => {
+                    this.logger.info('promised.');
+                    mongoose.disconnect();
+                    process.exit(0);
+                },
+                (promiseErr) => {
+                    this.logger.error('promised.', promiseErr);
+                    mongoose.disconnect();
+                    process.exit(0);
+                }
+            );
         });
     }
 
@@ -84,8 +89,10 @@ export default class FilmController extends BaseController {
     public getImages() {
         mongoose.connect(MONGOLAB_URI, {});
 
-        Models.Film.find({}, 'name', {sort: {_id: 1}}, (err, films) => {
+        Models.Film.find({}, 'name', { sort: { _id: 1 } }, (err, films) => {
             if (err) throw err;
+
+            let i = 0;
 
             const next = (film: mongoose.Document) => {
                 const options = {
@@ -106,15 +113,15 @@ export default class FilmController extends BaseController {
 
                 console.log('searching...', film.get('name').ja);
                 request.get(options, (error, response, body) => {
-                    if (!error && response.statusCode == 200) {
+                    if (!error && response.statusCode === STATUS_CODE_OK) {
                         if (body.value.length > 0) {
                             const image = body.value[0].thumbnailUrl;
                             console.log('thumbnailUrl:', image);
 
-                            request.get({url: image, encoding: null}, (error, response, body) => {
+                            request.get({ url: image, encoding: null }, (errorOfImageRequest, responseOfImageRequest, bodyOfImageRequest) => {
                                 this.logger.debug('image saved.', error);
-                                if (!error && response.statusCode === 200) {
-                                    fs.writeFileSync(`${__dirname}/../../../../public/images/film/${film.get('_id').toString()}.jpg`, body, 'binary');
+                                if (!errorOfImageRequest && responseOfImageRequest.statusCode === STATUS_CODE_OK) {
+                                    fs.writeFileSync(`${__dirname}/../../../../public/images/film/${film.get('_id').toString()}.jpg`, bodyOfImageRequest, 'binary');
                                 }
 
                                 if (i === films.length - 1) {
@@ -122,12 +129,12 @@ export default class FilmController extends BaseController {
                                     mongoose.disconnect();
                                     process.exit(0);
                                 } else {
-                                    i++;
+                                    i += 1;
                                     next(films[i]);
                                 }
                             });
                         } else {
-                            i++;
+                            i += 1;
                             next(films[i]);
                         }
                     } else {
@@ -136,14 +143,13 @@ export default class FilmController extends BaseController {
                             mongoose.disconnect();
                             process.exit(0);
                         } else {
-                            i++;
+                            i += 1;
                             next(films[i]);
                         }
                     }
                 });
             };
 
-            let i = 0;
             next(films[i]);
         });
     }

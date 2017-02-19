@@ -1,9 +1,15 @@
+/**
+ * CORSミドルウェア
+ *
+ * @module corsMiddleware
+ */
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * CORS settings.
- * TODO 調整
+ * todo 調整
  */
+// tslint:disable-next-line:variable-name
 exports.default = (_req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'X-Requested-With');

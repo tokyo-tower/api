@@ -41,11 +41,11 @@ class SchemaController extends BaseController_1.default {
             const promises = this.collectionNames.map((collectionName) => {
                 return new Promise((resolve, reject) => {
                     this.logger.debug('dropping collection...', collectionName);
-                    db.collection(collectionName).drop((err) => {
-                        this.logger.debug('collection dropped.', collectionName, err);
+                    db.collection(collectionName).drop((dropErr) => {
+                        this.logger.debug('collection dropped.', collectionName, dropErr);
                         this.logger.debug('creating collection.', collectionName);
-                        db.createCollection(collectionName, {}, (err) => {
-                            this.logger.debug('collection created.', collectionName, err);
+                        db.createCollection(collectionName, {}, (createCollectionErr) => {
+                            this.logger.debug('collection created.', collectionName, createCollectionErr);
                             (err) ? reject(err) : resolve();
                         });
                     });
@@ -55,8 +55,8 @@ class SchemaController extends BaseController_1.default {
                 this.logger.info('promised.');
                 db.close();
                 process.exit(0);
-            }, (err) => {
-                this.logger.error('promised.', err);
+            }, (promiseErr) => {
+                this.logger.error('promised.', promiseErr);
                 db.close();
                 process.exit(0);
             });
@@ -72,9 +72,9 @@ class SchemaController extends BaseController_1.default {
             const promises = this.collectionNames.map((collectionName) => {
                 return new Promise((resolve, reject) => {
                     this.logger.debug('dropping index.', collectionName);
-                    db.collection(collectionName).dropIndexes((err) => {
-                        this.logger.debug('index droped.', collectionName, err);
-                        (err) ? reject(err) : resolve();
+                    db.collection(collectionName).dropIndexes((dropIndexesErr) => {
+                        this.logger.debug('index droped.', collectionName, dropIndexesErr);
+                        (dropIndexesErr) ? reject(dropIndexesErr) : resolve();
                     });
                 });
             });
@@ -82,8 +82,8 @@ class SchemaController extends BaseController_1.default {
                 this.logger.info('promised.');
                 db.close();
                 process.exit(0);
-            }, (err) => {
-                this.logger.error('promised.', err);
+            }, (promiseErr) => {
+                this.logger.error('promised.', promiseErr);
                 db.close();
                 process.exit(0);
             });
@@ -93,70 +93,71 @@ class SchemaController extends BaseController_1.default {
      * インデックスを作成する
      */
     createIndexes() {
+        // tslint:disable-next-line:max-func-body-length
         mongodb.MongoClient.connect(conf.get('mongolab_uri'), (err, db) => {
             if (err)
                 throw err;
             const promises = [];
             promises.push(new Promise((resolve, reject) => {
-                db.collection('reservations').createIndex({ performance: 1, seat_code: 1 }, { unique: true }, (err) => {
-                    this.logger.debug('index created.', err);
-                    (err) ? reject(err) : resolve();
+                db.collection('reservations').createIndex({ performance: 1, seat_code: 1 }, { unique: true }, (createIndexErr) => {
+                    this.logger.debug('index created.', createIndexErr);
+                    (createIndexErr) ? reject(createIndexErr) : resolve();
                 });
             }));
             promises.push(new Promise((resolve, reject) => {
-                db.collection('reservation_email_cues').createIndex({ payment_no: 1 }, { unique: true }, (err) => {
-                    this.logger.debug('index created.', err);
-                    (err) ? reject(err) : resolve();
+                db.collection('reservation_email_cues').createIndex({ payment_no: 1 }, { unique: true }, (createIndexErr) => {
+                    this.logger.debug('index created.', createIndexErr);
+                    (createIndexErr) ? reject(createIndexErr) : resolve();
                 });
             }));
             promises.push(new Promise((resolve, reject) => {
-                db.collection('staffs').createIndex({ user_id: 1 }, { unique: true }, (err) => {
-                    this.logger.debug('index created.', err);
-                    (err) ? reject(err) : resolve();
+                db.collection('staffs').createIndex({ user_id: 1 }, { unique: true }, (createIndexErr) => {
+                    this.logger.debug('index created.', createIndexErr);
+                    (createIndexErr) ? reject(createIndexErr) : resolve();
                 });
             }));
             promises.push(new Promise((resolve, reject) => {
-                db.collection('sponsors').createIndex({ user_id: 1 }, { unique: true }, (err) => {
-                    this.logger.debug('index created.', err);
-                    (err) ? reject(err) : resolve();
+                db.collection('sponsors').createIndex({ user_id: 1 }, { unique: true }, (createIndexErr) => {
+                    this.logger.debug('index created.', createIndexErr);
+                    (createIndexErr) ? reject(createIndexErr) : resolve();
                 });
             }));
             promises.push(new Promise((resolve, reject) => {
-                db.collection('pre_customers').createIndex({ user_id: 1 }, { unique: true }, (err) => {
-                    this.logger.debug('index created.', err);
-                    (err) ? reject(err) : resolve();
+                db.collection('pre_customers').createIndex({ user_id: 1 }, { unique: true }, (createIndexErr) => {
+                    this.logger.debug('index created.', createIndexErr);
+                    (createIndexErr) ? reject(createIndexErr) : resolve();
                 });
             }));
             promises.push(new Promise((resolve, reject) => {
-                db.collection('windows').createIndex({ user_id: 1 }, { unique: true }, (err) => {
-                    this.logger.debug('index created.', err);
-                    (err) ? reject(err) : resolve();
+                db.collection('windows').createIndex({ user_id: 1 }, { unique: true }, (createIndexErr) => {
+                    this.logger.debug('index created.', createIndexErr);
+                    (createIndexErr) ? reject(createIndexErr) : resolve();
                 });
             }));
             promises.push(new Promise((resolve, reject) => {
-                db.collection('tel_staffs').createIndex({ user_id: 1 }, { unique: true }, (err) => {
-                    this.logger.debug('index created.', err);
-                    (err) ? reject(err) : resolve();
+                db.collection('tel_staffs').createIndex({ user_id: 1 }, { unique: true }, (createIndexErr) => {
+                    this.logger.debug('index created.', createIndexErr);
+                    (createIndexErr) ? reject(createIndexErr) : resolve();
                 });
             }));
             promises.push(new Promise((resolve, reject) => {
-                db.collection('members').createIndex({ user_id: 1 }, { unique: true }, (err) => {
-                    this.logger.debug('index created.', err);
-                    (err) ? reject(err) : resolve();
+                db.collection('members').createIndex({ user_id: 1 }, { unique: true }, (createIndexErr) => {
+                    this.logger.debug('index created.', createIndexErr);
+                    (createIndexErr) ? reject(createIndexErr) : resolve();
                 });
             }));
             promises.push(new Promise((resolve, reject) => {
-                db.collection('performances').createIndex({ day: 1, start_time: 1 }, (err) => {
-                    this.logger.debug('index created.', err);
-                    (err) ? reject(err) : resolve();
+                db.collection('performances').createIndex({ day: 1, start_time: 1 }, (createIndexErr) => {
+                    this.logger.debug('index created.', createIndexErr);
+                    (createIndexErr) ? reject(createIndexErr) : resolve();
                 });
             }));
             Promise.all(promises).then(() => {
                 this.logger.info('promised.');
                 db.close();
                 process.exit(0);
-            }, (err) => {
-                this.logger.error('promised.', err);
+            }, (promiseErr) => {
+                this.logger.error('promised.', promiseErr);
                 db.close();
                 process.exit(0);
             });

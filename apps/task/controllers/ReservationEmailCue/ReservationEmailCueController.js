@@ -2,17 +2,17 @@
 const ttts_domain_1 = require("@motionpicture/ttts-domain");
 const ttts_domain_2 = require("@motionpicture/ttts-domain");
 const ttts_domain_3 = require("@motionpicture/ttts-domain");
-const GMOUtil_1 = require("../../../common/Util/GMO/GMOUtil");
-const Util_1 = require("../../../common/Util/Util");
+const GMOUtil = require("../../../../common/Util/GMO/GMOUtil");
+const Util = require("../../../../common/Util/Util");
 const BaseController_1 = require("../BaseController");
-const moment = require("moment");
 const conf = require("config");
-const mongoose = require("mongoose");
-const sendgrid = require("sendgrid");
 const emailTemplates = require("email-templates");
-const qr = require("qr-image");
 const fs = require("fs-extra");
+const moment = require("moment");
+const mongoose = require("mongoose");
 const numeral = require("numeral");
+const qr = require("qr-image");
+const sendgrid = require("sendgrid");
 const MONGOLAB_URI = conf.get('mongolab_uri');
 /**
  * 予約メールタスクコントローラー
@@ -28,14 +28,16 @@ class ReservationEmailCueController extends BaseController_1.default {
     watch() {
         mongoose.connect(MONGOLAB_URI);
         let count = 0;
+        const INTERVAL_MILLISECONDS = 500;
+        const MAX_NUMBER_OF_PARALLEL_TASK = 10;
         setInterval(() => {
-            if (count > 10)
+            if (count > MAX_NUMBER_OF_PARALLEL_TASK)
                 return;
-            count++;
+            count += 1;
             this.sendOne(() => {
-                count--;
+                count -= 1;
             });
-        }, 500);
+        }, INTERVAL_MILLISECONDS);
     }
     /**
      * 予約完了メールを送信する
@@ -53,17 +55,19 @@ class ReservationEmailCueController extends BaseController_1.default {
             if (!cue)
                 return this.next(null, cue, this.logger, cb);
             // 予約ロガーを取得
-            Util_1.default.getReservationLogger(cue.get('payment_no'), (err, _logger) => {
-                if (err)
-                    return this.next(err, cue, this.logger, cb);
+            Util.getReservationLogger(cue.get('payment_no'), (getReservationLoggerErr, loggerOfReservation) => {
+                if (getReservationLoggerErr)
+                    return this.next(getReservationLoggerErr, cue, this.logger, cb);
                 ttts_domain_1.Models.Reservation.find({
                     payment_no: cue.get('payment_no')
-                }, (err, reservations) => {
-                    _logger.info('reservations for email found.', err, reservations.length);
-                    if (err)
-                        return this.next(err, cue, _logger, cb);
+                }, 
+                // tslint:disable-next-line:max-func-body-length
+                (findReservationErr, reservations) => {
+                    loggerOfReservation.info('reservations for email found.', findReservationErr, reservations.length);
+                    if (findReservationErr)
+                        return this.next(findReservationErr, cue, loggerOfReservation, cb);
                     if (reservations.length === 0)
-                        return this.next(null, cue, _logger, cb);
+                        return this.next(null, cue, loggerOfReservation, cb);
                     let to = '';
                     switch (reservations[0].get('purchaser_group')) {
                         case ttts_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF:
@@ -73,62 +77,62 @@ class ReservationEmailCueController extends BaseController_1.default {
                             to = reservations[0].get('purchaser_email');
                             break;
                     }
-                    _logger.info('to is', to);
+                    loggerOfReservation.info('to is', to);
                     if (!to)
-                        return this.next(null, cue, _logger, cb);
+                        return this.next(null, cue, loggerOfReservation, cb);
                     const EmailTemplate = emailTemplates.EmailTemplate;
                     // __dirnameを使うとテンプレートを取得できないので注意
                     // http://stackoverflow.com/questions/38173996/azure-and-node-js-dirname
                     let dir;
-                    let title_ja;
-                    let title_en;
+                    let titleJa;
+                    let titleEn;
                     switch (cue.get('template')) {
                         case ttts_domain_3.ReservationEmailCueUtil.TEMPLATE_COMPLETE:
                             // 1.5次販売はメールテンプレート別
                             if (reservations[0].get('pre_customer')) {
                                 dir = `${process.cwd()}/apps/task/views/email/reserve/complete4preCustomer`;
-                                title_ja = '東京タワーチケット 購入完了のお知らせ';
-                                title_en = 'Notice of Completion of TTTS Ticket Purchase';
+                                titleJa = '東京タワーチケット 購入完了のお知らせ';
+                                titleEn = 'Notice of Completion of TTTS Ticket Purchase';
                             }
                             else {
                                 dir = `${process.cwd()}/apps/task/views/email/reserve/complete`;
-                                title_ja = '東京タワーチケット 購入完了のお知らせ';
-                                title_en = 'Notice of Completion of TTTS Ticket Purchase';
+                                titleJa = '東京タワーチケット 購入完了のお知らせ';
+                                titleEn = 'Notice of Completion of TTTS Ticket Purchase';
                             }
                             break;
                         case ttts_domain_3.ReservationEmailCueUtil.TEMPLATE_TEMPORARY:
                             // 1.5次販売はメールテンプレート別
                             if (reservations[0].get('pre_customer')) {
                                 dir = `${process.cwd()}/apps/task/views/email/reserve/waitingSettlement4preCustomer`;
-                                title_ja = '東京タワーチケット 仮予約完了のお知らせ';
-                                title_en = 'Notice of Completion of Tentative Reservation for TTTS Tickets';
+                                titleJa = '東京タワーチケット 仮予約完了のお知らせ';
+                                titleEn = 'Notice of Completion of Tentative Reservation for TTTS Tickets';
                             }
                             else {
                                 dir = `${process.cwd()}/apps/task/views/email/reserve/waitingSettlement`;
-                                title_ja = '東京タワーチケット 仮予約完了のお知らせ';
-                                title_en = 'Notice of Completion of Tentative Reservation for TTTS Tickets';
+                                titleJa = '東京タワーチケット 仮予約完了のお知らせ';
+                                titleEn = 'Notice of Completion of Tentative Reservation for TTTS Tickets';
                             }
                             break;
                         default:
-                            return this.next(new Error(`${cue.get('template')} not implemented.`), cue, _logger, cb);
+                            return this.next(new Error(`${cue.get('template')} not implemented.`), cue, loggerOfReservation, cb);
                     }
                     const template = new EmailTemplate(dir);
                     const locals = {
-                        title_ja: title_ja,
-                        title_en: title_en,
+                        title_ja: titleJa,
+                        title_en: titleEn,
                         reservations: reservations,
                         moment: moment,
                         numeral: numeral,
                         conf: conf,
-                        GMOUtil: GMOUtil_1.default,
+                        GMOUtil: GMOUtil,
                         ReservationUtil: ttts_domain_2.ReservationUtil
                     };
-                    _logger.info('rendering template...dir:', dir);
-                    template.render(locals, (err, result) => {
-                        _logger.info('email template rendered.', err);
-                        if (err)
-                            return this.next(new Error('failed in rendering an email.'), cue, _logger, cb);
-                        const mail = new sendgrid.mail.Mail(new sendgrid.mail.Email(conf.get('email.from'), conf.get('email.fromname')), `[QRコード付き]${title_ja} [QR CODE TICKET]${title_en}`, // TODO 成り行き上、仮完了にもQRコード付き、と入ってしまったので、直すこと
+                    loggerOfReservation.info('rendering template...dir:', dir);
+                    template.render(locals, (renderErr, result) => {
+                        loggerOfReservation.info('email template rendered.', renderErr);
+                        if (renderErr)
+                            return this.next(new Error('failed in rendering an email.'), cue, loggerOfReservation, cb);
+                        const mail = new sendgrid.mail.Mail(new sendgrid.mail.Email(conf.get('email.from'), conf.get('email.fromname')), `[QRコード付き]${titleJa} [QR CODE TICKET]${titleEn}`, // TODO 成り行き上、仮完了にもQRコード付き、と入ってしまったので、直すこと
                         new sendgrid.mail.Email(to), new sendgrid.mail.Content('text/html', result.html));
                         // 完了の場合、QRコードを添付
                         if (cue.get('template') === ttts_domain_3.ReservationEmailCueUtil.TEMPLATE_COMPLETE) {
@@ -146,13 +150,13 @@ class ReservationEmailCueController extends BaseController_1.default {
                         }
                         // add logo
                         const attachmentLogo = new sendgrid.mail.Attachment();
-                        attachmentLogo.setFilename(`logo.png`);
+                        attachmentLogo.setFilename('logo.png');
                         attachmentLogo.setType('image/png');
                         attachmentLogo.setContent(fs.readFileSync(`${__dirname}/../../../../public/images/email/logo.png`).toString('base64'));
                         attachmentLogo.setDisposition('inline');
-                        attachmentLogo.setContentId(`logo`);
+                        attachmentLogo.setContentId('logo');
                         mail.addAttachment(attachmentLogo);
-                        _logger.info('sending an email...email:', mail);
+                        loggerOfReservation.info('sending an email...email:', mail);
                         const sg = sendgrid(process.env.SENDGRID_API_KEY);
                         const request = sg.emptyRequest({
                             host: 'api.sendgrid.com',
@@ -165,10 +169,10 @@ class ReservationEmailCueController extends BaseController_1.default {
                             port: ''
                         });
                         sg.API(request).then((response) => {
-                            _logger.info('an email sent.', response);
-                            this.next(null, cue, _logger, cb);
-                        }, (err) => {
-                            this.next(err, cue, _logger, cb);
+                            loggerOfReservation.info('an email sent.', response);
+                            this.next(null, cue, loggerOfReservation, cb);
+                        }, (sendErr) => {
+                            this.next(sendErr, cue, loggerOfReservation, cb);
                         });
                     });
                 });
@@ -183,6 +187,7 @@ class ReservationEmailCueController extends BaseController_1.default {
      * @param {log4js.Logger} logger
      * @param {Function} cb
      */
+    // tslint:disable-next-line:prefer-function-over-method
     next(err, cue, logger, cb) {
         if (!cue)
             return cb();
@@ -190,8 +195,8 @@ class ReservationEmailCueController extends BaseController_1.default {
         // 送信済みフラグを立てる
         logger.info('setting status...', status);
         cue.set('status', status);
-        cue.save((err, res) => {
-            logger.info('cue saved.', err, res);
+        cue.save((saveErr, res) => {
+            logger.info('cue saved.', saveErr, res);
             cb();
         });
     }

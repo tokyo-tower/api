@@ -1,10 +1,11 @@
-import {Models} from '@motionpicture/ttts-domain';
-import Util from '../../../common/Util/Util';
+import { Models } from '@motionpicture/ttts-domain';
+import * as Util from '../../../../common/Util/Util';
 import BaseController from '../BaseController';
+
 import * as conf from 'config';
-import * as mongoose from 'mongoose';
-import * as fs from 'fs-extra';
 import * as crypto from 'crypto';
+import * as fs from 'fs-extra';
+import * as mongoose from 'mongoose';
 
 const MONGOLAB_URI = conf.get<string>('mongolab_uri');
 
@@ -26,9 +27,10 @@ export default class SponsorController extends BaseController {
             // あれば更新、なければ追加
             const promises = sponsors.map((sponsor) => {
                 // パスワードハッシュ化
-                const password_salt = crypto.randomBytes(64).toString('hex');
-                sponsor['password_salt'] = password_salt;
-                sponsor['password_hash'] = Util.createHash(sponsor.password, password_salt);
+                const SIZE = 64;
+                const passwordSalt = crypto.randomBytes(SIZE).toString('hex');
+                sponsor.password_salt = passwordSalt;
+                sponsor.password_hash = Util.createHash(sponsor.password, passwordSalt);
 
                 return new Promise((resolve, reject) => {
                     this.logger.debug('updating sponsor...');
@@ -41,26 +43,30 @@ export default class SponsorController extends BaseController {
                             new: true,
                             upsert: true
                         },
-                        (err) => {
-                            this.logger.debug('sponsor updated', err);
+                        (updateErr) => {
+                            this.logger.debug('sponsor updated', updateErr);
                             (err) ? reject(err) : resolve();
                         }
                     );
                 });
             });
 
-            Promise.all(promises).then(() => {
-                this.logger.info('promised.');
-                mongoose.disconnect();
-                process.exit(0);
-            },                         (err) => {
-                this.logger.error('promised.', err);
-                mongoose.disconnect();
-                process.exit(0);
-            });
+            Promise.all(promises).then(
+                () => {
+                    this.logger.info('promised.');
+                    mongoose.disconnect();
+                    process.exit(0);
+                },
+                (promiseErr) => {
+                    this.logger.error('promised.', promiseErr);
+                    mongoose.disconnect();
+                    process.exit(0);
+                }
+            );
         });
     }
 
+    // tslint:disable-next-line:prefer-function-over-method
     public createPasswords(): void {
         const file = `${__dirname}/../../../../data/${process.env.NODE_ENV}/sponsorPasswords.txt`;
         const passwords = [];
@@ -68,7 +74,8 @@ export default class SponsorController extends BaseController {
         const c = 'abcdefghijklmnopqrstuvwxyz0123456789';
         const cl = c.length;
 
-        for (let i = 0; i < 300; i++) {
+        const NUMBER_OF_PASSWORD = 300;
+        while (passwords.length < NUMBER_OF_PASSWORD) {
             let password = '';
             // 数字を含むパスワードが生成されるまで繰り返す
             while (password.length < l || !password.match(/[0-9]+/g)) {
@@ -76,13 +83,14 @@ export default class SponsorController extends BaseController {
                     password = '';
                 }
 
+                // tslint:disable-next-line:insecure-random
                 password += c[Math.floor(Math.random() * cl)];
             }
             console.log(password);
             passwords.push(password);
         }
 
-        fs.writeFileSync(file, passwords.join("\n"), 'utf8');
+        fs.writeFileSync(file, passwords.join('\n'), 'utf8');
 
         process.exit(0);
     }

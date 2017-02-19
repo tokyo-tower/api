@@ -1,5 +1,11 @@
-import * as express from 'express';
+/**
+ * スクリーンコントローラー
+ *
+ * @namespace ScreenController
+ */
+
 import { Models } from '@motionpicture/ttts-domain';
+import * as express from 'express';
 import * as fs from 'fs-extra';
 
 /**
@@ -23,8 +29,8 @@ export function show(req: express.Request, res: express.Response, next: express.
 
             // スクリーン座席表HTMLを出力
             res.type('txt');
-            fs.readFile(`${__dirname}/../../../common/views/screens/${req.params.id}.ejs`, 'utf8', (err, data) => {
-                if (err) return next(err);
+            fs.readFile(`${__dirname}/../../../../common/views/screens/${req.params.id}.ejs`, 'utf8', (readFileErr, data) => {
+                if (readFileErr) return next(readFileErr);
 
                 res.send(data);
             });

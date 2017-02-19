@@ -1,12 +1,12 @@
 "use strict";
 const ttts_domain_1 = require("@motionpicture/ttts-domain");
-const Util_1 = require("../../../common/Util/Util");
+const Util = require("../../../../common/Util/Util");
 const BaseController_1 = require("../BaseController");
 const conf = require("config");
+const crypto = require("crypto");
+const fs = require("fs-extra");
 const mongodb = require("mongodb");
 const mongoose = require("mongoose");
-const fs = require("fs-extra");
-const crypto = require("crypto");
 const MONGOLAB_URI = conf.get('mongolab_uri');
 /**
  * 先行予約アカウントタスクコントローラー
@@ -22,13 +22,13 @@ class PreCustomerController extends BaseController_1.default {
                 throw err;
             const collectionName = 'pre_customers';
             this.logger.debug('dropping collection...', collectionName);
-            db.collection(collectionName).drop((err) => {
-                this.logger.debug('collection dropped.', collectionName, err);
+            db.collection(collectionName).drop((dropErr) => {
+                this.logger.debug('collection dropped.', collectionName, dropErr);
                 this.logger.debug('creating collection.', collectionName);
-                db.createCollection(collectionName, {}, (err) => {
-                    this.logger.debug('collection created.', collectionName, err);
-                    db.collection(collectionName).createIndex({ user_id: 1 }, { unique: true }, (err) => {
-                        this.logger.debug('index created.', err);
+                db.createCollection(collectionName, {}, (createCollectionErr) => {
+                    this.logger.debug('collection created.', collectionName, createCollectionErr);
+                    db.collection(collectionName).createIndex({ user_id: 1 }, { unique: true }, (createIndexErr) => {
+                        this.logger.debug('index created.', createIndexErr);
                         db.close();
                         process.exit(0);
                     });
@@ -45,17 +45,18 @@ class PreCustomerController extends BaseController_1.default {
             // あれば更新、なければ追加
             const docs = preCustomers.map((preCustomer) => {
                 // パスワードハッシュ化
-                const password_salt = crypto.randomBytes(64).toString('hex');
-                preCustomer['password_salt'] = password_salt;
-                preCustomer['password_hash'] = Util_1.default.createHash(preCustomer.password, password_salt);
+                const SIZE = 64;
+                const passwordSalt = crypto.randomBytes(SIZE).toString('hex');
+                preCustomer.password_salt = passwordSalt;
+                preCustomer.password_hash = Util.createHash(preCustomer.password, passwordSalt);
                 return preCustomer;
             });
-            ttts_domain_1.Models.PreCustomer.remove((err) => {
-                if (err)
-                    throw err;
+            ttts_domain_1.Models.PreCustomer.remove((removeErr) => {
+                if (removeErr)
+                    throw removeErr;
                 this.logger.debug('creating perCustomers...length:', docs.length);
-                ttts_domain_1.Models.PreCustomer.insertMany(docs, (err) => {
-                    this.logger.debug('perCustomers created.', err);
+                ttts_domain_1.Models.PreCustomer.insertMany(docs, (insertErr) => {
+                    this.logger.debug('perCustomers created.', insertErr);
                     mongoose.disconnect();
                     process.exit(0);
                 });

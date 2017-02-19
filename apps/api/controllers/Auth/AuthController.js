@@ -1,11 +1,18 @@
+/**
+ * 認証コントローラー
+ *
+ * @namespace OtherController
+ */
 "use strict";
 const ttts_domain_1 = require("@motionpicture/ttts-domain");
 const crypto = require("crypto");
 /**
  * ログイン
  */
+// tslint:disable-next-line:variable-name
 function login(_req, res) {
-    const token = crypto.randomBytes(64).toString('hex');
+    const SIZE = 64;
+    const token = crypto.randomBytes(SIZE).toString('hex');
     ttts_domain_1.Models.Authentication.findOneAndUpdate({
         mvtk_kiin_cd: '00000775' // テスト用会員コード
     }, {

@@ -1,15 +1,16 @@
 "use strict";
 const ttts_domain_1 = require("@motionpicture/ttts-domain");
-const BaseController_1 = require("../BaseController");
-const mongoose = require("mongoose");
-const conf = require("config");
 const ttts_domain_2 = require("@motionpicture/ttts-domain");
-const GMOUtil_1 = require("../../../common/Util/GMO/GMOUtil");
+const GMOUtil = require("../../../../common/Util/GMO/GMOUtil");
+const BaseController_1 = require("../BaseController");
+const conf = require("config");
 const fs = require("fs-extra");
-const request = require("request");
-const querystring = require("querystring");
 const moment = require("moment");
+const mongoose = require("mongoose");
+const querystring = require("querystring");
+const request = require("request");
 const MONGOLAB_URI = conf.get('mongolab_uri');
+const STATUS_CODE_OK = 200;
 /**
  * 分析タスクコントローラー
  *
@@ -18,6 +19,7 @@ const MONGOLAB_URI = conf.get('mongolab_uri');
  * @extends {BaseController}
  */
 class AnalysisController extends BaseController_1.default {
+    // tslint:disable-next-line:prefer-function-over-method
     checkArrayUnique() {
         fs.readFile(`${process.cwd()}/logs/${process.env.NODE_ENV}/paymentNos4sagyo2.json`, 'utf8', (err, data) => {
             if (err)
@@ -37,8 +39,10 @@ class AnalysisController extends BaseController_1.default {
      * GMOでCAPTURE,PAYSUCCESS,REQSUCCESS出ないかどうか確認
      * DBでWAITING_SETTLEMENTかどうか確認
      */
+    // tslint:disable-next-line:max-func-body-length
     waiting2sagyo2() {
         mongoose.connect(MONGOLAB_URI);
+        // tslint:disable-next-line:max-func-body-length
         fs.readFile(`${process.cwd()}/logs/${process.env.NODE_ENV}/paymentNos4sagyo2.json`, 'utf8', (err, data) => {
             if (err)
                 throw err;
@@ -54,38 +58,38 @@ class AnalysisController extends BaseController_1.default {
                             ShopID: conf.get('gmo_payment_shop_id'),
                             ShopPass: conf.get('gmo_payment_shop_password'),
                             OrderID: paymentNo,
-                            PayType: GMOUtil_1.default.PAY_TYPE_CREDIT
+                            PayType: GMOUtil.PAY_TYPE_CREDIT
                         }
                     }, (error, response, body) => {
                         this.logger.info('request processed.', error);
                         if (error)
                             return reject(error);
-                        if (response.statusCode !== 200)
+                        if (response.statusCode !== STATUS_CODE_OK)
                             return reject(new Error(`statusCode is ${response.statusCode}`));
                         const searchTradeResult = querystring.parse(body);
                         // クレジットカード決済情報がない場合コンビニ決済で検索
-                        if (searchTradeResult['ErrCode']) {
+                        if (searchTradeResult.ErrCode) {
                             request.post({
                                 url: gmoUrl,
                                 form: {
                                     ShopID: conf.get('gmo_payment_shop_id'),
                                     ShopPass: conf.get('gmo_payment_shop_password'),
                                     OrderID: paymentNo,
-                                    PayType: GMOUtil_1.default.PAY_TYPE_CVS
+                                    PayType: GMOUtil.PAY_TYPE_CVS
                                 }
-                            }, (error, response, body) => {
-                                if (error)
-                                    return reject(error);
-                                if (response.statusCode !== 200)
-                                    return reject(new Error(`statusCode is ${response.statusCode}`));
-                                const searchTradeResult = querystring.parse(body);
-                                if (searchTradeResult['ErrCode']) {
+                            }, (errorOfSearchCVS, responseOfSearchCVS, bodyOfSearchCVS) => {
+                                if (errorOfSearchCVS)
+                                    return reject(errorOfSearchCVS);
+                                if (responseOfSearchCVS.statusCode !== STATUS_CODE_OK)
+                                    return reject(new Error(`statusCode is ${responseOfSearchCVS.statusCode}`));
+                                const searchTradeCVSResult = querystring.parse(bodyOfSearchCVS);
+                                if (searchTradeCVSResult.ErrCode) {
                                     // 情報なければOK
                                     resolve();
                                 }
                                 else {
-                                    if (searchTradeResult.Status === GMOUtil_1.default.STATUS_CVS_PAYSUCCESS || searchTradeResult.Status === GMOUtil_1.default.STATUS_CVS_REQSUCCESS) {
-                                        reject(new Error('searchTradeResult.Status is PAYSUCCESS or REQSUCCESS'));
+                                    if (searchTradeCVSResult.Status === GMOUtil.STATUS_CVS_PAYSUCCESS || searchTradeCVSResult.Status === GMOUtil.STATUS_CVS_REQSUCCESS) {
+                                        reject(new Error('searchTradeCVSResult.Status is PAYSUCCESS or REQSUCCESS'));
                                     }
                                     else {
                                         resolve();
@@ -94,7 +98,7 @@ class AnalysisController extends BaseController_1.default {
                             });
                         }
                         else {
-                            if (searchTradeResult.Status === GMOUtil_1.default.STATUS_CREDIT_CAPTURE) {
+                            if (searchTradeResult.Status === GMOUtil.STATUS_CREDIT_CAPTURE) {
                                 reject(new Error('searchTradeResult.Status is CAPTURE'));
                             }
                             else {
@@ -107,29 +111,29 @@ class AnalysisController extends BaseController_1.default {
             Promise.all(promises).then(() => {
                 console.log(paymentNos.length);
                 // DBでWAITINGでないものがあるかどうかを確認
-                const promises = paymentNos.map((paymentNo) => {
+                const promisesOfCountWaitingReservations = paymentNos.map((paymentNo) => {
                     return new Promise((resolve, reject) => {
                         this.logger.info('counting not in WAITING_SETTLEMENT, WAITING_SETTLEMENT_PAY_DESIGN');
                         ttts_domain_1.Models.Reservation.count({
                             payment_no: paymentNo,
                             status: { $nin: [ttts_domain_2.ReservationUtil.STATUS_WAITING_SETTLEMENT, ttts_domain_2.ReservationUtil.STATUS_WAITING_SETTLEMENT_PAY_DESIGN] }
-                        }, (err, count) => {
-                            this.logger.info('counted.', err, count);
-                            if (err)
-                                return reject(err);
-                            (count > 0) ? reject(new Error('status WAITING_SETTLEMENT exists.')) : resolve();
+                        }, (countErr, countOfWaitingReservations) => {
+                            this.logger.info('counted.', countErr, countOfWaitingReservations);
+                            if (countErr)
+                                return reject(countErr);
+                            (countOfWaitingReservations > 0) ? reject(new Error('status WAITING_SETTLEMENT exists.')) : resolve();
                         });
                     });
                 });
-                Promise.all(promises).then(() => {
+                Promise.all(promisesOfCountWaitingReservations).then(() => {
                     console.log(paymentNos.length);
                     this.logger.info('promised.');
                     // 内部関係者で確保する
                     ttts_domain_1.Models.Staff.findOne({
                         user_id: '2016sagyo2'
-                    }, (err, staff) => {
-                        this.logger.info('staff found.', err, staff);
-                        if (err) {
+                    }, (findStaffErr, staff) => {
+                        this.logger.info('staff found.', findStaffErr, staff);
+                        if (findStaffErr) {
                             mongoose.disconnect();
                             process.exit(0);
                             return;
@@ -156,20 +160,20 @@ class AnalysisController extends BaseController_1.default {
                             watcher_name: ''
                         }, {
                             multi: true
-                        }, (err, raw) => {
-                            this.logger.info('updated.', err, raw);
+                        }, (udpateReservationErr, raw) => {
+                            this.logger.info('updated.', udpateReservationErr, raw);
                             console.log(paymentNos.length);
                             mongoose.disconnect();
                             process.exit(0);
                         });
                     });
-                }).catch((err) => {
-                    this.logger.error('promised.', err);
+                }).catch((promiseErr) => {
+                    this.logger.error('promised.', promiseErr);
                     mongoose.disconnect();
                     process.exit(0);
                 });
-            }).catch((err) => {
-                this.logger.error('promised.', err);
+            }).catch((promiseErr) => {
+                this.logger.error('promised.', promiseErr);
                 mongoose.disconnect();
                 process.exit(0);
             });
@@ -196,20 +200,20 @@ class AnalysisController extends BaseController_1.default {
                             ShopID: conf.get('gmo_payment_shop_id'),
                             ShopPass: conf.get('gmo_payment_shop_password'),
                             OrderID: paymentNo,
-                            PayType: GMOUtil_1.default.PAY_TYPE_CVS
+                            PayType: GMOUtil.PAY_TYPE_CVS
                         }
                     }, (error, response, body) => {
                         this.logger.info('request processed.', error);
                         if (error)
                             return reject(error);
-                        if (response.statusCode !== 200)
+                        if (response.statusCode !== STATUS_CODE_OK)
                             return reject(new Error(`statusCode is ${response.statusCode} ${paymentNo}`));
                         const searchTradeResult = querystring.parse(body);
-                        if (searchTradeResult['ErrCode']) {
-                            reject(new Error(`ErrCode is ${searchTradeResult['ErrCode']} ${paymentNo}`));
+                        if (searchTradeResult.ErrCode) {
+                            reject(new Error(`ErrCode is ${searchTradeResult.ErrCode} ${paymentNo}`));
                         }
                         else {
-                            if (searchTradeResult.Status === GMOUtil_1.default.STATUS_CVS_PAYSUCCESS) {
+                            if (searchTradeResult.Status === GMOUtil.STATUS_CVS_PAYSUCCESS) {
                                 resolve();
                             }
                             else {
@@ -229,12 +233,12 @@ class AnalysisController extends BaseController_1.default {
                             status: { $nin: [ttts_domain_2.ReservationUtil.STATUS_WAITING_SETTLEMENT] }
                         },
                         {
-                            payment_method: { $nin: [GMOUtil_1.default.PAY_TYPE_CVS] }
+                            payment_method: { $nin: [GMOUtil.PAY_TYPE_CVS] }
                         }
                     ]
-                }, (err, count) => {
-                    this.logger.info('counted.', err, count);
-                    if (err) {
+                }, (countReservationErr, count) => {
+                    this.logger.info('counted.', countReservationErr, count);
+                    if (countReservationErr) {
                         mongoose.disconnect();
                         process.exit(0);
                         return;
@@ -250,15 +254,15 @@ class AnalysisController extends BaseController_1.default {
                         status: ttts_domain_2.ReservationUtil.STATUS_RESERVED
                     }, {
                         multi: true
-                    }, (err, raw) => {
-                        this.logger.info('updated.', err, raw);
+                    }, (updateReservationErr, raw) => {
+                        this.logger.info('updated.', updateReservationErr, raw);
                         console.log(paymentNos.length);
                         mongoose.disconnect();
                         process.exit(0);
                     });
                 });
-            }).catch((err) => {
-                this.logger.error('promised.', err);
+            }).catch((promiseErr) => {
+                this.logger.error('promised.', promiseErr);
                 mongoose.disconnect();
                 process.exit(0);
             });
@@ -281,12 +285,12 @@ class AnalysisController extends BaseController_1.default {
                         status: { $nin: [ttts_domain_2.ReservationUtil.STATUS_WAITING_SETTLEMENT_PAY_DESIGN] }
                     },
                     {
-                        payment_method: { $nin: [GMOUtil_1.default.PAY_TYPE_CVS] }
+                        payment_method: { $nin: [GMOUtil.PAY_TYPE_CVS] }
                     }
                 ]
-            }, (err, count) => {
-                this.logger.info('counted.', err, count);
-                if (err) {
+            }, (countErr, count) => {
+                this.logger.info('counted.', countErr, count);
+                if (countErr) {
                     mongoose.disconnect();
                     process.exit(0);
                     return;
@@ -302,8 +306,8 @@ class AnalysisController extends BaseController_1.default {
                     status: ttts_domain_2.ReservationUtil.STATUS_RESERVED
                 }, {
                     multi: true
-                }, (err, raw) => {
-                    this.logger.info('updated.', err, raw);
+                }, (updateReservationErr, raw) => {
+                    this.logger.info('updated.', updateReservationErr, raw);
                     console.log(paymentNos.length);
                     mongoose.disconnect();
                     process.exit(0);
@@ -332,9 +336,9 @@ class AnalysisController extends BaseController_1.default {
             // 内部関係者で確保する
             ttts_domain_1.Models.Staff.findOne({
                 user_id: '2016sagyo2'
-            }, (err, staff) => {
-                this.logger.info('staff found.', err, staff);
-                if (err) {
+            }, (findStaffErr, staff) => {
+                this.logger.info('staff found.', findStaffErr, staff);
+                if (findStaffErr) {
                     mongoose.disconnect();
                     process.exit(0);
                     return;
@@ -361,8 +365,8 @@ class AnalysisController extends BaseController_1.default {
                     watcher_name: ''
                 }, {
                     multi: true
-                }, (err, raw) => {
-                    this.logger.info('updated.', err, raw);
+                }, (updateReservationErr, raw) => {
+                    this.logger.info('updated.', updateReservationErr, raw);
                     console.log(paymentNos.length);
                     mongoose.disconnect();
                     process.exit(0);
@@ -378,13 +382,13 @@ class AnalysisController extends BaseController_1.default {
             console.log(paymentNos.length);
             const promises = paymentNos.map((paymentNo) => {
                 return new Promise((resolve, reject) => {
-                    fs.readFile(`${process.cwd()}/logs/reservationsGmoError/${paymentNo[paymentNo.length - 1]}/${paymentNo}.log`, 'utf8', (err, data) => {
-                        this.logger.info('log found', err);
-                        if (err)
+                    fs.readFile(`${process.cwd()}/logs/reservationsGmoError/${paymentNo[paymentNo.length - 1]}/${paymentNo}.log`, 'utf8', (readFileErr, reservationLogData) => {
+                        this.logger.info('log found', readFileErr);
+                        if (readFileErr)
                             return resolve();
                         // let pattern = /\[(.+)] \[INFO] reservation - updating reservation all infos...update: { _id: '(.+)',\n  status: '(.+)',\n  seat_code: '(.+)',\n  seat_grade_name_ja: '(.+)',\n  seat_grade_name_en: '(.+)',\n  seat_grade_additional_charge: (.+),\n  ticket_type_code: '(.+)',\n  ticket_type_name_ja: '(.+)',\n  ticket_type_name_en: '(.+)',\n  ticket_type_charge: (.+),\n  charge: (.+),\n  payment_no: '(.+)',\n  purchaser_group: '(.+)',\n  performance: '(.+)',\n/;
                         const pattern = /reservation - updating reservation all infos...update: {[^}]+}/g;
-                        const matches = data.match(pattern);
+                        const matches = reservationLogData.match(pattern);
                         let json = '[\n';
                         if (matches) {
                             matches.forEach((match, index) => {
@@ -392,7 +396,7 @@ class AnalysisController extends BaseController_1.default {
                                 const reservation = match.replace('reservation - updating reservation all infos...update: ', '')
                                     .replace(/"/g, '\\"')
                                     .replace(/ _id:/g, '"_id":')
-                                    .replace(/  ([a-z_]+[a-z0-9_]+):/g, '"$1":')
+                                    .replace(/[ ]{2}([a-z_]+[a-z0-9_]+):/g, '"$1":')
                                     .replace(/: '/g, ': "')
                                     .replace(/',/g, '",')
                                     .replace(/\\'/g, '\'');
@@ -402,9 +406,9 @@ class AnalysisController extends BaseController_1.default {
                         json += '\n]';
                         this.logger.info('writing json...');
                         // fs.writeFile(`${process.cwd()}/logs/${process.env.NODE_ENV}/jsonsFromGmoOrderIdsCredit/${paymentNo}.json`, json, 'utf8', (err) => {
-                        fs.writeFile(`${process.cwd()}/logs/${process.env.NODE_ENV}/jsonsFromGmoOrderIdsCVS/${paymentNo}.json`, json, 'utf8', (err) => {
-                            this.logger.info('json written', err);
-                            (err) ? reject(err) : resolve();
+                        fs.writeFile(`${process.cwd()}/logs/${process.env.NODE_ENV}/jsonsFromGmoOrderIdsCVS/${paymentNo}.json`, json, 'utf8', (writeFileErr) => {
+                            this.logger.info('json written', writeFileErr);
+                            (writeFileErr) ? reject(writeFileErr) : resolve();
                         });
                     });
                 });
@@ -412,8 +416,8 @@ class AnalysisController extends BaseController_1.default {
             Promise.all(promises).then(() => {
                 this.logger.info('promised.');
                 process.exit(0);
-            }).catch((err) => {
-                this.logger.error('promised.', err);
+            }).catch((promiseErr) => {
+                this.logger.error('promised.', promiseErr);
                 process.exit(0);
             });
         });
@@ -438,12 +442,12 @@ class AnalysisController extends BaseController_1.default {
             this.logger.info('request processed.', error, body);
             if (error)
                 return process.exit(0);
-            if (response.statusCode !== 200)
+            if (response.statusCode !== STATUS_CODE_OK)
                 return process.exit(0);
             const searchTradeResult = querystring.parse(body);
-            if (searchTradeResult['ErrCode'])
+            if (searchTradeResult.ErrCode)
                 return process.exit(0);
-            if (searchTradeResult.Status !== GMOUtil_1.default.STATUS_CREDIT_CAPTURE)
+            if (searchTradeResult.Status !== GMOUtil.STATUS_CREDIT_CAPTURE)
                 return process.exit(0); // 即時売上状態のみ先へ進める
             this.logger.info('searchTradeResult is ', searchTradeResult);
             // 決済変更
@@ -454,18 +458,18 @@ class AnalysisController extends BaseController_1.default {
                     ShopPass: conf.get('gmo_payment_shop_password'),
                     AccessID: searchTradeResult.AccessID,
                     AccessPass: searchTradeResult.AccessPass,
-                    JobCd: GMOUtil_1.default.STATUS_CREDIT_VOID
+                    JobCd: GMOUtil.STATUS_CREDIT_VOID
                 }
             };
             this.logger.info('requesting... options:', options);
-            request.post('https://pt01.mul-pay.jp/payment/AlterTran.idPass', options, (error, response, body) => {
-                this.logger.info('request processed.', error, body);
-                if (error)
+            request.post('https://pt01.mul-pay.jp/payment/AlterTran.idPass', options, (errorOfAlterTran, responseOfAlterTran, bodyOfAlterTran) => {
+                this.logger.info('request processed.', errorOfAlterTran, bodyOfAlterTran);
+                if (errorOfAlterTran)
                     return process.exit(0);
-                if (response.statusCode !== 200)
+                if (responseOfAlterTran.statusCode !== STATUS_CODE_OK)
                     return process.exit(0);
-                const alterTranResult = querystring.parse(body);
-                if (alterTranResult['ErrCode'])
+                const alterTranResult = querystring.parse(bodyOfAlterTran);
+                if (alterTranResult.ErrCode)
                     return process.exit(0);
                 this.logger.info('alterTranResult is ', alterTranResult);
                 process.exit(0);
@@ -510,6 +514,7 @@ class AnalysisController extends BaseController_1.default {
     /**
      * メール配信された購入番号リストを取得する
      */
+    // tslint:disable-next-line:prefer-function-over-method
     getPaymentNosWithEmail() {
         mongoose.connect(MONGOLAB_URI);
         ttts_domain_1.Models.GMONotification.distinct('order_id', {
@@ -522,7 +527,7 @@ class AnalysisController extends BaseController_1.default {
             console.log('orderIds length is ', orderIds.length);
             const file = `${__dirname}/../../../../logs/${process.env.NODE_ENV}/orderIds.txt`;
             console.log(file);
-            fs.writeFileSync(file, orderIds.join("\n"), 'utf8');
+            fs.writeFileSync(file, orderIds.join('\n'), 'utf8');
             mongoose.disconnect();
             process.exit(0);
         });
@@ -559,8 +564,8 @@ class AnalysisController extends BaseController_1.default {
             });
             mongoose.connect(MONGOLAB_URI);
             this.logger.info('creating ReservationEmailCues...length:', cues.length);
-            ttts_domain_1.Models.ReservationEmailCue.insertMany(cues, (err) => {
-                this.logger.info('ReservationEmailCues created.', err);
+            ttts_domain_1.Models.ReservationEmailCue.insertMany(cues, (insertErr) => {
+                this.logger.info('ReservationEmailCues created.', insertErr);
                 mongoose.disconnect();
                 process.exit(0);
             });
@@ -569,6 +574,7 @@ class AnalysisController extends BaseController_1.default {
     /**
      * GMO取引状態を参照する
      */
+    // tslint:disable-next-line:prefer-function-over-method
     searchTrade() {
         const paymentNo = '92122101008';
         // 取引状態参照
@@ -579,42 +585,42 @@ class AnalysisController extends BaseController_1.default {
                 ShopID: conf.get('gmo_payment_shop_id'),
                 ShopPass: conf.get('gmo_payment_shop_password'),
                 OrderID: paymentNo,
-                PayType: GMOUtil_1.default.PAY_TYPE_CREDIT
+                PayType: GMOUtil.PAY_TYPE_CREDIT
             }
         }, (error, response, body) => {
             // this.logger.info('request processed.', error, body);
             if (error)
                 return process.exit(0);
-            if (response.statusCode !== 200)
+            if (response.statusCode !== STATUS_CODE_OK)
                 return process.exit(0);
             const searchTradeResult = querystring.parse(body);
             // this.logger.info('searchTradeResult is ', searchTradeResult);
-            if (searchTradeResult['ErrCode'])
+            if (searchTradeResult.ErrCode)
                 return process.exit(0);
             let statusStr = '';
             switch (searchTradeResult.Status) {
-                case GMOUtil_1.default.STATUS_CVS_UNPROCESSED:
+                case GMOUtil.STATUS_CVS_UNPROCESSED:
                     statusStr = '未決済';
                     break;
-                case GMOUtil_1.default.STATUS_CVS_REQSUCCESS:
+                case GMOUtil.STATUS_CVS_REQSUCCESS:
                     statusStr = '要求成功';
                     break;
-                case GMOUtil_1.default.STATUS_CVS_PAYSUCCESS:
+                case GMOUtil.STATUS_CVS_PAYSUCCESS:
                     statusStr = '決済完了';
                     break;
-                case GMOUtil_1.default.STATUS_CVS_PAYFAIL:
+                case GMOUtil.STATUS_CVS_PAYFAIL:
                     statusStr = '決済失敗';
                     break;
-                case GMOUtil_1.default.STATUS_CVS_EXPIRED:
+                case GMOUtil.STATUS_CVS_EXPIRED:
                     statusStr = '期限切れ';
                     break;
-                case GMOUtil_1.default.STATUS_CVS_CANCEL:
+                case GMOUtil.STATUS_CVS_CANCEL:
                     statusStr = '支払い停止';
                     break;
-                case GMOUtil_1.default.STATUS_CREDIT_CAPTURE:
+                case GMOUtil.STATUS_CREDIT_CAPTURE:
                     statusStr = '即時売上';
                     break;
-                case GMOUtil_1.default.STATUS_CREDIT_VOID:
+                case GMOUtil.STATUS_CREDIT_VOID:
                     statusStr = '取消';
                     break;
                 default:

@@ -1,13 +1,11 @@
-// #!/usr/bin/env node
+// tslint:disable-next-line:no-reference
 /// <reference path='./typings/index.d.ts' />
 "use strict";
 /**
  * Module dependencies.
  */
-const app = require("./apps/api/app");
-// import * as debugModule from 'debug';
 const http = require("http");
-// let debug = debugModule('app:server');
+const app = require("./apps/api/app");
 /**
  * Get port from environment and store in Express.
  */
@@ -27,14 +25,15 @@ server.on('listening', onListening);
  * Normalize a port into a number, string, or false.
  */
 function normalizePort(val) {
-    const port = parseInt(val, 10);
-    if (isNaN(port)) {
+    // tslint:disable-next-line:no-magic-numbers
+    const portNumber = parseInt(val, 10);
+    if (isNaN(portNumber)) {
         // named pipe
         return val;
     }
-    if (port >= 0) {
+    if (portNumber >= 0) {
         // port number
-        return port;
+        return portNumber;
     }
     return false;
 }
@@ -71,5 +70,4 @@ function onListening() {
         ? 'pipe ' + addr
         : 'port ' + addr.port;
     console.log('Listening on ' + bind);
-    // debug('Listening on ' + bind);
 }

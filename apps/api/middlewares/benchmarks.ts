@@ -1,3 +1,9 @@
+/**
+ * ベンチマークミドルウェア
+ *
+ * @module benchmarksMiddleware
+ */
+
 import * as express from 'express';
 import * as log4js from 'log4js';
 

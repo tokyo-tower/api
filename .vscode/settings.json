@@ -5,6 +5,7 @@
     "files.exclude": {
         "apps/**/*.js": true,
         "bin/**/*.js": true,
+        "common/**/*.js": true,
         "test/**/*.js": true,
         "*.js": true
     },

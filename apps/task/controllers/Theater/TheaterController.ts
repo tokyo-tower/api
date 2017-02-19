@@ -1,9 +1,10 @@
 import { Models } from '@motionpicture/ttts-domain';
 import { ScreenUtil } from '@motionpicture/ttts-domain';
 import BaseController from '../BaseController';
+
 import * as conf from 'config';
-import * as mongoose from 'mongoose';
 import * as fs from 'fs-extra';
+import * as mongoose from 'mongoose';
 
 const MONGOLAB_URI = conf.get<string>('mongolab_uri');
 
@@ -35,7 +36,7 @@ export default class TheaterController extends BaseController {
                 seatsNumbersBySeatCode[ScreenUtil.SEAT_GRADE_CODE_PREMIERE_LUXURY] = 0;
                 seatsNumbersBySeatCode[ScreenUtil.SEAT_GRADE_CODE_FRONT_RECLINING] = 0;
                 screen.sections[0].seats.forEach((seat: any) => {
-                    seatsNumbersBySeatCode[seat.grade.code]++;
+                    seatsNumbersBySeatCode[seat.grade.code] += 1;
                 });
                 screen.seats_numbers_by_seat_grade = Object.keys(seatsNumbersBySeatCode).map((seatGradeCode) => {
                     return {
@@ -43,7 +44,6 @@ export default class TheaterController extends BaseController {
                         seats_number: seatsNumbersBySeatCode[seatGradeCode]
                     };
                 });
-
 
                 return new Promise((resolve, reject) => {
                     this.logger.debug('updating screen...');
@@ -56,23 +56,26 @@ export default class TheaterController extends BaseController {
                             new: true,
                             upsert: true
                         },
-                        (err) => {
-                            this.logger.debug('screen updated', err);
+                        (updateErr) => {
+                            this.logger.debug('screen updated', updateErr);
                             (err) ? reject(err) : resolve();
                         }
                     );
                 });
             });
 
-            Promise.all(promises).then(() => {
-                this.logger.info('promised.');
-                mongoose.disconnect();
-                process.exit(0);
-            },                         (err) => {
-                this.logger.error('promised.', err);
-                mongoose.disconnect();
-                process.exit(0);
-            });
+            Promise.all(promises).then(
+                () => {
+                    this.logger.info('promised.');
+                    mongoose.disconnect();
+                    process.exit(0);
+                },
+                (promiseErr) => {
+                    this.logger.error('promised.', promiseErr);
+                    mongoose.disconnect();
+                    process.exit(0);
+                }
+            );
         });
     }
 
@@ -95,23 +98,26 @@ export default class TheaterController extends BaseController {
                             new: true,
                             upsert: true
                         },
-                        (err) => {
-                            this.logger.debug('theater updated', err);
+                        (updateErr) => {
+                            this.logger.debug('theater updated', updateErr);
                             (err) ? reject(err) : resolve();
                         }
                     );
                 });
             });
 
-            Promise.all(promises).then(() => {
-                this.logger.info('promised.');
-                mongoose.disconnect();
-                process.exit(0);
-            },                         (err) => {
-                this.logger.error('promised.', err);
-                mongoose.disconnect();
-                process.exit(0);
-            });
+            Promise.all(promises).then(
+                () => {
+                    this.logger.info('promised.');
+                    mongoose.disconnect();
+                    process.exit(0);
+                },
+                (promiseErr) => {
+                    this.logger.error('promised.', promiseErr);
+                    mongoose.disconnect();
+                    process.exit(0);
+                }
+            );
         });
     }
 }

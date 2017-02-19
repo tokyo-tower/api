@@ -23,8 +23,6 @@ router.post('/:locale/reservation/email', setLocale, ReservationController.email
 // show screen html
 router.get('/screen/:id/show', ScreenController.show);
 
-
-
 router.post('/login', setLocale, AuthController.login);
 
 // 要認証サービス
@@ -37,7 +35,6 @@ router.post('/reservation/:id/enter', setLocale, ReservationController.enter);
 // 環境変数
 router.get('/environmentVariables', OtherController.environmentVariables);
 
-
 // 404
 router.use((req, res) => {
     res.json({
@@ -47,15 +44,16 @@ router.use((req, res) => {
 });
 
 // error handlers
+// tslint:disable-next-line:variable-name
 router.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (res.headersSent) return next(err);
 
-    res.status(400);
+    const STATUS_CODE_BAD_REQUEST = 400;
+    res.status(STATUS_CODE_BAD_REQUEST);
     res.json({
         success: false,
         message: 'Internal Server Error'
     });
 });
-
 
 export default router;

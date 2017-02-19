@@ -1,11 +1,12 @@
-import {Models} from '@motionpicture/ttts-domain';
-import Util from '../../../common/Util/Util';
+import { Models } from '@motionpicture/ttts-domain';
+import * as Util from '../../../../common/Util/Util';
 import BaseController from '../BaseController';
+
 import * as conf from 'config';
+import * as crypto from 'crypto';
+import * as fs from 'fs-extra';
 import * as mongodb from 'mongodb';
 import * as mongoose from 'mongoose';
-import * as fs from 'fs-extra';
-import * as crypto from 'crypto';
 
 const MONGOLAB_URI = conf.get<string>('mongolab_uri');
 
@@ -23,17 +24,17 @@ export default class PreCustomerController extends BaseController {
 
             const collectionName = 'pre_customers';
             this.logger.debug('dropping collection...', collectionName);
-            db.collection(collectionName).drop((err) => {
-                this.logger.debug('collection dropped.', collectionName, err);
+            db.collection(collectionName).drop((dropErr) => {
+                this.logger.debug('collection dropped.', collectionName, dropErr);
                 this.logger.debug('creating collection.', collectionName);
-                db.createCollection(collectionName, {}, (err) => {
-                    this.logger.debug('collection created.', collectionName, err);
+                db.createCollection(collectionName, {}, (createCollectionErr) => {
+                    this.logger.debug('collection created.', collectionName, createCollectionErr);
 
                     db.collection(collectionName).createIndex(
-                        {user_id: 1},
-                        {unique: true},
-                        (err) => {
-                            this.logger.debug('index created.', err);
+                        { user_id: 1 },
+                        { unique: true },
+                        (createIndexErr) => {
+                            this.logger.debug('index created.', createIndexErr);
 
                             db.close();
                             process.exit(0);
@@ -55,18 +56,19 @@ export default class PreCustomerController extends BaseController {
             // あれば更新、なければ追加
             const docs = preCustomers.map((preCustomer) => {
                 // パスワードハッシュ化
-                const password_salt = crypto.randomBytes(64).toString('hex');
-                preCustomer['password_salt'] = password_salt;
-                preCustomer['password_hash'] = Util.createHash(preCustomer.password, password_salt);
+                const SIZE = 64;
+                const passwordSalt = crypto.randomBytes(SIZE).toString('hex');
+                preCustomer.password_salt = passwordSalt;
+                preCustomer.password_hash = Util.createHash(preCustomer.password, passwordSalt);
                 return preCustomer;
             });
 
-            Models.PreCustomer.remove((err: any) => {
-                if (err) throw err;
+            Models.PreCustomer.remove((removeErr: any) => {
+                if (removeErr) throw removeErr;
 
                 this.logger.debug('creating perCustomers...length:', docs.length);
-                Models.PreCustomer.insertMany(docs, (err) => {
-                    this.logger.debug('perCustomers created.', err);
+                Models.PreCustomer.insertMany(docs, (insertErr) => {
+                    this.logger.debug('perCustomers created.', insertErr);
 
                     mongoose.disconnect();
                     process.exit(0);

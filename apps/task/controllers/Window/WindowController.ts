@@ -1,10 +1,11 @@
-import {Models} from '@motionpicture/ttts-domain';
-import Util from '../../../common/Util/Util';
+import { Models } from '@motionpicture/ttts-domain';
+import * as Util from '../../../../common/Util/Util';
 import BaseController from '../BaseController';
+
 import * as conf from 'config';
-import * as mongoose from 'mongoose';
-import * as fs from 'fs-extra';
 import * as crypto from 'crypto';
+import * as fs from 'fs-extra';
+import * as mongoose from 'mongoose';
 
 const MONGOLAB_URI = conf.get<string>('mongolab_uri');
 
@@ -25,21 +26,22 @@ export default class WindowController extends BaseController {
 
             // パスワードハッシュ化
             windows = windows.map((window) => {
-                const password_salt = crypto.randomBytes(64).toString('hex');
-                window.password_salt = password_salt;
-                window.password_hash = Util.createHash(window.password, password_salt);
+                const SIZE = 64;
+                const passwordSalt = crypto.randomBytes(SIZE).toString('hex');
+                window.password_salt = passwordSalt;
+                window.password_hash = Util.createHash(window.password, passwordSalt);
                 return window;
             });
 
             this.logger.info('removing all windows...');
-            Models.Window.remove({}, (err) => {
-                if (err) throw err;
+            Models.Window.remove({}, (removeErr) => {
+                if (removeErr) throw removeErr;
 
                 this.logger.debug('creating windows...');
                 Models.Window.create(
                     windows,
-                    (err) => {
-                        this.logger.info('windows created.', err);
+                    (createErr) => {
+                        this.logger.info('windows created.', createErr);
                         mongoose.disconnect();
                         process.exit(0);
                     }

@@ -1,10 +1,11 @@
-import {Models} from '@motionpicture/ttts-domain';
-import Util from '../../../common/Util/Util';
+import { Models } from '@motionpicture/ttts-domain';
+import * as Util from '../../../../common/Util/Util';
 import BaseController from '../BaseController';
+
 import * as conf from 'config';
-import * as mongoose from 'mongoose';
-import * as fs from 'fs-extra';
 import * as crypto from 'crypto';
+import * as fs from 'fs-extra';
+import * as mongoose from 'mongoose';
 
 const MONGOLAB_URI = conf.get<string>('mongolab_uri');
 
@@ -25,22 +26,23 @@ export default class MemberController extends BaseController {
 
             // パスワードハッシュ化
             members = members.map((member) => {
-                const password_salt = crypto.randomBytes(64).toString('hex');
+                const SIZE = 64;
+                const passwordSalt = crypto.randomBytes(SIZE).toString('hex');
                 return {
                     user_id: member.user_id,
-                    password_salt: password_salt,
-                    password_hash: Util.createHash(member.password, password_salt)
+                    password_salt: passwordSalt,
+                    password_hash: Util.createHash(member.password, passwordSalt)
                 };
             });
             this.logger.info('removing all members...');
-            Models.Member.remove({}, (err) => {
-                if (err) throw err;
+            Models.Member.remove({}, (removeErr) => {
+                if (removeErr) throw removeErr;
 
                 this.logger.debug('creating members...');
                 Models.Member.create(
                     members,
-                    (err) => {
-                        this.logger.info('members created.', err);
+                    (createErr) => {
+                        this.logger.info('members created.', createErr);
                         mongoose.disconnect();
                         process.exit(0);
                     }
@@ -66,14 +68,14 @@ export default class MemberController extends BaseController {
                             performance: reservationFromJson.performance,
                             seat_code: reservationFromJson.seat_code
                         },
-                        (err) => {
-                            this.logger.info('reservation removed.', err);
-                            if (err) return reject(err);
+                        (removeErr) => {
+                            this.logger.info('reservation removed.', removeErr);
+                            if (removeErr) return reject(removeErr);
 
                             this.logger.info('creating reservationFromJson...', reservationFromJson);
-                            Models.Reservation.create(reservationFromJson, (err) => {
-                                this.logger.info('reservationFromJson created.', err);
-                                (err) ? reject(err) : resolve();
+                            Models.Reservation.create(reservationFromJson, (createErr) => {
+                                this.logger.info('reservationFromJson created.', createErr);
+                                (createErr) ? reject(createErr) : resolve();
                             });
                         }
                     );
@@ -84,8 +86,8 @@ export default class MemberController extends BaseController {
                 this.logger.info('promised.');
                 mongoose.disconnect();
                 process.exit(0);
-            }).catch((err) => {
-                this.logger.info('promised.', err);
+            }).catch((promiseErr) => {
+                this.logger.info('promised.', promiseErr);
                 mongoose.disconnect();
                 process.exit(0);
             });

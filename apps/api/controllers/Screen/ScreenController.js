@@ -1,3 +1,8 @@
+/**
+ * スクリーンコントローラー
+ *
+ * @namespace ScreenController
+ */
 "use strict";
 const ttts_domain_1 = require("@motionpicture/ttts-domain");
 const fs = require("fs-extra");
@@ -19,9 +24,9 @@ function show(req, res, next) {
         }
         // スクリーン座席表HTMLを出力
         res.type('txt');
-        fs.readFile(`${__dirname}/../../../common/views/screens/${req.params.id}.ejs`, 'utf8', (err, data) => {
-            if (err)
-                return next(err);
+        fs.readFile(`${__dirname}/../../../../common/views/screens/${req.params.id}.ejs`, 'utf8', (readFileErr, data) => {
+            if (readFileErr)
+                return next(readFileErr);
             res.send(data);
         });
     });

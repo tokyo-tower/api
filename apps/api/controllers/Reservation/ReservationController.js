@@ -1,15 +1,21 @@
+/**
+ * 座席予約コントローラー
+ *
+ * @namespace ReservationController
+ */
 "use strict";
 const ttts_domain_1 = require("@motionpicture/ttts-domain");
 const ttts_domain_2 = require("@motionpicture/ttts-domain");
-const sendgrid = require("sendgrid");
 const conf = require("config");
-const validator = require("validator");
-const qr = require("qr-image");
-const moment = require("moment");
 const fs = require("fs-extra");
+const moment = require("moment");
+const qr = require("qr-image");
+const sendgrid = require("sendgrid");
+const validator = require("validator");
 /**
  * 予約情報メールを送信する
  */
+// tslint:disable-next-line:max-func-body-length
 function email(req, res) {
     const id = req.body.id;
     const to = req.body.to;
@@ -39,26 +45,26 @@ function email(req, res) {
             });
             return;
         }
-        const title_ja = `${reservation.get('purchaser_name_ja')}様より東京タワーのチケットが届いております`;
-        const title_en = `This is a notification that you have been invited to Tokyo International Film Festival by Mr./Ms. ${reservation.get('purchaser_name_en')}.`;
+        const titleJa = `${reservation.get('purchaser_name_ja')}様より東京タワーのチケットが届いております`;
+        const titleEn = `This is a notification that you have been invited to Tokyo International Film Festival by Mr./Ms. ${reservation.get('purchaser_name_en')}.`;
         res.render('email/resevation', {
             layout: false,
             reservations: [reservation],
             to: to,
             moment: moment,
             conf: conf,
-            title_ja: title_ja,
-            title_en: title_en,
+            title_ja: titleJa,
+            title_en: titleEn,
             ReservationUtil: ttts_domain_2.ReservationUtil
-        }, (err, html) => {
-            if (err) {
+        }, (renderErr, html) => {
+            if (renderErr) {
                 res.json({
                     success: false,
                     message: req.__('Message.UnexpectedError')
                 });
                 return;
             }
-            const mail = new sendgrid.mail.Mail(new sendgrid.mail.Email(conf.get('email.from'), conf.get('email.fromname')), `${title_ja} ${title_en}`, new sendgrid.mail.Email(to), new sendgrid.mail.Content('text/html', html));
+            const mail = new sendgrid.mail.Mail(new sendgrid.mail.Email(conf.get('email.from'), conf.get('email.fromname')), `${titleJa} ${titleEn}`, new sendgrid.mail.Email(to), new sendgrid.mail.Content('text/html', html));
             const reservationId = reservation.get('_id').toString();
             const attachmentQR = new sendgrid.mail.Attachment();
             attachmentQR.setFilename(`QR_${reservationId}.png`);
@@ -69,7 +75,7 @@ function email(req, res) {
             mail.addAttachment(attachmentQR);
             // logo
             const attachment = new sendgrid.mail.Attachment();
-            attachment.setFilename(`logo.png`);
+            attachment.setFilename('logo.png');
             attachment.setType('image/png');
             attachment.setContent(fs.readFileSync(`${__dirname}/../../../../public/images/email/logo.png`).toString('base64'));
             attachment.setDisposition('inline');
@@ -92,11 +98,11 @@ function email(req, res) {
                 res.json({
                     success: true
                 });
-            }, (err) => {
-                console.error('an email unsent.', err);
+            }, (sendErr) => {
+                console.error('an email unsent.', sendErr);
                 res.json({
                     success: false,
-                    message: err.message
+                    message: sendErr.message
                 });
             });
         });
@@ -126,12 +132,14 @@ function enter(req, res) {
     });
 }
 exports.enter = enter;
+// tslint:disable-next-line:variable-name
 function findByMvtkUser(_req, res) {
     // ひとまずデモ段階では、一般予約を10件返す
+    const LIMIT = 10;
     ttts_domain_1.Models.Reservation.find({
         purchaser_group: ttts_domain_2.ReservationUtil.PURCHASER_GROUP_CUSTOMER,
         status: ttts_domain_2.ReservationUtil.STATUS_RESERVED
-    }).limit(10).exec((err, reservations) => {
+    }).limit(LIMIT).exec((err, reservations) => {
         if (err) {
             res.json({
                 success: false,

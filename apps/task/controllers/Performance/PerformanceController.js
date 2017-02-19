@@ -1,10 +1,11 @@
 "use strict";
+const ttts_domain_1 = require("@motionpicture/ttts-domain");
 const BaseController_1 = require("../BaseController");
 const conf = require("config");
-const mongoose = require("mongoose");
 const fs = require("fs-extra");
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
+const mongoose = require("mongoose");
 const MONGOLAB_URI = conf.get('mongolab_uri');
+const DEFAULT_RADIX = 10;
 /**
  * パフォーマンスタスクコントローラー
  *
@@ -15,9 +16,9 @@ const MONGOLAB_URI = conf.get('mongolab_uri');
 class PerformanceController extends BaseController_1.default {
     createFromJson() {
         mongoose.connect(MONGOLAB_URI, {});
-        fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/performances.json`, 'utf8', (err, data) => {
-            if (err)
-                throw err;
+        fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/performances.json`, 'utf8', (readFileErr, data) => {
+            if (readFileErr)
+                throw readFileErr;
             const performances = JSON.parse(data);
             ttts_domain_1.Models.Screen.find({}, 'name theater').populate('theater', 'name').exec((err, screens) => {
                 if (err)
@@ -26,20 +27,20 @@ class PerformanceController extends BaseController_1.default {
                 const promises = performances.map((performance) => {
                     return new Promise((resolve, reject) => {
                         // 劇場とスクリーン名称を追加
-                        const _screen = screens.find((screen) => {
+                        const screenOfPerformance = screens.find((screen) => {
                             return (screen.get('_id').toString() === performance.screen);
                         });
-                        if (!_screen)
+                        if (!screenOfPerformance)
                             return reject(new Error('screen not found.'));
-                        performance.screen_name = _screen.get('name');
-                        performance.theater_name = _screen.get('theater').get('name');
+                        performance.screen_name = screenOfPerformance.get('name');
+                        performance.theater_name = screenOfPerformance.get('theater').get('name');
                         this.logger.debug('updating performance...');
                         ttts_domain_1.Models.Performance.findOneAndUpdate({ _id: performance._id }, performance, {
                             new: true,
                             upsert: true
-                        }, (err) => {
-                            this.logger.debug('performance updated', err);
-                            (err) ? reject(err) : resolve();
+                        }, (updateErr) => {
+                            this.logger.debug('performance updated', updateErr);
+                            (updateErr) ? reject(updateErr) : resolve();
                         });
                     });
                 });
@@ -47,8 +48,8 @@ class PerformanceController extends BaseController_1.default {
                     this.logger.info('promised.');
                     mongoose.disconnect();
                     process.exit(0);
-                }, (err) => {
-                    this.logger.error('promised.', err);
+                }, (promiseErr) => {
+                    this.logger.error('promised.', promiseErr);
                     mongoose.disconnect();
                     process.exit(0);
                 });
@@ -79,30 +80,30 @@ class PerformanceController extends BaseController_1.default {
                         count: { $sum: 1 }
                     }
                 }
-            ], (err, results) => {
-                this.logger.info('aggregated.', err);
-                if (err) {
+            ], (aggregateErr, results) => {
+                this.logger.info('aggregated.', aggregateErr);
+                if (aggregateErr) {
                     mongoose.disconnect();
                     process.exit(0);
                     return;
                 }
                 // パフォーマンスIDごとに
                 const reservationNumbers = {};
-                for (const result of results) {
-                    reservationNumbers[result._id] = parseInt(result.count);
-                }
+                results.forEach((result) => {
+                    reservationNumbers[result._id] = parseInt(result.count, DEFAULT_RADIX);
+                });
                 performances.forEach((performance) => {
                     // パフォーマンスごとに空席ステータスを算出する
                     if (!reservationNumbers.hasOwnProperty(performance.get('_id').toString())) {
                         reservationNumbers[performance.get('_id').toString()] = 0;
                     }
                     // TODO anyで逃げているが、型定義をちゃんとかけばもっとよく書ける
-                    const status = performance['getSeatStatus'](reservationNumbers[performance.get('_id').toString()]);
+                    const status = performance.getSeatStatus(reservationNumbers[performance.get('_id').toString()]);
                     performanceStatusesModel.setStatus(performance._id.toString(), status);
                 });
                 this.logger.info('saving performanceStatusesModel...', performanceStatusesModel);
-                ttts_domain_1.PerformanceStatusesModel.store(performanceStatusesModel, (err) => {
-                    this.logger.info('performanceStatusesModel saved.', err);
+                ttts_domain_1.PerformanceStatusesModel.store(performanceStatusesModel, (storeErr) => {
+                    this.logger.info('performanceStatusesModel saved.', storeErr);
                     mongoose.disconnect();
                     process.exit(0);
                 });

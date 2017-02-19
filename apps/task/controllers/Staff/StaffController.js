@@ -1,12 +1,12 @@
 "use strict";
 const ttts_domain_1 = require("@motionpicture/ttts-domain");
-const Util_1 = require("../../../common/Util/Util");
+const ttts_domain_2 = require("@motionpicture/ttts-domain");
+const Util = require("../../../../common/Util/Util");
 const BaseController_1 = require("../BaseController");
 const conf = require("config");
-const mongoose = require("mongoose");
-const fs = require("fs-extra");
-const ttts_domain_2 = require("@motionpicture/ttts-domain");
 const crypto = require("crypto");
+const fs = require("fs-extra");
+const mongoose = require("mongoose");
 const MONGOLAB_URI = conf.get('mongolab_uri');
 /**
  * 内部関係者タスクコントローラー
@@ -25,9 +25,10 @@ class StaffController extends BaseController_1.default {
             // あれば更新、なければ追加
             const promises = staffs.map((staff) => {
                 // パスワードハッシュ化
-                const password_salt = crypto.randomBytes(64).toString('hex');
-                staff['password_salt'] = password_salt;
-                staff['password_hash'] = Util_1.default.createHash(staff.password, password_salt);
+                const SIZE = 64;
+                const passwordSalt = crypto.randomBytes(SIZE).toString('hex');
+                staff.password_salt = passwordSalt;
+                staff.password_hash = Util.createHash(staff.password, passwordSalt);
                 return new Promise((resolve, reject) => {
                     this.logger.debug('updating staff...');
                     ttts_domain_1.Models.Staff.findOneAndUpdate({
@@ -35,8 +36,8 @@ class StaffController extends BaseController_1.default {
                     }, staff, {
                         new: true,
                         upsert: true
-                    }, (err) => {
-                        this.logger.debug('staff updated', err);
+                    }, (updateErr) => {
+                        this.logger.debug('staff updated', updateErr);
                         (err) ? reject(err) : resolve();
                     });
                 });
@@ -45,8 +46,8 @@ class StaffController extends BaseController_1.default {
                 this.logger.info('promised.');
                 mongoose.disconnect();
                 process.exit(0);
-            }, (err) => {
-                this.logger.error('promised.', err);
+            }, (promiseErr) => {
+                this.logger.error('promised.', promiseErr);
                 mongoose.disconnect();
                 process.exit(0);
             });
@@ -69,9 +70,9 @@ class StaffController extends BaseController_1.default {
             const next = () => {
                 if (i < screenIds.length) {
                     this.logger.debug('createStaffReservationsByScreenId processing...', screenIds[i].toString());
-                    this.createReservationsByScreenId(screenIds[i].toString(), (err) => {
-                        this.logger.debug('createStaffReservationsByScreenId processed.', err);
-                        i++;
+                    this.createReservationsByScreenId(screenIds[i].toString(), (createErr) => {
+                        this.logger.debug('createStaffReservationsByScreenId processed.', createErr);
+                        i += 1;
                         next();
                     });
                 }
@@ -90,40 +91,39 @@ class StaffController extends BaseController_1.default {
                 this.logger.info('no reservations.');
                 return cb(null);
             }
-            ;
             // 内部関係者をすべて取得
-            ttts_domain_1.Models.Staff.find({}, (err, staffs) => {
-                if (err)
-                    throw err;
+            ttts_domain_1.Models.Staff.find({}, (findErr, staffs) => {
+                if (findErr)
+                    throw findErr;
                 const staffsByName = {};
                 for (const staff of staffs) {
                     staffsByName[staff.get('name')] = staff;
                 }
-                ttts_domain_2.ReservationUtil.publishPaymentNo((err, paymentNo) => {
+                ttts_domain_2.ReservationUtil.publishPaymentNo((publishErr, paymentNo) => {
                     this.logger.debug('paymentNo is', paymentNo);
-                    if (err)
-                        return cb(err);
+                    if (publishErr)
+                        return cb(publishErr);
                     let reservations = [];
                     // スクリーンのパフォーマンスをすべて取得
                     ttts_domain_1.Models.Performance.find({ screen: screenId })
                         .populate('film', 'name is_mx4d copyright')
                         .populate('screen', 'name')
                         .populate('theater', 'name address')
-                        .exec((err, performances) => {
-                        if (err)
-                            return cb(err);
+                        .exec((findPerformancesErr, performances) => {
+                        if (findPerformancesErr)
+                            return cb(findPerformancesErr);
                         for (const performance of performances) {
                             let reservationsByPerformance = JSON.parse(data);
                             reservationsByPerformance = reservationsByPerformance.map((reservation, index) => {
-                                const _staff = staffsByName[reservation.staff_name];
+                                const staffOfReservation = staffsByName[reservation.staff_name];
                                 return {
                                     performance: performance.get('_id'),
                                     seat_code: reservation.seat_code,
                                     status: ttts_domain_2.ReservationUtil.STATUS_RESERVED,
-                                    staff: _staff.get('_id'),
-                                    staff_user_id: _staff.get('user_id'),
-                                    staff_email: _staff.get('email'),
-                                    staff_name: _staff.get('name'),
+                                    staff: staffOfReservation.get('_id'),
+                                    staff_user_id: staffOfReservation.get('user_id'),
+                                    staff_email: staffOfReservation.get('email'),
+                                    staff_name: staffOfReservation.get('name'),
                                     staff_signature: 'system',
                                     entered: false,
                                     updated_user: 'system',
@@ -165,8 +165,8 @@ class StaffController extends BaseController_1.default {
                             reservations = reservations.concat(reservationsByPerformance);
                         }
                         this.logger.debug('creating staff reservations...length:', reservations.length);
-                        ttts_domain_1.Models.Reservation.insertMany(reservations, (err) => {
-                            this.logger.debug('staff reservations created.', err);
+                        ttts_domain_1.Models.Reservation.insertMany(reservations, (insertErr) => {
+                            this.logger.debug('staff reservations created.', insertErr);
                             cb(err);
                         });
                     });
@@ -194,41 +194,39 @@ class StaffController extends BaseController_1.default {
                 process.exit(0);
                 return;
             }
-            fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/staffReservations_${performance.get('screen').get('_id').toString()}.json`, 'utf8', (err, data) => {
-                if (err) {
+            fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/staffReservations_${performance.get('screen').get('_id').toString()}.json`, 'utf8', (readFileerr, data) => {
+                if (readFileerr) {
                     this.logger.info('no reservations.');
                     mongoose.disconnect();
                     process.exit(0);
                     return;
                 }
-                ;
                 // 内部関係者をすべて取得
-                ttts_domain_1.Models.Staff.find({}, (err, staffs) => {
-                    if (err)
-                        throw err;
+                ttts_domain_1.Models.Staff.find({}, (findStaffsErr, staffs) => {
+                    if (findStaffsErr)
+                        throw findStaffsErr;
                     const staffsByName = {};
                     for (const staff of staffs) {
                         staffsByName[staff.get('name')] = staff;
                     }
-                    ttts_domain_2.ReservationUtil.publishPaymentNo((err, paymentNo) => {
-                        this.logger.info('paymentNo published.', err, paymentNo);
-                        if (err) {
+                    ttts_domain_2.ReservationUtil.publishPaymentNo((publishErr, paymentNo) => {
+                        this.logger.info('paymentNo published.', publishErr, paymentNo);
+                        if (publishErr) {
                             mongoose.disconnect();
                             process.exit(0);
                             return;
                         }
-                        ;
                         const reservations = JSON.parse(data);
                         const promises = reservations.map((reservation, index) => {
-                            const _staff = staffsByName[reservation.staff_name];
+                            const staffOfReservation = staffsByName[reservation.staff_name];
                             const newReservation = {
                                 performance: performance.get('_id'),
                                 seat_code: reservation.seat_code,
                                 status: ttts_domain_2.ReservationUtil.STATUS_RESERVED,
-                                staff: _staff.get('_id'),
-                                staff_user_id: _staff.get('user_id'),
-                                staff_email: _staff.get('email'),
-                                staff_name: _staff.get('name'),
+                                staff: staffOfReservation.get('_id'),
+                                staff_user_id: staffOfReservation.get('user_id'),
+                                staff_email: staffOfReservation.get('email'),
+                                staff_name: staffOfReservation.get('name'),
                                 staff_signature: 'system',
                                 entered: false,
                                 updated_user: 'system',
@@ -236,7 +234,7 @@ class StaffController extends BaseController_1.default {
                                 watcher_name_updated_at: Date.now(),
                                 watcher_name: '',
                                 film_copyright: performance.get('film').get('copyright'),
-                                'film_is_mx4d': performance.get('film').get('is_mx4d'),
+                                film_is_mx4d: performance.get('film').get('is_mx4d'),
                                 film_image: `https://${conf.get('dns_name')}/images/film/${performance.get('film').get('_id')}.jpg`,
                                 film_name_en: performance.get('film').get('name.en'),
                                 film_name_ja: performance.get('film').get('name.ja'),
@@ -266,19 +264,17 @@ class StaffController extends BaseController_1.default {
                                 seat_grade_name_en: 'Normal Seat',
                                 seat_grade_name_ja: 'ノーマルシート'
                             };
-                            return new Promise((resolve, reject) => {
+                            return new Promise((resolve) => {
                                 this.logger.info('creating reservation...');
-                                ttts_domain_1.Models.Reservation.create([newReservation], (err) => {
-                                    if (err)
-                                        return reject(err);
+                                ttts_domain_1.Models.Reservation.create([newReservation], (createErr) => {
                                     this.logger.info('reservation created.', err);
                                     // 途中で終了しないように。最後まで予約渡来し続ける。
-                                    resolve(err);
+                                    resolve(createErr);
                                 });
                             });
                         });
-                        Promise.all(promises).then((err) => {
-                            this.logger.info('promised', err);
+                        Promise.all(promises).then((result) => {
+                            this.logger.info('promised', result);
                             mongoose.disconnect();
                             process.exit(0);
                         });

@@ -1,3 +1,9 @@
+/**
+ * ロガーミドルウェア
+ *
+ * @module loggerMiddleware
+ */
+
 import * as log4js from 'log4js';
 
 const env = process.env.NODE_ENV || 'dev';

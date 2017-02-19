@@ -1,17 +1,24 @@
 "use strict";
-const express = require("express");
+/**
+ * expressアプリケーション
+ *
+ * @module app
+ * @global
+ */
 const bodyParser = require("body-parser");
+const conf = require("config");
+const express = require("express");
+const i18n = require("i18n");
+const mongoose = require("mongoose");
+const passport = require("passport");
+const passportHttpBearer = require("passport-http-bearer");
+const ttts_domain_1 = require("@motionpicture/ttts-domain");
 const benchmarks_1 = require("./middlewares/benchmarks");
 const cors_1 = require("./middlewares/cors");
 const logger_1 = require("./middlewares/logger");
-const conf = require("config");
-const mongoose = require("mongoose");
-const i18n = require("i18n");
-const passport = require("passport");
-const passportHttpBearer = require("passport-http-bearer");
-const BearerStrategy = passportHttpBearer.Strategy;
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
-passport.use(new BearerStrategy((token, cb) => {
+const bearerStrategy = passportHttpBearer.Strategy;
+const MONGOLAB_URI = conf.get('mongolab_uri');
+passport.use(new bearerStrategy((token, cb) => {
     ttts_domain_1.Models.Authentication.findOne({
         token: token
     }, (err, authentication) => {
@@ -68,28 +75,27 @@ app.use(i18n.init);
 // ルーティング
 const router_1 = require("./routes/router");
 app.use('/', router_1.default);
-const MONGOLAB_URI = conf.get('mongolab_uri');
 // Use native promises
 mongoose.Promise = global.Promise;
 mongoose.connect(MONGOLAB_URI, {});
 if (process.env.NODE_ENV !== 'prod') {
     const db = mongoose.connection;
-    db.on('connecting', function () {
+    db.on('connecting', () => {
         console.log('connecting');
     });
-    db.on('error', function (error) {
+    db.on('error', (error) => {
         console.error('Error in MongoDb connection: ', error);
     });
-    db.on('connected', function () {
+    db.on('connected', () => {
         console.log('connected.');
     });
-    db.once('open', function () {
+    db.once('open', () => {
         console.log('connection open.');
     });
-    db.on('reconnected', function () {
+    db.on('reconnected', () => {
         console.log('reconnected.');
     });
-    db.on('disconnected', function () {
+    db.on('disconnected', () => {
         console.log('disconnected.');
     });
 }

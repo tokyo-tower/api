@@ -4,9 +4,10 @@ import * as log4js from 'log4js';
 /**
  * ベースコントローラー
  */
-export default class BaseController
-{
-    /** ロガー */
+export default class BaseController {
+    /**
+     * ロガー
+     */
     public logger: log4js.Logger;
 
     /**
@@ -40,11 +41,15 @@ export default class BaseController
         this.logger = log4js.getLogger('system');
     }
 
+    // tslint:disable-next-line:prefer-function-over-method
     protected shuffle(array: any[]) {
-        let m = array.length, t, i;
+        let m = array.length;
+        let t: any;
+        let i: number;
 
         while (m) {
-            m--;
+            m -= 1;
+            // tslint:disable-next-line:insecure-random
             i = Math.floor(Math.random() * m);
             t = array[m];
             array[m] = array[i];

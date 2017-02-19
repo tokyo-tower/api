@@ -1,3 +1,8 @@
+/**
+ * ベンチマークミドルウェア
+ *
+ * @module benchmarksMiddleware
+ */
 "use strict";
 const log4js = require("log4js");
 Object.defineProperty(exports, "__esModule", { value: true });

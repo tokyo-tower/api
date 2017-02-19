@@ -1,14 +1,27 @@
+/**
+ * パフォーマンスコントローラー
+ *
+ * @namespace PerformanceController
+ */
 "use strict";
 const ttts_domain_1 = require("@motionpicture/ttts-domain");
-const moment = require("moment");
 const conf = require("config");
+const moment = require("moment");
+const DEFAULT_RADIX = 10;
+/**
+ * 検索する
+ *
+ * @export
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
 function search(req, res) {
-    const limit = (req.query.limit) ? parseInt(req.query.limit) : null;
-    const page = (req.query.page) ? parseInt(req.query.page) : 1;
+    const limit = (req.query.limit) ? parseInt(req.query.limit, DEFAULT_RADIX) : null;
+    const page = (req.query.page) ? parseInt(req.query.page, DEFAULT_RADIX) : 1;
     const day = (req.query.day) ? req.query.day : null; // 上映日
     const section = (req.query.section) ? req.query.section : null; // 部門
     const words = (req.query.words) ? req.query.words : null; // フリーワード
-    const startFrom = (req.query.start_from) ? parseInt(req.query.start_from) : null; // この時間以降開始のパフォーマンスに絞る(timestamp milliseconds)
+    const startFrom = (req.query.start_from) ? parseInt(req.query.start_from, DEFAULT_RADIX) : null; // この時間以降開始のパフォーマンスに絞る(timestamp milliseconds)
     const theater = (req.query.theater) ? req.query.theater : null; // 劇場
     const screen = (req.query.screen) ? req.query.screen : null; // スクリーン
     // 検索条件を作成
@@ -32,6 +45,7 @@ function search(req, res) {
     }
     if (startFrom) {
         const now = moment(startFrom);
+        // tslint:disable-next-line:no-magic-numbers
         const tomorrow = moment(startFrom).add(+24, 'hours');
         andConditions.push({
             $or: [
@@ -50,6 +64,7 @@ function search(req, res) {
         });
     }
     // 作品条件を追加する
+    // tslint:disable-next-line:max-func-body-length no-shadowed-variable
     addFilmConditions(andConditions, section, words, (err, andConditions) => {
         if (err) {
             res.json({
@@ -67,8 +82,8 @@ function search(req, res) {
             };
         }
         // 作品件数取得
-        ttts_domain_1.Models.Performance.distinct('film', conditions, (err, filmIds) => {
-            if (err) {
+        ttts_domain_1.Models.Performance.distinct('film', conditions, (distinctErr, filmIds) => {
+            if (distinctErr) {
                 res.json({
                     success: false,
                     results: [],
@@ -78,8 +93,8 @@ function search(req, res) {
                 return;
             }
             // 総数検索
-            ttts_domain_1.Models.Performance.count(conditions, (err, performances_count) => {
-                if (err) {
+            ttts_domain_1.Models.Performance.count(conditions, (countErr, performancesCount) => {
+                if (countErr) {
                     res.json({
                         success: false,
                         results: [],
@@ -113,8 +128,8 @@ function search(req, res) {
                         start_time: 1
                     }
                 });
-                query.lean(true).exec((err, performances) => {
-                    if (err) {
+                query.lean(true).exec((findPerformancesErr, performances) => {
+                    if (findPerformancesErr) {
                         res.json({
                             success: false,
                             results: [],
@@ -124,30 +139,31 @@ function search(req, res) {
                         return;
                     }
                     // 空席情報を追加
-                    ttts_domain_1.PerformanceStatusesModel.find((err, performanceStatusesModel) => {
-                        if (err) {
+                    ttts_domain_1.PerformanceStatusesModel.find((findPerformanceStatusesErr, performanceStatuses) => {
+                        if (findPerformanceStatusesErr) {
+                            console.error(findPerformanceStatusesErr);
                         }
                         const results = performances.map((performance) => {
                             return {
-                                _id: performance['_id'],
-                                day: performance['day'],
-                                open_time: performance['open_time'],
-                                start_time: performance['start_time'],
-                                seat_status: (performanceStatusesModel) ? performanceStatusesModel.getStatus(performance['_id'].toString()) : null,
-                                theater_name: performance['theater_name'][req.getLocale()],
-                                screen_name: performance['screen_name'][req.getLocale()],
-                                film_id: performance['film']['_id'],
-                                film_name: performance['film']['name'][req.getLocale()],
-                                film_sections: performance['film']['sections'].map((section) => section['name'][req.getLocale()]),
-                                film_minutes: performance['film']['minutes'],
-                                film_copyright: performance['film']['copyright'],
-                                film_image: `https://${conf.get('dns_name')}/images/film/${performance['film']['_id']}.jpg`
+                                _id: performance._id,
+                                day: performance.day,
+                                open_time: performance.open_time,
+                                start_time: performance.start_time,
+                                seat_status: (performanceStatuses) ? performanceStatuses.getStatus(performance._id.toString()) : null,
+                                theater_name: performance.theater_name[req.getLocale()],
+                                screen_name: performance.screen_name[req.getLocale()],
+                                film_id: performance.film._id,
+                                film_name: performance.film.name[req.getLocale()],
+                                film_sections: performance.film.sections.map((filmSection) => filmSection.name[req.getLocale()]),
+                                film_minutes: performance.film.minutes,
+                                film_copyright: performance.film.copyright,
+                                film_image: `https://${conf.get('dns_name')}/images/film/${performance.film._id}.jpg`
                             };
                         });
                         res.json({
                             success: true,
                             results: results,
-                            performances_count: performances_count,
+                            performances_count: performancesCount,
                             films_count: filmIds.length
                         });
                     });

@@ -1,12 +1,20 @@
-import * as express from 'express';
+/**
+ * 認証コントローラー
+ *
+ * @namespace OtherController
+ */
+
 import { Models } from '@motionpicture/ttts-domain';
 import * as crypto from 'crypto';
+import * as express from 'express';
 
 /**
  * ログイン
  */
+// tslint:disable-next-line:variable-name
 export function login(_req: express.Request, res: express.Response): void {
-    const token = crypto.randomBytes(64).toString('hex');
+    const SIZE = 64;
+    const token = crypto.randomBytes(SIZE).toString('hex');
     Models.Authentication.findOneAndUpdate(
         {
             mvtk_kiin_cd: '00000775' // テスト用会員コード

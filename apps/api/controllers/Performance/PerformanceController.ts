@@ -1,16 +1,32 @@
-import * as express from 'express';
-import { Models, PerformanceStatusesModel } from '@motionpicture/ttts-domain';
-import * as moment from 'moment';
-import * as conf from 'config';
+/**
+ * パフォーマンスコントローラー
+ *
+ * @namespace PerformanceController
+ */
 
+import { Models, PerformanceStatusesModel } from '@motionpicture/ttts-domain';
+
+import * as conf from 'config';
+import * as express from 'express';
+import * as moment from 'moment';
+
+const DEFAULT_RADIX = 10;
+
+/**
+ * 検索する
+ *
+ * @export
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
 export function search(req: express.Request, res: express.Response): void {
-    const limit: number | null = (req.query.limit) ? parseInt(req.query.limit) : null;
-    const page: number = (req.query.page) ? parseInt(req.query.page) : 1;
+    const limit: number | null = (req.query.limit) ? parseInt(req.query.limit, DEFAULT_RADIX) : null;
+    const page: number = (req.query.page) ? parseInt(req.query.page, DEFAULT_RADIX) : 1;
 
     const day: string = (req.query.day) ? req.query.day : null; // 上映日
     const section: string = (req.query.section) ? req.query.section : null; // 部門
     const words: string = (req.query.words) ? req.query.words : null; // フリーワード
-    const startFrom: number | null = (req.query.start_from) ? parseInt(req.query.start_from) : null; // この時間以降開始のパフォーマンスに絞る(timestamp milliseconds)
+    const startFrom: number | null = (req.query.start_from) ? parseInt(req.query.start_from, DEFAULT_RADIX) : null; // この時間以降開始のパフォーマンスに絞る(timestamp milliseconds)
     const theater: string = (req.query.theater) ? req.query.theater : null; // 劇場
     const screen: string = (req.query.screen) ? req.query.screen : null; // スクリーン
 
@@ -39,6 +55,7 @@ export function search(req: express.Request, res: express.Response): void {
 
     if (startFrom) {
         const now = moment(startFrom);
+        // tslint:disable-next-line:no-magic-numbers
         const tomorrow = moment(startFrom).add(+24, 'hours');
 
         andConditions.push({
@@ -59,6 +76,7 @@ export function search(req: express.Request, res: express.Response): void {
     }
 
     // 作品条件を追加する
+    // tslint:disable-next-line:max-func-body-length no-shadowed-variable
     addFilmConditions(andConditions, section, words, (err, andConditions) => {
         if (err) {
             res.json({
@@ -78,8 +96,8 @@ export function search(req: express.Request, res: express.Response): void {
         }
 
         // 作品件数取得
-        Models.Performance.distinct('film', conditions, (err, filmIds) => {
-            if (err) {
+        Models.Performance.distinct('film', conditions, (distinctErr, filmIds) => {
+            if (distinctErr) {
                 res.json({
                     success: false,
                     results: [],
@@ -92,8 +110,8 @@ export function search(req: express.Request, res: express.Response): void {
             // 総数検索
             Models.Performance.count(
                 conditions,
-                (err, performances_count) => {
-                    if (err) {
+                (countErr, performancesCount) => {
+                    if (countErr) {
                         res.json({
                             success: false,
                             results: [],
@@ -133,8 +151,8 @@ export function search(req: express.Request, res: express.Response): void {
                         }
                     });
 
-                    query.lean(true).exec((err, performances: any[]) => {
-                        if (err) {
+                    query.lean(true).exec((findPerformancesErr, performances: any[]) => {
+                        if (findPerformancesErr) {
                             res.json({
                                 success: false,
                                 results: [],
@@ -145,32 +163,33 @@ export function search(req: express.Request, res: express.Response): void {
                         }
 
                         // 空席情報を追加
-                        PerformanceStatusesModel.find((err, performanceStatusesModel) => {
-                            if (err) {
+                        PerformanceStatusesModel.find((findPerformanceStatusesErr, performanceStatuses) => {
+                            if (findPerformanceStatusesErr) {
+                                console.error(findPerformanceStatusesErr);
                             }
 
                             const results = performances.map((performance) => {
                                 return {
-                                    _id: performance['_id'],
-                                    day: performance['day'],
-                                    open_time: performance['open_time'],
-                                    start_time: performance['start_time'],
-                                    seat_status: (performanceStatusesModel) ? performanceStatusesModel.getStatus(performance['_id'].toString()) : null,
-                                    theater_name: performance['theater_name'][req.getLocale()],
-                                    screen_name: performance['screen_name'][req.getLocale()],
-                                    film_id: performance['film']['_id'],
-                                    film_name: performance['film']['name'][req.getLocale()],
-                                    film_sections: performance['film']['sections'].map((section: any) => section['name'][req.getLocale()]),
-                                    film_minutes: performance['film']['minutes'],
-                                    film_copyright: performance['film']['copyright'],
-                                    film_image: `https://${conf.get<string>('dns_name')}/images/film/${performance['film']['_id']}.jpg`
+                                    _id: performance._id,
+                                    day: performance.day,
+                                    open_time: performance.open_time,
+                                    start_time: performance.start_time,
+                                    seat_status: (performanceStatuses) ? performanceStatuses.getStatus(performance._id.toString()) : null,
+                                    theater_name: performance.theater_name[req.getLocale()],
+                                    screen_name: performance.screen_name[req.getLocale()],
+                                    film_id: performance.film._id,
+                                    film_name: performance.film.name[req.getLocale()],
+                                    film_sections: performance.film.sections.map((filmSection: any) => filmSection.name[req.getLocale()]),
+                                    film_minutes: performance.film.minutes,
+                                    film_copyright: performance.film.copyright,
+                                    film_image: `https://${conf.get<string>('dns_name')}/images/film/${performance.film._id}.jpg`
                                 };
                             });
 
                             res.json({
                                 success: true,
                                 results: results,
-                                performances_count: performances_count,
+                                performances_count: performancesCount,
                                 films_count: filmIds.length
                             });
                         });

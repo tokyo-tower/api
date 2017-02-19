@@ -31,10 +31,14 @@ class BaseController {
         });
         this.logger = log4js.getLogger('system');
     }
+    // tslint:disable-next-line:prefer-function-over-method
     shuffle(array) {
-        let m = array.length, t, i;
+        let m = array.length;
+        let t;
+        let i;
         while (m) {
-            m--;
+            m -= 1;
+            // tslint:disable-next-line:insecure-random
             i = Math.floor(Math.random() * m);
             t = array[m];
             array[m] = array[i];

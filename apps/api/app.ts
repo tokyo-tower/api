@@ -1,17 +1,26 @@
-import * as express from 'express';
+/**
+ * expressアプリケーション
+ *
+ * @module app
+ * @global
+ */
 import * as bodyParser from 'body-parser';
+import * as conf from 'config';
+import * as express from 'express';
+import * as i18n from 'i18n';
+import * as mongoose from 'mongoose';
+import * as passport from 'passport';
+import * as passportHttpBearer from 'passport-http-bearer';
+
+import { Models } from '@motionpicture/ttts-domain';
 import benchmarks from './middlewares/benchmarks';
 import cors from './middlewares/cors';
 import logger from './middlewares/logger';
-import * as conf from 'config';
-import * as mongoose from 'mongoose';
-import * as i18n from 'i18n';
-import * as passport from 'passport';
-import * as passportHttpBearer from 'passport-http-bearer';
-const BearerStrategy = passportHttpBearer.Strategy;
-import { Models } from '@motionpicture/ttts-domain';
 
-passport.use(new BearerStrategy(
+const bearerStrategy = passportHttpBearer.Strategy;
+const MONGOLAB_URI = conf.get<string>('mongolab_uri');
+
+passport.use(new bearerStrategy(
     (token, cb) => {
         Models.Authentication.findOne(
             {
@@ -70,9 +79,6 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-
-
-
 // i18n を利用する設定
 i18n.configure({
     locales: ['en', 'ja'],
@@ -84,46 +90,34 @@ i18n.configure({
 // i18n の設定を有効化
 app.use(i18n.init);
 
-
-
-
 // ルーティング
 import router from './routes/router';
 app.use('/', router);
-
-
-const MONGOLAB_URI = conf.get<string>('mongolab_uri');
 
 // Use native promises
 (<any>mongoose).Promise = global.Promise;
 mongoose.connect(MONGOLAB_URI, {});
 
-
-
-
-
 if (process.env.NODE_ENV !== 'prod') {
     const db = mongoose.connection;
-    db.on('connecting', function () {
+    db.on('connecting', () => {
         console.log('connecting');
     });
-    db.on('error', function (error: any) {
+    db.on('error', (error: any) => {
         console.error('Error in MongoDb connection: ', error);
     });
-    db.on('connected', function () {
+    db.on('connected', () => {
         console.log('connected.');
     });
-    db.once('open', function () {
+    db.once('open', () => {
         console.log('connection open.');
     });
-    db.on('reconnected', function () {
+    db.on('reconnected', () => {
         console.log('reconnected.');
     });
-    db.on('disconnected', function () {
+    db.on('disconnected', () => {
         console.log('disconnected.');
     });
 }
-
-
 
 export = app;

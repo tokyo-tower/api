@@ -1,3 +1,8 @@
+/**
+ * ロガーミドルウェア
+ *
+ * @module loggerMiddleware
+ */
 "use strict";
 const log4js = require("log4js");
 const env = process.env.NODE_ENV || 'dev';

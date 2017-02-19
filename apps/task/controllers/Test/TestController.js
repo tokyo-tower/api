@@ -1,15 +1,15 @@
 "use strict";
 const ttts_domain_1 = require("@motionpicture/ttts-domain");
+const ttts_domain_2 = require("@motionpicture/ttts-domain");
+const Util = require("../../../../common/Util/Util");
 const BaseController_1 = require("../BaseController");
+const conf = require("config");
+const fs = require("fs-extra");
+const moment = require("moment");
 const mongodb = require("mongodb");
 const mongoose = require("mongoose");
-const conf = require("config");
-const ttts_domain_2 = require("@motionpicture/ttts-domain");
-const Util_1 = require("../../../common/Util/Util");
-const fs = require("fs-extra");
-const request = require("request");
 const querystring = require("querystring");
-const moment = require("moment");
+const request = require("request");
 const MONGOLAB_URI = conf.get('mongolab_uri');
 /**
  * テストタスクコントローラー
@@ -29,8 +29,9 @@ class TestController extends BaseController_1.default {
     }
     checkFullWidthLetter() {
         const filmName = '作家性の萌芽　1999-2003 （細田守監督短編集）『劇場版デジモンアドベンチャー』『劇場版デジモンアドベンチャー　ぼくらのウォーゲーム！』『村上隆作品　SUPERFLAT MONOGRAM』『村上隆作品　The Creatures From Planet 66 ～Roppongi Hills Story～』『おジャ魔女どれみドッカ～ン！（40話）』『明日のナージャ（OP、ED）』';
-        const filmNameFullWidth = Util_1.default.toFullWidth(filmName);
+        const filmNameFullWidth = Util.toFullWidth(filmName);
         let registerDisp1 = '';
+        // tslint:disable-next-line:prefer-for-of no-increment-decrement
         for (let i = 0; i < filmNameFullWidth.length; i++) {
             const letter = filmNameFullWidth[i];
             if (letter.match(/[Ａ-Ｚａ-ｚ０-９]/)
@@ -41,7 +42,7 @@ class TestController extends BaseController_1.default {
                 registerDisp1 += letter;
             }
         }
-        console.log(registerDisp1);
+        this.logger.debug(registerDisp1);
         process.exit(0);
     }
     listIndexes() {
@@ -67,8 +68,8 @@ class TestController extends BaseController_1.default {
             ];
             const promises = collectionNames.map((collectionName) => {
                 return new Promise((resolve, reject) => {
-                    db.collection(collectionName).indexInformation((err, info) => {
-                        if (err)
+                    db.collection(collectionName).indexInformation((indexInfoErr, info) => {
+                        if (indexInfoErr)
                             return reject();
                         console.log(collectionName, 'indexInformation is', info);
                         resolve();
@@ -79,8 +80,8 @@ class TestController extends BaseController_1.default {
                 this.logger.info('promised.');
                 db.close();
                 process.exit(0);
-            }, (err) => {
-                this.logger.error('promised.', err);
+            }, (paromiseErr) => {
+                this.logger.error('promised.', paromiseErr);
                 db.close();
                 process.exit(0);
             });
@@ -92,11 +93,11 @@ class TestController extends BaseController_1.default {
         ttts_domain_1.Models.Reservation.count({}, (err, count) => {
             this.logger.info('count', err, count);
             const db4gmo = mongoose.createConnection(uri);
-            db4gmo.collection('reservations').count({}, (err, count) => {
-                this.logger.info('count', err, count);
+            db4gmo.collection('reservations').count({}, (err2, count2) => {
+                this.logger.info('count', err2, count2);
                 db4gmo.close();
-                ttts_domain_1.Models.Reservation.count({}, (err, count) => {
-                    this.logger.info('count', err, count);
+                ttts_domain_1.Models.Reservation.count({}, (err3, count3) => {
+                    this.logger.info('count', err3, count3);
                     mongoose.disconnect();
                     process.exit(0);
                 });
@@ -106,6 +107,7 @@ class TestController extends BaseController_1.default {
     /**
      * メール配信された購入番号リストを取得する
      */
+    // tslint:disable-next-line:prefer-function-over-method
     getPaymentNosWithEmail() {
         mongoose.connect(MONGOLAB_URI);
         ttts_domain_1.Models.GMONotification.distinct('order_id', {
@@ -116,7 +118,7 @@ class TestController extends BaseController_1.default {
             console.log('orderIds length is ', err, orderIds.length);
             const file = `${__dirname}/../../../../logs/${process.env.NODE_ENV}/orderIds.txt`;
             console.log(file);
-            fs.writeFileSync(file, orderIds.join("\n"), 'utf8');
+            fs.writeFileSync(file, orderIds.join('\n'), 'utf8');
             mongoose.disconnect();
             process.exit(0);
         });
@@ -151,8 +153,8 @@ class TestController extends BaseController_1.default {
             });
             mongoose.connect(MONGOLAB_URI);
             this.logger.info('creating ReservationEmailCues...length:', cues.length);
-            ttts_domain_1.Models.ReservationEmailCue.insertMany(cues, (err) => {
-                this.logger.info('ReservationEmailCues created.', err);
+            ttts_domain_1.Models.ReservationEmailCue.insertMany(cues, (insertErr) => {
+                this.logger.info('ReservationEmailCues created.', insertErr);
                 mongoose.disconnect();
                 process.exit(0);
             });
@@ -161,6 +163,7 @@ class TestController extends BaseController_1.default {
     /**
      * 座席解放
      */
+    // tslint:disable-next-line:prefer-function-over-method
     release() {
         mongoose.connect(MONGOLAB_URI);
         ttts_domain_1.Models.Reservation.count({

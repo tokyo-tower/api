@@ -3,8 +3,8 @@ const ttts_domain_1 = require("@motionpicture/ttts-domain");
 const ttts_domain_2 = require("@motionpicture/ttts-domain");
 const BaseController_1 = require("../BaseController");
 const conf = require("config");
-const mongoose = require("mongoose");
 const fs = require("fs-extra");
+const mongoose = require("mongoose");
 const MONGOLAB_URI = conf.get('mongolab_uri');
 /**
  * 劇場タスクコントローラー
@@ -30,7 +30,7 @@ class TheaterController extends BaseController_1.default {
                 seatsNumbersBySeatCode[ttts_domain_2.ScreenUtil.SEAT_GRADE_CODE_PREMIERE_LUXURY] = 0;
                 seatsNumbersBySeatCode[ttts_domain_2.ScreenUtil.SEAT_GRADE_CODE_FRONT_RECLINING] = 0;
                 screen.sections[0].seats.forEach((seat) => {
-                    seatsNumbersBySeatCode[seat.grade.code]++;
+                    seatsNumbersBySeatCode[seat.grade.code] += 1;
                 });
                 screen.seats_numbers_by_seat_grade = Object.keys(seatsNumbersBySeatCode).map((seatGradeCode) => {
                     return {
@@ -45,8 +45,8 @@ class TheaterController extends BaseController_1.default {
                     }, screen, {
                         new: true,
                         upsert: true
-                    }, (err) => {
-                        this.logger.debug('screen updated', err);
+                    }, (updateErr) => {
+                        this.logger.debug('screen updated', updateErr);
                         (err) ? reject(err) : resolve();
                     });
                 });
@@ -55,8 +55,8 @@ class TheaterController extends BaseController_1.default {
                 this.logger.info('promised.');
                 mongoose.disconnect();
                 process.exit(0);
-            }, (err) => {
-                this.logger.error('promised.', err);
+            }, (promiseErr) => {
+                this.logger.error('promised.', promiseErr);
                 mongoose.disconnect();
                 process.exit(0);
             });
@@ -76,8 +76,8 @@ class TheaterController extends BaseController_1.default {
                     }, theater, {
                         new: true,
                         upsert: true
-                    }, (err) => {
-                        this.logger.debug('theater updated', err);
+                    }, (updateErr) => {
+                        this.logger.debug('theater updated', updateErr);
                         (err) ? reject(err) : resolve();
                     });
                 });
@@ -86,8 +86,8 @@ class TheaterController extends BaseController_1.default {
                 this.logger.info('promised.');
                 mongoose.disconnect();
                 process.exit(0);
-            }, (err) => {
-                this.logger.error('promised.', err);
+            }, (promiseErr) => {
+                this.logger.error('promised.', promiseErr);
                 mongoose.disconnect();
                 process.exit(0);
             });

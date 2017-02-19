@@ -3,11 +3,11 @@ const ttts_domain_1 = require("@motionpicture/ttts-domain");
 const ttts_domain_2 = require("@motionpicture/ttts-domain");
 const ttts_domain_3 = require("@motionpicture/ttts-domain");
 const ttts_domain_4 = require("@motionpicture/ttts-domain");
-const GMOUtil_1 = require("../../../common/Util/GMO/GMOUtil");
+const GMOUtil = require("../../../../common/Util/GMO/GMOUtil");
 const BaseController_1 = require("../BaseController");
-const mongoose = require("mongoose");
 const conf = require("config");
 const moment = require("moment");
+const mongoose = require("mongoose");
 const MONGOLAB_URI = conf.get('mongolab_uri');
 const MONGOLAB_URI_FOR_GMO = conf.get('mongolab_uri_for_gmo');
 /**
@@ -24,14 +24,16 @@ class GMOController extends BaseController_1.default {
     watch() {
         mongoose.connect(MONGOLAB_URI);
         let count = 0;
+        const INTERVAL_MILLISECONDS = 500;
+        const MAX_NUMBER_OF_PARALLEL_TASK = 10;
         setInterval(() => {
-            if (count > 10)
+            if (count > MAX_NUMBER_OF_PARALLEL_TASK)
                 return;
-            count++;
+            count += 1;
             this.processOne(() => {
-                count--;
+                count -= 1;
             });
-        }, 500);
+        }, INTERVAL_MILLISECONDS);
     }
     /**
      * GMO結果通知を処理する
@@ -57,23 +59,25 @@ class GMOController extends BaseController_1.default {
             this.logger.info('finding reservations...payment_no:', notification.order_id);
             ttts_domain_1.Models.Reservation.find({
                 payment_no: notification.order_id
-            }, (err, reservations) => {
-                this.logger.info('reservations found.', err, reservations.length);
-                if (err)
-                    return this.next(err, notification, cb);
+            }, 
+            // tslint:disable-next-line:max-func-body-length
+            (findReservationErr, reservations) => {
+                this.logger.info('reservations found.', findReservationErr, reservations.length);
+                if (findReservationErr)
+                    return this.next(findReservationErr, notification, cb);
                 if (reservations.length === 0)
                     return this.next(null, notification, cb);
                 // チェック文字列
-                const shopPassString = GMOUtil_1.default.createShopPassString(notification.shop_id, notification.order_id, notification.amount, conf.get('gmo_payment_shop_password'), moment(reservations[0].get('purchased_at')).format('YYYYMMDDHHmmss'));
+                const shopPassString = GMOUtil.createShopPassString(notification.shop_id, notification.order_id, notification.amount, conf.get('gmo_payment_shop_password'), moment(reservations[0].get('purchased_at')).format('YYYYMMDDHHmmss'));
                 this.logger.info('shopPassString must be ', reservations[0].get('gmo_shop_pass_string'));
                 if (shopPassString !== reservations[0].get('gmo_shop_pass_string')) {
                     // 不正な結果通知なので、処理済みにする
                     return this.next(null, notification, cb);
                 }
                 // クレジットカード決済の場合
-                if (notification.pay_type === GMOUtil_1.default.PAY_TYPE_CREDIT) {
+                if (notification.pay_type === GMOUtil.PAY_TYPE_CREDIT) {
                     switch (notification.status) {
-                        case GMOUtil_1.default.STATUS_CREDIT_CAPTURE:
+                        case GMOUtil.STATUS_CREDIT_CAPTURE:
                             // 予約完了ステータスへ変更
                             this.logger.info('updating reservations by paymentNo...', notification.order_id);
                             ttts_domain_1.Models.Reservation.update({ payment_no: notification.order_id }, {
@@ -90,10 +94,10 @@ class GMOController extends BaseController_1.default {
                                 gmo_status: notification.status,
                                 status: ttts_domain_2.ReservationUtil.STATUS_RESERVED,
                                 updated_user: 'system'
-                            }, { multi: true }, (err, raw) => {
-                                this.logger.info('reservations updated.', err, raw);
-                                if (err)
-                                    return this.next(err, notification, cb);
+                            }, { multi: true }, (updateErr, raw) => {
+                                this.logger.info('reservations updated.', updateErr, raw);
+                                if (updateErr)
+                                    return this.next(updateErr, notification, cb);
                                 // 完了メールキュー追加(あれば更新日時を更新するだけ)
                                 this.logger.info('creating reservationEmailCue...');
                                 ttts_domain_1.Models.ReservationEmailCue.findOneAndUpdate({
@@ -105,41 +109,41 @@ class GMOController extends BaseController_1.default {
                                 }, {
                                     upsert: true,
                                     new: true
-                                }, (err, cue) => {
-                                    this.logger.info('reservationEmailCue created.', err, cue);
-                                    if (err)
-                                        return this.next(err, notification, cb);
+                                }, (updateEmailCueErr, cue) => {
+                                    this.logger.info('reservationEmailCue created.', updateEmailCueErr, cue);
+                                    if (updateEmailCueErr)
+                                        return this.next(updateEmailCueErr, notification, cb);
                                     // あったにせよなかったにせよ処理済に
                                     this.next(null, notification, cb);
                                 });
                             });
                             break;
-                        case GMOUtil_1.default.STATUS_CREDIT_UNPROCESSED:
+                        case GMOUtil.STATUS_CREDIT_UNPROCESSED:
                             // 未決済の場合、放置
                             // ユーザーが「戻る」フローでキャンセルされる、あるいは、時間経過で空席になる
                             this.next(null, notification, cb);
                             break;
-                        case GMOUtil_1.default.STATUS_CREDIT_AUTHENTICATED:
-                        case GMOUtil_1.default.STATUS_CREDIT_CHECK:
+                        case GMOUtil.STATUS_CREDIT_AUTHENTICATED:
+                        case GMOUtil.STATUS_CREDIT_CHECK:
                             this.next(null, notification, cb);
                             break;
-                        case GMOUtil_1.default.STATUS_CREDIT_AUTH:
+                        case GMOUtil.STATUS_CREDIT_AUTH:
                             this.next(null, notification, cb);
                             break;
-                        case GMOUtil_1.default.STATUS_CREDIT_SALES:
+                        case GMOUtil.STATUS_CREDIT_SALES:
                             this.next(null, notification, cb);
                             break;
-                        case GMOUtil_1.default.STATUS_CREDIT_VOID:
+                        case GMOUtil.STATUS_CREDIT_VOID:
                             // 空席に戻さない(つくったけれども、連動しない方向で仕様決定)
                             this.next(null, notification, cb);
                             break;
-                        case GMOUtil_1.default.STATUS_CREDIT_RETURN:
+                        case GMOUtil.STATUS_CREDIT_RETURN:
                             this.next(null, notification, cb);
                             break;
-                        case GMOUtil_1.default.STATUS_CREDIT_RETURNX:
+                        case GMOUtil.STATUS_CREDIT_RETURNX:
                             this.next(null, notification, cb);
                             break;
-                        case GMOUtil_1.default.STATUS_CREDIT_SAUTH:
+                        case GMOUtil.STATUS_CREDIT_SAUTH:
                             this.next(null, notification, cb);
                             break;
                         default:
@@ -147,18 +151,18 @@ class GMOController extends BaseController_1.default {
                             break;
                     }
                 }
-                else if (notification.pay_type === GMOUtil_1.default.PAY_TYPE_CVS) {
+                else if (notification.pay_type === GMOUtil.PAY_TYPE_CVS) {
                     switch (notification.status) {
-                        case GMOUtil_1.default.STATUS_CVS_PAYSUCCESS:
+                        case GMOUtil.STATUS_CVS_PAYSUCCESS:
                             // 予約完了ステータスへ変更
                             this.logger.info('updating reservations by paymentNo...', notification.order_id);
                             ttts_domain_1.Models.Reservation.update({ payment_no: notification.order_id }, {
                                 status: ttts_domain_2.ReservationUtil.STATUS_RESERVED,
                                 updated_user: 'system'
-                            }, { multi: true }, (err, raw) => {
-                                this.logger.info('reservations updated.', err, raw);
-                                if (err)
-                                    return this.next(err, notification, cb);
+                            }, { multi: true }, (updateErr, raw) => {
+                                this.logger.info('reservations updated.', updateErr, raw);
+                                if (updateErr)
+                                    return this.next(updateErr, notification, cb);
                                 // 完了メールキュー追加(あれば更新日時を更新するだけ)
                                 this.logger.info('creating reservationEmailCue...');
                                 ttts_domain_1.Models.ReservationEmailCue.findOneAndUpdate({
@@ -170,16 +174,16 @@ class GMOController extends BaseController_1.default {
                                 }, {
                                     upsert: true,
                                     new: true
-                                }, (err, cue) => {
-                                    this.logger.info('reservationEmailCue created.', err, cue);
-                                    if (err)
-                                        return this.next(err, notification, cb);
+                                }, (updateEmailCueErr, cue) => {
+                                    this.logger.info('reservationEmailCue created.', updateEmailCueErr, cue);
+                                    if (updateEmailCueErr)
+                                        return this.next(updateEmailCueErr, notification, cb);
                                     // あったにせよなかったにせよ処理済に
                                     this.next(null, notification, cb);
                                 });
                             });
                             break;
-                        case GMOUtil_1.default.STATUS_CVS_REQSUCCESS:
+                        case GMOUtil.STATUS_CVS_REQSUCCESS:
                             // GMOパラメータを予約に追加
                             this.logger.info('updating reservations by paymentNo...', notification.order_id);
                             ttts_domain_1.Models.Reservation.update({ payment_no: notification.order_id }, {
@@ -191,10 +195,10 @@ class GMOController extends BaseController_1.default {
                                 gmo_cvs_receipt_no: notification.cvs_receipt_no,
                                 gmo_payment_term: notification.payment_term,
                                 updated_user: 'system'
-                            }, { multi: true }, (err, raw) => {
-                                this.logger.info('reservations updated.', err, raw);
-                                if (err)
-                                    return this.next(err, notification, cb);
+                            }, { multi: true }, (updateErr, raw) => {
+                                this.logger.info('reservations updated.', updateErr, raw);
+                                if (updateErr)
+                                    return this.next(updateErr, notification, cb);
                                 // 仮予約完了メールキュー追加(あれば更新日時を更新するだけ)
                                 this.logger.info('creating reservationEmailCue...');
                                 ttts_domain_1.Models.ReservationEmailCue.findOneAndUpdate({
@@ -206,46 +210,46 @@ class GMOController extends BaseController_1.default {
                                 }, {
                                     upsert: true,
                                     new: true
-                                }, (err, cue) => {
-                                    this.logger.info('reservationEmailCue created.', err, cue);
-                                    if (err)
-                                        return this.next(err, notification, cb);
+                                }, (updateEmailCueErr, cue) => {
+                                    this.logger.info('reservationEmailCue created.', updateEmailCueErr, cue);
+                                    if (updateEmailCueErr)
+                                        return this.next(updateEmailCueErr, notification, cb);
                                     // あったにせよなかったにせよ処理済に
                                     this.next(null, notification, cb);
                                 });
                             });
                             break;
-                        case GMOUtil_1.default.STATUS_CVS_UNPROCESSED:
+                        case GMOUtil.STATUS_CVS_UNPROCESSED:
                             this.next(null, notification, cb);
                             break;
-                        case GMOUtil_1.default.STATUS_CVS_PAYFAIL: // 決済失敗
-                        case GMOUtil_1.default.STATUS_CVS_CANCEL:
+                        case GMOUtil.STATUS_CVS_PAYFAIL: // 決済失敗
+                        case GMOUtil.STATUS_CVS_CANCEL:
                             // 空席に戻す
                             this.logger.info('removing reservations...payment_no:', notification.order_id);
                             const promises = reservations.map((reservation) => {
                                 return new Promise((resolve, reject) => {
                                     this.logger.info('removing reservation...', reservation.get('_id'));
-                                    reservation.remove((err) => {
-                                        this.logger.info('reservation removed.', reservation.get('_id'), err);
-                                        (err) ? reject(err) : resolve();
+                                    reservation.remove((removeErr) => {
+                                        this.logger.info('reservation removed.', reservation.get('_id'), removeErr);
+                                        (removeErr) ? reject(removeErr) : resolve();
                                     });
                                 });
                             });
                             Promise.all(promises).then(() => {
                                 // processedフラグをたてる
                                 this.next(null, notification, cb);
-                            }, (err) => {
-                                this.next(err, notification, cb);
+                            }, (promiseErr) => {
+                                this.next(promiseErr, notification, cb);
                             });
                             break;
-                        case GMOUtil_1.default.STATUS_CVS_EXPIRED:
+                        case GMOUtil.STATUS_CVS_EXPIRED:
                             // 内部で確保する仕様の場合
                             ttts_domain_1.Models.Staff.findOne({
                                 user_id: '2016sagyo2'
-                            }, (err, staff) => {
-                                this.logger.info('staff found.', err, staff);
-                                if (err)
-                                    return this.next(err, notification, cb);
+                            }, (findStaffErr, staff) => {
+                                this.logger.info('staff found.', findStaffErr, staff);
+                                if (findStaffErr)
+                                    return this.next(findStaffErr, notification, cb);
                                 this.logger.info('updating reservations...');
                                 ttts_domain_1.Models.Reservation.update({
                                     payment_no: notification.order_id
@@ -268,9 +272,9 @@ class GMOController extends BaseController_1.default {
                                     watcher_name: ''
                                 }, {
                                     multi: true
-                                }, (err, raw) => {
-                                    this.logger.info('updated.', err, raw);
-                                    this.next(err, notification, cb);
+                                }, (updateErr, raw) => {
+                                    this.logger.info('updated.', updateErr, raw);
+                                    this.next(updateErr, notification, cb);
                                 });
                             });
                             // 何もしない仕様の場合
@@ -307,8 +311,8 @@ class GMOController extends BaseController_1.default {
             $set: {
                 process_status: status
             }
-        }, (err, result) => {
-            this.logger.info('notification saved.', err, result);
+        }, (updateGmoNotificationErr, result) => {
+            this.logger.info('notification saved.', updateGmoNotificationErr, result);
             db4gmo.close();
             cb();
         });

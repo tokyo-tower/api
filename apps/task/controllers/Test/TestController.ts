@@ -1,14 +1,15 @@
 import { Models } from '@motionpicture/ttts-domain';
+import { ReservationUtil } from '@motionpicture/ttts-domain';
+import * as Util from '../../../../common/Util/Util';
 import BaseController from '../BaseController';
+
+import * as conf from 'config';
+import * as fs from 'fs-extra';
+import * as moment from 'moment';
 import * as mongodb from 'mongodb';
 import * as mongoose from 'mongoose';
-import * as conf from 'config';
-import { ReservationUtil } from '@motionpicture/ttts-domain';
-import Util from '../../../common/Util/Util';
-import * as fs from 'fs-extra';
-import * as request from 'request';
 import * as querystring from 'querystring';
-import * as moment from 'moment';
+import * as request from 'request';
 
 const MONGOLAB_URI = conf.get<string>('mongolab_uri');
 
@@ -33,6 +34,7 @@ export default class TestController extends BaseController {
         const filmName = '作家性の萌芽　1999-2003 （細田守監督短編集）『劇場版デジモンアドベンチャー』『劇場版デジモンアドベンチャー　ぼくらのウォーゲーム！』『村上隆作品　SUPERFLAT MONOGRAM』『村上隆作品　The Creatures From Planet 66 ～Roppongi Hills Story～』『おジャ魔女どれみドッカ～ン！（40話）』『明日のナージャ（OP、ED）』';
         const filmNameFullWidth = Util.toFullWidth(filmName);
         let registerDisp1 = '';
+        // tslint:disable-next-line:prefer-for-of no-increment-decrement
         for (let i = 0; i < filmNameFullWidth.length; i++) {
             const letter = filmNameFullWidth[i];
             if (
@@ -44,7 +46,7 @@ export default class TestController extends BaseController {
                 registerDisp1 += letter;
             }
         }
-        console.log(registerDisp1);
+        this.logger.debug(registerDisp1);
 
         process.exit(0);
     }
@@ -73,8 +75,8 @@ export default class TestController extends BaseController {
 
             const promises = collectionNames.map((collectionName) => {
                 return new Promise((resolve, reject) => {
-                    db.collection(collectionName).indexInformation((err, info) => {
-                        if (err) return reject();
+                    db.collection(collectionName).indexInformation((indexInfoErr, info) => {
+                        if (indexInfoErr) return reject();
 
                         console.log(collectionName, 'indexInformation is', info);
                         resolve();
@@ -82,61 +84,74 @@ export default class TestController extends BaseController {
                 });
             });
 
-            Promise.all(promises).then(() => {
-                this.logger.info('promised.');
-                db.close();
-                process.exit(0);
-            }, (err) => {
-                this.logger.error('promised.', err);
-                db.close();
-                process.exit(0);
-            });
+            Promise.all(promises).then(
+                () => {
+                    this.logger.info('promised.');
+                    db.close();
+                    process.exit(0);
+                },
+                (paromiseErr) => {
+                    this.logger.error('promised.', paromiseErr);
+                    db.close();
+                    process.exit(0);
+                }
+            );
         });
     }
 
     public testCreateConnection(): void {
         const uri = 'mongodb://dev4gmotiffmlabmongodbuser:Yrpx-rPjr_Qjx79_R4HaknsfMEbyrQjp4NiF-XKj@ds048719.mlab.com:48719/dev4gmotiffmlabmongodb';
         mongoose.connect(MONGOLAB_URI, {});
-        Models.Reservation.count({
-        }, (err, count) => {
-            this.logger.info('count', err, count);
-
-            const db4gmo = mongoose.createConnection(uri);
-            db4gmo.collection('reservations').count({
-            }, (err, count) => {
+        Models.Reservation.count(
+            {},
+            (err, count) => {
                 this.logger.info('count', err, count);
-                db4gmo.close();
 
-                Models.Reservation.count({
-                }, (err, count) => {
-                    this.logger.info('count', err, count);
+                const db4gmo = mongoose.createConnection(uri);
+                db4gmo.collection('reservations').count(
+                    {},
+                    (err2, count2) => {
+                        this.logger.info('count', err2, count2);
+                        db4gmo.close();
 
-                    mongoose.disconnect();
-                    process.exit(0);
-                });
-            });
-        });
+                        Models.Reservation.count(
+                            {},
+                            (err3, count3) => {
+                                this.logger.info('count', err3, count3);
+
+                                mongoose.disconnect();
+                                process.exit(0);
+                            }
+                        );
+                    }
+                );
+            }
+        );
     }
 
     /**
      * メール配信された購入番号リストを取得する
      */
+    // tslint:disable-next-line:prefer-function-over-method
     public getPaymentNosWithEmail(): void {
         mongoose.connect(MONGOLAB_URI);
-        Models.GMONotification.distinct('order_id', {
-            // status:{$in:["CAPTURE","PAYSUCCESS"]},
-            status: { $in: ['PAYSUCCESS'] },
-            processed: true
-        }, (err, orderIds) => {
-            console.log('orderIds length is ', err, orderIds.length);
-            const file = `${__dirname}/../../../../logs/${process.env.NODE_ENV}/orderIds.txt`;
-            console.log(file);
-            fs.writeFileSync(file, orderIds.join("\n"), 'utf8');
+        Models.GMONotification.distinct(
+            'order_id',
+            {
+                // status:{$in:["CAPTURE","PAYSUCCESS"]},
+                status: { $in: ['PAYSUCCESS'] },
+                processed: true
+            },
+            (err, orderIds) => {
+                console.log('orderIds length is ', err, orderIds.length);
+                const file = `${__dirname}/../../../../logs/${process.env.NODE_ENV}/orderIds.txt`;
+                console.log(file);
+                fs.writeFileSync(file, orderIds.join('\n'), 'utf8');
 
-            mongoose.disconnect();
-            process.exit(0);
-        });
-
+                mongoose.disconnect();
+                process.exit(0);
+            }
+        );
 
         // fs.readFile(`${process.cwd()}/logs/${process.env.NODE_ENV}/orderIds.json`, 'utf8', (err, data) => {
         //     console.log(err);
@@ -175,8 +190,8 @@ export default class TestController extends BaseController {
 
             mongoose.connect(MONGOLAB_URI);
             this.logger.info('creating ReservationEmailCues...length:', cues.length);
-            Models.ReservationEmailCue.insertMany(cues, (err) => {
-                this.logger.info('ReservationEmailCues created.', err);
+            Models.ReservationEmailCue.insertMany(cues, (insertErr) => {
+                this.logger.info('ReservationEmailCues created.', insertErr);
 
                 mongoose.disconnect();
                 process.exit(0);
@@ -187,40 +202,49 @@ export default class TestController extends BaseController {
     /**
      * 座席解放
      */
+    // tslint:disable-next-line:prefer-function-over-method
     public release(): void {
         mongoose.connect(MONGOLAB_URI);
-        Models.Reservation.count({
-            status: ReservationUtil.STATUS_KEPT_BY_TTTS
-        }, (err, count) => {
-            console.log(err, count);
-            // Models.Reservation.remove({
-            //     status: ReservationUtil.STATUS_KEPT_BY_TTTS
-            // }, (err) => {
-            //     console.log(err);
-            mongoose.disconnect();
-            process.exit(0);
-            // });
-        });
+        Models.Reservation.count(
+            {
+                status: ReservationUtil.STATUS_KEPT_BY_TTTS
+            },
+            (err, count) => {
+                console.log(err, count);
+                // Models.Reservation.remove({
+                //     status: ReservationUtil.STATUS_KEPT_BY_TTTS
+                // }, (err) => {
+                //     console.log(err);
+                mongoose.disconnect();
+                process.exit(0);
+                // });
+            }
+        );
     }
 
     public gmoNotificationProcessing2unprocess(): void {
         mongoose.connect(MONGOLAB_URI);
 
         this.logger.info('updating GMONotification...');
-        Models.GMONotification.update({
-            process_status: 'PROCESSING',
-            updated_at: {
-                $lt: moment().add(-1, 'hour').toISOString()
-            }
-        }, {
+        Models.GMONotification.update(
+            {
+                process_status: 'PROCESSING',
+                updated_at: {
+                    $lt: moment().add(-1, 'hour').toISOString()
+                }
+            },
+            {
                 process_status: 'UNPROCESSED'
-            }, {
+            },
+            {
                 multi: true
-            }, (err, raw) => {
+            },
+            (err, raw) => {
                 this.logger.info('GMONotification updated.', err, raw);
                 mongoose.disconnect();
                 process.exit(0);
-            });
+            }
+        );
     }
 
     public getBounces(): void {
@@ -231,14 +255,17 @@ export default class TestController extends BaseController {
             // start_date: "2016-10-18",
             // end_date: "2016-10-19"
         });
-        request.get({
-            url: `https://api.sendgrid.com/api/bounces.get.json?${query}`
-            // url: `https://api.sendgrid.com/api/blocks.get.json?${query}`
-            // url: `https://api.sendgrid.com/api/invalidemails.get.json?${query}`
-            // url: `https://api.sendgrid.com/api/spamreports.get.json?${query}`
-        }, (error, response, body) => {
-            this.logger.info('request processed.', error, response, body);
-            process.exit(0);
-        });
+        request.get(
+            {
+                url: `https://api.sendgrid.com/api/bounces.get.json?${query}`
+                // url: `https://api.sendgrid.com/api/blocks.get.json?${query}`
+                // url: `https://api.sendgrid.com/api/invalidemails.get.json?${query}`
+                // url: `https://api.sendgrid.com/api/spamreports.get.json?${query}`
+            },
+            (error, response, body) => {
+                this.logger.info('request processed.', error, response, body);
+                process.exit(0);
+            }
+        );
     }
 }

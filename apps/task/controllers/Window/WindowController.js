@@ -1,11 +1,11 @@
 "use strict";
 const ttts_domain_1 = require("@motionpicture/ttts-domain");
-const Util_1 = require("../../../common/Util/Util");
+const Util = require("../../../../common/Util/Util");
 const BaseController_1 = require("../BaseController");
 const conf = require("config");
-const mongoose = require("mongoose");
-const fs = require("fs-extra");
 const crypto = require("crypto");
+const fs = require("fs-extra");
+const mongoose = require("mongoose");
 const MONGOLAB_URI = conf.get('mongolab_uri');
 /**
  * 当日窓口アカウントタスクコントローラー
@@ -23,18 +23,19 @@ class WindowController extends BaseController_1.default {
             let windows = JSON.parse(data);
             // パスワードハッシュ化
             windows = windows.map((window) => {
-                const password_salt = crypto.randomBytes(64).toString('hex');
-                window.password_salt = password_salt;
-                window.password_hash = Util_1.default.createHash(window.password, password_salt);
+                const SIZE = 64;
+                const passwordSalt = crypto.randomBytes(SIZE).toString('hex');
+                window.password_salt = passwordSalt;
+                window.password_hash = Util.createHash(window.password, passwordSalt);
                 return window;
             });
             this.logger.info('removing all windows...');
-            ttts_domain_1.Models.Window.remove({}, (err) => {
-                if (err)
-                    throw err;
+            ttts_domain_1.Models.Window.remove({}, (removeErr) => {
+                if (removeErr)
+                    throw removeErr;
                 this.logger.debug('creating windows...');
-                ttts_domain_1.Models.Window.create(windows, (err) => {
-                    this.logger.info('windows created.', err);
+                ttts_domain_1.Models.Window.create(windows, (createErr) => {
+                    this.logger.info('windows created.', createErr);
                     mongoose.disconnect();
                     process.exit(0);
                 });

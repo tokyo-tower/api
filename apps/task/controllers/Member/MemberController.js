@@ -1,11 +1,11 @@
 "use strict";
 const ttts_domain_1 = require("@motionpicture/ttts-domain");
-const Util_1 = require("../../../common/Util/Util");
+const Util = require("../../../../common/Util/Util");
 const BaseController_1 = require("../BaseController");
 const conf = require("config");
-const mongoose = require("mongoose");
-const fs = require("fs-extra");
 const crypto = require("crypto");
+const fs = require("fs-extra");
+const mongoose = require("mongoose");
 const MONGOLAB_URI = conf.get('mongolab_uri');
 /**
  * メルマガ会員タスクコントローラー
@@ -23,20 +23,21 @@ class MemberController extends BaseController_1.default {
             let members = JSON.parse(data);
             // パスワードハッシュ化
             members = members.map((member) => {
-                const password_salt = crypto.randomBytes(64).toString('hex');
+                const SIZE = 64;
+                const passwordSalt = crypto.randomBytes(SIZE).toString('hex');
                 return {
                     user_id: member.user_id,
-                    password_salt: password_salt,
-                    password_hash: Util_1.default.createHash(member.password, password_salt)
+                    password_salt: passwordSalt,
+                    password_hash: Util.createHash(member.password, passwordSalt)
                 };
             });
             this.logger.info('removing all members...');
-            ttts_domain_1.Models.Member.remove({}, (err) => {
-                if (err)
-                    throw err;
+            ttts_domain_1.Models.Member.remove({}, (removeErr) => {
+                if (removeErr)
+                    throw removeErr;
                 this.logger.debug('creating members...');
-                ttts_domain_1.Models.Member.create(members, (err) => {
-                    this.logger.info('members created.', err);
+                ttts_domain_1.Models.Member.create(members, (createErr) => {
+                    this.logger.info('members created.', createErr);
                     mongoose.disconnect();
                     process.exit(0);
                 });
@@ -57,14 +58,14 @@ class MemberController extends BaseController_1.default {
                     ttts_domain_1.Models.Reservation.remove({
                         performance: reservationFromJson.performance,
                         seat_code: reservationFromJson.seat_code
-                    }, (err) => {
-                        this.logger.info('reservation removed.', err);
-                        if (err)
-                            return reject(err);
+                    }, (removeErr) => {
+                        this.logger.info('reservation removed.', removeErr);
+                        if (removeErr)
+                            return reject(removeErr);
                         this.logger.info('creating reservationFromJson...', reservationFromJson);
-                        ttts_domain_1.Models.Reservation.create(reservationFromJson, (err) => {
-                            this.logger.info('reservationFromJson created.', err);
-                            (err) ? reject(err) : resolve();
+                        ttts_domain_1.Models.Reservation.create(reservationFromJson, (createErr) => {
+                            this.logger.info('reservationFromJson created.', createErr);
+                            (createErr) ? reject(createErr) : resolve();
                         });
                     });
                 });
@@ -73,8 +74,8 @@ class MemberController extends BaseController_1.default {
                 this.logger.info('promised.');
                 mongoose.disconnect();
                 process.exit(0);
-            }).catch((err) => {
-                this.logger.info('promised.', err);
+            }).catch((promiseErr) => {
+                this.logger.info('promised.', promiseErr);
                 mongoose.disconnect();
                 process.exit(0);
             });

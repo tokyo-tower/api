@@ -1,10 +1,11 @@
-import {Models} from '@motionpicture/ttts-domain';
-import Util from '../../../common/Util/Util';
+import { Models } from '@motionpicture/ttts-domain';
+import * as Util from '../../../../common/Util/Util';
 import BaseController from '../BaseController';
+
 import * as conf from 'config';
-import * as mongoose from 'mongoose';
-import * as fs from 'fs-extra';
 import * as crypto from 'crypto';
+import * as fs from 'fs-extra';
+import * as mongoose from 'mongoose';
 
 const MONGOLAB_URI = conf.get<string>('mongolab_uri');
 
@@ -25,15 +26,16 @@ export default class TelController extends BaseController {
 
             // パスワードハッシュ化
             telStaffs = telStaffs.map((telStaff) => {
-                const password_salt = crypto.randomBytes(64).toString('hex');
-                telStaff.password_salt = password_salt;
-                telStaff.password_hash = Util.createHash(telStaff.password, password_salt);
+                const SIZE = 64;
+                const passwordSalt = crypto.randomBytes(SIZE).toString('hex');
+                telStaff.password_salt = passwordSalt;
+                telStaff.password_hash = Util.createHash(telStaff.password, passwordSalt);
                 return telStaff;
             });
 
             this.logger.info('removing all telStaffs...');
-            Models.TelStaff.remove({}, (err) => {
-                if (err) {
+            Models.TelStaff.remove({}, (removeErr) => {
+                if (removeErr) {
                     this.logger.info('telStaffs removed.', err);
                     mongoose.disconnect();
                     process.exit(0);
@@ -43,8 +45,8 @@ export default class TelController extends BaseController {
                 this.logger.debug('creating telStaffs...');
                 Models.TelStaff.create(
                     telStaffs,
-                    (err) => {
-                        this.logger.info('telStaffs created.', err);
+                    (createErr) => {
+                        this.logger.info('telStaffs created.', createErr);
                         mongoose.disconnect();
                         process.exit(0);
                     }

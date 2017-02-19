@@ -1,11 +1,11 @@
 "use strict";
 const ttts_domain_1 = require("@motionpicture/ttts-domain");
-const Util_1 = require("../../../common/Util/Util");
+const Util = require("../../../../common/Util/Util");
 const BaseController_1 = require("../BaseController");
 const conf = require("config");
-const mongoose = require("mongoose");
-const fs = require("fs-extra");
 const crypto = require("crypto");
+const fs = require("fs-extra");
+const mongoose = require("mongoose");
 const MONGOLAB_URI = conf.get('mongolab_uri');
 /**
  * 電話窓口タスクコントローラー
@@ -23,22 +23,23 @@ class TelController extends BaseController_1.default {
             let telStaffs = JSON.parse(data);
             // パスワードハッシュ化
             telStaffs = telStaffs.map((telStaff) => {
-                const password_salt = crypto.randomBytes(64).toString('hex');
-                telStaff.password_salt = password_salt;
-                telStaff.password_hash = Util_1.default.createHash(telStaff.password, password_salt);
+                const SIZE = 64;
+                const passwordSalt = crypto.randomBytes(SIZE).toString('hex');
+                telStaff.password_salt = passwordSalt;
+                telStaff.password_hash = Util.createHash(telStaff.password, passwordSalt);
                 return telStaff;
             });
             this.logger.info('removing all telStaffs...');
-            ttts_domain_1.Models.TelStaff.remove({}, (err) => {
-                if (err) {
+            ttts_domain_1.Models.TelStaff.remove({}, (removeErr) => {
+                if (removeErr) {
                     this.logger.info('telStaffs removed.', err);
                     mongoose.disconnect();
                     process.exit(0);
                     return;
                 }
                 this.logger.debug('creating telStaffs...');
-                ttts_domain_1.Models.TelStaff.create(telStaffs, (err) => {
-                    this.logger.info('telStaffs created.', err);
+                ttts_domain_1.Models.TelStaff.create(telStaffs, (createErr) => {
+                    this.logger.info('telStaffs created.', createErr);
                     mongoose.disconnect();
                     process.exit(0);
                 });
