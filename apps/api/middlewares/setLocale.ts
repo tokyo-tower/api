@@ -1,4 +1,4 @@
-import express = require('express');
+import * as express from 'express';
 
 export default (req: express.Request, _res: express.Response, next: express.NextFunction) => {
     // TODO URLパラメータで言語管理

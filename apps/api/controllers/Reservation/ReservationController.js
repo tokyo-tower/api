@@ -7,9 +7,13 @@ const validator = require("validator");
 const qr = require("qr-image");
 const moment = require("moment");
 const fs = require("fs-extra");
+/**
+ * 予約情報メールを送信する
+ */
 function email(req, res) {
-    let id = req.body.id;
-    let to = req.body.to;
+    const id = req.body.id;
+    const to = req.body.to;
+    // メールアドレスの有効性チェック
     if (!validator.isEmail(to)) {
         res.json({
             success: false,
@@ -35,8 +39,8 @@ function email(req, res) {
             });
             return;
         }
-        let title_ja = `${reservation.get('purchaser_name_ja')}様より東京タワーのチケットが届いております`;
-        let title_en = `This is a notification that you have been invited to Tokyo International Film Festival by Mr./Ms. ${reservation.get('purchaser_name_en')}.`;
+        const title_ja = `${reservation.get('purchaser_name_ja')}様より東京タワーのチケットが届いております`;
+        const title_en = `This is a notification that you have been invited to Tokyo International Film Festival by Mr./Ms. ${reservation.get('purchaser_name_en')}.`;
         res.render('email/resevation', {
             layout: false,
             reservations: [reservation],
@@ -54,16 +58,17 @@ function email(req, res) {
                 });
                 return;
             }
-            let mail = new sendgrid.mail.Mail(new sendgrid.mail.Email(conf.get('email.from'), conf.get('email.fromname')), `${title_ja} ${title_en}`, new sendgrid.mail.Email(to), new sendgrid.mail.Content("text/html", html));
-            let reservationId = reservation.get('_id').toString();
-            let attachmentQR = new sendgrid.mail.Attachment();
+            const mail = new sendgrid.mail.Mail(new sendgrid.mail.Email(conf.get('email.from'), conf.get('email.fromname')), `${title_ja} ${title_en}`, new sendgrid.mail.Email(to), new sendgrid.mail.Content('text/html', html));
+            const reservationId = reservation.get('_id').toString();
+            const attachmentQR = new sendgrid.mail.Attachment();
             attachmentQR.setFilename(`QR_${reservationId}.png`);
             attachmentQR.setType('image/png');
             attachmentQR.setContent(qr.imageSync(reservation.get('qr_str'), { type: 'png' }).toString('base64'));
             attachmentQR.setDisposition('inline');
             attachmentQR.setContentId(`qrcode_${reservationId}`);
             mail.addAttachment(attachmentQR);
-            let attachment = new sendgrid.mail.Attachment();
+            // logo
+            const attachment = new sendgrid.mail.Attachment();
             attachment.setFilename(`logo.png`);
             attachment.setType('image/png');
             attachment.setContent(fs.readFileSync(`${__dirname}/../../../../public/images/email/logo.png`).toString('base64'));
@@ -71,16 +76,16 @@ function email(req, res) {
             attachment.setContentId('logo');
             mail.addAttachment(attachment);
             console.log('sending an email...email:', mail);
-            let sg = sendgrid(process.env.SENDGRID_API_KEY);
-            let request = sg.emptyRequest({
-                host: "api.sendgrid.com",
-                method: "POST",
-                path: "/v3/mail/send",
+            const sg = sendgrid(process.env.SENDGRID_API_KEY);
+            const request = sg.emptyRequest({
+                host: 'api.sendgrid.com',
+                method: 'POST',
+                path: '/v3/mail/send',
                 headers: {},
                 body: mail.toJSON(),
                 queryParams: {},
                 test: false,
-                port: ""
+                port: ''
             });
             sg.API(request).then((response) => {
                 console.log('an email sent.', response);
@@ -98,6 +103,9 @@ function email(req, res) {
     });
 }
 exports.email = email;
+/**
+ * 入場グラグをたてる
+ */
 function enter(req, res) {
     ttts_domain_1.Models.Reservation.update({
         _id: req.params.id
@@ -119,6 +127,7 @@ function enter(req, res) {
 }
 exports.enter = enter;
 function findByMvtkUser(_req, res) {
+    // ひとまずデモ段階では、一般予約を10件返す
     ttts_domain_1.Models.Reservation.find({
         purchaser_group: ttts_domain_2.ReservationUtil.PURCHASER_GROUP_CUSTOMER,
         status: ttts_domain_2.ReservationUtil.STATUS_RESERVED
@@ -139,7 +148,7 @@ function findByMvtkUser(_req, res) {
 }
 exports.findByMvtkUser = findByMvtkUser;
 function findById(req, res) {
-    let id = req.params.id;
+    const id = req.params.id;
     ttts_domain_1.Models.Reservation.findOne({
         _id: id,
         status: ttts_domain_2.ReservationUtil.STATUS_RESERVED

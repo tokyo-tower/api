@@ -1,19 +1,19 @@
-import express = require('express');
-import { Models } from "@motionpicture/ttts-domain";
-import { ReservationUtil } from "@motionpicture/ttts-domain";
-import sendgrid = require('sendgrid');
-import conf = require('config');
-import validator = require('validator');
-import qr = require('qr-image');
-import moment = require('moment');
-import fs = require('fs-extra');
+import * as express from 'express';
+import { Models } from '@motionpicture/ttts-domain';
+import { ReservationUtil } from '@motionpicture/ttts-domain';
+import * as sendgrid from 'sendgrid';
+import * as conf from 'config';
+import * as validator from 'validator';
+import * as qr from 'qr-image';
+import * as moment from 'moment';
+import * as fs from 'fs-extra';
 
 /**
  * 予約情報メールを送信する
  */
 export function email(req: express.Request, res: express.Response): void {
-    let id = req.body.id;
-    let to = req.body.to;
+    const id = req.body.id;
+    const to = req.body.to;
     // メールアドレスの有効性チェック
     if (!validator.isEmail(to)) {
         res.json({
@@ -45,8 +45,8 @@ export function email(req: express.Request, res: express.Response): void {
                 return;
             }
 
-            let title_ja = `${reservation.get('purchaser_name_ja')}様より東京タワーのチケットが届いております`;
-            let title_en = `This is a notification that you have been invited to Tokyo International Film Festival by Mr./Ms. ${reservation.get('purchaser_name_en')}.`;
+            const title_ja = `${reservation.get('purchaser_name_ja')}様より東京タワーのチケットが届いております`;
+            const title_en = `This is a notification that you have been invited to Tokyo International Film Festival by Mr./Ms. ${reservation.get('purchaser_name_en')}.`;
 
             res.render('email/resevation', {
                 layout: false,
@@ -57,7 +57,7 @@ export function email(req: express.Request, res: express.Response): void {
                 title_ja: title_ja,
                 title_en: title_en,
                 ReservationUtil: ReservationUtil
-            }, (err, html) => {
+            },         (err, html) => {
                 if (err) {
                     res.json({
                         success: false,
@@ -66,15 +66,15 @@ export function email(req: express.Request, res: express.Response): void {
                     return;
                 }
 
-                let mail = new sendgrid.mail.Mail(
+                const mail = new sendgrid.mail.Mail(
                     new sendgrid.mail.Email(conf.get<string>('email.from'), conf.get<string>('email.fromname')),
                     `${title_ja} ${title_en}`,
                     new sendgrid.mail.Email(to),
-                    new sendgrid.mail.Content("text/html", html)
+                    new sendgrid.mail.Content('text/html', html)
                 );
 
-                let reservationId = reservation.get('_id').toString();
-                let attachmentQR = new sendgrid.mail.Attachment();
+                const reservationId = reservation.get('_id').toString();
+                const attachmentQR = new sendgrid.mail.Attachment();
                 attachmentQR.setFilename(`QR_${reservationId}.png`);
                 attachmentQR.setType('image/png');
                 attachmentQR.setContent(qr.imageSync(reservation.get('qr_str'), { type: 'png' }).toString('base64'));
@@ -83,7 +83,7 @@ export function email(req: express.Request, res: express.Response): void {
                 mail.addAttachment(attachmentQR);
 
                 // logo
-                let attachment = new sendgrid.mail.Attachment();
+                const attachment = new sendgrid.mail.Attachment();
                 attachment.setFilename(`logo.png`);
                 attachment.setType('image/png');
                 attachment.setContent(fs.readFileSync(`${__dirname}/../../../../public/images/email/logo.png`).toString('base64'));
@@ -92,23 +92,23 @@ export function email(req: express.Request, res: express.Response): void {
                 mail.addAttachment(attachment);
 
                 console.log('sending an email...email:', mail);
-                let sg = sendgrid(process.env.SENDGRID_API_KEY);
-                let request = sg.emptyRequest({
-                    host: "api.sendgrid.com",
-                    method: "POST",
-                    path: "/v3/mail/send",
+                const sg = sendgrid(process.env.SENDGRID_API_KEY);
+                const request = sg.emptyRequest({
+                    host: 'api.sendgrid.com',
+                    method: 'POST',
+                    path: '/v3/mail/send',
                     headers: {},
                     body: mail.toJSON(),
                     queryParams: {},
                     test: false,
-                    port: ""
+                    port: ''
                 });
                 sg.API(request).then((response) => {
                     console.log('an email sent.', response);
                     res.json({
                         success: true
                     });
-                }, (err) => {
+                },                   (err) => {
                     console.error('an email unsent.', err);
                     res.json({
                         success: false,
@@ -169,7 +169,7 @@ export function findByMvtkUser(_req: express.Request, res: express.Response): vo
 }
 
 export function findById(req: express.Request, res: express.Response): void {
-    let id = req.params.id;
+    const id = req.params.id;
 
     Models.Reservation.findOne(
         {

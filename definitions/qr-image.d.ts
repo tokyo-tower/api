@@ -1,5 +1,5 @@
 declare module "qr-image" {
-    import stream = require('stream');
+    import * as stream from 'stream';
 
     namespace qrimage {
         export function matrix(text: string, ec_level?: EcLevel, parse_url?: boolean): any[];

@@ -1,12 +1,19 @@
 "use strict";
-const BaseController_1 = require("../BaseController");
-const Util_1 = require("../../../common/Util/Util");
 const ttts_domain_1 = require("@motionpicture/ttts-domain");
+const Util_1 = require("../../../common/Util/Util");
+const BaseController_1 = require("../BaseController");
 const conf = require("config");
 const mongoose = require("mongoose");
 const fs = require("fs-extra");
 const crypto = require("crypto");
-let MONGOLAB_URI = conf.get('mongolab_uri');
+const MONGOLAB_URI = conf.get('mongolab_uri');
+/**
+ * 電話窓口タスクコントローラー
+ *
+ * @export
+ * @class TelController
+ * @extends {BaseController}
+ */
 class TelController extends BaseController_1.default {
     createFromJson() {
         mongoose.connect(MONGOLAB_URI, {});
@@ -14,8 +21,9 @@ class TelController extends BaseController_1.default {
             if (err)
                 throw err;
             let telStaffs = JSON.parse(data);
+            // パスワードハッシュ化
             telStaffs = telStaffs.map((telStaff) => {
-                let password_salt = crypto.randomBytes(64).toString('hex');
+                const password_salt = crypto.randomBytes(64).toString('hex');
                 telStaff.password_salt = password_salt;
                 telStaff.password_hash = Util_1.default.createHash(telStaff.password, password_salt);
                 return telStaff;

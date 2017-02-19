@@ -1,19 +1,26 @@
+import {Models} from '@motionpicture/ttts-domain';
 import BaseController from '../BaseController';
-import {Models} from "@motionpicture/ttts-domain";
-import conf = require('config');
-import mongoose = require('mongoose');
-import request = require('request');
-import fs = require('fs-extra');
+import * as conf from 'config';
+import * as mongoose from 'mongoose';
+import * as request from 'request';
+import * as fs from 'fs-extra';
 
-let MONGOLAB_URI = conf.get<string>('mongolab_uri');
+const MONGOLAB_URI = conf.get<string>('mongolab_uri');
 
+/**
+ * 作品タスクコントローラー
+ *
+ * @export
+ * @class FilmController
+ * @extends {BaseController}
+ */
 export default class FilmController extends BaseController {
     public createTicketTypeGroupsFromJson(): void {
         mongoose.connect(MONGOLAB_URI, {});
 
         fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/ticketTypeGroups.json`, 'utf8', (err, data) => {
             if (err) throw err;
-            let groups = JSON.parse(data);
+            const groups = JSON.parse(data);
 
             this.logger.info('removing all groups...');
             Models.TicketTypeGroup.remove({}, (err) => {
@@ -37,9 +44,9 @@ export default class FilmController extends BaseController {
 
         fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/films.json`, 'utf8', (err, data) => {
             if (err) throw err;
-            let films: Array<any> = JSON.parse(data);
+            const films: any[] = JSON.parse(data);
 
-            let promises = films.map((film) => {
+            const promises = films.map((film) => {
                 return new Promise((resolve, reject) => {
                     this.logger.debug('updating film...');
                     Models.Film.findOneAndUpdate(
@@ -63,7 +70,7 @@ export default class FilmController extends BaseController {
                 this.logger.info('promised.');
                 mongoose.disconnect();
                 process.exit(0);
-            }, (err) => {
+            },                         (err) => {
                 this.logger.error('promised.', err);
                 mongoose.disconnect();
                 process.exit(0);
@@ -80,8 +87,8 @@ export default class FilmController extends BaseController {
         Models.Film.find({}, 'name', {sort: {_id: 1}}, (err, films) => {
             if (err) throw err;
 
-            let next = (film: mongoose.Document) => {
-                let options = {
+            const next = (film: mongoose.Document) => {
+                const options = {
                     url: `https://api.cognitive.microsoft.com/bing/v5.0/images/search?q=${encodeURIComponent(film.get('name.ja'))}`,
                     json: true,
                     headers: {
@@ -101,7 +108,7 @@ export default class FilmController extends BaseController {
                 request.get(options, (error, response, body) => {
                     if (!error && response.statusCode == 200) {
                         if (body.value.length > 0) {
-                            let image = body.value[0].thumbnailUrl;
+                            const image = body.value[0].thumbnailUrl;
                             console.log('thumbnailUrl:', image);
 
                             request.get({url: image, encoding: null}, (error, response, body) => {
@@ -133,8 +140,8 @@ export default class FilmController extends BaseController {
                             next(films[i]);
                         }
                     }
-                })
-            }
+                });
+            };
 
             let i = 0;
             next(films[i]);

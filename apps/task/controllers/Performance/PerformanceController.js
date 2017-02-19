@@ -4,24 +4,33 @@ const conf = require("config");
 const mongoose = require("mongoose");
 const fs = require("fs-extra");
 const ttts_domain_1 = require("@motionpicture/ttts-domain");
-let MONGOLAB_URI = conf.get('mongolab_uri');
+const MONGOLAB_URI = conf.get('mongolab_uri');
+/**
+ * パフォーマンスタスクコントローラー
+ *
+ * @export
+ * @class PerformanceController
+ * @extends {BaseController}
+ */
 class PerformanceController extends BaseController_1.default {
     createFromJson() {
         mongoose.connect(MONGOLAB_URI, {});
         fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/performances.json`, 'utf8', (err, data) => {
             if (err)
                 throw err;
-            let performances = JSON.parse(data);
+            const performances = JSON.parse(data);
             ttts_domain_1.Models.Screen.find({}, 'name theater').populate('theater', 'name').exec((err, screens) => {
                 if (err)
                     throw err;
-                let promises = performances.map((performance) => {
+                // あれば更新、なければ追加
+                const promises = performances.map((performance) => {
                     return new Promise((resolve, reject) => {
-                        let _screen = screens.find((screen) => {
+                        // 劇場とスクリーン名称を追加
+                        const _screen = screens.find((screen) => {
                             return (screen.get('_id').toString() === performance.screen);
                         });
                         if (!_screen)
-                            return reject(new Error("screen not found."));
+                            return reject(new Error('screen not found.'));
                         performance.screen_name = _screen.get('name');
                         performance.theater_name = _screen.get('theater').get('name');
                         this.logger.debug('updating performance...');
@@ -46,6 +55,9 @@ class PerformanceController extends BaseController_1.default {
             });
         });
     }
+    /**
+     * 空席ステータスを更新する
+     */
     updateStatuses() {
         mongoose.connect(MONGOLAB_URI, {});
         this.logger.info('finding performances...');
@@ -58,12 +70,12 @@ class PerformanceController extends BaseController_1.default {
                 process.exit(0);
                 return;
             }
-            let performanceStatusesModel = ttts_domain_1.PerformanceStatusesModel.create();
+            const performanceStatusesModel = ttts_domain_1.PerformanceStatusesModel.create();
             this.logger.info('aggregating...');
             ttts_domain_1.Models.Reservation.aggregate([
                 {
                     $group: {
-                        _id: "$performance",
+                        _id: '$performance',
                         count: { $sum: 1 }
                     }
                 }
@@ -74,15 +86,18 @@ class PerformanceController extends BaseController_1.default {
                     process.exit(0);
                     return;
                 }
-                let reservationNumbers = {};
-                for (let result of results) {
+                // パフォーマンスIDごとに
+                const reservationNumbers = {};
+                for (const result of results) {
                     reservationNumbers[result._id] = parseInt(result.count);
                 }
                 performances.forEach((performance) => {
+                    // パフォーマンスごとに空席ステータスを算出する
                     if (!reservationNumbers.hasOwnProperty(performance.get('_id').toString())) {
                         reservationNumbers[performance.get('_id').toString()] = 0;
                     }
-                    let status = performance['getSeatStatus'](reservationNumbers[performance.get('_id').toString()]);
+                    // TODO anyで逃げているが、型定義をちゃんとかけばもっとよく書ける
+                    const status = performance['getSeatStatus'](reservationNumbers[performance.get('_id').toString()]);
                     performanceStatusesModel.setStatus(performance._id.toString(), status);
                 });
                 this.logger.info('saving performanceStatusesModel...', performanceStatusesModel);
@@ -94,6 +109,9 @@ class PerformanceController extends BaseController_1.default {
             });
         });
     }
+    /**
+     * ID指定でパフォーマンスを公開する
+     */
     release(performanceId) {
         mongoose.connect(MONGOLAB_URI, {});
         this.logger.info('updating performance..._id:', performanceId);
@@ -102,7 +120,7 @@ class PerformanceController extends BaseController_1.default {
         }, {
             canceled: false
         }, {
-            new: true,
+            new: true
         }, (err, performance) => {
             this.logger.info('performance updated', err, performance);
             mongoose.disconnect();

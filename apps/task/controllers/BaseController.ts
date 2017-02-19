@@ -1,5 +1,5 @@
-// import fs = require('fs-extra');
-import log4js = require('log4js');
+// import * as fs from 'fs-extra';
+import * as log4js from 'log4js';
 
 /**
  * ベースコントローラー
@@ -11,7 +11,7 @@ export default class BaseController
 
     /**
      * constructor
-     * 
+     *
      * @param {string} ログディレクトリ
      */
     constructor(logDir: string) {
@@ -22,7 +22,7 @@ export default class BaseController
             appenders: [
                 {
                     category: 'system',
-                    type: 'console',
+                    type: 'console'
                     // type: 'dateFile',
                     // filename: `${logDir}/system.log`,
                     // pattern: '-yyyy-MM-dd',
@@ -40,7 +40,7 @@ export default class BaseController
         this.logger = log4js.getLogger('system');
     }
 
-    protected shuffle(array: Array<any>) {
+    protected shuffle(array: any[]) {
         let m = array.length, t, i;
 
         while (m) {

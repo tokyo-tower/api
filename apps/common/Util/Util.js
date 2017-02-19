@@ -1,26 +1,77 @@
 "use strict";
 const crypto = require("crypto");
+// import * as fs from 'fs-extra';
 const log4js = require("log4js");
+/**
+ * 共通ユーティリティ
+ */
 class Util {
+    /**
+     * 予約プロセス用のロガーを設定する
+     * 1ログファイル per 1購入番号
+     *
+     * @param {string} paymentNo 購入番号
+     */
     static getReservationLogger(paymentNo, cb) {
+        // TODO 購入ログの出力方法を、ローカルファイルロガー以外で新たに考える
         console.log(paymentNo);
         cb(null, log4js.getLogger('system'));
+        // let env = process.env.NODE_ENV || 'dev';
+        // let logDir = `${__dirname}/../../../logs/${env}/reservations/${paymentNo.substr(-1)}`;
+        // fs.mkdirs(logDir, (err) => {
+        //     if (err) return cb(err, null);
+        //     log4js.configure({
+        //         appenders: [
+        //             {
+        //                 category: 'reservation',
+        //                 type: 'file',
+        //                 filename: `${logDir}/${paymentNo}.log`,
+        //                 pattern: '-yyyy-MM-dd'
+        //             },
+        //             {
+        //                 type: 'console'
+        //             }
+        //         ],
+        //         levels: {
+        //             reserve: 'ALL'
+        //         },
+        //         replaceConsole: true
+        //     });
+        //     cb(null, log4js.getLogger('reservation'));
+        // });
     }
+    /**
+     * ハッシュ値を作成する
+     *
+     * @param {string} password
+     * @param {string} salt
+     */
     static createHash(password, salt) {
-        let sha512 = crypto.createHash('sha512');
+        const sha512 = crypto.createHash('sha512');
         sha512.update(salt + password, 'utf8');
         return sha512.digest('hex');
     }
+    /**
+     * 全角→半角変換
+     */
     static toHalfWidth(str) {
         return str.split('').map((value) => {
+            // 全角であれば変換
             return value.replace(/[！-～]/g, String.fromCharCode(value.charCodeAt(0) - 0xFEE0)).replace('　', ' ');
         }).join('');
     }
+    /**
+     * 半角→全角変換
+     */
     static toFullWidth(str) {
         return str.split('').map((value) => {
+            // 半角であれば変換
             return value.replace(/[!-~]/g, String.fromCharCode(value.charCodeAt(0) + 0xFEE0)).replace(' ', '　');
         }).join('');
     }
+    /**
+     * 都道府県リスト
+     */
     static getPrefectrues() {
         return [
             { code: '01', name: { ja: '北海道', en: 'Hokkaido Government' } },

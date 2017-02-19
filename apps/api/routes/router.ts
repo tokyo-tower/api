@@ -1,14 +1,14 @@
-import express = require('express')
-let router = express.Router();
+import * as express from 'express';
+const router = express.Router();
 
-import passport = require('passport');
-import setLocale from "../middlewares/setLocale";
+import * as passport from 'passport';
+import setLocale from '../middlewares/setLocale';
 
 import * as AuthController from '../controllers/Auth/AuthController';
+import * as OtherController from '../controllers/Other/OtherController';
 import * as PerformanceController from '../controllers/Performance/PerformanceController';
 import * as ReservationController from '../controllers/Reservation/ReservationController';
 import * as ScreenController from '../controllers/Screen/ScreenController';
-import * as OtherController from '../controllers/Other/OtherController';
 
 /**
  * URLルーティング

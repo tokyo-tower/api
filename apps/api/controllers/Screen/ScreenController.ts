@@ -1,6 +1,6 @@
-import express = require('express');
-import { Models } from "@motionpicture/ttts-domain";
-import fs = require('fs-extra');
+import * as express from 'express';
+import { Models } from '@motionpicture/ttts-domain';
+import * as fs from 'fs-extra';
 
 /**
  * スクリーンの座席マップを生成する

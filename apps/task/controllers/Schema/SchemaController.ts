@@ -1,7 +1,14 @@
 import BaseController from '../BaseController';
-import conf = require('config');
-import mongodb = require('mongodb');
+import * as conf from 'config';
+import * as mongodb from 'mongodb';
 
+/**
+ * dbスキーマタスクコントローラー
+ *
+ * @export
+ * @class SchemaController
+ * @extends {BaseController}
+ */
 export default class SchemaController extends BaseController {
     private collectionNames = [
         'authentications',
@@ -29,7 +36,7 @@ export default class SchemaController extends BaseController {
         mongodb.MongoClient.connect(conf.get<string>('mongolab_uri'), (err, db) => {
             if (err) throw err;
 
-            let promises = this.collectionNames.map((collectionName) => {
+            const promises = this.collectionNames.map((collectionName) => {
                 return new Promise((resolve, reject) => {
                     this.logger.debug('dropping collection...', collectionName);
                     db.collection(collectionName).drop((err) => {
@@ -47,7 +54,7 @@ export default class SchemaController extends BaseController {
                 this.logger.info('promised.');
                 db.close();
                 process.exit(0);
-            }, (err) => {
+            },                         (err) => {
                 this.logger.error('promised.', err);
                 db.close();
                 process.exit(0);
@@ -62,7 +69,7 @@ export default class SchemaController extends BaseController {
         mongodb.MongoClient.connect(conf.get<string>('mongolab_uri'), (err, db) => {
             if (err) throw err;
 
-            let promises = this.collectionNames.map((collectionName) => {
+            const promises = this.collectionNames.map((collectionName) => {
                 return new Promise((resolve, reject) => {
                     this.logger.debug('dropping index.', collectionName);
                     db.collection(collectionName).dropIndexes(
@@ -78,7 +85,7 @@ export default class SchemaController extends BaseController {
                 this.logger.info('promised.');
                 db.close();
                 process.exit(0);
-            }, (err) => {
+            },                         (err) => {
                 this.logger.error('promised.', err);
                 db.close();
                 process.exit(0);
@@ -93,11 +100,11 @@ export default class SchemaController extends BaseController {
         mongodb.MongoClient.connect(conf.get<string>('mongolab_uri'), (err, db) => {
             if (err) throw err;
 
-            let promises = [];
+            const promises = [];
 
             promises.push(new Promise((resolve, reject) => {
                 db.collection('reservations').createIndex(
-                    {performance: 1,seat_code: 1},
+                    {performance: 1, seat_code: 1},
                     {unique: true},
                     (err) => {
                         this.logger.debug('index created.', err);
@@ -185,7 +192,7 @@ export default class SchemaController extends BaseController {
 
             promises.push(new Promise((resolve, reject) => {
                 db.collection('performances').createIndex(
-                    {day: 1,start_time: 1},
+                    {day: 1, start_time: 1},
                     (err) => {
                         this.logger.debug('index created.', err);
                         (err) ? reject(err) : resolve();
@@ -197,7 +204,7 @@ export default class SchemaController extends BaseController {
                 this.logger.info('promised.');
                 db.close();
                 process.exit(0);
-            }, (err) => {
+            },                         (err) => {
                 this.logger.error('promised.', err);
                 db.close();
                 process.exit(0);

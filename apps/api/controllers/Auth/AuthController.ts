@@ -1,18 +1,18 @@
-import express = require('express');
-import { Models } from "@motionpicture/ttts-domain";
-import crypto = require('crypto');
+import * as express from 'express';
+import { Models } from '@motionpicture/ttts-domain';
+import * as crypto from 'crypto';
 
 /**
  * ログイン
  */
 export function login(_req: express.Request, res: express.Response): void {
-    let token = crypto.randomBytes(64).toString('hex');
+    const token = crypto.randomBytes(64).toString('hex');
     Models.Authentication.findOneAndUpdate(
         {
             mvtk_kiin_cd: '00000775' // テスト用会員コード
         },
         {
-            token: token,
+            token: token
         },
         {
             upsert: true,

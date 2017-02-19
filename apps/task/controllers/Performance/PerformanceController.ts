@@ -1,30 +1,37 @@
 import BaseController from '../BaseController';
-import conf = require('config');
-import mongoose = require('mongoose');
-import fs = require('fs-extra');
-import { Models, PerformanceStatusesModel } from "@motionpicture/ttts-domain";
+import * as conf from 'config';
+import * as mongoose from 'mongoose';
+import * as fs from 'fs-extra';
+import { Models, PerformanceStatusesModel } from '@motionpicture/ttts-domain';
 
-let MONGOLAB_URI = conf.get<string>('mongolab_uri');
+const MONGOLAB_URI = conf.get<string>('mongolab_uri');
 
+/**
+ * パフォーマンスタスクコントローラー
+ *
+ * @export
+ * @class PerformanceController
+ * @extends {BaseController}
+ */
 export default class PerformanceController extends BaseController {
     public createFromJson(): void {
         mongoose.connect(MONGOLAB_URI, {});
 
         fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/performances.json`, 'utf8', (err, data) => {
             if (err) throw err;
-            let performances: Array<any> = JSON.parse(data);
+            const performances: any[] = JSON.parse(data);
 
             Models.Screen.find({}, 'name theater').populate('theater', 'name').exec((err, screens) => {
                 if (err) throw err;
 
                 // あれば更新、なければ追加
-                let promises = performances.map((performance) => {
+                const promises = performances.map((performance) => {
                     return new Promise((resolve, reject) => {
                         // 劇場とスクリーン名称を追加
-                        let _screen = screens.find((screen) => {
+                        const _screen = screens.find((screen) => {
                             return (screen.get('_id').toString() === performance.screen);
                         });
-                        if (!_screen) return reject(new Error("screen not found."));
+                        if (!_screen) return reject(new Error('screen not found.'));
 
                         performance.screen_name = _screen.get('name');
                         performance.theater_name = _screen.get('theater').get('name');
@@ -49,7 +56,7 @@ export default class PerformanceController extends BaseController {
                     this.logger.info('promised.');
                     mongoose.disconnect();
                     process.exit(0);
-                }, (err) => {
+                },                         (err) => {
                     this.logger.error('promised.', err);
                     mongoose.disconnect();
                     process.exit(0);
@@ -78,19 +85,19 @@ export default class PerformanceController extends BaseController {
                     return;
                 }
 
-                let performanceStatusesModel = PerformanceStatusesModel.create();
+                const performanceStatusesModel = PerformanceStatusesModel.create();
 
                 this.logger.info('aggregating...');
                 Models.Reservation.aggregate(
                     [
                         {
                             $group: {
-                                _id: "$performance",
+                                _id: '$performance',
                                 count: { $sum: 1 }
                             }
                         }
                     ],
-                    (err: any, results: Array<any>) => {
+                    (err: any, results: any[]) => {
                         this.logger.info('aggregated.', err);
                         if (err) {
                             mongoose.disconnect();
@@ -99,10 +106,10 @@ export default class PerformanceController extends BaseController {
                         }
 
                         // パフォーマンスIDごとに
-                        let reservationNumbers: {
+                        const reservationNumbers: {
                             [key: string]: number
                         } = {};
-                        for (let result of results) {
+                        for (const result of results) {
                             reservationNumbers[result._id] = parseInt(result.count);
                         }
 
@@ -113,7 +120,7 @@ export default class PerformanceController extends BaseController {
                             }
 
                             // TODO anyで逃げているが、型定義をちゃんとかけばもっとよく書ける
-                            let status = (<any>performance)['getSeatStatus'](reservationNumbers[performance.get('_id').toString()]);
+                            const status = (<any>performance)['getSeatStatus'](reservationNumbers[performance.get('_id').toString()]);
                             performanceStatusesModel.setStatus(performance._id.toString(), status);
                         });
 
@@ -137,11 +144,11 @@ export default class PerformanceController extends BaseController {
         this.logger.info('updating performance..._id:', performanceId);
         Models.Performance.findOneAndUpdate({
             _id: performanceId
-        }, {
+        },                                  {
                 canceled: false
-            }, {
-                new: true,
-            }, (err, performance) => {
+            },                              {
+                new: true
+            },                              (err, performance) => {
                 this.logger.info('performance updated', err, performance);
                 mongoose.disconnect();
                 process.exit(0);

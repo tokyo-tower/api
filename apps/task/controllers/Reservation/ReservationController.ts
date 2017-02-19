@@ -1,15 +1,22 @@
-import BaseController from '../BaseController';
-import {Models} from "@motionpicture/ttts-domain";
-import {ReservationUtil} from "@motionpicture/ttts-domain";
+import {Models} from '@motionpicture/ttts-domain';
+import {ReservationUtil} from '@motionpicture/ttts-domain';
 import GMOUtil from '../../../common/Util/GMO/GMOUtil';
-import moment = require('moment');
-import conf = require('config');
-import mongoose = require('mongoose');
-import request = require('request');
-import querystring = require('querystring');
+import BaseController from '../BaseController';
+import * as moment from 'moment';
+import * as conf from 'config';
+import * as mongoose from 'mongoose';
+import * as request from 'request';
+import * as querystring from 'querystring';
 
-let MONGOLAB_URI = conf.get<string>('mongolab_uri');
+const MONGOLAB_URI = conf.get<string>('mongolab_uri');
 
+/**
+ * 座席予約タスクコントローラー
+ *
+ * @export
+ * @class ReservationController
+ * @extends {BaseController}
+ */
 export default class ReservationController extends BaseController {
     /**
      * 仮予約ステータスで、一定時間過ぎた予約を空席にする
@@ -60,7 +67,7 @@ export default class ReservationController extends BaseController {
                     process.exit(0);
                 }
 
-                let promises = ids.map((id) => {
+                const promises = ids.map((id) => {
                     return new Promise((resolve, reject) => {
                         this.logger.info('updating to STATUS_KEPT_BY_TTTS...id:', id);
                         Models.Reservation.findOneAndUpdate(
@@ -78,7 +85,7 @@ export default class ReservationController extends BaseController {
                 Promise.all(promises).then(() => {
                     mongoose.disconnect();
                     process.exit(0);
-                }, () => {
+                },                         () => {
                     // 失敗しても、次のタスクにまかせる(気にしない)
                     mongoose.disconnect();
                     process.exit(0);
@@ -97,8 +104,8 @@ export default class ReservationController extends BaseController {
 
             // 内部関係者で確保する
             Models.Staff.findOne({
-                user_id: "2016sagyo2"
-            }, (err, staff) => {
+                user_id: '2016sagyo2'
+            },                   (err, staff) => {
                 this.logger.info('staff found.', err, staff);
                 if (err) {
                     mongoose.disconnect();
@@ -118,14 +125,14 @@ export default class ReservationController extends BaseController {
 
                     Models.Reservation.find({
                         status: ReservationUtil.STATUS_KEPT_BY_MEMBER
-                    }, (err, reservations) => {
+                    },                      (err, reservations) => {
                         if (err) {
                             mongoose.disconnect();
                             process.exit(0);
                             return;
                         }
 
-                        let promises = reservations.map((reservation, index) => {
+                        const promises = reservations.map((reservation, index) => {
                             return new Promise((resolve, reject) => {
                                 this.logger.info('finding performance...');
                                 Models.Performance.findOne({
@@ -139,48 +146,48 @@ export default class ReservationController extends BaseController {
 
                                     this.logger.info('updating reservation...');
                                     reservation.update({
-                                        "status": ReservationUtil.STATUS_RESERVED,
-                                        "staff": staff.get('_id'),
-                                        "staff_user_id": staff.get('user_id'),
-                                        "staff_email": staff.get('email'),
-                                        "staff_name": staff.get('name'),
-                                        "staff_signature": "system",
-                                        "entered": false,
-                                        "updated_user": "system",
-                                        "purchased_at": Date.now(),
-                                        "watcher_name_updated_at": null,
-                                        "watcher_name": "",
-                                        "film_copyright": performance.get('film').get('copyright'),
-                                        "film_is_mx4d": performance.get('film').get('is_mx4d'),
-                                        "film_image": `https://${conf.get<string>('dns_name')}/images/film/${performance.get('film').get('_id')}.jpg`,
-                                        "film_name_en": performance.get('film').get('name.en'),
-                                        "film_name_ja": performance.get('film').get('name.ja'),
-                                        "film": performance.get('film').get('_id'),
-                                        "screen_name_en": performance.get('screen').get('name.en'),
-                                        "screen_name_ja": performance.get('screen').get('name.ja'),
-                                        "screen": performance.get('screen').get('_id'),
-                                        "theater_name_en": performance.get('theater').get('name.en'),
-                                        "theater_name_ja": performance.get('theater').get('name.ja'),
-                                        "theater_address_en": performance.get('theater').get('address.en'),
-                                        "theater_address_ja": performance.get('theater').get('address.ja'),
-                                        "theater": performance.get('theater').get('_id'),
-                                        "performance_canceled": performance.get('canceled'),
-                                        "performance_end_time": performance.get('end_time'),
-                                        "performance_start_time": performance.get('start_time'),
-                                        "performance_open_time": performance.get('open_time'),
-                                        "performance_day": performance.get('day'),
-                                        "purchaser_group": ReservationUtil.PURCHASER_GROUP_STAFF,
-                                        "payment_no": paymentNo,
-                                        "payment_seat_index": index,
-                                        "charge": 0,
-                                        "ticket_type_charge": 0,
-                                        "ticket_type_name_en": "Free",
-                                        "ticket_type_name_ja": "無料",
-                                        "ticket_type_code": "00",
-                                        "seat_grade_additional_charge": 0,
-                                        "seat_grade_name_en": "Normal Seat",
-                                        "seat_grade_name_ja": "ノーマルシート"
-                                    }, (err, raw) => {
+                                        status: ReservationUtil.STATUS_RESERVED,
+                                        staff: staff.get('_id'),
+                                        staff_user_id: staff.get('user_id'),
+                                        staff_email: staff.get('email'),
+                                        staff_name: staff.get('name'),
+                                        staff_signature: 'system',
+                                        entered: false,
+                                        updated_user: 'system',
+                                        purchased_at: Date.now(),
+                                        watcher_name_updated_at: null,
+                                        watcher_name: '',
+                                        film_copyright: performance.get('film').get('copyright'),
+                                        'film_is_mx4d': performance.get('film').get('is_mx4d'),
+                                        film_image: `https://${conf.get<string>('dns_name')}/images/film/${performance.get('film').get('_id')}.jpg`,
+                                        film_name_en: performance.get('film').get('name.en'),
+                                        film_name_ja: performance.get('film').get('name.ja'),
+                                        film: performance.get('film').get('_id'),
+                                        screen_name_en: performance.get('screen').get('name.en'),
+                                        screen_name_ja: performance.get('screen').get('name.ja'),
+                                        screen: performance.get('screen').get('_id'),
+                                        theater_name_en: performance.get('theater').get('name.en'),
+                                        theater_name_ja: performance.get('theater').get('name.ja'),
+                                        theater_address_en: performance.get('theater').get('address.en'),
+                                        theater_address_ja: performance.get('theater').get('address.ja'),
+                                        theater: performance.get('theater').get('_id'),
+                                        performance_canceled: performance.get('canceled'),
+                                        performance_end_time: performance.get('end_time'),
+                                        performance_start_time: performance.get('start_time'),
+                                        performance_open_time: performance.get('open_time'),
+                                        performance_day: performance.get('day'),
+                                        purchaser_group: ReservationUtil.PURCHASER_GROUP_STAFF,
+                                        payment_no: paymentNo,
+                                        payment_seat_index: index,
+                                        charge: 0,
+                                        ticket_type_charge: 0,
+                                        ticket_type_name_en: 'Free',
+                                        ticket_type_name_ja: '無料',
+                                        ticket_type_code: '00',
+                                        seat_grade_additional_charge: 0,
+                                        seat_grade_name_en: 'Normal Seat',
+                                        seat_grade_name_ja: 'ノーマルシート'
+                                    },                 (err, raw) => {
                                         this.logger.info('reservation updated.', err, raw);
                                         (err) ? reject(err) : resolve();
                                     });
@@ -236,7 +243,7 @@ export default class ReservationController extends BaseController {
         Models.Reservation.find({
             status: ReservationUtil.STATUS_WAITING_SETTLEMENT,
             updated_at: {$lt: moment().add(-2, 'hours').toISOString()}
-        }, (err, reservations) => {
+        },                      (err, reservations) => {
             this.logger.info('reservations found.', err, reservations);
             if (err) {
                 mongoose.disconnect();
@@ -244,10 +251,10 @@ export default class ReservationController extends BaseController {
                 return;
             }
 
-            let paymentNos4release: Array<string> = [];
-            let gmoUrl = (process.env.NODE_ENV === "prod") ? "https://p01.mul-pay.jp/payment/SearchTradeMulti.idPass" : "https://pt01.mul-pay.jp/payment/SearchTradeMulti.idPass";
+            const paymentNos4release: string[] = [];
+            const gmoUrl = (process.env.NODE_ENV === 'prod') ? 'https://p01.mul-pay.jp/payment/SearchTradeMulti.idPass' : 'https://pt01.mul-pay.jp/payment/SearchTradeMulti.idPass';
 
-            let promises = reservations.map((reservation) => {
+            const promises = reservations.map((reservation) => {
                 return new Promise((resolve, reject) => {
                     // GMO取引状態参照
                     this.logger.info('requesting... ');
@@ -259,12 +266,12 @@ export default class ReservationController extends BaseController {
                             OrderID: reservation.get('payment_no'),
                             PayType: reservation.get('payment_method')
                         }
-                    }, (error, response, body) => {
+                    },           (error, response, body) => {
                         this.logger.info('request processed.', error);
                         if (error) return reject(error);
                         if (response.statusCode !== 200) return reject(new Error(`statusCode is ${response.statusCode}`));
 
-                        let searchTradeResult = querystring.parse(body);
+                        const searchTradeResult = querystring.parse(body);
 
                         // GMOにない、あるいは、UNPROCESSEDであれば離脱データ
                         if (searchTradeResult['ErrCode']) {
@@ -297,8 +304,8 @@ export default class ReservationController extends BaseController {
 
                 // 内部で確保する仕様の場合
                 Models.Staff.findOne({
-                    user_id: "2016sagyo2"
-                }, (err, staff) => {
+                    user_id: '2016sagyo2'
+                },                   (err, staff) => {
                     this.logger.info('staff found.', err, staff);
                     if (err) {
                         mongoose.disconnect();
@@ -310,28 +317,28 @@ export default class ReservationController extends BaseController {
                     this.logger.info('updating reservations...');
                     Models.Reservation.update({
                         payment_no: {$in: paymentNos4release}
-                    }, {
-                        "status": ReservationUtil.STATUS_RESERVED,
-                        "purchaser_group": ReservationUtil.PURCHASER_GROUP_STAFF,
+                    },                        {
+                        status: ReservationUtil.STATUS_RESERVED,
+                        purchaser_group: ReservationUtil.PURCHASER_GROUP_STAFF,
 
-                        "charge": 0,
-                        "ticket_type_charge": 0,
-                        "ticket_type_name_en": "Free",
-                        "ticket_type_name_ja": "無料",
-                        "ticket_type_code": "00",
+                        charge: 0,
+                        ticket_type_charge: 0,
+                        ticket_type_name_en: 'Free',
+                        ticket_type_name_ja: '無料',
+                        ticket_type_code: '00',
 
-                        "staff": staff.get('_id'),
-                        "staff_user_id": staff.get('user_id'),
-                        "staff_email": staff.get('email'),
-                        "staff_name": staff.get('name'),
-                        "staff_signature": "system",
-                        "updated_user": "system",
+                        staff: staff.get('_id'),
+                        staff_user_id: staff.get('user_id'),
+                        staff_email: staff.get('email'),
+                        staff_name: staff.get('name'),
+                        staff_signature: 'system',
+                        updated_user: 'system',
                         // "purchased_at": Date.now(), // 購入日更新しない
-                        "watcher_name_updated_at": null,
-                        "watcher_name": ""
-                    }, {
+                        watcher_name_updated_at: null,
+                        watcher_name: ''
+                    },                        {
                         multi: true
-                    }, (err, raw) => {
+                    },                        (err, raw) => {
                         this.logger.info('updated.', err, raw);
                         mongoose.disconnect();
                         process.exit(0);

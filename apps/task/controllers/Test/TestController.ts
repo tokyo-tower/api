@@ -1,17 +1,24 @@
+import { Models } from '@motionpicture/ttts-domain';
 import BaseController from '../BaseController';
-import {Models} from "@motionpicture/ttts-domain";
-import mongodb = require('mongodb');
-import mongoose = require('mongoose');
-import conf = require('config');
-import {ReservationUtil} from "@motionpicture/ttts-domain";
+import * as mongodb from 'mongodb';
+import * as mongoose from 'mongoose';
+import * as conf from 'config';
+import { ReservationUtil } from '@motionpicture/ttts-domain';
 import Util from '../../../common/Util/Util';
-import fs = require('fs-extra');
-import request = require('request');
-import querystring = require('querystring');
-import moment = require('moment');
+import * as fs from 'fs-extra';
+import * as request from 'request';
+import * as querystring from 'querystring';
+import * as moment from 'moment';
 
-let MONGOLAB_URI = conf.get<string>('mongolab_uri');
+const MONGOLAB_URI = conf.get<string>('mongolab_uri');
 
+/**
+ * テストタスクコントローラー
+ *
+ * @export
+ * @class TestController
+ * @extends {BaseController}
+ */
 export default class TestController extends BaseController {
     public publishPaymentNo(): void {
         mongoose.connect(MONGOLAB_URI, {});
@@ -23,16 +30,16 @@ export default class TestController extends BaseController {
     }
 
     public checkFullWidthLetter() {
-        let filmName = '作家性の萌芽　1999-2003 （細田守監督短編集）『劇場版デジモンアドベンチャー』『劇場版デジモンアドベンチャー　ぼくらのウォーゲーム！』『村上隆作品　SUPERFLAT MONOGRAM』『村上隆作品　The Creatures From Planet 66 ～Roppongi Hills Story～』『おジャ魔女どれみドッカ～ン！（40話）』『明日のナージャ（OP、ED）』';
-        let filmNameFullWidth = Util.toFullWidth(filmName);
+        const filmName = '作家性の萌芽　1999-2003 （細田守監督短編集）『劇場版デジモンアドベンチャー』『劇場版デジモンアドベンチャー　ぼくらのウォーゲーム！』『村上隆作品　SUPERFLAT MONOGRAM』『村上隆作品　The Creatures From Planet 66 ～Roppongi Hills Story～』『おジャ魔女どれみドッカ～ン！（40話）』『明日のナージャ（OP、ED）』';
+        const filmNameFullWidth = Util.toFullWidth(filmName);
         let registerDisp1 = '';
         for (let i = 0; i < filmNameFullWidth.length; i++) {
-            let letter = filmNameFullWidth[i];
+            const letter = filmNameFullWidth[i];
             if (
                 letter.match(/[Ａ-Ｚａ-ｚ０-９]/)
-             || letter.match(/[\u3040-\u309F]/) // ひらがな
-             || letter.match(/[\u30A0-\u30FF]/) // カタカナ
-             || letter.match(/[一-龠]/) // 漢字
+                || letter.match(/[\u3040-\u309F]/) // ひらがな
+                || letter.match(/[\u30A0-\u30FF]/) // カタカナ
+                || letter.match(/[一-龠]/) // 漢字
             ) {
                 registerDisp1 += letter;
             }
@@ -45,7 +52,7 @@ export default class TestController extends BaseController {
     public listIndexes(): void {
         mongodb.MongoClient.connect(conf.get<string>('mongolab_uri'), (err, db) => {
             console.log(err);
-            let collectionNames = [
+            const collectionNames = [
                 'authentications',
                 'customer_cancel_requests',
                 'films',
@@ -64,7 +71,7 @@ export default class TestController extends BaseController {
                 'windows'
             ];
 
-            let promises = collectionNames.map((collectionName) => {
+            const promises = collectionNames.map((collectionName) => {
                 return new Promise((resolve, reject) => {
                     db.collection(collectionName).indexInformation((err, info) => {
                         if (err) return reject();
@@ -88,13 +95,13 @@ export default class TestController extends BaseController {
     }
 
     public testCreateConnection(): void {
-        let uri = "mongodb://dev4gmotiffmlabmongodbuser:Yrpx-rPjr_Qjx79_R4HaknsfMEbyrQjp4NiF-XKj@ds048719.mlab.com:48719/dev4gmotiffmlabmongodb";
+        const uri = 'mongodb://dev4gmotiffmlabmongodbuser:Yrpx-rPjr_Qjx79_R4HaknsfMEbyrQjp4NiF-XKj@ds048719.mlab.com:48719/dev4gmotiffmlabmongodb';
         mongoose.connect(MONGOLAB_URI, {});
         Models.Reservation.count({
         }, (err, count) => {
             this.logger.info('count', err, count);
 
-            let db4gmo = mongoose.createConnection(uri);
+            const db4gmo = mongoose.createConnection(uri);
             db4gmo.collection('reservations').count({
             }, (err, count) => {
                 this.logger.info('count', err, count);
@@ -107,7 +114,7 @@ export default class TestController extends BaseController {
                     mongoose.disconnect();
                     process.exit(0);
                 });
-            })
+            });
         });
     }
 
@@ -118,11 +125,11 @@ export default class TestController extends BaseController {
         mongoose.connect(MONGOLAB_URI);
         Models.GMONotification.distinct('order_id', {
             // status:{$in:["CAPTURE","PAYSUCCESS"]},
-            status:{$in:["PAYSUCCESS"]},
+            status: { $in: ['PAYSUCCESS'] },
             processed: true
         }, (err, orderIds) => {
             console.log('orderIds length is ', err, orderIds.length);
-            let file = `${__dirname}/../../../../logs/${process.env.NODE_ENV}/orderIds.txt`;
+            const file = `${__dirname}/../../../../logs/${process.env.NODE_ENV}/orderIds.txt`;
             console.log(file);
             fs.writeFileSync(file, orderIds.join("\n"), 'utf8');
 
@@ -156,10 +163,10 @@ export default class TestController extends BaseController {
 
     public createEmailCues(): void {
         fs.readFile(`${__dirname}/../../../../logs/${process.env.NODE_ENV}/20161021_orderIds4reemail.json`, 'utf8', (err, data) => {
-            let orderIds: Array<string> = JSON.parse(data);
+            const orderIds: string[] = JSON.parse(data);
             console.log('orderIds length is ', orderIds.length, err);
 
-            let cues = orderIds.map((orderId) => {
+            const cues = orderIds.map((orderId) => {
                 return {
                     payment_no: orderId,
                     is_sent: false
@@ -190,8 +197,8 @@ export default class TestController extends BaseController {
             //     status: ReservationUtil.STATUS_KEPT_BY_TTTS
             // }, (err) => {
             //     console.log(err);
-                mongoose.disconnect();
-                process.exit(0);
+            mongoose.disconnect();
+            process.exit(0);
             // });
         });
     }
@@ -201,26 +208,26 @@ export default class TestController extends BaseController {
 
         this.logger.info('updating GMONotification...');
         Models.GMONotification.update({
-            process_status: "PROCESSING",
+            process_status: 'PROCESSING',
             updated_at: {
                 $lt: moment().add(-1, 'hour').toISOString()
-            },
+            }
         }, {
-            process_status: "UNPROCESSED"
-        }, {
-            multi: true
-        }, (err, raw) => {
-            this.logger.info('GMONotification updated.', err, raw);
-            mongoose.disconnect();
-            process.exit(0);
-        });
+                process_status: 'UNPROCESSED'
+            }, {
+                multi: true
+            }, (err, raw) => {
+                this.logger.info('GMONotification updated.', err, raw);
+                mongoose.disconnect();
+                process.exit(0);
+            });
     }
 
     public getBounces(): void {
-        let query = querystring.stringify({
+        const query = querystring.stringify({
             api_user: conf.get<string>('sendgrid_username'),
             api_key: conf.get<string>('sendgrid_password'),
-            date: "1",
+            date: '1'
             // start_date: "2016-10-18",
             // end_date: "2016-10-19"
         });
@@ -232,6 +239,6 @@ export default class TestController extends BaseController {
         }, (error, response, body) => {
             this.logger.info('request processed.', error, response, body);
             process.exit(0);
-        }); 
+        });
     }
 }

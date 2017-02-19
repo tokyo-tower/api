@@ -1,21 +1,28 @@
-import BaseController from '../BaseController';
-import Util from '../../../common/Util/Util';
-import { Models } from "@motionpicture/ttts-domain";
-import { ReservationUtil } from "@motionpicture/ttts-domain";
-import { ReservationEmailCueUtil } from "@motionpicture/ttts-domain";
+import { Models } from '@motionpicture/ttts-domain';
+import { ReservationUtil } from '@motionpicture/ttts-domain';
+import { ReservationEmailCueUtil } from '@motionpicture/ttts-domain';
 import GMOUtil from '../../../common/Util/GMO/GMOUtil';
-import moment = require('moment');
-import conf = require('config');
-import mongoose = require('mongoose');
-import sendgrid = require('sendgrid');
-import emailTemplates = require('email-templates');
-import qr = require('qr-image');
-import fs = require('fs-extra');
-import numeral = require('numeral');
-import log4js = require('log4js');
+import Util from '../../../common/Util/Util';
+import BaseController from '../BaseController';
+import * as moment from 'moment';
+import * as conf from 'config';
+import * as mongoose from 'mongoose';
+import * as sendgrid from 'sendgrid';
+import * as emailTemplates from 'email-templates';
+import * as qr from 'qr-image';
+import * as fs from 'fs-extra';
+import * as numeral from 'numeral';
+import * as log4js from 'log4js';
 
-let MONGOLAB_URI = conf.get<string>('mongolab_uri');
+const MONGOLAB_URI = conf.get<string>('mongolab_uri');
 
+/**
+ * 予約メールタスクコントローラー
+ *
+ * @export
+ * @class ReservationEmailCueController
+ * @extends {BaseController}
+ */
 export default class ReservationEmailCueController extends BaseController {
     /**
      * キューを監視させる
@@ -31,7 +38,7 @@ export default class ReservationEmailCueController extends BaseController {
             this.sendOne(() => {
                 count--;
             });
-        }, 500);
+        },          500);
     }
 
     /**
@@ -41,9 +48,9 @@ export default class ReservationEmailCueController extends BaseController {
         this.logger.info('finding reservationEmailCue...');
         Models.ReservationEmailCue.findOneAndUpdate({
             status: ReservationEmailCueUtil.STATUS_UNSENT
-        }, {
+        },                                          {
                 status: ReservationEmailCueUtil.STATUS_SENDING
-            }, { new: true }, (err, cue) => {
+            },                                      { new: true }, (err, cue) => {
                 this.logger.info('reservationEmailCue found.', err, cue);
                 if (err) return this.next(err, cue, this.logger, cb);
                 if (!cue) return this.next(null, cue, this.logger, cb);
@@ -54,7 +61,7 @@ export default class ReservationEmailCueController extends BaseController {
 
                     Models.Reservation.find({
                         payment_no: cue.get('payment_no')
-                    }, (err, reservations) => {
+                    },                      (err, reservations) => {
                         _logger.info('reservations for email found.', err, reservations.length);
                         if (err) return this.next(err, cue, _logger, cb);
                         if (reservations.length === 0) return this.next(null, cue, _logger, cb);
@@ -62,18 +69,18 @@ export default class ReservationEmailCueController extends BaseController {
                         let to = '';
                         switch (reservations[0].get('purchaser_group')) {
                             case ReservationUtil.PURCHASER_GROUP_STAFF:
-                                to = reservations[0].get('staff_email')
+                                to = reservations[0].get('staff_email');
                                 break;
 
                             default:
-                                to = reservations[0].get('purchaser_email')
+                                to = reservations[0].get('purchaser_email');
                                 break;
                         }
 
                         _logger.info('to is', to);
                         if (!to) return this.next(null, cue, _logger, cb);
 
-                        let EmailTemplate = emailTemplates.EmailTemplate
+                        const EmailTemplate = emailTemplates.EmailTemplate;
                         // __dirnameを使うとテンプレートを取得できないので注意
                         // http://stackoverflow.com/questions/38173996/azure-and-node-js-dirname
                         let dir: string;
@@ -110,8 +117,8 @@ export default class ReservationEmailCueController extends BaseController {
                                 return this.next(new Error(`${cue.get('template')} not implemented.`), cue, _logger, cb);
                         }
 
-                        let template = new EmailTemplate(dir);
-                        let locals = {
+                        const template = new EmailTemplate(dir);
+                        const locals = {
                             title_ja: title_ja,
                             title_en: title_en,
                             reservations: reservations,
@@ -127,54 +134,54 @@ export default class ReservationEmailCueController extends BaseController {
                             _logger.info('email template rendered.', err);
                             if (err) return this.next(new Error('failed in rendering an email.'), cue, _logger, cb);
 
-                            let mail = new sendgrid.mail.Mail(
+                            const mail = new sendgrid.mail.Mail(
                                 new sendgrid.mail.Email(conf.get<string>('email.from'), conf.get<string>('email.fromname')),
                                 `[QRコード付き]${title_ja} [QR CODE TICKET]${title_en}`, // TODO 成り行き上、仮完了にもQRコード付き、と入ってしまったので、直すこと
                                 new sendgrid.mail.Email(to),
-                                new sendgrid.mail.Content("text/html", result.html)
+                                new sendgrid.mail.Content('text/html', result.html)
                             );
 
                             // 完了の場合、QRコードを添付
                             if (cue.get('template') === ReservationEmailCueUtil.TEMPLATE_COMPLETE) {
                                 // add barcodes
-                                for (let reservation of reservations) {
-                                    let reservationId = reservation.get('_id').toString();
+                                for (const reservation of reservations) {
+                                    const reservationId = reservation.get('_id').toString();
 
-                                    let attachment = new sendgrid.mail.Attachment();
+                                    const attachment = new sendgrid.mail.Attachment();
                                     attachment.setFilename(`QR_${reservationId}.png`);
-                                    attachment.setType("image/png");
-                                    attachment.setContent(qr.imageSync(reservation.get("qr_str"), { type: "png" }).toString('base64'));
-                                    attachment.setDisposition("inline");
+                                    attachment.setType('image/png');
+                                    attachment.setContent(qr.imageSync(reservation.get('qr_str'), { type: 'png' }).toString('base64'));
+                                    attachment.setDisposition('inline');
                                     attachment.setContentId(`qrcode_${reservationId}`);
                                     mail.addAttachment(attachment);
                                 }
                             }
 
                             // add logo
-                            let attachmentLogo = new sendgrid.mail.Attachment();
+                            const attachmentLogo = new sendgrid.mail.Attachment();
                             attachmentLogo.setFilename(`logo.png`);
-                            attachmentLogo.setType("image/png");
+                            attachmentLogo.setType('image/png');
                             attachmentLogo.setContent(fs.readFileSync(`${__dirname}/../../../../public/images/email/logo.png`).toString('base64'));
-                            attachmentLogo.setDisposition("inline");
+                            attachmentLogo.setDisposition('inline');
                             attachmentLogo.setContentId(`logo`);
                             mail.addAttachment(attachmentLogo);
 
                             _logger.info('sending an email...email:', mail);
-                            let sg = sendgrid(process.env.SENDGRID_API_KEY);
-                            let request = sg.emptyRequest({
-                                host: "api.sendgrid.com",
-                                method: "POST",
-                                path: "/v3/mail/send",
+                            const sg = sendgrid(process.env.SENDGRID_API_KEY);
+                            const request = sg.emptyRequest({
+                                host: 'api.sendgrid.com',
+                                method: 'POST',
+                                path: '/v3/mail/send',
                                 headers: {},
                                 body: mail.toJSON(),
                                 queryParams: {},
                                 test: false,
-                                port: ""
+                                port: ''
                             });
                             sg.API(request).then((response) => {
                                 _logger.info('an email sent.', response);
                                 this.next(null, cue, _logger, cb);
-                            }, (err) => {
+                            },                   (err) => {
                                 this.next(err, cue, _logger, cb);
                             });
                         });
@@ -186,7 +193,7 @@ export default class ReservationEmailCueController extends BaseController {
 
     /**
      * メール送信トライ後の処理
-     * 
+     *
      * @param {Error} err
      * @param {mongoose.Document} cue
      * @param {log4js.Logger} logger
@@ -195,7 +202,7 @@ export default class ReservationEmailCueController extends BaseController {
     private next(err: Error | null, cue: mongoose.Document, logger: log4js.Logger, cb: () => void): void {
         if (!cue) return cb();
 
-        let status = (err) ? ReservationEmailCueUtil.STATUS_UNSENT : ReservationEmailCueUtil.STATUS_SENT;
+        const status = (err) ? ReservationEmailCueUtil.STATUS_UNSENT : ReservationEmailCueUtil.STATUS_SENT;
 
         // 送信済みフラグを立てる
         logger.info('setting status...', status);

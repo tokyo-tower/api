@@ -2,6 +2,13 @@
 const BaseController_1 = require("../BaseController");
 const conf = require("config");
 const mongodb = require("mongodb");
+/**
+ * dbスキーマタスクコントローラー
+ *
+ * @export
+ * @class SchemaController
+ * @extends {BaseController}
+ */
 class SchemaController extends BaseController_1.default {
     constructor() {
         super(...arguments);
@@ -24,11 +31,14 @@ class SchemaController extends BaseController_1.default {
             'windows'
         ];
     }
+    /**
+     * 全コレクションを再作成する
+     */
     createCollections() {
         mongodb.MongoClient.connect(conf.get('mongolab_uri'), (err, db) => {
             if (err)
                 throw err;
-            let promises = this.collectionNames.map((collectionName) => {
+            const promises = this.collectionNames.map((collectionName) => {
                 return new Promise((resolve, reject) => {
                     this.logger.debug('dropping collection...', collectionName);
                     db.collection(collectionName).drop((err) => {
@@ -52,11 +62,14 @@ class SchemaController extends BaseController_1.default {
             });
         });
     }
+    /**
+     * インデックスをリセットする
+     */
     dropIndexes() {
         mongodb.MongoClient.connect(conf.get('mongolab_uri'), (err, db) => {
             if (err)
                 throw err;
-            let promises = this.collectionNames.map((collectionName) => {
+            const promises = this.collectionNames.map((collectionName) => {
                 return new Promise((resolve, reject) => {
                     this.logger.debug('dropping index.', collectionName);
                     db.collection(collectionName).dropIndexes((err) => {
@@ -76,11 +89,14 @@ class SchemaController extends BaseController_1.default {
             });
         });
     }
+    /**
+     * インデックスを作成する
+     */
     createIndexes() {
         mongodb.MongoClient.connect(conf.get('mongolab_uri'), (err, db) => {
             if (err)
                 throw err;
-            let promises = [];
+            const promises = [];
             promises.push(new Promise((resolve, reject) => {
                 db.collection('reservations').createIndex({ performance: 1, seat_code: 1 }, { unique: true }, (err) => {
                     this.logger.debug('index created.', err);

@@ -1,16 +1,23 @@
-import BaseController from '../BaseController';
-import {Models} from "@motionpicture/ttts-domain";
-import {ReservationUtil} from "@motionpicture/ttts-domain";
-import {ReservationEmailCueUtil} from "@motionpicture/ttts-domain";
-import {GMONotificationUtil} from "@motionpicture/ttts-domain";
+import {Models} from '@motionpicture/ttts-domain';
+import {ReservationUtil} from '@motionpicture/ttts-domain';
+import {ReservationEmailCueUtil} from '@motionpicture/ttts-domain';
+import {GMONotificationUtil} from '@motionpicture/ttts-domain';
 import GMOUtil from '../../../common/Util/GMO/GMOUtil';
-import mongoose = require('mongoose');
-import conf = require('config');
-import moment = require('moment');
+import BaseController from '../BaseController';
+import * as mongoose from 'mongoose';
+import * as conf from 'config';
+import * as moment from 'moment';
 
-let MONGOLAB_URI = conf.get<string>('mongolab_uri');
-let MONGOLAB_URI_FOR_GMO = conf.get<string>('mongolab_uri_for_gmo');
+const MONGOLAB_URI = conf.get<string>('mongolab_uri');
+const MONGOLAB_URI_FOR_GMO = conf.get<string>('mongolab_uri_for_gmo');
 
+/**
+ * GMOタスクコントローラー
+ *
+ * @export
+ * @class GMOController
+ * @extends {BaseController}
+ */
 export default class GMOController extends BaseController {
     /**
      * 通知を監視させる
@@ -26,7 +33,7 @@ export default class GMOController extends BaseController {
             this.processOne(() => {
                 count--;
             });
-        }, 500);
+        },          500);
     }
 
     /**
@@ -34,18 +41,18 @@ export default class GMOController extends BaseController {
      */
     public processOne(cb: () => void): void {
         this.logger.info('finding notification...');
-        let db4gmo = mongoose.createConnection(MONGOLAB_URI_FOR_GMO);
+        const db4gmo = mongoose.createConnection(MONGOLAB_URI_FOR_GMO);
         db4gmo.collection('gmo_notifications').findOneAndUpdate({
             process_status: GMONotificationUtil.PROCESS_STATUS_UNPROCESSED
-        }, {
+        },                                                      {
             $set: {
                 process_status: GMONotificationUtil.PROCESS_STATUS_PROCESSING
             }
-        }, ((err, result) => {
+        },                                                      ((err, result) => {
             db4gmo.close();
             this.logger.info('notification found.', err, result);
 
-            let notification = result.value;
+            const notification = result.value;
             if (err) return this.next(err, null, cb);
             if (!notification) return this.next(null, notification, cb);
 
@@ -57,13 +64,13 @@ export default class GMOController extends BaseController {
             this.logger.info('finding reservations...payment_no:', notification.order_id);
             Models.Reservation.find({
                 payment_no: notification.order_id
-            }, (err, reservations) => {
+            },                      (err, reservations) => {
                 this.logger.info('reservations found.', err, reservations.length);
                 if (err) return this.next(err, notification, cb);
                 if (reservations.length === 0) return this.next(null, notification, cb);
 
                 // チェック文字列
-                let shopPassString = GMOUtil.createShopPassString(
+                const shopPassString = GMOUtil.createShopPassString(
                     notification.shop_id,
                     notification.order_id,
                     notification.amount,
@@ -111,14 +118,14 @@ export default class GMOController extends BaseController {
                                     this.logger.info('creating reservationEmailCue...');
                                     Models.ReservationEmailCue.findOneAndUpdate({
                                         payment_no: notification.order_id,
-                                        template: ReservationEmailCueUtil.TEMPLATE_COMPLETE,
-                                    }, {
+                                        template: ReservationEmailCueUtil.TEMPLATE_COMPLETE
+                                    },                                          {
                                         $set: { updated_at: Date.now() },
                                         $setOnInsert: { status: ReservationEmailCueUtil.STATUS_UNSENT }
-                                    }, {
+                                    },                                          {
                                         upsert: true,
                                         new: true
-                                    }, (err, cue) => {
+                                    },                                          (err, cue) => {
                                         this.logger.info('reservationEmailCue created.', err, cue);
                                         if (err) return this.next(err, notification, cb);
 
@@ -192,14 +199,14 @@ export default class GMOController extends BaseController {
                                     this.logger.info('creating reservationEmailCue...');
                                     Models.ReservationEmailCue.findOneAndUpdate({
                                         payment_no: notification.order_id,
-                                        template: ReservationEmailCueUtil.TEMPLATE_COMPLETE,
-                                    }, {
+                                        template: ReservationEmailCueUtil.TEMPLATE_COMPLETE
+                                    },                                          {
                                         $set: { updated_at: Date.now() },
                                         $setOnInsert: { status: ReservationEmailCueUtil.STATUS_UNSENT }
-                                    }, {
+                                    },                                          {
                                         upsert: true,
                                         new: true
-                                    }, (err, cue) => {
+                                    },                                          (err, cue) => {
                                         this.logger.info('reservationEmailCue created.', err, cue);
                                         if (err) return this.next(err, notification, cb);
 
@@ -235,14 +242,14 @@ export default class GMOController extends BaseController {
                                     this.logger.info('creating reservationEmailCue...');
                                     Models.ReservationEmailCue.findOneAndUpdate({
                                         payment_no: notification.order_id,
-                                        template: ReservationEmailCueUtil.TEMPLATE_TEMPORARY,
-                                    }, {
+                                        template: ReservationEmailCueUtil.TEMPLATE_TEMPORARY
+                                    },                                          {
                                         $set: { updated_at: Date.now() },
                                         $setOnInsert: { status: ReservationEmailCueUtil.STATUS_UNSENT }
-                                    }, {
+                                    },                                          {
                                         upsert: true,
                                         new: true
-                                    }, (err, cue) => {
+                                    },                                          (err, cue) => {
                                         this.logger.info('reservationEmailCue created.', err, cue);
                                         if (err) return this.next(err, notification, cb);
 
@@ -262,7 +269,7 @@ export default class GMOController extends BaseController {
                         case GMOUtil.STATUS_CVS_CANCEL: // 支払い停止
                             // 空席に戻す
                             this.logger.info('removing reservations...payment_no:', notification.order_id);
-                            let promises = reservations.map((reservation) => {
+                            const promises = reservations.map((reservation) => {
                                 return new Promise((resolve, reject) => {
                                     this.logger.info('removing reservation...', reservation.get('_id'));
                                     reservation.remove((err) => {
@@ -274,7 +281,7 @@ export default class GMOController extends BaseController {
                             Promise.all(promises).then(() => {
                                 // processedフラグをたてる
                                 this.next(null, notification, cb);
-                            }, (err) => {
+                            },                         (err) => {
                                 this.next(err, notification, cb);
                             });
 
@@ -283,8 +290,8 @@ export default class GMOController extends BaseController {
                         case GMOUtil.STATUS_CVS_EXPIRED: // 期限切れ
                             // 内部で確保する仕様の場合
                             Models.Staff.findOne({
-                                user_id: "2016sagyo2"
-                            }, (err, staff) => {
+                                user_id: '2016sagyo2'
+                            },                   (err, staff) => {
                                 this.logger.info('staff found.', err, staff);
                                 if (err) return this.next(err, notification, cb);
 
@@ -292,28 +299,28 @@ export default class GMOController extends BaseController {
                                 this.logger.info('updating reservations...');
                                 Models.Reservation.update({
                                     payment_no: notification.order_id
-                                }, {
-                                    "status": ReservationUtil.STATUS_RESERVED,
-                                    "purchaser_group": ReservationUtil.PURCHASER_GROUP_STAFF,
+                                },                        {
+                                    status: ReservationUtil.STATUS_RESERVED,
+                                    purchaser_group: ReservationUtil.PURCHASER_GROUP_STAFF,
 
-                                    "charge": 0,
-                                    "ticket_type_charge": 0,
-                                    "ticket_type_name_en": "Free",
-                                    "ticket_type_name_ja": "無料",
-                                    "ticket_type_code": "00",
+                                    charge: 0,
+                                    ticket_type_charge: 0,
+                                    ticket_type_name_en: 'Free',
+                                    ticket_type_name_ja: '無料',
+                                    ticket_type_code: '00',
 
-                                    "staff": staff.get('_id'),
-                                    "staff_user_id": staff.get('user_id'),
-                                    "staff_email": staff.get('email'),
-                                    "staff_name": staff.get('name'),
-                                    "staff_signature": "system",
-                                    "updated_user": "system",
+                                    staff: staff.get('_id'),
+                                    staff_user_id: staff.get('user_id'),
+                                    staff_email: staff.get('email'),
+                                    staff_name: staff.get('name'),
+                                    staff_signature: 'system',
+                                    updated_user: 'system',
                                     // "purchased_at": Date.now(), // 購入日更新しない
-                                    "watcher_name_updated_at": null,
-                                    "watcher_name": ""
-                                }, {
+                                    watcher_name_updated_at: null,
+                                    watcher_name: ''
+                                },                        {
                                     multi: true
-                                }, (err, raw) => {
+                                },                        (err, raw) => {
                                     this.logger.info('updated.', err, raw);
                                     this.next(err, notification, cb);
                                 });
@@ -341,25 +348,25 @@ export default class GMOController extends BaseController {
 
     /**
      * プロセスを終了する
-     * 
+     *
      * @param {Object} notification
      */
     private next(err: Error | null, notification: any, cb: () => void): void {
         if (!notification) return cb();
 
-        let status = (err) ? GMONotificationUtil.PROCESS_STATUS_UNPROCESSED : GMONotificationUtil.PROCESS_STATUS_PROCESSED;
+        const status = (err) ? GMONotificationUtil.PROCESS_STATUS_UNPROCESSED : GMONotificationUtil.PROCESS_STATUS_PROCESSED;
 
         // processedフラグをたてる
         this.logger.info('setting process_status...', status);
-        let db4gmo = mongoose.createConnection(MONGOLAB_URI_FOR_GMO);
+        const db4gmo = mongoose.createConnection(MONGOLAB_URI_FOR_GMO);
         notification.process_status = status;
         db4gmo.collection('gmo_notifications').findOneAndUpdate({
             _id: notification._id
-        }, {
+        },                                                      {
             $set: {
                 process_status: status
             }
-        }, (err, result) => {
+        },                                                      (err, result) => {
             this.logger.info('notification saved.', err, result);
             db4gmo.close();
             cb();

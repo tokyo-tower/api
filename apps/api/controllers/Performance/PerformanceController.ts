@@ -1,21 +1,21 @@
-import express = require('express');
-import { Models, PerformanceStatusesModel } from "@motionpicture/ttts-domain";
-import moment = require('moment');
-import conf = require('config');
+import * as express from 'express';
+import { Models, PerformanceStatusesModel } from '@motionpicture/ttts-domain';
+import * as moment from 'moment';
+import * as conf from 'config';
 
 export function search(req: express.Request, res: express.Response): void {
-    let limit: number | null = (req.query.limit) ? parseInt(req.query.limit) : null;
-    let page: number = (req.query.page) ? parseInt(req.query.page) : 1;
+    const limit: number | null = (req.query.limit) ? parseInt(req.query.limit) : null;
+    const page: number = (req.query.page) ? parseInt(req.query.page) : 1;
 
-    let day: string = (req.query.day) ? req.query.day : null; // 上映日
-    let section: string = (req.query.section) ? req.query.section : null; // 部門
-    let words: string = (req.query.words) ? req.query.words : null; // フリーワード
-    let startFrom: number | null = (req.query.start_from) ? parseInt(req.query.start_from) : null; // この時間以降開始のパフォーマンスに絞る(timestamp milliseconds)
-    let theater: string = (req.query.theater) ? req.query.theater : null; // 劇場
-    let screen: string = (req.query.screen) ? req.query.screen : null; // スクリーン
+    const day: string = (req.query.day) ? req.query.day : null; // 上映日
+    const section: string = (req.query.section) ? req.query.section : null; // 部門
+    const words: string = (req.query.words) ? req.query.words : null; // フリーワード
+    const startFrom: number | null = (req.query.start_from) ? parseInt(req.query.start_from) : null; // この時間以降開始のパフォーマンスに絞る(timestamp milliseconds)
+    const theater: string = (req.query.theater) ? req.query.theater : null; // 劇場
+    const screen: string = (req.query.screen) ? req.query.screen : null; // スクリーン
 
     // 検索条件を作成
-    let andConditions: Array<Object> = [
+    const andConditions: Object[] = [
         { canceled: false }
     ];
 
@@ -38,8 +38,8 @@ export function search(req: express.Request, res: express.Response): void {
     }
 
     if (startFrom) {
-        let now = moment(startFrom);
-        let tomorrow = moment(startFrom).add(+24, 'hours');
+        const now = moment(startFrom);
+        const tomorrow = moment(startFrom).add(+24, 'hours');
 
         andConditions.push({
             $or: [
@@ -110,10 +110,10 @@ export function search(req: express.Request, res: express.Response): void {
                     } else {
                         fields = 'day open_time start_time film screen screen_name.en theater theater_name.en';
                     }
-                    let query = Models.Performance.find(
+                    const query = Models.Performance.find(
                         conditions,
                         fields
-                    )
+                    );
 
                     if (limit) {
                         query.skip(limit * (page - 1)).limit(limit);
@@ -130,10 +130,10 @@ export function search(req: express.Request, res: express.Response): void {
                         sort: {
                             day: 1,
                             start_time: 1
-                        },
+                        }
                     });
 
-                    query.lean(true).exec((err, performances: Array<any>) => {
+                    query.lean(true).exec((err, performances: any[]) => {
                         if (err) {
                             res.json({
                                 success: false,
@@ -149,7 +149,7 @@ export function search(req: express.Request, res: express.Response): void {
                             if (err) {
                             }
 
-                            let results = performances.map((performance) => {
+                            const results = performances.map((performance) => {
                                 return {
                                     _id: performance['_id'],
                                     day: performance['day'],
@@ -160,7 +160,7 @@ export function search(req: express.Request, res: express.Response): void {
                                     screen_name: performance['screen_name'][req.getLocale()],
                                     film_id: performance['film']['_id'],
                                     film_name: performance['film']['name'][req.getLocale()],
-                                    film_sections: performance['film']['sections'].map((section: any) => { return section['name'][req.getLocale()]; }),
+                                    film_sections: performance['film']['sections'].map((section: any) => section['name'][req.getLocale()]),
                                     film_minutes: performance['film']['minutes'],
                                     film_copyright: performance['film']['copyright'],
                                     film_image: `https://${conf.get<string>('dns_name')}/images/film/${performance['film']['_id']}.jpg`
@@ -181,9 +181,9 @@ export function search(req: express.Request, res: express.Response): void {
     });
 }
 
-function addFilmConditions(andConditions: Array < Object >, section: string, words: string, cb: (err: Error | null, andConditions: Array<Object>) => void) {
+function addFilmConditions(andConditions: Object[], section: string, words: string, cb: (err: Error | null, andConditions: Object[]) => void) {
 
-    let filmAndConditions: Array<Object> = [];
+    const filmAndConditions: Object[] = [];
     if (section) {
         // 部門条件の追加
         filmAndConditions.push({
@@ -196,10 +196,10 @@ function addFilmConditions(andConditions: Array < Object >, section: string, wor
     if (words) {
         // trim and to half-width space
         words = words.replace(/(^\s+)|(\s+$)/g, '').replace(/\s/g, ' ');
-        let regexes = words.split(' ').filter((value) => { return (value.length > 0) });
+        const regexes = words.split(' ').filter((value) => (value.length > 0));
 
-        let orConditions = [];
-        for (let regex of regexes) {
+        const orConditions = [];
+        for (const regex of regexes) {
             orConditions.push(
                 {
                     'name.ja': { $regex: `${regex}` }
@@ -216,7 +216,7 @@ function addFilmConditions(andConditions: Array < Object >, section: string, wor
     }
 
     if (filmAndConditions.length > 0) {
-        let filmConditions = {
+        const filmConditions = {
             $and: filmAndConditions
         };
 
@@ -227,28 +227,28 @@ function addFilmConditions(andConditions: Array < Object >, section: string, wor
                 if (err) {
                     // 検索結果のない条件を追加
                     andConditions.push({
-                        'film': null
+                        film: null
                     });
 
                     cb(err, andConditions);
                 } else {
                     if (filmIds.length > 0) {
                         andConditions.push({
-                            'film': {
+                            film: {
                                 $in: filmIds
                             }
                         });
                     } else {
                         // 検索結果のない条件を追加
                         andConditions.push({
-                            'film': null
+                            film: null
                         });
                     }
 
                     cb(null, andConditions);
                 }
             }
-        )
+        );
     } else {
         // 全作品数を取得
         cb(null, andConditions);

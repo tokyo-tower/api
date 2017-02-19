@@ -1,13 +1,24 @@
 "use strict";
+// import * as fs from 'fs-extra';
 const log4js = require("log4js");
+/**
+ * ベースコントローラー
+ */
 class BaseController {
+    /**
+     * constructor
+     *
+     * @param {string} ログディレクトリ
+     */
     constructor(logDir) {
         console.log(logDir);
+        // TDOO ログ出力方法考える
+        // fs.mkdirsSync(logDir);
         log4js.configure({
             appenders: [
                 {
                     category: 'system',
-                    type: 'console',
+                    type: 'console'
                 },
                 {
                     type: 'console'

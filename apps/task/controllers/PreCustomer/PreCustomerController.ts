@@ -1,20 +1,27 @@
-import BaseController from '../BaseController';
+import {Models} from '@motionpicture/ttts-domain';
 import Util from '../../../common/Util/Util';
-import {Models} from "@motionpicture/ttts-domain";
-import conf = require('config');
-import mongodb = require('mongodb');
-import mongoose = require('mongoose');
-import fs = require('fs-extra');
-import crypto = require('crypto');
+import BaseController from '../BaseController';
+import * as conf from 'config';
+import * as mongodb from 'mongodb';
+import * as mongoose from 'mongoose';
+import * as fs from 'fs-extra';
+import * as crypto from 'crypto';
 
-let MONGOLAB_URI = conf.get<string>('mongolab_uri');
+const MONGOLAB_URI = conf.get<string>('mongolab_uri');
 
+/**
+ * 先行予約アカウントタスクコントローラー
+ *
+ * @export
+ * @class PreCustomerController
+ * @extends {BaseController}
+ */
 export default class PreCustomerController extends BaseController {
     public createCollection() {
         mongodb.MongoClient.connect(conf.get<string>('mongolab_uri'), (err, db) => {
             if (err) throw err;
 
-            let collectionName = 'pre_customers';
+            const collectionName = 'pre_customers';
             this.logger.debug('dropping collection...', collectionName);
             db.collection(collectionName).drop((err) => {
                 this.logger.debug('collection dropped.', collectionName, err);
@@ -43,12 +50,12 @@ export default class PreCustomerController extends BaseController {
 
         fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/preCustomers.json`, 'utf8', (err, data) => {
             if (err) throw err;
-            let preCustomers: Array<any> = JSON.parse(data);
+            const preCustomers: any[] = JSON.parse(data);
 
             // あれば更新、なければ追加
-            let docs = preCustomers.map((preCustomer) => {
+            const docs = preCustomers.map((preCustomer) => {
                 // パスワードハッシュ化
-                let password_salt = crypto.randomBytes(64).toString('hex');
+                const password_salt = crypto.randomBytes(64).toString('hex');
                 preCustomer['password_salt'] = password_salt;
                 preCustomer['password_hash'] = Util.createHash(preCustomer.password, password_salt);
                 return preCustomer;
@@ -64,7 +71,7 @@ export default class PreCustomerController extends BaseController {
                     mongoose.disconnect();
                     process.exit(0);
                 });
-            })
+            });
         });
     }
 }

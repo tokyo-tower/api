@@ -1,28 +1,35 @@
-import BaseController from '../BaseController';
+import {Models} from '@motionpicture/ttts-domain';
 import Util from '../../../common/Util/Util';
-import {Models} from "@motionpicture/ttts-domain";
-import conf = require('config');
-import mongoose = require('mongoose');
-import fs = require('fs-extra');
-import crypto = require('crypto');
+import BaseController from '../BaseController';
+import * as conf from 'config';
+import * as mongoose from 'mongoose';
+import * as fs from 'fs-extra';
+import * as crypto from 'crypto';
 
-let MONGOLAB_URI = conf.get<string>('mongolab_uri');
+const MONGOLAB_URI = conf.get<string>('mongolab_uri');
 
+/**
+ * メルマガ会員タスクコントローラー
+ *
+ * @export
+ * @class MemberController
+ * @extends {BaseController}
+ */
 export default class MemberController extends BaseController {
     public createFromJson() {
         mongoose.connect(MONGOLAB_URI, {});
 
         fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/members.json`, 'utf8', (err, data) => {
             if (err) throw err;
-            let members: Array<any> = JSON.parse(data);
+            let members: any[] = JSON.parse(data);
 
             // パスワードハッシュ化
             members = members.map((member) => {
-                let password_salt = crypto.randomBytes(64).toString('hex');
+                const password_salt = crypto.randomBytes(64).toString('hex');
                 return {
-                    "user_id": member.user_id,
-                    "password_salt": password_salt,
-                    "password_hash": Util.createHash(member.password, password_salt)
+                    user_id: member.user_id,
+                    password_salt: password_salt,
+                    password_hash: Util.createHash(member.password, password_salt)
                 };
             });
             this.logger.info('removing all members...');
@@ -47,10 +54,10 @@ export default class MemberController extends BaseController {
 
         fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/memberReservations.json`, 'utf8', (err, data) => {
             if (err) throw err;
-            let reservations: Array<any> = JSON.parse(data);
+            const reservations: any[] = JSON.parse(data);
 
             this.logger.debug('creating reservations...');
-            let promises = reservations.map((reservationFromJson) => {
+            const promises = reservations.map((reservationFromJson) => {
                 return new Promise((resolve, reject) => {
                     this.logger.info('removing reservation...');
                     // すでに予約があれば削除してから新規作成

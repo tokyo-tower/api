@@ -1,15 +1,15 @@
-import express = require('express');
-import bodyParser = require('body-parser');
+import * as express from 'express';
+import * as bodyParser from 'body-parser';
+import benchmarks from './middlewares/benchmarks';
 import cors from './middlewares/cors';
 import logger from './middlewares/logger';
-import benchmarks from './middlewares/benchmarks';
-import conf = require('config');
-import mongoose = require('mongoose');
-import i18n = require('i18n');
-import passport = require('passport');
-import passportHttpBearer = require('passport-http-bearer');
-let BearerStrategy = passportHttpBearer.Strategy;
-import {Models} from "@motionpicture/ttts-domain";
+import * as conf from 'config';
+import * as mongoose from 'mongoose';
+import * as i18n from 'i18n';
+import * as passport from 'passport';
+import * as passportHttpBearer from 'passport-http-bearer';
+const BearerStrategy = passportHttpBearer.Strategy;
+import { Models } from '@motionpicture/ttts-domain';
 
 passport.use(new BearerStrategy(
     (token, cb) => {
@@ -27,7 +27,7 @@ passport.use(new BearerStrategy(
     }
 ));
 
-let app = express();
+const app = express();
 
 app.use(cors);
 
@@ -43,18 +43,18 @@ if (process.env.NODE_ENV !== 'prod') {
 
         req.on('end', () => {
             throw new Error('500 manually.');
-        })
+        });
     });
 
     app.get('/api/disconnect', (req, res) => {
-        console.log("ip:", req.ip);
+        console.log('ip:', req.ip);
         mongoose.disconnect((err: any) => {
             res.send('disconnected.' + err.toString());
         });
     });
 
     app.get('/api/connect', (req, res) => {
-        console.log("ip:", req.ip);
+        console.log('ip:', req.ip);
         mongoose.connect(MONGOLAB_URI, (err) => {
             res.send('connected.' + err.toString());
         });
@@ -89,13 +89,13 @@ app.use(i18n.init);
 
 // ルーティング
 import router from './routes/router';
-app.use("/", router);
+app.use('/', router);
 
 
-let MONGOLAB_URI = conf.get<string>('mongolab_uri');
+const MONGOLAB_URI = conf.get<string>('mongolab_uri');
 
 // Use native promises
-mongoose.Promise = global.Promise;
+(<any>mongoose).Promise = global.Promise;
 mongoose.connect(MONGOLAB_URI, {});
 
 
@@ -103,23 +103,23 @@ mongoose.connect(MONGOLAB_URI, {});
 
 
 if (process.env.NODE_ENV !== 'prod') {
-    let db = mongoose.connection;
-    db.on('connecting', function() {
+    const db = mongoose.connection;
+    db.on('connecting', function () {
         console.log('connecting');
     });
-    db.on('error', function(error: any) {
+    db.on('error', function (error: any) {
         console.error('Error in MongoDb connection: ', error);
     });
-    db.on('connected', function() {
+    db.on('connected', function () {
         console.log('connected.');
     });
-    db.once('open', function() {
+    db.once('open', function () {
         console.log('connection open.');
     });
     db.on('reconnected', function () {
         console.log('reconnected.');
     });
-    db.on('disconnected', function() {
+    db.on('disconnected', function () {
         console.log('disconnected.');
     });
 }

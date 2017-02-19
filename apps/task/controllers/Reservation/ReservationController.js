@@ -1,36 +1,52 @@
 "use strict";
-const BaseController_1 = require("../BaseController");
 const ttts_domain_1 = require("@motionpicture/ttts-domain");
 const ttts_domain_2 = require("@motionpicture/ttts-domain");
 const GMOUtil_1 = require("../../../common/Util/GMO/GMOUtil");
+const BaseController_1 = require("../BaseController");
 const moment = require("moment");
 const conf = require("config");
 const mongoose = require("mongoose");
 const request = require("request");
 const querystring = require("querystring");
-let MONGOLAB_URI = conf.get('mongolab_uri');
+const MONGOLAB_URI = conf.get('mongolab_uri');
+/**
+ * 座席予約タスクコントローラー
+ *
+ * @export
+ * @class ReservationController
+ * @extends {BaseController}
+ */
 class ReservationController extends BaseController_1.default {
+    /**
+     * 仮予約ステータスで、一定時間過ぎた予約を空席にする
+     */
     removeTmps() {
         mongoose.connect(MONGOLAB_URI, {});
         this.logger.info('removing temporary reservations...');
         ttts_domain_1.Models.Reservation.remove({
             status: ttts_domain_2.ReservationUtil.STATUS_TEMPORARY,
             expired_at: {
+                // 念のため、仮予約有効期間より1分長めにしておく
                 $lt: moment().add(-60, 'seconds').toISOString()
             }
         }, (err) => {
             this.logger.info('temporary reservations removed.', err);
+            // 失敗しても、次のタスクにまかせる(気にしない)
             if (err) {
             }
             mongoose.disconnect();
             process.exit(0);
         });
     }
+    /**
+     * TTTS確保上の仮予約をTTTS確保へ戻す
+     */
     tmp2tiff() {
         mongoose.connect(MONGOLAB_URI, {});
         ttts_domain_1.Models.Reservation.distinct('_id', {
             status: ttts_domain_2.ReservationUtil.STATUS_TEMPORARY_ON_KEPT_BY_TTTS,
             expired_at: {
+                // 念のため、仮予約有効期間より1分長めにしておく
                 $lt: moment().add(-60, 'seconds').toISOString()
             }
         }, (err, ids) => {
@@ -38,7 +54,7 @@ class ReservationController extends BaseController_1.default {
                 mongoose.disconnect();
                 process.exit(0);
             }
-            let promises = ids.map((id) => {
+            const promises = ids.map((id) => {
                 return new Promise((resolve, reject) => {
                     this.logger.info('updating to STATUS_KEPT_BY_TTTS...id:', id);
                     ttts_domain_1.Models.Reservation.findOneAndUpdate({ _id: id }, { status: ttts_domain_2.ReservationUtil.STATUS_KEPT_BY_TTTS }, { new: true }, (err, reservation) => {
@@ -51,16 +67,21 @@ class ReservationController extends BaseController_1.default {
                 mongoose.disconnect();
                 process.exit(0);
             }, () => {
+                // 失敗しても、次のタスクにまかせる(気にしない)
                 mongoose.disconnect();
                 process.exit(0);
             });
         });
     }
+    /**
+     * 固定日時を経過したら、空席ステータスにするバッチ
+     */
     releaseSeatsKeptByMembers() {
         if (moment(conf.get('datetimes.reservation_end_members')) < moment()) {
             mongoose.connect(MONGOLAB_URI);
+            // 内部関係者で確保する
             ttts_domain_1.Models.Staff.findOne({
-                user_id: "2016sagyo2"
+                user_id: '2016sagyo2'
             }, (err, staff) => {
                 this.logger.info('staff found.', err, staff);
                 if (err) {
@@ -68,6 +89,7 @@ class ReservationController extends BaseController_1.default {
                     process.exit(0);
                     return;
                 }
+                // 購入番号発行
                 ttts_domain_2.ReservationUtil.publishPaymentNo((err, paymentNo) => {
                     this.logger.info('paymentNo is', paymentNo);
                     if (err) {
@@ -83,7 +105,7 @@ class ReservationController extends BaseController_1.default {
                             process.exit(0);
                             return;
                         }
-                        let promises = reservations.map((reservation, index) => {
+                        const promises = reservations.map((reservation, index) => {
                             return new Promise((resolve, reject) => {
                                 this.logger.info('finding performance...');
                                 ttts_domain_1.Models.Performance.findOne({
@@ -97,47 +119,47 @@ class ReservationController extends BaseController_1.default {
                                         return reject(err);
                                     this.logger.info('updating reservation...');
                                     reservation.update({
-                                        "status": ttts_domain_2.ReservationUtil.STATUS_RESERVED,
-                                        "staff": staff.get('_id'),
-                                        "staff_user_id": staff.get('user_id'),
-                                        "staff_email": staff.get('email'),
-                                        "staff_name": staff.get('name'),
-                                        "staff_signature": "system",
-                                        "entered": false,
-                                        "updated_user": "system",
-                                        "purchased_at": Date.now(),
-                                        "watcher_name_updated_at": null,
-                                        "watcher_name": "",
-                                        "film_copyright": performance.get('film').get('copyright'),
-                                        "film_is_mx4d": performance.get('film').get('is_mx4d'),
-                                        "film_image": `https://${conf.get('dns_name')}/images/film/${performance.get('film').get('_id')}.jpg`,
-                                        "film_name_en": performance.get('film').get('name.en'),
-                                        "film_name_ja": performance.get('film').get('name.ja'),
-                                        "film": performance.get('film').get('_id'),
-                                        "screen_name_en": performance.get('screen').get('name.en'),
-                                        "screen_name_ja": performance.get('screen').get('name.ja'),
-                                        "screen": performance.get('screen').get('_id'),
-                                        "theater_name_en": performance.get('theater').get('name.en'),
-                                        "theater_name_ja": performance.get('theater').get('name.ja'),
-                                        "theater_address_en": performance.get('theater').get('address.en'),
-                                        "theater_address_ja": performance.get('theater').get('address.ja'),
-                                        "theater": performance.get('theater').get('_id'),
-                                        "performance_canceled": performance.get('canceled'),
-                                        "performance_end_time": performance.get('end_time'),
-                                        "performance_start_time": performance.get('start_time'),
-                                        "performance_open_time": performance.get('open_time'),
-                                        "performance_day": performance.get('day'),
-                                        "purchaser_group": ttts_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
-                                        "payment_no": paymentNo,
-                                        "payment_seat_index": index,
-                                        "charge": 0,
-                                        "ticket_type_charge": 0,
-                                        "ticket_type_name_en": "Free",
-                                        "ticket_type_name_ja": "無料",
-                                        "ticket_type_code": "00",
-                                        "seat_grade_additional_charge": 0,
-                                        "seat_grade_name_en": "Normal Seat",
-                                        "seat_grade_name_ja": "ノーマルシート"
+                                        status: ttts_domain_2.ReservationUtil.STATUS_RESERVED,
+                                        staff: staff.get('_id'),
+                                        staff_user_id: staff.get('user_id'),
+                                        staff_email: staff.get('email'),
+                                        staff_name: staff.get('name'),
+                                        staff_signature: 'system',
+                                        entered: false,
+                                        updated_user: 'system',
+                                        purchased_at: Date.now(),
+                                        watcher_name_updated_at: null,
+                                        watcher_name: '',
+                                        film_copyright: performance.get('film').get('copyright'),
+                                        'film_is_mx4d': performance.get('film').get('is_mx4d'),
+                                        film_image: `https://${conf.get('dns_name')}/images/film/${performance.get('film').get('_id')}.jpg`,
+                                        film_name_en: performance.get('film').get('name.en'),
+                                        film_name_ja: performance.get('film').get('name.ja'),
+                                        film: performance.get('film').get('_id'),
+                                        screen_name_en: performance.get('screen').get('name.en'),
+                                        screen_name_ja: performance.get('screen').get('name.ja'),
+                                        screen: performance.get('screen').get('_id'),
+                                        theater_name_en: performance.get('theater').get('name.en'),
+                                        theater_name_ja: performance.get('theater').get('name.ja'),
+                                        theater_address_en: performance.get('theater').get('address.en'),
+                                        theater_address_ja: performance.get('theater').get('address.ja'),
+                                        theater: performance.get('theater').get('_id'),
+                                        performance_canceled: performance.get('canceled'),
+                                        performance_end_time: performance.get('end_time'),
+                                        performance_start_time: performance.get('start_time'),
+                                        performance_open_time: performance.get('open_time'),
+                                        performance_day: performance.get('day'),
+                                        purchaser_group: ttts_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
+                                        payment_no: paymentNo,
+                                        payment_seat_index: index,
+                                        charge: 0,
+                                        ticket_type_charge: 0,
+                                        ticket_type_name_en: 'Free',
+                                        ticket_type_name_ja: '無料',
+                                        ticket_type_code: '00',
+                                        seat_grade_additional_charge: 0,
+                                        seat_grade_name_en: 'Normal Seat',
+                                        seat_grade_name_ja: 'ノーマルシート'
                                     }, (err, raw) => {
                                         this.logger.info('reservation updated.', err, raw);
                                         (err) ? reject(err) : resolve();
@@ -162,8 +184,12 @@ class ReservationController extends BaseController_1.default {
             process.exit(0);
         }
     }
+    /**
+     * GMO離脱データを解放する(内部確保)
+     */
     releaseGarbages() {
         mongoose.connect(MONGOLAB_URI);
+        // 一定期間WAITING_SETTLEMENTの予約を抽出
         ttts_domain_1.Models.Reservation.find({
             status: ttts_domain_2.ReservationUtil.STATUS_WAITING_SETTLEMENT,
             updated_at: { $lt: moment().add(-2, 'hours').toISOString() }
@@ -174,10 +200,11 @@ class ReservationController extends BaseController_1.default {
                 process.exit(0);
                 return;
             }
-            let paymentNos4release = [];
-            let gmoUrl = (process.env.NODE_ENV === "prod") ? "https://p01.mul-pay.jp/payment/SearchTradeMulti.idPass" : "https://pt01.mul-pay.jp/payment/SearchTradeMulti.idPass";
-            let promises = reservations.map((reservation) => {
+            const paymentNos4release = [];
+            const gmoUrl = (process.env.NODE_ENV === 'prod') ? 'https://p01.mul-pay.jp/payment/SearchTradeMulti.idPass' : 'https://pt01.mul-pay.jp/payment/SearchTradeMulti.idPass';
+            const promises = reservations.map((reservation) => {
                 return new Promise((resolve, reject) => {
+                    // GMO取引状態参照
                     this.logger.info('requesting... ');
                     request.post({
                         url: gmoUrl,
@@ -193,8 +220,11 @@ class ReservationController extends BaseController_1.default {
                             return reject(error);
                         if (response.statusCode !== 200)
                             return reject(new Error(`statusCode is ${response.statusCode}`));
-                        let searchTradeResult = querystring.parse(body);
+                        const searchTradeResult = querystring.parse(body);
+                        // GMOにない、あるいは、UNPROCESSEDであれば離脱データ
                         if (searchTradeResult['ErrCode']) {
+                            // M01-M01004002
+                            // 指定されたオーダーIDの取引は登録されていません。
                             if (searchTradeResult['ErrCode'] === 'M01' && searchTradeResult['ErrInfo'] === 'M01004002') {
                                 paymentNos4release.push(reservation.get('payment_no'));
                             }
@@ -216,8 +246,9 @@ class ReservationController extends BaseController_1.default {
                     process.exit(0);
                     return;
                 }
+                // 内部で確保する仕様の場合
                 ttts_domain_1.Models.Staff.findOne({
-                    user_id: "2016sagyo2"
+                    user_id: '2016sagyo2'
                 }, (err, staff) => {
                     this.logger.info('staff found.', err, staff);
                     if (err) {
@@ -229,21 +260,22 @@ class ReservationController extends BaseController_1.default {
                     ttts_domain_1.Models.Reservation.update({
                         payment_no: { $in: paymentNos4release }
                     }, {
-                        "status": ttts_domain_2.ReservationUtil.STATUS_RESERVED,
-                        "purchaser_group": ttts_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
-                        "charge": 0,
-                        "ticket_type_charge": 0,
-                        "ticket_type_name_en": "Free",
-                        "ticket_type_name_ja": "無料",
-                        "ticket_type_code": "00",
-                        "staff": staff.get('_id'),
-                        "staff_user_id": staff.get('user_id'),
-                        "staff_email": staff.get('email'),
-                        "staff_name": staff.get('name'),
-                        "staff_signature": "system",
-                        "updated_user": "system",
-                        "watcher_name_updated_at": null,
-                        "watcher_name": ""
+                        status: ttts_domain_2.ReservationUtil.STATUS_RESERVED,
+                        purchaser_group: ttts_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
+                        charge: 0,
+                        ticket_type_charge: 0,
+                        ticket_type_name_en: 'Free',
+                        ticket_type_name_ja: '無料',
+                        ticket_type_code: '00',
+                        staff: staff.get('_id'),
+                        staff_user_id: staff.get('user_id'),
+                        staff_email: staff.get('email'),
+                        staff_name: staff.get('name'),
+                        staff_signature: 'system',
+                        updated_user: 'system',
+                        // "purchased_at": Date.now(), // 購入日更新しない
+                        watcher_name_updated_at: null,
+                        watcher_name: ''
                     }, {
                         multi: true
                     }, (err, raw) => {
