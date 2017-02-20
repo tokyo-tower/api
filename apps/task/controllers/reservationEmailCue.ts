@@ -191,7 +191,7 @@ export function sendOne(cb: () => void): void {
                             const attachmentLogo = new sendgrid.mail.Attachment();
                             attachmentLogo.setFilename('logo.png');
                             attachmentLogo.setType('image/png');
-                            attachmentLogo.setContent(fs.readFileSync(`${__dirname}/../../../../public/images/email/logo.png`).toString('base64'));
+                            attachmentLogo.setContent(fs.readFileSync(`${__dirname}/../../../public/images/email/logo.png`).toString('base64'));
                             attachmentLogo.setDisposition('inline');
                             attachmentLogo.setContentId('logo');
                             mail.addAttachment(attachmentLogo);
