@@ -7,6 +7,7 @@ typings/*
 iisnode/*
 env_dev.bat
 docs/
+.vscode/
 
 !.gitignore
 !.gitkeep
