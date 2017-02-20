@@ -1,13 +1,13 @@
 {
-    "official_website_url": "devtttsfrontendprototype.azurewebsites.net",
-    "dns_name": "devtttsfrontendprototype.azurewebsites.net",
-    "dns_name_for_gmo_result": "devtttsfrontendprototype.azurewebsites.net",
+    "official_website_url": "devtttsfrontend.azurewebsites.net",
+    "dns_name": "devtttsfrontend.azurewebsites.net",
+    "dns_name_for_gmo_result": "devtttsfrontend.azurewebsites.net",
     "meta": {
         "keywords": "東京タワー, 2016, TTTS, コンペティション,Competiton,",
         "description": "東京タワーは2016年10月25日（火）から11月3日（木・祝）の10日間開催いたします。"
     },
     "email": {
-        "from": "noreply@devtttsfrontendprototype.azurewebsites.net",
+        "from": "noreply@devtttsfrontend.azurewebsites.net",
         "fromname": "TOKYO TOWER Online Ticket"
     },
 
