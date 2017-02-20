@@ -3,11 +3,11 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const setLocale_1 = require("../middlewares/setLocale");
-const AuthController = require("../controllers/Auth/AuthController");
-const OtherController = require("../controllers/Other/OtherController");
-const PerformanceController = require("../controllers/Performance/PerformanceController");
-const ReservationController = require("../controllers/Reservation/ReservationController");
-const ScreenController = require("../controllers/Screen/ScreenController");
+const AuthController = require("../controllers/auth");
+const OtherController = require("../controllers/other");
+const PerformanceController = require("../controllers/performance");
+const ReservationController = require("../controllers/reservation");
+const ScreenController = require("../controllers/screen");
 /**
  * URLルーティング
  */

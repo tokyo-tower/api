@@ -6,6 +6,7 @@ npm-debug.log
 typings/*
 iisnode/*
 env_dev.bat
+docs/
 
 !.gitignore
 !.gitkeep

@@ -4,11 +4,11 @@ const router = express.Router();
 import * as passport from 'passport';
 import setLocale from '../middlewares/setLocale';
 
-import * as AuthController from '../controllers/Auth/AuthController';
-import * as OtherController from '../controllers/Other/OtherController';
-import * as PerformanceController from '../controllers/Performance/PerformanceController';
-import * as ReservationController from '../controllers/Reservation/ReservationController';
-import * as ScreenController from '../controllers/Screen/ScreenController';
+import * as AuthController from '../controllers/auth';
+import * as OtherController from '../controllers/other';
+import * as PerformanceController from '../controllers/performance';
+import * as ReservationController from '../controllers/reservation';
+import * as ScreenController from '../controllers/screen';
 
 /**
  * URLルーティング

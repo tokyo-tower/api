@@ -6,8 +6,6 @@
         "apps/**/*.js": true,
         "bin/**/*.js": true,
         "common/**/*.js": true,
-        "test/**/*.js": true,
-        "*.js": true
-    },
-    "typescript.tsdk": "C:\\Users\\Tetsu\\AppData\\Roaming\\npm\\node_modules\\typescript\\lib"
+        "test/**/*.js": true
+    }
 }

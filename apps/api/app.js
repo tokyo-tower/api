@@ -3,7 +3,6 @@
  * expressアプリケーション
  *
  * @module app
- * @global
  */
 const bodyParser = require("body-parser");
 const conf = require("config");
