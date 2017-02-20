@@ -26,7 +26,7 @@ function show(req, res, next) {
         }
         // スクリーン座席表HTMLを出力
         res.type('txt');
-        fs.readFile(`${__dirname}/../../../../common/views/screens/${req.params.id}.ejs`, 'utf8', (readFileErr, data) => {
+        fs.readFile(`${__dirname}/../../../common/views/screens/${req.params.id}.ejs`, 'utf8', (readFileErr, data) => {
             if (readFileErr)
                 return next(readFileErr);
             res.send(data);
