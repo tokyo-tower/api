@@ -4,8 +4,8 @@
  * @namespace task/ReservationController
  */
 "use strict";
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
-const ttts_domain_2 = require("@motionpicture/ttts-domain");
+const chevre_domain_1 = require("@motionpicture/chevre-domain");
+const chevre_domain_2 = require("@motionpicture/chevre-domain");
 const GMOUtil = require("../../../common/Util/GMO/GMOUtil");
 const conf = require("config");
 const log4js = require("log4js");
@@ -37,8 +37,8 @@ function removeTmps() {
     mongoose.connect(MONGOLAB_URI, {});
     const BUFFER_PERIOD_SECONDS = 60;
     logger.info('removing temporary reservations...');
-    ttts_domain_1.Models.Reservation.remove({
-        status: ttts_domain_2.ReservationUtil.STATUS_TEMPORARY,
+    chevre_domain_1.Models.Reservation.remove({
+        status: chevre_domain_2.ReservationUtil.STATUS_TEMPORARY,
         expired_at: {
             // 念のため、仮予約有効期間より1分長めにしておく
             $lt: moment().add(-BUFFER_PERIOD_SECONDS, 'seconds').toISOString()
@@ -54,15 +54,15 @@ function removeTmps() {
 }
 exports.removeTmps = removeTmps;
 /**
- * TTTS確保上の仮予約をTTTS確保へ戻す
+ * CHEVRE確保上の仮予約をCHEVRE確保へ戻す
  *
  * @memberOf task/ReservationController
  */
 function tmp2tiff() {
     mongoose.connect(MONGOLAB_URI, {});
     const BUFFER_PERIOD_SECONDS = 60;
-    ttts_domain_1.Models.Reservation.distinct('_id', {
-        status: ttts_domain_2.ReservationUtil.STATUS_TEMPORARY_ON_KEPT_BY_TTTS,
+    chevre_domain_1.Models.Reservation.distinct('_id', {
+        status: chevre_domain_2.ReservationUtil.STATUS_TEMPORARY_ON_KEPT_BY_CHEVRE,
         expired_at: {
             // 念のため、仮予約有効期間より1分長めにしておく
             $lt: moment().add(-BUFFER_PERIOD_SECONDS, 'seconds').toISOString()
@@ -74,9 +74,9 @@ function tmp2tiff() {
         }
         const promises = ids.map((id) => {
             return new Promise((resolve, reject) => {
-                logger.info('updating to STATUS_KEPT_BY_TTTS...id:', id);
-                ttts_domain_1.Models.Reservation.findOneAndUpdate({ _id: id }, { status: ttts_domain_2.ReservationUtil.STATUS_KEPT_BY_TTTS }, { new: true }, (updateErr, reservation) => {
-                    logger.info('updated to STATUS_KEPT_BY_TTTS. id:', id, updateErr, reservation);
+                logger.info('updating to STATUS_KEPT_BY_CHEVRE...id:', id);
+                chevre_domain_1.Models.Reservation.findOneAndUpdate({ _id: id }, { status: chevre_domain_2.ReservationUtil.STATUS_KEPT_BY_CHEVRE }, { new: true }, (updateErr, reservation) => {
+                    logger.info('updated to STATUS_KEPT_BY_CHEVRE. id:', id, updateErr, reservation);
                     (updateErr) ? reject(updateErr) : resolve();
                 });
             });
@@ -102,7 +102,7 @@ function releaseSeatsKeptByMembers() {
     if (moment(conf.get('datetimes.reservation_end_members')) < moment()) {
         mongoose.connect(MONGOLAB_URI);
         // 内部関係者で確保する
-        ttts_domain_1.Models.Staff.findOne({
+        chevre_domain_1.Models.Staff.findOne({
             user_id: '2016sagyo2'
         }, 
         // tslint:disable-next-line:max-func-body-length
@@ -114,15 +114,15 @@ function releaseSeatsKeptByMembers() {
                 return;
             }
             // 購入番号発行
-            ttts_domain_2.ReservationUtil.publishPaymentNo((publishErr, paymentNo) => {
+            chevre_domain_2.ReservationUtil.publishPaymentNo((publishErr, paymentNo) => {
                 logger.info('paymentNo is', paymentNo);
                 if (publishErr) {
                     mongoose.disconnect();
                     process.exit(0);
                     return;
                 }
-                ttts_domain_1.Models.Reservation.find({
-                    status: ttts_domain_2.ReservationUtil.STATUS_KEPT_BY_MEMBER
+                chevre_domain_1.Models.Reservation.find({
+                    status: chevre_domain_2.ReservationUtil.STATUS_KEPT_BY_MEMBER
                 }, (findReservationErr, reservations) => {
                     if (findReservationErr) {
                         mongoose.disconnect();
@@ -132,7 +132,7 @@ function releaseSeatsKeptByMembers() {
                     const promises = reservations.map((reservation, index) => {
                         return new Promise((resolve, reject) => {
                             logger.info('finding performance...');
-                            ttts_domain_1.Models.Performance.findOne({
+                            chevre_domain_1.Models.Performance.findOne({
                                 _id: reservation.get('performance')
                             })
                                 .populate('film', 'name is_mx4d copyright')
@@ -143,7 +143,7 @@ function releaseSeatsKeptByMembers() {
                                     return reject(findPerformanceErr);
                                 logger.info('updating reservation...');
                                 reservation.update({
-                                    status: ttts_domain_2.ReservationUtil.STATUS_RESERVED,
+                                    status: chevre_domain_2.ReservationUtil.STATUS_RESERVED,
                                     staff: staff.get('_id'),
                                     staff_user_id: staff.get('user_id'),
                                     staff_email: staff.get('email'),
@@ -173,7 +173,7 @@ function releaseSeatsKeptByMembers() {
                                     performance_start_time: performance.get('start_time'),
                                     performance_open_time: performance.get('open_time'),
                                     performance_day: performance.get('day'),
-                                    purchaser_group: ttts_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
+                                    purchaser_group: chevre_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
                                     payment_no: paymentNo,
                                     payment_seat_index: index,
                                     charge: 0,
@@ -221,8 +221,8 @@ function releaseGarbages() {
     mongoose.connect(MONGOLAB_URI);
     // 一定期間WAITING_SETTLEMENTの予約を抽出
     const WAITING_PERIOD_HOURS = 2;
-    ttts_domain_1.Models.Reservation.find({
-        status: ttts_domain_2.ReservationUtil.STATUS_WAITING_SETTLEMENT,
+    chevre_domain_1.Models.Reservation.find({
+        status: chevre_domain_2.ReservationUtil.STATUS_WAITING_SETTLEMENT,
         updated_at: { $lt: moment().add(-WAITING_PERIOD_HOURS, 'hours').toISOString() }
     }, 
     // tslint:disable-next-line:max-func-body-length
@@ -234,7 +234,7 @@ function releaseGarbages() {
             return;
         }
         const paymentNos4release = [];
-        const gmoUrl = (process.env.NODE_ENV === 'prod') ? 'https://p01.mul-pay.jp/payment/SearchTradeMulti.idPass' : 'https://pt01.mul-pay.jp/payment/SearchTradeMulti.idPass';
+        const gmoUrl = (process.env.NODE_ENV === 'production') ? 'https://p01.mul-pay.jp/payment/SearchTradeMulti.idPass' : 'https://pt01.mul-pay.jp/payment/SearchTradeMulti.idPass';
         const promises = reservations.map((reservation) => {
             return new Promise((resolve, reject) => {
                 // GMO取引状態参照
@@ -281,7 +281,7 @@ function releaseGarbages() {
                 return;
             }
             // 内部で確保する仕様の場合
-            ttts_domain_1.Models.Staff.findOne({
+            chevre_domain_1.Models.Staff.findOne({
                 user_id: '2016sagyo2'
             }, (findStaffErr, staff) => {
                 logger.info('staff found.', findStaffErr, staff);
@@ -291,11 +291,11 @@ function releaseGarbages() {
                     return;
                 }
                 logger.info('updating reservations...');
-                ttts_domain_1.Models.Reservation.update({
+                chevre_domain_1.Models.Reservation.update({
                     payment_no: { $in: paymentNos4release }
                 }, {
-                    status: ttts_domain_2.ReservationUtil.STATUS_RESERVED,
-                    purchaser_group: ttts_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
+                    status: chevre_domain_2.ReservationUtil.STATUS_RESERVED,
+                    purchaser_group: chevre_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
                     charge: 0,
                     ticket_type_charge: 0,
                     ticket_type_name_en: 'Free',

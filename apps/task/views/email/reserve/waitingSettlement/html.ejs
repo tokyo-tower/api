@@ -11,7 +11,7 @@
 <body>
 
 <div style="background-color:#fff;height:80px;text-align:center;">
-    <img src="cid:logo" alt="東京タワー" >
+    <img src="cid:logo" alt="CHEVRE_EVENT_NAME" >
 </div>
 
 <%
@@ -26,7 +26,7 @@ let paymentTerm = moment(reservations[0].get('purchased_at')).add(2, 'days');
     <p style="font-weight:bold;font-size:12px;">Dear <%= reservations[0].get('purchaser_name_en') %>,</p>
 
     <p style="font-size:14px;">
-        この度は東京タワーチケットサイトをご利用いただき誠にありがとうございます。<br>
+        この度はCHEVRE_EVENT_NAMEチケットサイトをご利用いただき誠にありがとうございます。<br>
         下記の内容にて仮予約を承りました。<br>
         ご確認の上、お支払期限までにお近くのファミリーマートにて購入された日を含む3日以内（<%- paymentTerm.format('M月DD日') %>まで）にお支払い下さい。
     </p>
@@ -221,17 +221,17 @@ let paymentTerm = moment(reservations[0].get('purchased_at')).add(2, 'days');
     <hr>
 
 
-    <strong style="font-size:14px;">東京タワー  TTTS 2016</strong>
+    <strong style="font-size:14px;">CHEVRE_EVENT_NAME  CHEVRE 2016</strong>
     <p style="font-size:14px;">
         本メールアドレスは送信専用です。返信はできませんのであらかじめご了承ください。<br>
         本メールに心当たりのない方やチケットに関してご不明な点は、下記電話番号までお問い合わせください。<br>
-        チケットのお問合せ：050-3786-0368　/12:00～18:00（休業：土/日/祝日　東京タワー開催期間中は無休）<br>
+        チケットのお問合せ：050-3786-0368　/12:00～18:00（休業：土/日/祝日　CHEVRE_EVENT_NAME開催期間中は無休）<br>
         オフィシャルサイト： <a href="<%= conf.get('official_website_url') %>" target="_blank" style="color:#000;"><%= conf.get('official_website_url') %></a>
     </p>
     <p style="font-size:10px;">
         This email was sent from a send-only address. Please do not reply to this message.<br>
         If you are not the intended recipient of this email or have any questions about tickets, Please contact us at the telephone number below.
-        For inquiries about tickets: 050-3786-0368/12:00 p.m. to 6:00 p.m. (Closed on Saturdays, Sundays, and national holidays, except during TTTS)
+        For inquiries about tickets: 050-3786-0368/12:00 p.m. to 6:00 p.m. (Closed on Saturdays, Sundays, and national holidays, except during CHEVRE)
         Official website: <a href="<%= conf.get('official_website_url') %>" target="_blank" style="color:#000;"><%= conf.get('official_website_url') %></a>
     </p>
 

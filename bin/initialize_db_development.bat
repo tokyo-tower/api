@@ -1,5 +1,6 @@
+cd /d %~dp0
 cd ../
-set NODE_ENV=dev
+set NODE_ENV=development
 node bin/command schema createCollections
 node bin/command schema dropIndexes
 node bin/command schema createIndexes

@@ -4,7 +4,7 @@
  * @namespace task/TelController
  */
 "use strict";
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
+const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const Util = require("../../../common/Util/Util");
 const conf = require("config");
 const crypto = require("crypto");
@@ -45,7 +45,7 @@ function createFromJson() {
             return telStaff;
         });
         logger.info('removing all telStaffs...');
-        ttts_domain_1.Models.TelStaff.remove({}, (removeErr) => {
+        chevre_domain_1.Models.TelStaff.remove({}, (removeErr) => {
             if (removeErr) {
                 logger.info('telStaffs removed.', err);
                 mongoose.disconnect();
@@ -53,7 +53,7 @@ function createFromJson() {
                 return;
             }
             logger.debug('creating telStaffs...');
-            ttts_domain_1.Models.TelStaff.create(telStaffs, (createErr) => {
+            chevre_domain_1.Models.TelStaff.create(telStaffs, (createErr) => {
                 logger.info('telStaffs created.', createErr);
                 mongoose.disconnect();
                 process.exit(0);

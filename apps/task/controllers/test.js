@@ -4,8 +4,8 @@
  * @namespace task/TestController
  */
 "use strict";
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
-const ttts_domain_2 = require("@motionpicture/ttts-domain");
+const chevre_domain_1 = require("@motionpicture/chevre-domain");
+const chevre_domain_2 = require("@motionpicture/chevre-domain");
 const Util = require("../../../common/Util/Util");
 const conf = require("config");
 const fs = require("fs-extra");
@@ -36,7 +36,7 @@ const logger = log4js.getLogger('system');
  */
 function publishPaymentNo() {
     mongoose.connect(MONGOLAB_URI, {});
-    ttts_domain_2.ReservationUtil.publishPaymentNo((err, paymentNo) => {
+    chevre_domain_2.ReservationUtil.publishPaymentNo((err, paymentNo) => {
         logger.info('paymentNo is', err, paymentNo);
         mongoose.disconnect();
         process.exit(0);
@@ -120,13 +120,13 @@ exports.listIndexes = listIndexes;
 function testCreateConnection() {
     const uri = 'mongodb://dev4gmotiffmlabmongodbuser:Yrpx-rPjr_Qjx79_R4HaknsfMEbyrQjp4NiF-XKj@ds048719.mlab.com:48719/dev4gmotiffmlabmongodb';
     mongoose.connect(MONGOLAB_URI, {});
-    ttts_domain_1.Models.Reservation.count({}, (err, count) => {
+    chevre_domain_1.Models.Reservation.count({}, (err, count) => {
         logger.info('count', err, count);
         const db4gmo = mongoose.createConnection(uri);
         db4gmo.collection('reservations').count({}, (err2, count2) => {
             logger.info('count', err2, count2);
             db4gmo.close();
-            ttts_domain_1.Models.Reservation.count({}, (err3, count3) => {
+            chevre_domain_1.Models.Reservation.count({}, (err3, count3) => {
                 logger.info('count', err3, count3);
                 mongoose.disconnect();
                 process.exit(0);
@@ -143,7 +143,7 @@ exports.testCreateConnection = testCreateConnection;
 // tslint:disable-next-line:prefer-function-over-method
 function getPaymentNosWithEmail() {
     mongoose.connect(MONGOLAB_URI);
-    ttts_domain_1.Models.GMONotification.distinct('order_id', {
+    chevre_domain_1.Models.GMONotification.distinct('order_id', {
         // status:{$in:["CAPTURE","PAYSUCCESS"]},
         status: { $in: ['PAYSUCCESS'] },
         processed: true
@@ -191,7 +191,7 @@ function createEmailCues() {
         });
         mongoose.connect(MONGOLAB_URI);
         logger.info('creating ReservationEmailCues...length:', cues.length);
-        ttts_domain_1.Models.ReservationEmailCue.insertMany(cues, (insertErr) => {
+        chevre_domain_1.Models.ReservationEmailCue.insertMany(cues, (insertErr) => {
             logger.info('ReservationEmailCues created.', insertErr);
             mongoose.disconnect();
             process.exit(0);
@@ -207,12 +207,12 @@ exports.createEmailCues = createEmailCues;
 // tslint:disable-next-line:prefer-function-over-method
 function release() {
     mongoose.connect(MONGOLAB_URI);
-    ttts_domain_1.Models.Reservation.count({
-        status: ttts_domain_2.ReservationUtil.STATUS_KEPT_BY_TTTS
+    chevre_domain_1.Models.Reservation.count({
+        status: chevre_domain_2.ReservationUtil.STATUS_KEPT_BY_CHEVRE
     }, (err, count) => {
         console.log(err, count);
         // Models.Reservation.remove({
-        //     status: ReservationUtil.STATUS_KEPT_BY_TTTS
+        //     status: ReservationUtil.STATUS_KEPT_BY_CHEVRE
         // }, (err) => {
         //     console.log(err);
         mongoose.disconnect();
@@ -228,7 +228,7 @@ exports.release = release;
 function gmoNotificationProcessing2unprocess() {
     mongoose.connect(MONGOLAB_URI);
     logger.info('updating GMONotification...');
-    ttts_domain_1.Models.GMONotification.update({
+    chevre_domain_1.Models.GMONotification.update({
         process_status: 'PROCESSING',
         updated_at: {
             $lt: moment().add(-1, 'hour').toISOString()

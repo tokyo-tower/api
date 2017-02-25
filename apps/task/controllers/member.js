@@ -4,7 +4,7 @@
  * @namespace task/MemberController
  */
 "use strict";
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
+const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const Util = require("../../../common/Util/Util");
 const conf = require("config");
 const crypto = require("crypto");
@@ -48,11 +48,11 @@ function createFromJson() {
             };
         });
         logger.info('removing all members...');
-        ttts_domain_1.Models.Member.remove({}, (removeErr) => {
+        chevre_domain_1.Models.Member.remove({}, (removeErr) => {
             if (removeErr)
                 throw removeErr;
             logger.debug('creating members...');
-            ttts_domain_1.Models.Member.create(members, (createErr) => {
+            chevre_domain_1.Models.Member.create(members, (createErr) => {
                 logger.info('members created.', createErr);
                 mongoose.disconnect();
                 process.exit(0);
@@ -77,7 +77,7 @@ function createReservationsFromJson() {
             return new Promise((resolve, reject) => {
                 logger.info('removing reservation...');
                 // すでに予約があれば削除してから新規作成
-                ttts_domain_1.Models.Reservation.remove({
+                chevre_domain_1.Models.Reservation.remove({
                     performance: reservationFromJson.performance,
                     seat_code: reservationFromJson.seat_code
                 }, (removeErr) => {
@@ -85,7 +85,7 @@ function createReservationsFromJson() {
                     if (removeErr)
                         return reject(removeErr);
                     logger.info('creating reservationFromJson...', reservationFromJson);
-                    ttts_domain_1.Models.Reservation.create(reservationFromJson, (createErr) => {
+                    chevre_domain_1.Models.Reservation.create(reservationFromJson, (createErr) => {
                         logger.info('reservationFromJson created.', createErr);
                         (createErr) ? reject(createErr) : resolve();
                     });

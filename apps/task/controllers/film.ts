@@ -4,7 +4,7 @@
  * @namespace task/FilmController
  */
 
-import { Models } from '@motionpicture/ttts-domain';
+import { Models } from '@motionpicture/chevre-domain';
 
 import * as conf from 'config';
 import * as fs from 'fs-extra';

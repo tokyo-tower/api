@@ -4,7 +4,7 @@
  * @namespace api/PerformanceController
  */
 "use strict";
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
+const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const conf = require("config");
 const moment = require("moment");
 const DEFAULT_RADIX = 10;
@@ -80,7 +80,7 @@ function search(req, res) {
             };
         }
         // 作品件数取得
-        ttts_domain_1.Models.Performance.distinct('film', conditions, (distinctErr, filmIds) => {
+        chevre_domain_1.Models.Performance.distinct('film', conditions, (distinctErr, filmIds) => {
             if (distinctErr) {
                 res.json({
                     success: false,
@@ -91,7 +91,7 @@ function search(req, res) {
                 return;
             }
             // 総数検索
-            ttts_domain_1.Models.Performance.count(conditions, (countErr, performancesCount) => {
+            chevre_domain_1.Models.Performance.count(conditions, (countErr, performancesCount) => {
                 if (countErr) {
                     res.json({
                         success: false,
@@ -109,7 +109,7 @@ function search(req, res) {
                 else {
                     fields = 'day open_time start_time film screen screen_name.en theater theater_name.en';
                 }
-                const query = ttts_domain_1.Models.Performance.find(conditions, fields);
+                const query = chevre_domain_1.Models.Performance.find(conditions, fields);
                 if (limit) {
                     query.skip(limit * (page - 1)).limit(limit);
                 }
@@ -137,7 +137,7 @@ function search(req, res) {
                         return;
                     }
                     // 空席情報を追加
-                    ttts_domain_1.PerformanceStatusesModel.find((findPerformanceStatusesErr, performanceStatuses) => {
+                    chevre_domain_1.PerformanceStatusesModel.find((findPerformanceStatusesErr, performanceStatuses) => {
                         if (findPerformanceStatusesErr) {
                             console.error(findPerformanceStatusesErr);
                         }
@@ -201,7 +201,7 @@ function addFilmConditions(andConditions, section, words, cb) {
         const filmConditions = {
             $and: filmAndConditions
         };
-        ttts_domain_1.Models.Film.distinct('_id', filmConditions, (err, filmIds) => {
+        chevre_domain_1.Models.Film.distinct('_id', filmConditions, (err, filmIds) => {
             if (err) {
                 // 検索結果のない条件を追加
                 andConditions.push({

@@ -8,7 +8,7 @@ import * as express from 'express';
 import * as log4js from 'log4js';
 
 export default (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    if (process.env.NODE_ENV === 'dev') {
+    if (process.env.NODE_ENV === 'development') {
         const startMemory = process.memoryUsage();
         const startTime = process.hrtime();
         const logger = log4js.getLogger('system');

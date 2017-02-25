@@ -4,7 +4,7 @@
  * @namespace task/PerformanceController
  */
 "use strict";
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
+const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const conf = require("config");
 const fs = require("fs-extra");
 const log4js = require("log4js");
@@ -36,7 +36,7 @@ function createFromJson() {
         if (readFileErr)
             throw readFileErr;
         const performances = JSON.parse(data);
-        ttts_domain_1.Models.Screen.find({}, 'name theater').populate('theater', 'name').exec((err, screens) => {
+        chevre_domain_1.Models.Screen.find({}, 'name theater').populate('theater', 'name').exec((err, screens) => {
             if (err)
                 throw err;
             // あれば更新、なければ追加
@@ -51,7 +51,7 @@ function createFromJson() {
                     performance.screen_name = screenOfPerformance.get('name');
                     performance.theater_name = screenOfPerformance.get('theater').get('name');
                     logger.debug('updating performance...');
-                    ttts_domain_1.Models.Performance.findOneAndUpdate({ _id: performance._id }, performance, {
+                    chevre_domain_1.Models.Performance.findOneAndUpdate({ _id: performance._id }, performance, {
                         new: true,
                         upsert: true
                     }, (updateErr) => {
@@ -81,7 +81,7 @@ exports.createFromJson = createFromJson;
 function updateStatuses() {
     mongoose.connect(MONGOLAB_URI, {});
     logger.info('finding performances...');
-    ttts_domain_1.Models.Performance.find({}, 'day start_time screen')
+    chevre_domain_1.Models.Performance.find({}, 'day start_time screen')
         .populate('screen', 'seats_number')
         .exec((err, performances) => {
         logger.info('performances found.', err);
@@ -90,9 +90,9 @@ function updateStatuses() {
             process.exit(0);
             return;
         }
-        const performanceStatusesModel = ttts_domain_1.PerformanceStatusesModel.create();
+        const performanceStatusesModel = chevre_domain_1.PerformanceStatusesModel.create();
         logger.info('aggregating...');
-        ttts_domain_1.Models.Reservation.aggregate([
+        chevre_domain_1.Models.Reservation.aggregate([
             {
                 $group: {
                     _id: '$performance',
@@ -121,7 +121,7 @@ function updateStatuses() {
                 performanceStatusesModel.setStatus(performance._id.toString(), status);
             });
             logger.info('saving performanceStatusesModel...', performanceStatusesModel);
-            ttts_domain_1.PerformanceStatusesModel.store(performanceStatusesModel, (storeErr) => {
+            chevre_domain_1.PerformanceStatusesModel.store(performanceStatusesModel, (storeErr) => {
                 logger.info('performanceStatusesModel saved.', storeErr);
                 mongoose.disconnect();
                 process.exit(0);
@@ -138,7 +138,7 @@ exports.updateStatuses = updateStatuses;
 function release(performanceId) {
     mongoose.connect(MONGOLAB_URI, {});
     logger.info('updating performance..._id:', performanceId);
-    ttts_domain_1.Models.Performance.findOneAndUpdate({
+    chevre_domain_1.Models.Performance.findOneAndUpdate({
         _id: performanceId
     }, {
         canceled: false

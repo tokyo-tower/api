@@ -4,7 +4,7 @@
  * @namespace task/PreCustomerController
  */
 "use strict";
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
+const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const Util = require("../../../common/Util/Util");
 const conf = require("config");
 const crypto = require("crypto");
@@ -73,11 +73,11 @@ function createFromJson() {
             preCustomer.password_hash = Util.createHash(preCustomer.password, passwordSalt);
             return preCustomer;
         });
-        ttts_domain_1.Models.PreCustomer.remove((removeErr) => {
+        chevre_domain_1.Models.PreCustomer.remove((removeErr) => {
             if (removeErr)
                 throw removeErr;
             logger.debug('creating perCustomers...length:', docs.length);
-            ttts_domain_1.Models.PreCustomer.insertMany(docs, (insertErr) => {
+            chevre_domain_1.Models.PreCustomer.insertMany(docs, (insertErr) => {
                 logger.debug('perCustomers created.', insertErr);
                 mongoose.disconnect();
                 process.exit(0);

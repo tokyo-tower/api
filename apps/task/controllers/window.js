@@ -4,7 +4,7 @@
  * @namespace task/WindowController
  */
 "use strict";
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
+const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const Util = require("../../../common/Util/Util");
 const conf = require("config");
 const crypto = require("crypto");
@@ -45,11 +45,11 @@ function createFromJson() {
             return window;
         });
         logger.info('removing all windows...');
-        ttts_domain_1.Models.Window.remove({}, (removeErr) => {
+        chevre_domain_1.Models.Window.remove({}, (removeErr) => {
             if (removeErr)
                 throw removeErr;
             logger.debug('creating windows...');
-            ttts_domain_1.Models.Window.create(windows, (createErr) => {
+            chevre_domain_1.Models.Window.create(windows, (createErr) => {
                 logger.info('windows created.', createErr);
                 mongoose.disconnect();
                 process.exit(0);

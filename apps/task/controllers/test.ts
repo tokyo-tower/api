@@ -4,8 +4,8 @@
  * @namespace task/TestController
  */
 
-import { Models } from '@motionpicture/ttts-domain';
-import { ReservationUtil } from '@motionpicture/ttts-domain';
+import { Models } from '@motionpicture/chevre-domain';
+import { ReservationUtil } from '@motionpicture/chevre-domain';
 import * as Util from '../../../common/Util/Util';
 
 import * as conf from 'config';
@@ -244,12 +244,12 @@ export function release(): void {
     mongoose.connect(MONGOLAB_URI);
     Models.Reservation.count(
         {
-            status: ReservationUtil.STATUS_KEPT_BY_TTTS
+            status: ReservationUtil.STATUS_KEPT_BY_CHEVRE
         },
         (err, count) => {
             console.log(err, count);
             // Models.Reservation.remove({
-            //     status: ReservationUtil.STATUS_KEPT_BY_TTTS
+            //     status: ReservationUtil.STATUS_KEPT_BY_CHEVRE
             // }, (err) => {
             //     console.log(err);
             mongoose.disconnect();

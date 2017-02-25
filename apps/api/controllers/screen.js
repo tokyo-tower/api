@@ -4,7 +4,7 @@
  * @namespace api/ScreenController
  */
 "use strict";
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
+const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const fs = require("fs-extra");
 /**
  * スクリーンの座席マップを生成する
@@ -13,7 +13,7 @@ const fs = require("fs-extra");
  */
 function show(req, res, next) {
     // スクリーンを取得
-    ttts_domain_1.Models.Screen.count({
+    chevre_domain_1.Models.Screen.count({
         _id: req.params.id
     }, (err, count) => {
         if (err) {

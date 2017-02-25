@@ -4,9 +4,9 @@
  * @namespace task/ReservationEmailCueController
  */
 
-import { Models } from '@motionpicture/ttts-domain';
-import { ReservationUtil } from '@motionpicture/ttts-domain';
-import { ReservationEmailCueUtil } from '@motionpicture/ttts-domain';
+import { Models } from '@motionpicture/chevre-domain';
+import { ReservationUtil } from '@motionpicture/chevre-domain';
+import { ReservationEmailCueUtil } from '@motionpicture/chevre-domain';
 import * as GMOUtil from '../../../common/Util/GMO/GMOUtil';
 import * as Util from '../../../common/Util/Util';
 
@@ -121,12 +121,12 @@ export function sendOne(cb: () => void): void {
                                 // 1.5次販売はメールテンプレート別
                                 if (reservations[0].get('pre_customer')) {
                                     dir = `${process.cwd()}/apps/task/views/email/reserve/complete4preCustomer`;
-                                    titleJa = '東京タワーチケット 購入完了のお知らせ';
-                                    titleEn = 'Notice of Completion of TTTS Ticket Purchase';
+                                    titleJa = 'CHEVRE_EVENT_NAMEチケット 購入完了のお知らせ';
+                                    titleEn = 'Notice of Completion of CHEVRE Ticket Purchase';
                                 } else {
                                     dir = `${process.cwd()}/apps/task/views/email/reserve/complete`;
-                                    titleJa = '東京タワーチケット 購入完了のお知らせ';
-                                    titleEn = 'Notice of Completion of TTTS Ticket Purchase';
+                                    titleJa = 'CHEVRE_EVENT_NAMEチケット 購入完了のお知らせ';
+                                    titleEn = 'Notice of Completion of CHEVRE Ticket Purchase';
                                 }
 
                                 break;
@@ -134,12 +134,12 @@ export function sendOne(cb: () => void): void {
                                 // 1.5次販売はメールテンプレート別
                                 if (reservations[0].get('pre_customer')) {
                                     dir = `${process.cwd()}/apps/task/views/email/reserve/waitingSettlement4preCustomer`;
-                                    titleJa = '東京タワーチケット 仮予約完了のお知らせ';
-                                    titleEn = 'Notice of Completion of Tentative Reservation for TTTS Tickets';
+                                    titleJa = 'CHEVRE_EVENT_NAMEチケット 仮予約完了のお知らせ';
+                                    titleEn = 'Notice of Completion of Tentative Reservation for CHEVRE Tickets';
                                 } else {
                                     dir = `${process.cwd()}/apps/task/views/email/reserve/waitingSettlement`;
-                                    titleJa = '東京タワーチケット 仮予約完了のお知らせ';
-                                    titleEn = 'Notice of Completion of Tentative Reservation for TTTS Tickets';
+                                    titleJa = 'CHEVRE_EVENT_NAMEチケット 仮予約完了のお知らせ';
+                                    titleEn = 'Notice of Completion of Tentative Reservation for CHEVRE Tickets';
                                 }
 
                                 break;

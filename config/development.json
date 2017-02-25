@@ -1,26 +1,26 @@
 {
-    "official_website_url": "devtttsfrontend.azurewebsites.net",
-    "dns_name": "devtttsfrontend.azurewebsites.net",
-    "dns_name_for_gmo_result": "devtttsfrontend.azurewebsites.net",
+    "official_website_url": "devchevrefrontend.azurewebsites.net",
+    "dns_name": "devchevrefrontend.azurewebsites.net",
+    "dns_name_for_gmo_result": "devchevrefrontend.azurewebsites.net",
     "meta": {
-        "keywords": "東京タワー, 2016, TTTS, コンペティション,Competiton,",
-        "description": "東京タワーは2016年10月25日（火）から11月3日（木・祝）の10日間開催いたします。"
+        "keywords": "CHEVRE_EVENT_NAME, 2016, CHEVRE, コンペティション,Competiton,",
+        "description": "CHEVRE_EVENT_NAMEは2016年10月25日（火）から11月3日（木・祝）の10日間開催いたします。"
     },
     "email": {
-        "from": "noreply@devtttsfrontend.azurewebsites.net",
-        "fromname": "TOKYO TOWER Online Ticket"
+        "from": "noreply@devchevrefrontend.azurewebsites.net",
+        "fromname": "CHEVRE_EVENT_NAME Online Ticket"
     },
 
     "storage_account_name": "",
     "storage_account_key": "",
 
-    "mongolab_uri": "mongodb://devtttsmongodbuser:w6Zk6z62z3ZKBZ52Ku7kFstTRGmBfAVjXakKz8i6@ds056789.mlab.com:56789/devtttsmongodb",
-    "mongolab_uri_for_gmo": "mongodb://devtttsmongodbuser:w6Zk6z62z3ZKBZ52Ku7kFstTRGmBfAVjXakKz8i6@ds056789.mlab.com:56789/devtttsmongodb",
+    "mongolab_uri": "mongodb://devchevremongodbuser:w6Zk6z62z3ZKBZ52Ku7kFstTRGmBfAVjXakKz8i6@ds058369.mlab.com:58369/devchevre",
+    "mongolab_uri_for_gmo": "mongodb://devchevremongodbuser:w6Zk6z62z3ZKBZ52Ku7kFstTRGmBfAVjXakKz8i6@ds058369.mlab.com:58369/devchevre",
 
     "gmo_payment_site_id": "tsite00022126",
-    "gmo_payment_shop_id": "tshop00026838",
-    "gmo_payment_shop_password": "t5accmna",
-    "gmo_payment_api_link_multi_entry": "https://pt01.mul-pay.jp/link/tshop00026838/Multi/Entry",
+    "gmo_payment_shop_id": "tshop00027145",
+    "gmo_payment_shop_password": "q7rf5zwm",
+    "gmo_payment_api_link_multi_entry": "https://pt01.mul-pay.jp/link/tshop00027145/Multi/Entry",
 
     "datetimes": {
         "reservation_start_staffs": "2016-09-28T00:00:00+09:00",

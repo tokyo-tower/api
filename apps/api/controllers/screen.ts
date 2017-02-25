@@ -4,7 +4,7 @@
  * @namespace api/ScreenController
  */
 
-import { Models } from '@motionpicture/ttts-domain';
+import { Models } from '@motionpicture/chevre-domain';
 import { NextFunction, Request, Response } from 'express';
 import * as fs from 'fs-extra';
 

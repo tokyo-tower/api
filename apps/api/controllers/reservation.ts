@@ -4,8 +4,8 @@
  * @namespace api/ReservationController
  */
 
-import { Models } from '@motionpicture/ttts-domain';
-import { ReservationUtil } from '@motionpicture/ttts-domain';
+import { Models } from '@motionpicture/chevre-domain';
+import { ReservationUtil } from '@motionpicture/chevre-domain';
 
 import * as conf from 'config';
 import { Request, Response } from 'express';
@@ -55,7 +55,7 @@ export function email(req: Request, res: Response): void {
                 return;
             }
 
-            const titleJa = `${reservation.get('purchaser_name_ja')}様より東京タワーのチケットが届いております`;
+            const titleJa = `${reservation.get('purchaser_name_ja')}様よりCHEVRE_EVENT_NAMEのチケットが届いております`;
             const titleEn = `This is a notification that you have been invited to Tokyo International Film Festival by Mr./Ms. ${reservation.get('purchaser_name_en')}.`;
 
             res.render(

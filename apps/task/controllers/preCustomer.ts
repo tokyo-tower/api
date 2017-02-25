@@ -4,7 +4,7 @@
  * @namespace task/PreCustomerController
  */
 
-import { Models } from '@motionpicture/ttts-domain';
+import { Models } from '@motionpicture/chevre-domain';
 import * as Util from '../../../common/Util/Util';
 
 import * as conf from 'config';

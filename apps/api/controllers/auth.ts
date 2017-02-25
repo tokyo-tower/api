@@ -4,7 +4,7 @@
  * @namespace api/AuthController
  */
 
-import { Models } from '@motionpicture/ttts-domain';
+import { Models } from '@motionpicture/chevre-domain';
 import * as crypto from 'crypto';
 import { Request, Response } from 'express';
 

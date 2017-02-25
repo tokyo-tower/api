@@ -1,11 +1,11 @@
 iisnode.yml
-lock/*
-logs/*
-node_modules/*
-npm-debug.log
-typings/*
-iisnode/*
-env_dev.bat
+lock/
+logs/
+node_modules/
+npm-debug.log*
+typings/
+iisnode/
+.env*
 docs/
 .vscode/
 

@@ -11,7 +11,7 @@ import * as mongoose from 'mongoose';
 import * as passport from 'passport';
 import * as passportHttpBearer from 'passport-http-bearer';
 
-import { Models } from '@motionpicture/ttts-domain';
+import { Models } from '@motionpicture/chevre-domain';
 import benchmarks from './middlewares/benchmarks';
 import cors from './middlewares/cors';
 import logger from './middlewares/logger';
@@ -39,11 +39,11 @@ const app = express();
 
 app.use(cors);
 
-if (process.env.NODE_ENV === 'dev') {
+if (process.env.NODE_ENV === 'development') {
     app.use(logger); // ロガー
 }
 
-if (process.env.NODE_ENV !== 'prod') {
+if (process.env.NODE_ENV !== 'production') {
     // サーバーエラーテスト
     app.get('/api/500', (req) => {
         // req.on('data', (chunk) => {
@@ -97,7 +97,7 @@ app.use('/', router);
 (<any>mongoose).Promise = global.Promise;
 mongoose.connect(MONGOLAB_URI, {});
 
-if (process.env.NODE_ENV !== 'prod') {
+if (process.env.NODE_ENV !== 'production') {
     const db = mongoose.connection;
     db.on('connecting', () => {
         console.log('connecting');

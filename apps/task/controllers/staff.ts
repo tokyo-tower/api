@@ -4,8 +4,8 @@
  * @namespace task/StaffController
  */
 
-import { Models } from '@motionpicture/ttts-domain';
-import { ReservationUtil } from '@motionpicture/ttts-domain';
+import { Models } from '@motionpicture/chevre-domain';
+import { ReservationUtil } from '@motionpicture/chevre-domain';
 import * as Util from '../../../common/Util/Util';
 
 import * as conf from 'config';

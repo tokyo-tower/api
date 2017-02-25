@@ -25,4 +25,4 @@ skip_files:
 - ^typings$
 
 env_variables:
-  NODE_ENV: 'dev'
+  NODE_ENV: 'development'

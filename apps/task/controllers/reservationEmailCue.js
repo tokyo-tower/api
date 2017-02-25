@@ -4,9 +4,9 @@
  * @namespace task/ReservationEmailCueController
  */
 "use strict";
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
-const ttts_domain_2 = require("@motionpicture/ttts-domain");
-const ttts_domain_3 = require("@motionpicture/ttts-domain");
+const chevre_domain_1 = require("@motionpicture/chevre-domain");
+const chevre_domain_2 = require("@motionpicture/chevre-domain");
+const chevre_domain_3 = require("@motionpicture/chevre-domain");
 const GMOUtil = require("../../../common/Util/GMO/GMOUtil");
 const Util = require("../../../common/Util/Util");
 const conf = require("config");
@@ -60,10 +60,10 @@ exports.watch = watch;
  */
 function sendOne(cb) {
     logger.info('finding reservationEmailCue...');
-    ttts_domain_1.Models.ReservationEmailCue.findOneAndUpdate({
-        status: ttts_domain_3.ReservationEmailCueUtil.STATUS_UNSENT
+    chevre_domain_1.Models.ReservationEmailCue.findOneAndUpdate({
+        status: chevre_domain_3.ReservationEmailCueUtil.STATUS_UNSENT
     }, {
-        status: ttts_domain_3.ReservationEmailCueUtil.STATUS_SENDING
+        status: chevre_domain_3.ReservationEmailCueUtil.STATUS_SENDING
     }, { new: true }, (err, cue) => {
         logger.info('reservationEmailCue found.', err, cue);
         if (err)
@@ -74,7 +74,7 @@ function sendOne(cb) {
         Util.getReservationLogger(cue.get('payment_no'), (getReservationLoggerErr, loggerOfReservation) => {
             if (getReservationLoggerErr)
                 return next(getReservationLoggerErr, cue, logger, cb);
-            ttts_domain_1.Models.Reservation.find({
+            chevre_domain_1.Models.Reservation.find({
                 payment_no: cue.get('payment_no')
             }, 
             // tslint:disable-next-line:max-func-body-length
@@ -86,7 +86,7 @@ function sendOne(cb) {
                     return next(null, cue, loggerOfReservation, cb);
                 let to = '';
                 switch (reservations[0].get('purchaser_group')) {
-                    case ttts_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF:
+                    case chevre_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF:
                         to = reservations[0].get('staff_email');
                         break;
                     default:
@@ -103,30 +103,30 @@ function sendOne(cb) {
                 let titleJa;
                 let titleEn;
                 switch (cue.get('template')) {
-                    case ttts_domain_3.ReservationEmailCueUtil.TEMPLATE_COMPLETE:
+                    case chevre_domain_3.ReservationEmailCueUtil.TEMPLATE_COMPLETE:
                         // 1.5次販売はメールテンプレート別
                         if (reservations[0].get('pre_customer')) {
                             dir = `${process.cwd()}/apps/task/views/email/reserve/complete4preCustomer`;
-                            titleJa = '東京タワーチケット 購入完了のお知らせ';
-                            titleEn = 'Notice of Completion of TTTS Ticket Purchase';
+                            titleJa = 'CHEVRE_EVENT_NAMEチケット 購入完了のお知らせ';
+                            titleEn = 'Notice of Completion of CHEVRE Ticket Purchase';
                         }
                         else {
                             dir = `${process.cwd()}/apps/task/views/email/reserve/complete`;
-                            titleJa = '東京タワーチケット 購入完了のお知らせ';
-                            titleEn = 'Notice of Completion of TTTS Ticket Purchase';
+                            titleJa = 'CHEVRE_EVENT_NAMEチケット 購入完了のお知らせ';
+                            titleEn = 'Notice of Completion of CHEVRE Ticket Purchase';
                         }
                         break;
-                    case ttts_domain_3.ReservationEmailCueUtil.TEMPLATE_TEMPORARY:
+                    case chevre_domain_3.ReservationEmailCueUtil.TEMPLATE_TEMPORARY:
                         // 1.5次販売はメールテンプレート別
                         if (reservations[0].get('pre_customer')) {
                             dir = `${process.cwd()}/apps/task/views/email/reserve/waitingSettlement4preCustomer`;
-                            titleJa = '東京タワーチケット 仮予約完了のお知らせ';
-                            titleEn = 'Notice of Completion of Tentative Reservation for TTTS Tickets';
+                            titleJa = 'CHEVRE_EVENT_NAMEチケット 仮予約完了のお知らせ';
+                            titleEn = 'Notice of Completion of Tentative Reservation for CHEVRE Tickets';
                         }
                         else {
                             dir = `${process.cwd()}/apps/task/views/email/reserve/waitingSettlement`;
-                            titleJa = '東京タワーチケット 仮予約完了のお知らせ';
-                            titleEn = 'Notice of Completion of Tentative Reservation for TTTS Tickets';
+                            titleJa = 'CHEVRE_EVENT_NAMEチケット 仮予約完了のお知らせ';
+                            titleEn = 'Notice of Completion of Tentative Reservation for CHEVRE Tickets';
                         }
                         break;
                     default:
@@ -141,7 +141,7 @@ function sendOne(cb) {
                     numeral: numeral,
                     conf: conf,
                     GMOUtil: GMOUtil,
-                    ReservationUtil: ttts_domain_2.ReservationUtil
+                    ReservationUtil: chevre_domain_2.ReservationUtil
                 };
                 loggerOfReservation.info('rendering template...dir:', dir);
                 template.render(locals, (renderErr, result) => {
@@ -151,7 +151,7 @@ function sendOne(cb) {
                     const mail = new sendgrid.mail.Mail(new sendgrid.mail.Email(conf.get('email.from'), conf.get('email.fromname')), `[QRコード付き]${titleJa} [QR CODE TICKET]${titleEn}`, // TODO 成り行き上、仮完了にもQRコード付き、と入ってしまったので、直すこと
                     new sendgrid.mail.Email(to), new sendgrid.mail.Content('text/html', result.html));
                     // 完了の場合、QRコードを添付
-                    if (cue.get('template') === ttts_domain_3.ReservationEmailCueUtil.TEMPLATE_COMPLETE) {
+                    if (cue.get('template') === chevre_domain_3.ReservationEmailCueUtil.TEMPLATE_COMPLETE) {
                         // add barcodes
                         for (const reservation of reservations) {
                             const reservationId = reservation.get('_id').toString();
@@ -210,7 +210,7 @@ exports.sendOne = sendOne;
 function next(err, cue, localLogger, cb) {
     if (!cue)
         return cb();
-    const status = (err) ? ttts_domain_3.ReservationEmailCueUtil.STATUS_UNSENT : ttts_domain_3.ReservationEmailCueUtil.STATUS_SENT;
+    const status = (err) ? chevre_domain_3.ReservationEmailCueUtil.STATUS_UNSENT : chevre_domain_3.ReservationEmailCueUtil.STATUS_SENT;
     // 送信済みフラグを立てる
     localLogger.info('setting status...', status);
     cue.set('status', status);

@@ -4,8 +4,8 @@
  * @namespace task/ReservationController
  */
 
-import { Models } from '@motionpicture/ttts-domain';
-import { ReservationUtil } from '@motionpicture/ttts-domain';
+import { Models } from '@motionpicture/chevre-domain';
+import { ReservationUtil } from '@motionpicture/chevre-domain';
 import * as GMOUtil from '../../../common/Util/GMO/GMOUtil';
 
 import * as conf from 'config';
@@ -64,7 +64,7 @@ export function removeTmps(): void {
 }
 
 /**
- * TTTS確保上の仮予約をTTTS確保へ戻す
+ * CHEVRE確保上の仮予約をCHEVRE確保へ戻す
  *
  * @memberOf task/ReservationController
  */
@@ -75,7 +75,7 @@ export function tmp2tiff(): void {
     Models.Reservation.distinct(
         '_id',
         {
-            status: ReservationUtil.STATUS_TEMPORARY_ON_KEPT_BY_TTTS,
+            status: ReservationUtil.STATUS_TEMPORARY_ON_KEPT_BY_CHEVRE,
             expired_at: {
                 // 念のため、仮予約有効期間より1分長めにしておく
                 $lt: moment().add(-BUFFER_PERIOD_SECONDS, 'seconds').toISOString()
@@ -89,13 +89,13 @@ export function tmp2tiff(): void {
 
             const promises = ids.map((id) => {
                 return new Promise((resolve, reject) => {
-                    logger.info('updating to STATUS_KEPT_BY_TTTS...id:', id);
+                    logger.info('updating to STATUS_KEPT_BY_CHEVRE...id:', id);
                     Models.Reservation.findOneAndUpdate(
                         { _id: id },
-                        { status: ReservationUtil.STATUS_KEPT_BY_TTTS },
+                        { status: ReservationUtil.STATUS_KEPT_BY_CHEVRE },
                         { new: true },
                         (updateErr, reservation) => {
-                            logger.info('updated to STATUS_KEPT_BY_TTTS. id:', id, updateErr, reservation);
+                            logger.info('updated to STATUS_KEPT_BY_CHEVRE. id:', id, updateErr, reservation);
                             (updateErr) ? reject(updateErr) : resolve();
                         }
                     );
@@ -291,7 +291,7 @@ export function releaseGarbages(): void {
             }
 
             const paymentNos4release: string[] = [];
-            const gmoUrl = (process.env.NODE_ENV === 'prod') ? 'https://p01.mul-pay.jp/payment/SearchTradeMulti.idPass' : 'https://pt01.mul-pay.jp/payment/SearchTradeMulti.idPass';
+            const gmoUrl = (process.env.NODE_ENV === 'production') ? 'https://p01.mul-pay.jp/payment/SearchTradeMulti.idPass' : 'https://pt01.mul-pay.jp/payment/SearchTradeMulti.idPass';
 
             const promises = reservations.map((reservation) => {
                 return new Promise((resolve, reject) => {

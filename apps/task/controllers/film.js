@@ -4,7 +4,7 @@
  * @namespace task/FilmController
  */
 "use strict";
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
+const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const conf = require("config");
 const fs = require("fs-extra");
 const log4js = require("log4js");
@@ -36,11 +36,11 @@ function createTicketTypeGroupsFromJson() {
             throw err;
         const groups = JSON.parse(data);
         logger.info('removing all groups...');
-        ttts_domain_1.Models.TicketTypeGroup.remove({}, (removeErr) => {
+        chevre_domain_1.Models.TicketTypeGroup.remove({}, (removeErr) => {
             if (removeErr)
                 throw removeErr;
             logger.debug('creating groups...');
-            ttts_domain_1.Models.TicketTypeGroup.create(groups, (createErr) => {
+            chevre_domain_1.Models.TicketTypeGroup.create(groups, (createErr) => {
                 logger.info('groups created.', createErr);
                 mongoose.disconnect();
                 process.exit(0);
@@ -61,7 +61,7 @@ function createFromJson() {
         const promises = films.map((film) => {
             return new Promise((resolve, reject) => {
                 logger.debug('updating film...');
-                ttts_domain_1.Models.Film.findOneAndUpdate({
+                chevre_domain_1.Models.Film.findOneAndUpdate({
                     _id: film._id
                 }, film, {
                     new: true,
@@ -91,7 +91,7 @@ exports.createFromJson = createFromJson;
  */
 function getImages() {
     mongoose.connect(MONGOLAB_URI, {});
-    ttts_domain_1.Models.Film.find({}, 'name', { sort: { _id: 1 } }, (err, films) => {
+    chevre_domain_1.Models.Film.find({}, 'name', { sort: { _id: 1 } }, (err, films) => {
         if (err)
             throw err;
         let i = 0;

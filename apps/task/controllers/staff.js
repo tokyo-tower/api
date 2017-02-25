@@ -4,8 +4,8 @@
  * @namespace task/StaffController
  */
 "use strict";
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
-const ttts_domain_2 = require("@motionpicture/ttts-domain");
+const chevre_domain_1 = require("@motionpicture/chevre-domain");
+const chevre_domain_2 = require("@motionpicture/chevre-domain");
 const Util = require("../../../common/Util/Util");
 const conf = require("config");
 const crypto = require("crypto");
@@ -46,7 +46,7 @@ function createFromJson() {
             staff.password_hash = Util.createHash(staff.password, passwordSalt);
             return new Promise((resolve, reject) => {
                 logger.debug('updating staff...');
-                ttts_domain_1.Models.Staff.findOneAndUpdate({
+                chevre_domain_1.Models.Staff.findOneAndUpdate({
                     user_id: staff.user_id
                 }, staff, {
                     new: true,
@@ -77,7 +77,7 @@ exports.createFromJson = createFromJson;
 function createReservationsFromJson() {
     mongoose.connect(MONGOLAB_URI, {});
     // スクリーンごとに内部予約を追加する
-    ttts_domain_1.Models.Screen.distinct('_id', (err, screenIds) => {
+    chevre_domain_1.Models.Screen.distinct('_id', (err, screenIds) => {
         if (err) {
             logger.info('screen ids found.', err);
             mongoose.disconnect();
@@ -111,20 +111,20 @@ function createReservationsByScreenId(screenId, cb) {
             return cb(null);
         }
         // 内部関係者をすべて取得
-        ttts_domain_1.Models.Staff.find({}, (findErr, staffs) => {
+        chevre_domain_1.Models.Staff.find({}, (findErr, staffs) => {
             if (findErr)
                 throw findErr;
             const staffsByName = {};
             for (const staff of staffs) {
                 staffsByName[staff.get('name')] = staff;
             }
-            ttts_domain_2.ReservationUtil.publishPaymentNo((publishErr, paymentNo) => {
+            chevre_domain_2.ReservationUtil.publishPaymentNo((publishErr, paymentNo) => {
                 logger.debug('paymentNo is', paymentNo);
                 if (publishErr)
                     return cb(publishErr);
                 let reservations = [];
                 // スクリーンのパフォーマンスをすべて取得
-                ttts_domain_1.Models.Performance.find({ screen: screenId })
+                chevre_domain_1.Models.Performance.find({ screen: screenId })
                     .populate('film', 'name is_mx4d copyright')
                     .populate('screen', 'name')
                     .populate('theater', 'name address')
@@ -138,7 +138,7 @@ function createReservationsByScreenId(screenId, cb) {
                             return {
                                 performance: performance.get('_id'),
                                 seat_code: reservation.seat_code,
-                                status: ttts_domain_2.ReservationUtil.STATUS_RESERVED,
+                                status: chevre_domain_2.ReservationUtil.STATUS_RESERVED,
                                 staff: staffOfReservation.get('_id'),
                                 staff_user_id: staffOfReservation.get('user_id'),
                                 staff_email: staffOfReservation.get('email'),
@@ -168,7 +168,7 @@ function createReservationsByScreenId(screenId, cb) {
                                 performance_start_time: performance.get('start_time'),
                                 performance_open_time: performance.get('open_time'),
                                 performance_day: performance.get('day'),
-                                purchaser_group: ttts_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
+                                purchaser_group: chevre_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
                                 payment_no: paymentNo,
                                 payment_seat_index: index,
                                 charge: 0,
@@ -184,7 +184,7 @@ function createReservationsByScreenId(screenId, cb) {
                         reservations = reservations.concat(reservationsByPerformance);
                     }
                     logger.debug('creating staff reservations...length:', reservations.length);
-                    ttts_domain_1.Models.Reservation.insertMany(reservations, (insertErr) => {
+                    chevre_domain_1.Models.Reservation.insertMany(reservations, (insertErr) => {
                         logger.debug('staff reservations created.', insertErr);
                         cb(err);
                     });
@@ -201,7 +201,7 @@ function createReservationsByScreenId(screenId, cb) {
  */
 function createReservationsByPerformanceId(performanceId) {
     mongoose.connect(MONGOLAB_URI, {});
-    ttts_domain_1.Models.Performance.findOne({ _id: performanceId })
+    chevre_domain_1.Models.Performance.findOne({ _id: performanceId })
         .populate('film', 'name is_mx4d copyright')
         .populate('screen', 'name')
         .populate('theater', 'name address')
@@ -222,14 +222,14 @@ function createReservationsByPerformanceId(performanceId) {
                 return;
             }
             // 内部関係者をすべて取得
-            ttts_domain_1.Models.Staff.find({}, (findStaffsErr, staffs) => {
+            chevre_domain_1.Models.Staff.find({}, (findStaffsErr, staffs) => {
                 if (findStaffsErr)
                     throw findStaffsErr;
                 const staffsByName = {};
                 for (const staff of staffs) {
                     staffsByName[staff.get('name')] = staff;
                 }
-                ttts_domain_2.ReservationUtil.publishPaymentNo((publishErr, paymentNo) => {
+                chevre_domain_2.ReservationUtil.publishPaymentNo((publishErr, paymentNo) => {
                     logger.info('paymentNo published.', publishErr, paymentNo);
                     if (publishErr) {
                         mongoose.disconnect();
@@ -242,7 +242,7 @@ function createReservationsByPerformanceId(performanceId) {
                         const newReservation = {
                             performance: performance.get('_id'),
                             seat_code: reservation.seat_code,
-                            status: ttts_domain_2.ReservationUtil.STATUS_RESERVED,
+                            status: chevre_domain_2.ReservationUtil.STATUS_RESERVED,
                             staff: staffOfReservation.get('_id'),
                             staff_user_id: staffOfReservation.get('user_id'),
                             staff_email: staffOfReservation.get('email'),
@@ -272,7 +272,7 @@ function createReservationsByPerformanceId(performanceId) {
                             performance_start_time: performance.get('start_time'),
                             performance_open_time: performance.get('open_time'),
                             performance_day: performance.get('day'),
-                            purchaser_group: ttts_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
+                            purchaser_group: chevre_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
                             payment_no: paymentNo,
                             payment_seat_index: index,
                             charge: 0,
@@ -286,7 +286,7 @@ function createReservationsByPerformanceId(performanceId) {
                         };
                         return new Promise((resolve) => {
                             logger.info('creating reservation...');
-                            ttts_domain_1.Models.Reservation.create([newReservation], (createErr) => {
+                            chevre_domain_1.Models.Reservation.create([newReservation], (createErr) => {
                                 logger.info('reservation created.', err);
                                 // 途中で終了しないように。最後まで予約渡来し続ける。
                                 resolve(createErr);

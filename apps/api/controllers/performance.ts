@@ -4,7 +4,7 @@
  * @namespace api/PerformanceController
  */
 
-import { Models, PerformanceStatusesModel } from '@motionpicture/ttts-domain';
+import { Models, PerformanceStatusesModel } from '@motionpicture/chevre-domain';
 
 import * as conf from 'config';
 import { Request, Response } from 'express';

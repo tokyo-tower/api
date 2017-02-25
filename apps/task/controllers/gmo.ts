@@ -4,10 +4,10 @@
  * @namespace task/GMOController
  */
 
-import { Models } from '@motionpicture/ttts-domain';
-import { ReservationUtil } from '@motionpicture/ttts-domain';
-import { ReservationEmailCueUtil } from '@motionpicture/ttts-domain';
-import { GMONotificationUtil } from '@motionpicture/ttts-domain';
+import { Models } from '@motionpicture/chevre-domain';
+import { ReservationUtil } from '@motionpicture/chevre-domain';
+import { ReservationEmailCueUtil } from '@motionpicture/chevre-domain';
+import { GMONotificationUtil } from '@motionpicture/chevre-domain';
 import * as GMOUtil from '../../../common/Util/GMO/GMOUtil';
 
 import * as conf from 'config';

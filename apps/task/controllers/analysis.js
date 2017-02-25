@@ -4,8 +4,8 @@
  * @namespace task/AnalysisController
  */
 "use strict";
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
-const ttts_domain_2 = require("@motionpicture/ttts-domain");
+const chevre_domain_1 = require("@motionpicture/chevre-domain");
+const chevre_domain_2 = require("@motionpicture/chevre-domain");
 const GMOUtil = require("../../../common/Util/GMO/GMOUtil");
 const conf = require("config");
 const fs = require("fs-extra");
@@ -65,7 +65,7 @@ function waiting2sagyo2() {
         if (err)
             throw err;
         const paymentNos = JSON.parse(data);
-        const gmoUrl = (process.env.NODE_ENV === 'prod') ? 'https://p01.mul-pay.jp/payment/SearchTradeMulti.idPass' : 'https://pt01.mul-pay.jp/payment/SearchTradeMulti.idPass';
+        const gmoUrl = (process.env.NODE_ENV === 'production') ? 'https://p01.mul-pay.jp/payment/SearchTradeMulti.idPass' : 'https://pt01.mul-pay.jp/payment/SearchTradeMulti.idPass';
         const promises = paymentNos.map((paymentNo) => {
             return new Promise((resolve, reject) => {
                 // 取引状態参照
@@ -132,9 +132,9 @@ function waiting2sagyo2() {
             const promisesOfCountWaitingReservations = paymentNos.map((paymentNo) => {
                 return new Promise((resolve, reject) => {
                     logger.info('counting not in WAITING_SETTLEMENT, WAITING_SETTLEMENT_PAY_DESIGN');
-                    ttts_domain_1.Models.Reservation.count({
+                    chevre_domain_1.Models.Reservation.count({
                         payment_no: paymentNo,
-                        status: { $nin: [ttts_domain_2.ReservationUtil.STATUS_WAITING_SETTLEMENT, ttts_domain_2.ReservationUtil.STATUS_WAITING_SETTLEMENT_PAY_DESIGN] }
+                        status: { $nin: [chevre_domain_2.ReservationUtil.STATUS_WAITING_SETTLEMENT, chevre_domain_2.ReservationUtil.STATUS_WAITING_SETTLEMENT_PAY_DESIGN] }
                     }, (countErr, countOfWaitingReservations) => {
                         logger.info('counted.', countErr, countOfWaitingReservations);
                         if (countErr)
@@ -147,7 +147,7 @@ function waiting2sagyo2() {
                 console.log(paymentNos.length);
                 logger.info('promised.');
                 // 内部関係者で確保する
-                ttts_domain_1.Models.Staff.findOne({
+                chevre_domain_1.Models.Staff.findOne({
                     user_id: '2016sagyo2'
                 }, (findStaffErr, staff) => {
                     logger.info('staff found.', findStaffErr, staff);
@@ -157,11 +157,11 @@ function waiting2sagyo2() {
                         return;
                     }
                     logger.info('updating reservations...');
-                    ttts_domain_1.Models.Reservation.update({
+                    chevre_domain_1.Models.Reservation.update({
                         payment_no: { $in: paymentNos }
                     }, {
-                        status: ttts_domain_2.ReservationUtil.STATUS_RESERVED,
-                        purchaser_group: ttts_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
+                        status: chevre_domain_2.ReservationUtil.STATUS_RESERVED,
+                        purchaser_group: chevre_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
                         charge: 0,
                         ticket_type_charge: 0,
                         ticket_type_name_en: 'Free',
@@ -210,7 +210,7 @@ function cvsWaiting2reserved() {
     fs.readFile(`${process.cwd()}/logs/${process.env.NODE_ENV}/paymentNos4cvsWaiting2reserved.json`, 'utf8', (err, data) => {
         logger.info('file read.', err);
         const paymentNos = JSON.parse(data);
-        const gmoUrl = (process.env.NODE_ENV === 'prod') ? 'https://p01.mul-pay.jp/payment/SearchTradeMulti.idPass' : 'https://pt01.mul-pay.jp/payment/SearchTradeMulti.idPass';
+        const gmoUrl = (process.env.NODE_ENV === 'production') ? 'https://p01.mul-pay.jp/payment/SearchTradeMulti.idPass' : 'https://pt01.mul-pay.jp/payment/SearchTradeMulti.idPass';
         const promises = paymentNos.map((paymentNo) => {
             return new Promise((resolve, reject) => {
                 // 取引状態参照
@@ -247,11 +247,11 @@ function cvsWaiting2reserved() {
         Promise.all(promises).then(() => {
             console.log(paymentNos.length);
             logger.info('counting not in WAITING_SETTLEMENT');
-            ttts_domain_1.Models.Reservation.count({
+            chevre_domain_1.Models.Reservation.count({
                 payment_no: { $in: paymentNos },
                 $or: [
                     {
-                        status: { $nin: [ttts_domain_2.ReservationUtil.STATUS_WAITING_SETTLEMENT] }
+                        status: { $nin: [chevre_domain_2.ReservationUtil.STATUS_WAITING_SETTLEMENT] }
                     },
                     {
                         payment_method: { $nin: [GMOUtil.PAY_TYPE_CVS] }
@@ -269,10 +269,10 @@ function cvsWaiting2reserved() {
                     process.exit(0);
                     return;
                 }
-                ttts_domain_1.Models.Reservation.update({
+                chevre_domain_1.Models.Reservation.update({
                     payment_no: { $in: paymentNos }
                 }, {
-                    status: ttts_domain_2.ReservationUtil.STATUS_RESERVED
+                    status: chevre_domain_2.ReservationUtil.STATUS_RESERVED
                 }, {
                     multi: true
                 }, (updateReservationErr, raw) => {
@@ -302,11 +302,11 @@ function payDesignWaiting2reserved() {
         logger.info('file read.', err);
         const paymentNos = JSON.parse(data);
         logger.info('counting not in WAITING_SETTLEMENT_PAY_DESIGN');
-        ttts_domain_1.Models.Reservation.count({
+        chevre_domain_1.Models.Reservation.count({
             payment_no: { $in: paymentNos },
             $or: [
                 {
-                    status: { $nin: [ttts_domain_2.ReservationUtil.STATUS_WAITING_SETTLEMENT_PAY_DESIGN] }
+                    status: { $nin: [chevre_domain_2.ReservationUtil.STATUS_WAITING_SETTLEMENT_PAY_DESIGN] }
                 },
                 {
                     payment_method: { $nin: [GMOUtil.PAY_TYPE_CVS] }
@@ -324,10 +324,10 @@ function payDesignWaiting2reserved() {
                 process.exit(0);
                 return;
             }
-            ttts_domain_1.Models.Reservation.update({
+            chevre_domain_1.Models.Reservation.update({
                 payment_no: { $in: paymentNos }
             }, {
-                status: ttts_domain_2.ReservationUtil.STATUS_RESERVED
+                status: chevre_domain_2.ReservationUtil.STATUS_RESERVED
             }, {
                 multi: true
             }, (updateReservationErr, raw) => {
@@ -361,7 +361,7 @@ function cvsCanceled2sagyo2() {
             return;
         }
         // 内部関係者で確保する
-        ttts_domain_1.Models.Staff.findOne({
+        chevre_domain_1.Models.Staff.findOne({
             user_id: '2016sagyo2'
         }, (findStaffErr, staff) => {
             logger.info('staff found.', findStaffErr, staff);
@@ -371,11 +371,11 @@ function cvsCanceled2sagyo2() {
                 return;
             }
             logger.info('updating reservations...');
-            ttts_domain_1.Models.Reservation.update({
+            chevre_domain_1.Models.Reservation.update({
                 payment_no: { $in: paymentNos }
             }, {
-                status: ttts_domain_2.ReservationUtil.STATUS_RESERVED,
-                purchaser_group: ttts_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
+                status: chevre_domain_2.ReservationUtil.STATUS_RESERVED,
+                purchaser_group: chevre_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
                 charge: 0,
                 ticket_type_charge: 0,
                 ticket_type_name_en: 'Free',
@@ -517,10 +517,10 @@ exports.cancelGMO = cancelGMO;
  */
 function countReservations() {
     mongoose.connect(MONGOLAB_URI, {});
-    ttts_domain_1.Models.Reservation.find({
-        purchaser_group: { $in: [ttts_domain_2.ReservationUtil.PURCHASER_GROUP_CUSTOMER, ttts_domain_2.ReservationUtil.PURCHASER_GROUP_MEMBER] },
+    chevre_domain_1.Models.Reservation.find({
+        purchaser_group: { $in: [chevre_domain_2.ReservationUtil.PURCHASER_GROUP_CUSTOMER, chevre_domain_2.ReservationUtil.PURCHASER_GROUP_MEMBER] },
         // payment_no: "77000110810"
-        status: ttts_domain_2.ReservationUtil.STATUS_RESERVED,
+        status: chevre_domain_2.ReservationUtil.STATUS_RESERVED,
         // status: ReservationUtil.STATUS_WAITING_SETTLEMENT,
         purchased_at: { $gt: moment('2016-10-20T12:00:00+9:00') }
     }, 'payment_no', (err, reservations) => {
@@ -545,7 +545,7 @@ exports.countReservations = countReservations;
  */
 function countReservationCues() {
     mongoose.connect(MONGOLAB_URI, {});
-    ttts_domain_1.Models.ReservationEmailCue.count({
+    chevre_domain_1.Models.ReservationEmailCue.count({
         is_sent: false
     }, (err, count) => {
         if (err)
@@ -564,7 +564,7 @@ exports.countReservationCues = countReservationCues;
 // tslint:disable-next-line:prefer-function-over-method
 function getPaymentNosWithEmail() {
     mongoose.connect(MONGOLAB_URI);
-    ttts_domain_1.Models.GMONotification.distinct('order_id', {
+    chevre_domain_1.Models.GMONotification.distinct('order_id', {
         // status:{$in:["CAPTURE","PAYSUCCESS"]},
         status: { $in: ['PAYSUCCESS'] },
         processed: true
@@ -616,7 +616,7 @@ function createEmailCues() {
         });
         mongoose.connect(MONGOLAB_URI);
         logger.info('creating ReservationEmailCues...length:', cues.length);
-        ttts_domain_1.Models.ReservationEmailCue.insertMany(cues, (insertErr) => {
+        chevre_domain_1.Models.ReservationEmailCue.insertMany(cues, (insertErr) => {
             logger.info('ReservationEmailCues created.', insertErr);
             mongoose.disconnect();
             process.exit(0);

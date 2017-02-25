@@ -4,8 +4,8 @@
  * @namespace task/AnalysisController
  */
 
-import { Models } from '@motionpicture/ttts-domain';
-import { ReservationUtil } from '@motionpicture/ttts-domain';
+import { Models } from '@motionpicture/chevre-domain';
+import { ReservationUtil } from '@motionpicture/chevre-domain';
 import * as GMOUtil from '../../../common/Util/GMO/GMOUtil';
 
 import * as conf from 'config';
@@ -72,7 +72,7 @@ export function waiting2sagyo2(): void {
         if (err) throw err;
 
         const paymentNos: string[] = JSON.parse(data);
-        const gmoUrl = (process.env.NODE_ENV === 'prod') ? 'https://p01.mul-pay.jp/payment/SearchTradeMulti.idPass' : 'https://pt01.mul-pay.jp/payment/SearchTradeMulti.idPass';
+        const gmoUrl = (process.env.NODE_ENV === 'production') ? 'https://p01.mul-pay.jp/payment/SearchTradeMulti.idPass' : 'https://pt01.mul-pay.jp/payment/SearchTradeMulti.idPass';
 
         const promises = paymentNos.map((paymentNo) => {
             return new Promise((resolve, reject) => {
@@ -237,7 +237,7 @@ export function cvsWaiting2reserved(): void {
     fs.readFile(`${process.cwd()}/logs/${process.env.NODE_ENV}/paymentNos4cvsWaiting2reserved.json`, 'utf8', (err, data) => {
         logger.info('file read.', err);
         const paymentNos: string[] = JSON.parse(data);
-        const gmoUrl = (process.env.NODE_ENV === 'prod') ? 'https://p01.mul-pay.jp/payment/SearchTradeMulti.idPass' : 'https://pt01.mul-pay.jp/payment/SearchTradeMulti.idPass';
+        const gmoUrl = (process.env.NODE_ENV === 'production') ? 'https://p01.mul-pay.jp/payment/SearchTradeMulti.idPass' : 'https://pt01.mul-pay.jp/payment/SearchTradeMulti.idPass';
 
         const promises = paymentNos.map((paymentNo) => {
             return new Promise((resolve, reject) => {

@@ -4,8 +4,8 @@
  * @namespace api/ReservationController
  */
 "use strict";
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
-const ttts_domain_2 = require("@motionpicture/ttts-domain");
+const chevre_domain_1 = require("@motionpicture/chevre-domain");
+const chevre_domain_2 = require("@motionpicture/chevre-domain");
 const conf = require("config");
 const fs = require("fs-extra");
 const moment = require("moment");
@@ -29,9 +29,9 @@ function email(req, res) {
         });
         return;
     }
-    ttts_domain_1.Models.Reservation.findOne({
+    chevre_domain_1.Models.Reservation.findOne({
         _id: id,
-        status: ttts_domain_2.ReservationUtil.STATUS_RESERVED
+        status: chevre_domain_2.ReservationUtil.STATUS_RESERVED
     }, (err, reservation) => {
         if (err) {
             res.json({
@@ -47,7 +47,7 @@ function email(req, res) {
             });
             return;
         }
-        const titleJa = `${reservation.get('purchaser_name_ja')}様より東京タワーのチケットが届いております`;
+        const titleJa = `${reservation.get('purchaser_name_ja')}様よりCHEVRE_EVENT_NAMEのチケットが届いております`;
         const titleEn = `This is a notification that you have been invited to Tokyo International Film Festival by Mr./Ms. ${reservation.get('purchaser_name_en')}.`;
         res.render('email/resevation', {
             layout: false,
@@ -57,7 +57,7 @@ function email(req, res) {
             conf: conf,
             title_ja: titleJa,
             title_en: titleEn,
-            ReservationUtil: ttts_domain_2.ReservationUtil
+            ReservationUtil: chevre_domain_2.ReservationUtil
         }, (renderErr, html) => {
             if (renderErr) {
                 res.json({
@@ -117,7 +117,7 @@ exports.email = email;
  * @memberOf api/ReservationController
  */
 function enter(req, res) {
-    ttts_domain_1.Models.Reservation.update({
+    chevre_domain_1.Models.Reservation.update({
         _id: req.params.id
     }, {
         entered: true,
@@ -145,9 +145,9 @@ exports.enter = enter;
 function findByMvtkUser(_req, res) {
     // ひとまずデモ段階では、一般予約を10件返す
     const LIMIT = 10;
-    ttts_domain_1.Models.Reservation.find({
-        purchaser_group: ttts_domain_2.ReservationUtil.PURCHASER_GROUP_CUSTOMER,
-        status: ttts_domain_2.ReservationUtil.STATUS_RESERVED
+    chevre_domain_1.Models.Reservation.find({
+        purchaser_group: chevre_domain_2.ReservationUtil.PURCHASER_GROUP_CUSTOMER,
+        status: chevre_domain_2.ReservationUtil.STATUS_RESERVED
     }).limit(LIMIT).exec((err, reservations) => {
         if (err) {
             res.json({
@@ -171,9 +171,9 @@ exports.findByMvtkUser = findByMvtkUser;
  */
 function findById(req, res) {
     const id = req.params.id;
-    ttts_domain_1.Models.Reservation.findOne({
+    chevre_domain_1.Models.Reservation.findOne({
         _id: id,
-        status: ttts_domain_2.ReservationUtil.STATUS_RESERVED
+        status: chevre_domain_2.ReservationUtil.STATUS_RESERVED
     }, (err, reservation) => {
         if (err) {
             res.json({

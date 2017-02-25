@@ -4,7 +4,7 @@
  * @namespace task/SponsorController
  */
 "use strict";
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
+const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const Util = require("../../../common/Util/Util");
 const conf = require("config");
 const crypto = require("crypto");
@@ -45,7 +45,7 @@ function createFromJson() {
             sponsor.password_hash = Util.createHash(sponsor.password, passwordSalt);
             return new Promise((resolve, reject) => {
                 logger.debug('updating sponsor...');
-                ttts_domain_1.Models.Sponsor.findOneAndUpdate({
+                chevre_domain_1.Models.Sponsor.findOneAndUpdate({
                     user_id: sponsor.user_id
                 }, sponsor, {
                     new: true,

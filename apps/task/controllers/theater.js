@@ -4,8 +4,8 @@
  * @namespace task/TheaterController
  */
 "use strict";
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
-const ttts_domain_2 = require("@motionpicture/ttts-domain");
+const chevre_domain_1 = require("@motionpicture/chevre-domain");
+const chevre_domain_2 = require("@motionpicture/chevre-domain");
 const conf = require("config");
 const fs = require("fs-extra");
 const log4js = require("log4js");
@@ -40,10 +40,10 @@ function createScreensFromJson() {
             screen.seats_number = screen.sections[0].seats.length;
             // 座席グレードごとの座席数情報を追加
             const seatsNumbersBySeatCode = {};
-            seatsNumbersBySeatCode[ttts_domain_2.ScreenUtil.SEAT_GRADE_CODE_NORMAL] = 0;
-            seatsNumbersBySeatCode[ttts_domain_2.ScreenUtil.SEAT_GRADE_CODE_PREMIERE_BOX] = 0;
-            seatsNumbersBySeatCode[ttts_domain_2.ScreenUtil.SEAT_GRADE_CODE_PREMIERE_LUXURY] = 0;
-            seatsNumbersBySeatCode[ttts_domain_2.ScreenUtil.SEAT_GRADE_CODE_FRONT_RECLINING] = 0;
+            seatsNumbersBySeatCode[chevre_domain_2.ScreenUtil.SEAT_GRADE_CODE_NORMAL] = 0;
+            seatsNumbersBySeatCode[chevre_domain_2.ScreenUtil.SEAT_GRADE_CODE_PREMIERE_BOX] = 0;
+            seatsNumbersBySeatCode[chevre_domain_2.ScreenUtil.SEAT_GRADE_CODE_PREMIERE_LUXURY] = 0;
+            seatsNumbersBySeatCode[chevre_domain_2.ScreenUtil.SEAT_GRADE_CODE_FRONT_RECLINING] = 0;
             screen.sections[0].seats.forEach((seat) => {
                 seatsNumbersBySeatCode[seat.grade.code] += 1;
             });
@@ -55,7 +55,7 @@ function createScreensFromJson() {
             });
             return new Promise((resolve, reject) => {
                 logger.debug('updating screen...');
-                ttts_domain_1.Models.Screen.findOneAndUpdate({
+                chevre_domain_1.Models.Screen.findOneAndUpdate({
                     _id: screen._id
                 }, screen, {
                     new: true,
@@ -91,7 +91,7 @@ function createFromJson() {
         const promises = theaters.map((theater) => {
             return new Promise((resolve, reject) => {
                 logger.debug('updating theater...');
-                ttts_domain_1.Models.Theater.findOneAndUpdate({
+                chevre_domain_1.Models.Theater.findOneAndUpdate({
                     _id: theater._id
                 }, theater, {
                     new: true,

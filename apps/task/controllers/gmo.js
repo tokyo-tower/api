@@ -4,10 +4,10 @@
  * @namespace task/GMOController
  */
 "use strict";
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
-const ttts_domain_2 = require("@motionpicture/ttts-domain");
-const ttts_domain_3 = require("@motionpicture/ttts-domain");
-const ttts_domain_4 = require("@motionpicture/ttts-domain");
+const chevre_domain_1 = require("@motionpicture/chevre-domain");
+const chevre_domain_2 = require("@motionpicture/chevre-domain");
+const chevre_domain_3 = require("@motionpicture/chevre-domain");
+const chevre_domain_4 = require("@motionpicture/chevre-domain");
 const GMOUtil = require("../../../common/Util/GMO/GMOUtil");
 const conf = require("config");
 const log4js = require("log4js");
@@ -58,10 +58,10 @@ function processOne(cb) {
     logger.info('finding notification...');
     const db4gmo = mongoose.createConnection(MONGOLAB_URI_FOR_GMO);
     db4gmo.collection('gmo_notifications').findOneAndUpdate({
-        process_status: ttts_domain_4.GMONotificationUtil.PROCESS_STATUS_UNPROCESSED
+        process_status: chevre_domain_4.GMONotificationUtil.PROCESS_STATUS_UNPROCESSED
     }, {
         $set: {
-            process_status: ttts_domain_4.GMONotificationUtil.PROCESS_STATUS_PROCESSING
+            process_status: chevre_domain_4.GMONotificationUtil.PROCESS_STATUS_PROCESSING
         }
     }, ((err, result) => {
         db4gmo.close();
@@ -73,7 +73,7 @@ function processOne(cb) {
             return next(null, notification, cb);
         // 内容の整合性チェック
         logger.info('finding reservations...payment_no:', notification.order_id);
-        ttts_domain_1.Models.Reservation.find({
+        chevre_domain_1.Models.Reservation.find({
             payment_no: notification.order_id
         }, 
         // tslint:disable-next-line:max-func-body-length
@@ -96,7 +96,7 @@ function processOne(cb) {
                     case GMOUtil.STATUS_CREDIT_CAPTURE:
                         // 予約完了ステータスへ変更
                         logger.info('updating reservations by paymentNo...', notification.order_id);
-                        ttts_domain_1.Models.Reservation.update({ payment_no: notification.order_id }, {
+                        chevre_domain_1.Models.Reservation.update({ payment_no: notification.order_id }, {
                             gmo_shop_id: notification.shop_id,
                             gmo_amount: notification.amount,
                             gmo_tax: notification.tax,
@@ -108,7 +108,7 @@ function processOne(cb) {
                             gmo_tran_date: notification.tran_date,
                             gmo_pay_type: notification.pay_type,
                             gmo_status: notification.status,
-                            status: ttts_domain_2.ReservationUtil.STATUS_RESERVED,
+                            status: chevre_domain_2.ReservationUtil.STATUS_RESERVED,
                             updated_user: 'system'
                         }, { multi: true }, (updateErr, raw) => {
                             logger.info('reservations updated.', updateErr, raw);
@@ -116,12 +116,12 @@ function processOne(cb) {
                                 return next(updateErr, notification, cb);
                             // 完了メールキュー追加(あれば更新日時を更新するだけ)
                             logger.info('creating reservationEmailCue...');
-                            ttts_domain_1.Models.ReservationEmailCue.findOneAndUpdate({
+                            chevre_domain_1.Models.ReservationEmailCue.findOneAndUpdate({
                                 payment_no: notification.order_id,
-                                template: ttts_domain_3.ReservationEmailCueUtil.TEMPLATE_COMPLETE
+                                template: chevre_domain_3.ReservationEmailCueUtil.TEMPLATE_COMPLETE
                             }, {
                                 $set: { updated_at: Date.now() },
-                                $setOnInsert: { status: ttts_domain_3.ReservationEmailCueUtil.STATUS_UNSENT }
+                                $setOnInsert: { status: chevre_domain_3.ReservationEmailCueUtil.STATUS_UNSENT }
                             }, {
                                 upsert: true,
                                 new: true
@@ -172,8 +172,8 @@ function processOne(cb) {
                     case GMOUtil.STATUS_CVS_PAYSUCCESS:
                         // 予約完了ステータスへ変更
                         logger.info('updating reservations by paymentNo...', notification.order_id);
-                        ttts_domain_1.Models.Reservation.update({ payment_no: notification.order_id }, {
-                            status: ttts_domain_2.ReservationUtil.STATUS_RESERVED,
+                        chevre_domain_1.Models.Reservation.update({ payment_no: notification.order_id }, {
+                            status: chevre_domain_2.ReservationUtil.STATUS_RESERVED,
                             updated_user: 'system'
                         }, { multi: true }, (updateErr, raw) => {
                             logger.info('reservations updated.', updateErr, raw);
@@ -181,12 +181,12 @@ function processOne(cb) {
                                 return next(updateErr, notification, cb);
                             // 完了メールキュー追加(あれば更新日時を更新するだけ)
                             logger.info('creating reservationEmailCue...');
-                            ttts_domain_1.Models.ReservationEmailCue.findOneAndUpdate({
+                            chevre_domain_1.Models.ReservationEmailCue.findOneAndUpdate({
                                 payment_no: notification.order_id,
-                                template: ttts_domain_3.ReservationEmailCueUtil.TEMPLATE_COMPLETE
+                                template: chevre_domain_3.ReservationEmailCueUtil.TEMPLATE_COMPLETE
                             }, {
                                 $set: { updated_at: Date.now() },
-                                $setOnInsert: { status: ttts_domain_3.ReservationEmailCueUtil.STATUS_UNSENT }
+                                $setOnInsert: { status: chevre_domain_3.ReservationEmailCueUtil.STATUS_UNSENT }
                             }, {
                                 upsert: true,
                                 new: true
@@ -202,7 +202,7 @@ function processOne(cb) {
                     case GMOUtil.STATUS_CVS_REQSUCCESS:
                         // GMOパラメータを予約に追加
                         logger.info('updating reservations by paymentNo...', notification.order_id);
-                        ttts_domain_1.Models.Reservation.update({ payment_no: notification.order_id }, {
+                        chevre_domain_1.Models.Reservation.update({ payment_no: notification.order_id }, {
                             gmo_shop_id: notification.shop_id,
                             gmo_amount: notification.amount,
                             gmo_tax: notification.tax,
@@ -217,12 +217,12 @@ function processOne(cb) {
                                 return next(updateErr, notification, cb);
                             // 仮予約完了メールキュー追加(あれば更新日時を更新するだけ)
                             logger.info('creating reservationEmailCue...');
-                            ttts_domain_1.Models.ReservationEmailCue.findOneAndUpdate({
+                            chevre_domain_1.Models.ReservationEmailCue.findOneAndUpdate({
                                 payment_no: notification.order_id,
-                                template: ttts_domain_3.ReservationEmailCueUtil.TEMPLATE_TEMPORARY
+                                template: chevre_domain_3.ReservationEmailCueUtil.TEMPLATE_TEMPORARY
                             }, {
                                 $set: { updated_at: Date.now() },
-                                $setOnInsert: { status: ttts_domain_3.ReservationEmailCueUtil.STATUS_UNSENT }
+                                $setOnInsert: { status: chevre_domain_3.ReservationEmailCueUtil.STATUS_UNSENT }
                             }, {
                                 upsert: true,
                                 new: true
@@ -260,18 +260,18 @@ function processOne(cb) {
                         break;
                     case GMOUtil.STATUS_CVS_EXPIRED:
                         // 内部で確保する仕様の場合
-                        ttts_domain_1.Models.Staff.findOne({
+                        chevre_domain_1.Models.Staff.findOne({
                             user_id: '2016sagyo2'
                         }, (findStaffErr, staff) => {
                             logger.info('staff found.', findStaffErr, staff);
                             if (findStaffErr)
                                 return next(findStaffErr, notification, cb);
                             logger.info('updating reservations...');
-                            ttts_domain_1.Models.Reservation.update({
+                            chevre_domain_1.Models.Reservation.update({
                                 payment_no: notification.order_id
                             }, {
-                                status: ttts_domain_2.ReservationUtil.STATUS_RESERVED,
-                                purchaser_group: ttts_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
+                                status: chevre_domain_2.ReservationUtil.STATUS_RESERVED,
+                                purchaser_group: chevre_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
                                 charge: 0,
                                 ticket_type_charge: 0,
                                 ticket_type_name_en: 'Free',
@@ -319,7 +319,7 @@ exports.processOne = processOne;
 function next(err, notification, cb) {
     if (!notification)
         return cb();
-    const status = (err) ? ttts_domain_4.GMONotificationUtil.PROCESS_STATUS_UNPROCESSED : ttts_domain_4.GMONotificationUtil.PROCESS_STATUS_PROCESSED;
+    const status = (err) ? chevre_domain_4.GMONotificationUtil.PROCESS_STATUS_UNPROCESSED : chevre_domain_4.GMONotificationUtil.PROCESS_STATUS_PROCESSED;
     // processedフラグをたてる
     logger.info('setting process_status...', status);
     const db4gmo = mongoose.createConnection(MONGOLAB_URI_FOR_GMO);

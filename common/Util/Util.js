@@ -17,7 +17,7 @@ const log4js = require("log4js");
 function getReservationLogger(_paymentNo, cb) {
     // todo 購入ログの出力方法を、ローカルファイルロガー以外で新たに考える
     cb(null, log4js.getLogger('system'));
-    // let env = process.env.NODE_ENV || 'dev';
+    // let env = process.env.NODE_ENV || 'development';
     // let logDir = `${__dirname}/../../../logs/${env}/reservations/${paymentNo.substr(-1)}`;
     // fs.mkdirs(logDir, (err) => {
     //     if (err) return cb(err, null);

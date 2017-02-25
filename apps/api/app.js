@@ -11,14 +11,14 @@ const i18n = require("i18n");
 const mongoose = require("mongoose");
 const passport = require("passport");
 const passportHttpBearer = require("passport-http-bearer");
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
+const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const benchmarks_1 = require("./middlewares/benchmarks");
 const cors_1 = require("./middlewares/cors");
 const logger_1 = require("./middlewares/logger");
 const bearerStrategy = passportHttpBearer.Strategy;
 const MONGOLAB_URI = conf.get('mongolab_uri');
 passport.use(new bearerStrategy((token, cb) => {
-    ttts_domain_1.Models.Authentication.findOne({
+    chevre_domain_1.Models.Authentication.findOne({
         token: token
     }, (err, authentication) => {
         if (err)
@@ -30,10 +30,10 @@ passport.use(new bearerStrategy((token, cb) => {
 }));
 const app = express();
 app.use(cors_1.default);
-if (process.env.NODE_ENV === 'dev') {
+if (process.env.NODE_ENV === 'development') {
     app.use(logger_1.default); // ロガー
 }
-if (process.env.NODE_ENV !== 'prod') {
+if (process.env.NODE_ENV !== 'production') {
     // サーバーエラーテスト
     app.get('/api/500', (req) => {
         // req.on('data', (chunk) => {
@@ -77,7 +77,7 @@ app.use('/', router_1.default);
 // Use native promises
 mongoose.Promise = global.Promise;
 mongoose.connect(MONGOLAB_URI, {});
-if (process.env.NODE_ENV !== 'prod') {
+if (process.env.NODE_ENV !== 'production') {
     const db = mongoose.connection;
     db.on('connecting', () => {
         console.log('connecting');

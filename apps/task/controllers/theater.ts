@@ -4,8 +4,8 @@
  * @namespace task/TheaterController
  */
 
-import { Models } from '@motionpicture/ttts-domain';
-import { ScreenUtil } from '@motionpicture/ttts-domain';
+import { Models } from '@motionpicture/chevre-domain';
+import { ScreenUtil } from '@motionpicture/chevre-domain';
 
 import * as conf from 'config';
 import * as fs from 'fs-extra';
