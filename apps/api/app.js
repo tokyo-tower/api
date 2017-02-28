@@ -34,9 +34,10 @@ if (process.env.NODE_ENV === 'development') {
 }
 if (process.env.NODE_ENV !== 'production') {
     // サーバーエラーテスト
-    app.get('/api/500', (req) => {
-        // req.on('data', (chunk) => {
-        // });
+    app.get('/dev/500', (req) => {
+        // tslint:disable-next-line:no-empty
+        req.on('data', () => {
+        });
         req.on('end', () => {
             throw new Error('500 manually.');
         });
