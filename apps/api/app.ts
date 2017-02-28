@@ -4,7 +4,6 @@
  * @module app
  */
 import * as bodyParser from 'body-parser';
-import * as conf from 'config';
 import * as express from 'express';
 import * as i18n from 'i18n';
 import * as mongoose from 'mongoose';
@@ -17,7 +16,7 @@ import cors from './middlewares/cors';
 import logger from './middlewares/logger';
 
 const bearerStrategy = passportHttpBearer.Strategy;
-const MONGOLAB_URI = conf.get<string>('mongolab_uri');
+const MONGOLAB_URI = process.env.MONGOLAB_URI;
 
 passport.use(new bearerStrategy(
     (token, cb) => {
@@ -63,7 +62,7 @@ if (process.env.NODE_ENV !== 'production') {
 
     app.get('/api/connect', (req, res) => {
         console.log('ip:', req.ip);
-        mongoose.connect(MONGOLAB_URI, (err) => {
+        mongoose.connect(MONGOLAB_URI, {}, (err) => {
             res.send('connected.' + err.toString());
         });
     });

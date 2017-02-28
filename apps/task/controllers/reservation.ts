@@ -15,7 +15,7 @@ import * as mongoose from 'mongoose';
 import * as querystring from 'querystring';
 import * as request from 'request';
 
-const MONGOLAB_URI = conf.get<string>('mongolab_uri');
+const MONGOLAB_URI = process.env.MONGOLAB_URI;
 
 // todo ログ出力方法考える
 log4js.configure({
@@ -189,7 +189,7 @@ export function releaseSeatsKeptByMembers() {
                                                     watcher_name: '',
                                                     film_copyright: performance.get('film').get('copyright'),
                                                     film_is_mx4d: performance.get('film').get('is_mx4d'),
-                                                    film_image: `https://${conf.get<string>('dns_name')}/images/film/${performance.get('film').get('_id')}.jpg`,
+                                                    film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.get('film').get('_id')}.jpg`,
                                                     film_name_en: performance.get('film').get('name.en'),
                                                     film_name_ja: performance.get('film').get('name.ja'),
                                                     film: performance.get('film').get('_id'),

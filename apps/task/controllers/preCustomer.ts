@@ -7,14 +7,13 @@
 import { Models } from '@motionpicture/chevre-domain';
 import * as Util from '../../../common/Util/Util';
 
-import * as conf from 'config';
 import * as crypto from 'crypto';
 import * as fs from 'fs-extra';
 import * as log4js from 'log4js';
 import * as mongodb from 'mongodb';
 import * as mongoose from 'mongoose';
 
-const MONGOLAB_URI = conf.get<string>('mongolab_uri');
+const MONGOLAB_URI = process.env.MONGOLAB_URI;
 
 // todo ログ出力方法考える
 log4js.configure({
@@ -37,7 +36,7 @@ const logger = log4js.getLogger('system');
  * @memberOf task/PreCustomerController
  */
 export function createCollection() {
-    mongodb.MongoClient.connect(conf.get<string>('mongolab_uri'), (err, db) => {
+    mongodb.MongoClient.connect(process.env.MONGOLAB_URI, (err, db) => {
         if (err) throw err;
 
         const collectionName = 'pre_customers';

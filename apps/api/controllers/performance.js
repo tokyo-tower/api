@@ -5,7 +5,6 @@
  */
 "use strict";
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
-const conf = require("config");
 const moment = require("moment");
 const DEFAULT_RADIX = 10;
 /**
@@ -155,7 +154,7 @@ function search(req, res) {
                                 film_sections: performance.film.sections.map((filmSection) => filmSection.name[req.getLocale()]),
                                 film_minutes: performance.film.minutes,
                                 film_copyright: performance.film.copyright,
-                                film_image: `https://${conf.get('dns_name')}/images/film/${performance.film._id}.jpg`
+                                film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.film._id}.jpg`
                             };
                         });
                         res.json({

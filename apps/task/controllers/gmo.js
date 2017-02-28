@@ -13,8 +13,8 @@ const conf = require("config");
 const log4js = require("log4js");
 const moment = require("moment");
 const mongoose = require("mongoose");
-const MONGOLAB_URI = conf.get('mongolab_uri');
-const MONGOLAB_URI_FOR_GMO = conf.get('mongolab_uri_for_gmo');
+const MONGOLAB_URI = process.env.MONGOLAB_URI;
+const MONGOLAB_URI_FOR_GMO = process.env.MONGOLAB_URI_GMO;
 // todo ログ出力方法考える
 log4js.configure({
     appenders: [

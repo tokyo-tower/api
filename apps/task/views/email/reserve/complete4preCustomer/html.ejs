@@ -30,7 +30,7 @@
         皆さまに大変ご迷惑をおかけしております事、深くお詫び申し上げます。<br>
         <% if (reservations[0].get('purchaser_group') === ReservationUtil.PURCHASER_GROUP_SPONSOR) { %>
         キャンセルを行う場合は<br>
-        https://<%= conf.get('dns_name') %>/sponsor/cancel<br>
+        <%= process.env.FRONTEND_ENDPOINT %>/sponsor/cancel<br>
         よりキャンセルを行ってください。<br>
         <% } %>
         ＊本メールはご鑑賞後まで、大切に保管してください。
@@ -42,7 +42,7 @@
         We sincerely apologize for the inconvenience we caused you.<br>
         <% if (reservations[0].get('purchaser_group') === ReservationUtil.PURCHASER_GROUP_SPONSOR) { %>
         If you want to cancel the reservation, please go to the following page.<br>
-        https://<%= conf.get('dns_name') %>/sponsor/cancel<br>
+        <%= process.env.FRONTEND_ENDPOINT %>/sponsor/cancel<br>
         <% } %>
         *Please keep this email until your screening is finished.
     </p>

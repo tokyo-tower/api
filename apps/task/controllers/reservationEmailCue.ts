@@ -20,7 +20,7 @@ import * as numeral from 'numeral';
 import * as qr from 'qr-image';
 import * as sendgrid from 'sendgrid';
 
-const MONGOLAB_URI = conf.get<string>('mongolab_uri');
+const MONGOLAB_URI = process.env.MONGOLAB_URI;
 
 // todo ログ出力方法考える
 log4js.configure({

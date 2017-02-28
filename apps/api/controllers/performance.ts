@@ -6,7 +6,6 @@
 
 import { Models, PerformanceStatusesModel } from '@motionpicture/chevre-domain';
 
-import * as conf from 'config';
 import { Request, Response } from 'express';
 import * as moment from 'moment';
 
@@ -180,7 +179,7 @@ export function search(req: Request, res: Response): void {
                                     film_sections: performance.film.sections.map((filmSection: any) => filmSection.name[req.getLocale()]),
                                     film_minutes: performance.film.minutes,
                                     film_copyright: performance.film.copyright,
-                                    film_image: `https://${conf.get<string>('dns_name')}/images/film/${performance.film._id}.jpg`
+                                    film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.film._id}.jpg`
                                 };
                             });
 

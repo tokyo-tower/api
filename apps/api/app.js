@@ -5,7 +5,6 @@
  * @module app
  */
 const bodyParser = require("body-parser");
-const conf = require("config");
 const express = require("express");
 const i18n = require("i18n");
 const mongoose = require("mongoose");
@@ -16,7 +15,7 @@ const benchmarks_1 = require("./middlewares/benchmarks");
 const cors_1 = require("./middlewares/cors");
 const logger_1 = require("./middlewares/logger");
 const bearerStrategy = passportHttpBearer.Strategy;
-const MONGOLAB_URI = conf.get('mongolab_uri');
+const MONGOLAB_URI = process.env.MONGOLAB_URI;
 passport.use(new bearerStrategy((token, cb) => {
     chevre_domain_1.Models.Authentication.findOne({
         token: token
@@ -50,7 +49,7 @@ if (process.env.NODE_ENV !== 'production') {
     });
     app.get('/api/connect', (req, res) => {
         console.log('ip:', req.ip);
-        mongoose.connect(MONGOLAB_URI, (err) => {
+        mongoose.connect(MONGOLAB_URI, {}, (err) => {
             res.send('connected.' + err.toString());
         });
     });

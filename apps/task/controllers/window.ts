@@ -7,13 +7,12 @@
 import { Models } from '@motionpicture/chevre-domain';
 import * as Util from '../../../common/Util/Util';
 
-import * as conf from 'config';
 import * as crypto from 'crypto';
 import * as fs from 'fs-extra';
 import * as log4js from 'log4js';
 import * as mongoose from 'mongoose';
 
-const MONGOLAB_URI = conf.get<string>('mongolab_uri');
+const MONGOLAB_URI = process.env.MONGOLAB_URI;
 
 // todo ログ出力方法考える
 log4js.configure({

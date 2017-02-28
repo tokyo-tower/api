@@ -1,27 +1,12 @@
 {
-    "official_website_url": "devchevrefrontend.azurewebsites.net",
-    "dns_name": "devchevrefrontend.azurewebsites.net",
-    "dns_name_for_gmo_result": "devchevrefrontend.azurewebsites.net",
-    "meta": {
-        "keywords": "CHEVRE_EVENT_NAME, 2016, CHEVRE, コンペティション,Competiton,",
-        "description": "CHEVRE_EVENT_NAMEは2016年10月25日（火）から11月3日（木・祝）の10日間開催いたします。"
-    },
+    "official_website_url": "http://motionpicture.jp",
     "email": {
-        "from": "noreply@devchevrefrontend.azurewebsites.net",
-        "fromname": "CHEVRE_EVENT_NAME Online Ticket"
+        "from": "noreply@default.chevre.motionpicture.jp",
+        "fromname": "CHEVRE_EVENT_NAME Online Ticket [dev]"
     },
-
-    "storage_account_name": "",
-    "storage_account_key": "",
-
-    "mongolab_uri": "mongodb://devchevremongodbuser:w6Zk6z62z3ZKBZ52Ku7kFstTRGmBfAVjXakKz8i6@ds058369.mlab.com:58369/devchevre",
-    "mongolab_uri_for_gmo": "mongodb://devchevremongodbuser:w6Zk6z62z3ZKBZ52Ku7kFstTRGmBfAVjXakKz8i6@ds058369.mlab.com:58369/devchevre",
-
     "gmo_payment_site_id": "tsite00022126",
     "gmo_payment_shop_id": "tshop00027145",
     "gmo_payment_shop_password": "q7rf5zwm",
-    "gmo_payment_api_link_multi_entry": "https://pt01.mul-pay.jp/link/tshop00027145/Multi/Entry",
-
     "datetimes": {
         "reservation_start_staffs": "2016-09-28T00:00:00+09:00",
         "reservation_start_sponsors": "2016-09-28T00:00:00+09:00",
@@ -33,11 +18,5 @@
         "reservation_end_pre_customers": "2017-12-31T23:59:59+09:00",
         "event_start": "2016-10-25T00:00:00+09:00",
         "event_end": "2017-12-31T23:59:59+09:00"
-    },
-
-    "temporary_reservation_valid_period_seconds": 900,
-    "waiting_settlement_reservatioin_valid_period_hours": 72,
-
-    "performanceIds4limit2": [
-    ]
+    }
 }

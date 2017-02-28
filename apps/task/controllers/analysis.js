@@ -14,7 +14,7 @@ const moment = require("moment");
 const mongoose = require("mongoose");
 const querystring = require("querystring");
 const request = require("request");
-const MONGOLAB_URI = conf.get('mongolab_uri');
+const MONGOLAB_URI = process.env.MONGOLAB_URI;
 const STATUS_CODE_OK = 200;
 // todo ログ出力方法考える
 log4js.configure({

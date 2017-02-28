@@ -6,11 +6,10 @@
 "use strict";
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const chevre_domain_2 = require("@motionpicture/chevre-domain");
-const conf = require("config");
 const fs = require("fs-extra");
 const log4js = require("log4js");
 const mongoose = require("mongoose");
-const MONGOLAB_URI = conf.get('mongolab_uri');
+const MONGOLAB_URI = process.env.MONGOLAB_URI;
 // todo ログ出力方法考える
 log4js.configure({
     appenders: [

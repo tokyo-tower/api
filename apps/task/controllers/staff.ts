@@ -8,13 +8,12 @@ import { Models } from '@motionpicture/chevre-domain';
 import { ReservationUtil } from '@motionpicture/chevre-domain';
 import * as Util from '../../../common/Util/Util';
 
-import * as conf from 'config';
 import * as crypto from 'crypto';
 import * as fs from 'fs-extra';
 import * as log4js from 'log4js';
 import * as mongoose from 'mongoose';
 
-const MONGOLAB_URI = conf.get<string>('mongolab_uri');
+const MONGOLAB_URI = process.env.MONGOLAB_URI;
 
 // todo ログ出力方法考える
 log4js.configure({
@@ -176,7 +175,7 @@ function createReservationsByScreenId(screenId: string, cb: (err: Error | null) 
                                     watcher_name: '',
                                     film_copyright: performance.get('film').get('copyright'),
                                     film_is_mx4d: performance.get('film').get('is_mx4d'),
-                                    film_image: `https://${conf.get<string>('dns_name')}/images/film/${performance.get('film').get('_id')}.jpg`,
+                                    film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.get('film').get('_id')}.jpg`,
                                     film_name_en: performance.get('film').get('name.en'),
                                     film_name_ja: performance.get('film').get('name.ja'),
                                     film: performance.get('film').get('_id'),
@@ -295,7 +294,7 @@ export function createReservationsByPerformanceId(performanceId: string): void {
                                     watcher_name: '',
                                     film_copyright: performance.get('film').get('copyright'),
                                     film_is_mx4d: performance.get('film').get('is_mx4d'),
-                                    film_image: `https://${conf.get<string>('dns_name')}/images/film/${performance.get('film').get('_id')}.jpg`,
+                                    film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.get('film').get('_id')}.jpg`,
                                     film_name_en: performance.get('film').get('name.en'),
                                     film_name_ja: performance.get('film').get('name.ja'),
                                     film: performance.get('film').get('_id'),

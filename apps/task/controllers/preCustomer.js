@@ -6,13 +6,12 @@
 "use strict";
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const Util = require("../../../common/Util/Util");
-const conf = require("config");
 const crypto = require("crypto");
 const fs = require("fs-extra");
 const log4js = require("log4js");
 const mongodb = require("mongodb");
 const mongoose = require("mongoose");
-const MONGOLAB_URI = conf.get('mongolab_uri');
+const MONGOLAB_URI = process.env.MONGOLAB_URI;
 // todo ログ出力方法考える
 log4js.configure({
     appenders: [
@@ -33,7 +32,7 @@ const logger = log4js.getLogger('system');
  * @memberOf task/PreCustomerController
  */
 function createCollection() {
-    mongodb.MongoClient.connect(conf.get('mongolab_uri'), (err, db) => {
+    mongodb.MongoClient.connect(process.env.MONGOLAB_URI, (err, db) => {
         if (err)
             throw err;
         const collectionName = 'pre_customers';

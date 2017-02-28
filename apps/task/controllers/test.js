@@ -15,7 +15,7 @@ const mongodb = require("mongodb");
 const mongoose = require("mongoose");
 const querystring = require("querystring");
 const request = require("request");
-const MONGOLAB_URI = conf.get('mongolab_uri');
+const MONGOLAB_URI = process.env.MONGOLAB_URI;
 // todo ログ出力方法考える
 log4js.configure({
     appenders: [
@@ -71,7 +71,7 @@ exports.checkFullWidthLetter = checkFullWidthLetter;
  * @memberOf task/TestController
  */
 function listIndexes() {
-    mongodb.MongoClient.connect(conf.get('mongolab_uri'), (err, db) => {
+    mongodb.MongoClient.connect(process.env.MONGOLAB_URI, (err, db) => {
         console.log(err);
         const collectionNames = [
             'authentications',

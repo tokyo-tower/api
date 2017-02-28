@@ -18,7 +18,7 @@ const mongoose = require("mongoose");
 const numeral = require("numeral");
 const qr = require("qr-image");
 const sendgrid = require("sendgrid");
-const MONGOLAB_URI = conf.get('mongolab_uri');
+const MONGOLAB_URI = process.env.MONGOLAB_URI;
 // todo ログ出力方法考える
 log4js.configure({
     appenders: [

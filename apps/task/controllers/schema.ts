@@ -4,7 +4,6 @@
  * @namespace task/SchemaController
  */
 
-import * as conf from 'config';
 import * as log4js from 'log4js';
 import * as mongodb from 'mongodb';
 
@@ -48,7 +47,7 @@ const collectionNames = [
  * @memberOf task/SchemaController
  */
 export function createCollections() {
-    mongodb.MongoClient.connect(conf.get<string>('mongolab_uri'), (err, db) => {
+    mongodb.MongoClient.connect(process.env.MONGOLAB_URI, (err, db) => {
         if (err) throw err;
 
         const promises = collectionNames.map((collectionName) => {
@@ -86,7 +85,7 @@ export function createCollections() {
  * @memberOf task/SchemaController
  */
 export function dropIndexes() {
-    mongodb.MongoClient.connect(conf.get<string>('mongolab_uri'), (err, db) => {
+    mongodb.MongoClient.connect(process.env.MONGOLAB_URI, (err, db) => {
         if (err) throw err;
 
         const promises = collectionNames.map((collectionName) => {
@@ -123,7 +122,7 @@ export function dropIndexes() {
  */
 export function createIndexes() {
     // tslint:disable-next-line:max-func-body-length
-    mongodb.MongoClient.connect(conf.get<string>('mongolab_uri'), (err, db) => {
+    mongodb.MongoClient.connect(process.env.MONGOLAB_URI, (err, db) => {
         if (err) throw err;
 
         const promises = [];

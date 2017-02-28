@@ -29,7 +29,7 @@
         尚、お取り扱いには十分ご注意ください。<br>
         <% if (reservations[0].get('purchaser_group') === ReservationUtil.PURCHASER_GROUP_SPONSOR) { %>
         キャンセルを行う場合は<br>
-        https://<%= conf.get('dns_name') %>/sponsor/cancel<br>
+        <%= process.env.FRONTEND_ENDPOINT %>/sponsor/cancel<br>
         よりキャンセルを行ってください。<br>
         <% } %>
         ＊本メールはご鑑賞後まで、大切に保管してください。
@@ -40,7 +40,7 @@
         It is recommended to save the QR code as image data or to print it for your convenience. Please handle carefully.<br>
         <% if (reservations[0].get('purchaser_group') === ReservationUtil.PURCHASER_GROUP_SPONSOR) { %>
         If you want to cancel the reservation, please go to the following page.<br>
-        https://<%= conf.get('dns_name') %>/sponsor/cancel<br>
+        <%= process.env.FRONTEND_ENDPOINT %>/sponsor/cancel<br>
         <% } %>
         *Please keep this email until your screening is finished.
     </p>
