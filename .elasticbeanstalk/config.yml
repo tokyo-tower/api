@@ -2,6 +2,8 @@ branch-defaults:
   CHEVRE-5:
     environment: chevre-api-dev
     group_suffix: null
+  master:
+    environment: chevre-api-dev
 global:
   application_name: chevre_api
   branch: null
