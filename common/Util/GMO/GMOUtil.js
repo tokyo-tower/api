@@ -4,6 +4,7 @@
  * @namespace GMOUtil
  */
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const crypto = require("crypto");
 /**
  * カード

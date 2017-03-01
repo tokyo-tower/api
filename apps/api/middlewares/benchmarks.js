@@ -4,8 +4,8 @@
  * @module benchmarksMiddleware
  */
 "use strict";
-const log4js = require("log4js");
 Object.defineProperty(exports, "__esModule", { value: true });
+const log4js = require("log4js");
 exports.default = (req, res, next) => {
     if (process.env.NODE_ENV === 'development') {
         const startMemory = process.memoryUsage();

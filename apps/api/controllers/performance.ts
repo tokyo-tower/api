@@ -28,7 +28,7 @@ export function search(req: Request, res: Response): void {
     const screen: string = (req.query.screen) ? req.query.screen : null; // スクリーン
 
     // 検索条件を作成
-    const andConditions: Object[] = [
+    const andConditions: any[] = [
         { canceled: false }
     ];
 
@@ -197,9 +197,8 @@ export function search(req: Request, res: Response): void {
     });
 }
 
-function addFilmConditions(andConditions: Object[], section: string, words: string, cb: (err: Error | null, andConditions: Object[]) => void) {
-
-    const filmAndConditions: Object[] = [];
+function addFilmConditions(andConditions: any[], section: string, words: string, cb: (err: Error | null, andConditions: any[]) => void) {
+    const filmAndConditions: any[] = [];
     if (section) {
         // 部門条件の追加
         filmAndConditions.push({

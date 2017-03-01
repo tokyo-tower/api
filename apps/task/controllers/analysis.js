@@ -4,6 +4,7 @@
  * @namespace task/AnalysisController
  */
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const chevre_domain_2 = require("@motionpicture/chevre-domain");
 const GMOUtil = require("../../../common/Util/GMO/GMOUtil");
@@ -135,6 +136,7 @@ function waiting2sagyo2() {
                     chevre_domain_1.Models.Reservation.count({
                         payment_no: paymentNo,
                         status: { $nin: [chevre_domain_2.ReservationUtil.STATUS_WAITING_SETTLEMENT, chevre_domain_2.ReservationUtil.STATUS_WAITING_SETTLEMENT_PAY_DESIGN] }
+                        // status: {$nin: [ReservationUtil.STATUS_WAITING_SETTLEMENT]}
                     }, (countErr, countOfWaitingReservations) => {
                         logger.info('counted.', countErr, countOfWaitingReservations);
                         if (countErr)

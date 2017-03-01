@@ -4,6 +4,7 @@
  * @namespace task/PerformanceController
  */
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const fs = require("fs-extra");
 const log4js = require("log4js");

@@ -40,14 +40,14 @@ const logger = log4js.getLogger('system');
 export function removeTmps(): void {
     mongoose.connect(MONGOLAB_URI, {});
 
-    const BUFFER_PERIOD_SECONDS = 60;
+    const BUFFER_PERIOD_SECONDS = -60;
     logger.info('removing temporary reservations...');
     Models.Reservation.remove(
         {
             status: ReservationUtil.STATUS_TEMPORARY,
             expired_at: {
                 // 念のため、仮予約有効期間より1分長めにしておく
-                $lt: moment().add(-BUFFER_PERIOD_SECONDS, 'seconds').toISOString()
+                $lt: moment().add(BUFFER_PERIOD_SECONDS, 'seconds').toISOString()
             }
         },
         (err) => {
@@ -71,14 +71,14 @@ export function removeTmps(): void {
 export function tmp2tiff(): void {
     mongoose.connect(MONGOLAB_URI, {});
 
-    const BUFFER_PERIOD_SECONDS = 60;
+    const BUFFER_PERIOD_SECONDS = -60;
     Models.Reservation.distinct(
         '_id',
         {
             status: ReservationUtil.STATUS_TEMPORARY_ON_KEPT_BY_CHEVRE,
             expired_at: {
                 // 念のため、仮予約有効期間より1分長めにしておく
-                $lt: moment().add(-BUFFER_PERIOD_SECONDS, 'seconds').toISOString()
+                $lt: moment().add(BUFFER_PERIOD_SECONDS, 'seconds').toISOString()
             }
         },
         (err, ids) => {
@@ -275,11 +275,11 @@ export function releaseGarbages(): void {
     mongoose.connect(MONGOLAB_URI);
 
     // 一定期間WAITING_SETTLEMENTの予約を抽出
-    const WAITING_PERIOD_HOURS = 2;
+    const WAITING_PERIOD_HOURS = -2;
     Models.Reservation.find(
         {
             status: ReservationUtil.STATUS_WAITING_SETTLEMENT,
-            updated_at: { $lt: moment().add(-WAITING_PERIOD_HOURS, 'hours').toISOString() }
+            updated_at: { $lt: moment().add(WAITING_PERIOD_HOURS, 'hours').toISOString() }
         },
         // tslint:disable-next-line:max-func-body-length
         (err, reservations) => {

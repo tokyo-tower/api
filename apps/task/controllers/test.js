@@ -4,6 +4,7 @@
  * @namespace task/TestController
  */
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const chevre_domain_2 = require("@motionpicture/chevre-domain");
 const Util = require("../../../common/Util/Util");
@@ -253,9 +254,14 @@ function getBounces() {
         api_user: conf.get('sendgrid_username'),
         api_key: conf.get('sendgrid_password'),
         date: '1'
+        // start_date: "2016-10-18",
+        // end_date: "2016-10-19"
     });
     request.get({
         url: `https://api.sendgrid.com/api/bounces.get.json?${query}`
+        // url: `https://api.sendgrid.com/api/blocks.get.json?${query}`
+        // url: `https://api.sendgrid.com/api/invalidemails.get.json?${query}`
+        // url: `https://api.sendgrid.com/api/spamreports.get.json?${query}`
     }, (error, response, body) => {
         logger.info('request processed.', error, response, body);
         process.exit(0);

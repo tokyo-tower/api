@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
@@ -44,5 +45,4 @@ router.use((err, _req, res, next) => {
         message: 'Internal Server Error'
     });
 });
-Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = router;

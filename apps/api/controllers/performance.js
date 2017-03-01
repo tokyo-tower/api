@@ -4,6 +4,7 @@
  * @namespace api/PerformanceController
  */
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const moment = require("moment");
 const DEFAULT_RADIX = 10;

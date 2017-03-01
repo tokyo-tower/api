@@ -4,6 +4,7 @@
  * @namespace task/GMOController
  */
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const chevre_domain_2 = require("@motionpicture/chevre-domain");
 const chevre_domain_3 = require("@motionpicture/chevre-domain");
@@ -75,6 +76,7 @@ function processOne(cb) {
         logger.info('finding reservations...payment_no:', notification.order_id);
         chevre_domain_1.Models.Reservation.find({
             payment_no: notification.order_id
+            // tslint:disable-next-line:max-func-body-length
         }, 
         // tslint:disable-next-line:max-func-body-length
         (findReservationErr, reservations) => {

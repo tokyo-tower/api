@@ -4,6 +4,7 @@
  * @namespace task/ReservationEmailCueController
  */
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const chevre_domain_2 = require("@motionpicture/chevre-domain");
 const chevre_domain_3 = require("@motionpicture/chevre-domain");
@@ -76,6 +77,7 @@ function sendOne(cb) {
                 return next(getReservationLoggerErr, cue, logger, cb);
             chevre_domain_1.Models.Reservation.find({
                 payment_no: cue.get('payment_no')
+                // tslint:disable-next-line:max-func-body-length
             }, 
             // tslint:disable-next-line:max-func-body-length
             (findReservationErr, reservations) => {

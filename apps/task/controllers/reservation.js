@@ -4,6 +4,7 @@
  * @namespace task/ReservationController
  */
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const chevre_domain_2 = require("@motionpicture/chevre-domain");
 const GMOUtil = require("../../../common/Util/GMO/GMOUtil");
@@ -35,13 +36,13 @@ const logger = log4js.getLogger('system');
  */
 function removeTmps() {
     mongoose.connect(MONGOLAB_URI, {});
-    const BUFFER_PERIOD_SECONDS = 60;
+    const BUFFER_PERIOD_SECONDS = -60;
     logger.info('removing temporary reservations...');
     chevre_domain_1.Models.Reservation.remove({
         status: chevre_domain_2.ReservationUtil.STATUS_TEMPORARY,
         expired_at: {
             // 念のため、仮予約有効期間より1分長めにしておく
-            $lt: moment().add(-BUFFER_PERIOD_SECONDS, 'seconds').toISOString()
+            $lt: moment().add(BUFFER_PERIOD_SECONDS, 'seconds').toISOString()
         }
     }, (err) => {
         logger.info('temporary reservations removed.', err);
@@ -60,12 +61,12 @@ exports.removeTmps = removeTmps;
  */
 function tmp2tiff() {
     mongoose.connect(MONGOLAB_URI, {});
-    const BUFFER_PERIOD_SECONDS = 60;
+    const BUFFER_PERIOD_SECONDS = -60;
     chevre_domain_1.Models.Reservation.distinct('_id', {
         status: chevre_domain_2.ReservationUtil.STATUS_TEMPORARY_ON_KEPT_BY_CHEVRE,
         expired_at: {
             // 念のため、仮予約有効期間より1分長めにしておく
-            $lt: moment().add(-BUFFER_PERIOD_SECONDS, 'seconds').toISOString()
+            $lt: moment().add(BUFFER_PERIOD_SECONDS, 'seconds').toISOString()
         }
     }, (err, ids) => {
         if (err) {
@@ -205,6 +206,21 @@ function releaseSeatsKeptByMembers() {
                 });
             });
         });
+        // 空席にする場合はこちら
+        // logger.info('releasing reservations kept by members...');
+        // Models.Reservation.remove(
+        //     {
+        //         status: ReservationUtil.STATUS_KEPT_BY_MEMBER
+        //     },
+        //     (err) => {
+        //         // 失敗しても、次のタスクにまかせる(気にしない)
+        //         if (err) {
+        //         } else {
+        //         }
+        //         mongoose.disconnect();
+        //         process.exit(0);
+        //     }
+        // );
     }
     else {
         process.exit(0);
@@ -220,10 +236,10 @@ exports.releaseSeatsKeptByMembers = releaseSeatsKeptByMembers;
 function releaseGarbages() {
     mongoose.connect(MONGOLAB_URI);
     // 一定期間WAITING_SETTLEMENTの予約を抽出
-    const WAITING_PERIOD_HOURS = 2;
+    const WAITING_PERIOD_HOURS = -2;
     chevre_domain_1.Models.Reservation.find({
         status: chevre_domain_2.ReservationUtil.STATUS_WAITING_SETTLEMENT,
-        updated_at: { $lt: moment().add(-WAITING_PERIOD_HOURS, 'hours').toISOString() }
+        updated_at: { $lt: moment().add(WAITING_PERIOD_HOURS, 'hours').toISOString() }
     }, 
     // tslint:disable-next-line:max-func-body-length
     (err, reservations) => {

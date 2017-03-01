@@ -4,6 +4,7 @@
  * @namespace task/FilmController
  */
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const fs = require("fs-extra");
 const log4js = require("log4js");
@@ -100,6 +101,9 @@ function getImages() {
                 json: true,
                 headers: {
                     'Ocp-Apim-Subscription-Key': '3bca568e7b684e218eb2a11d0cdce9c0'
+                    // User-Agent: Mozilla/5.0 (compatible; MSIE 10.0; Windows Phone 8.0; Trident/6.0; IEMobile/10.0; ARM; Touch; NOKIA; Lumia 822)
+                    // X-Search-ClientIP: 999.999.999.999
+                    // X-MSEdge-ClientID: <blobFromPriorResponseGoesHere>
                 }
             };
             // let options = {

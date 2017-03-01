@@ -4,6 +4,7 @@
  * @namespace api/AuthController
  */
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const crypto = require("crypto");
 /**
