@@ -4,17 +4,32 @@
 
 ## Required environment variables
 ```shell
-set NODE_ENV=**********
-set SENDGRID_API_KEY=**********
-set CHEVRE_PERFORMANCE_STATUSES_REDIS_HOST=**********
-set CHEVRE_PERFORMANCE_STATUSES_REDIS_PORT=**********
-set CHEVRE_PERFORMANCE_STATUSES_REDIS_KEY=**********
-set FRONTEND_ENDPOINT=**********
-set MONGOLAB_URI=**********
-set MONGOLAB_URI_GMO=**********
+set NODE_ENV=**********環境名(development,test,productionなど)**********
+set SENDGRID_API_KEY=**********sendgrid api key**********
+set CHEVRE_PERFORMANCE_STATUSES_REDIS_HOST=**********パフォーマンス空席状況保管先redis host**********
+set CHEVRE_PERFORMANCE_STATUSES_REDIS_PORT=**********パフォーマンス空席状況保管先redis port**********
+set CHEVRE_PERFORMANCE_STATUSES_REDIS_KEY=**********パフォーマンス空席状況保管先redis key**********
+set FRONTEND_ENDPOINT=**********frontendのエンドポイント**********
+set MONGOLAB_URI=**********mongodb接続URI**********
+set MONGOLAB_URI_GMO=**********gmo結果通知保管先mongodb接続URI**********
 ```
+
 only on Aure WebApps
+
 ```shell
-set WEBSITE_NODE_DEFAULT_VERSION=**********
+set WEBSITE_NODE_DEFAULT_VERSION=**********node.jsバージョン**********
 set WEBSITE_TIME_ZONE=Tokyo Standard Time
 ```
+
+
+# tslint
+
+コード品質チェックをtslintで行っています。lintパッケージとして以下を仕様。
+* [tslint](https://github.com/palantir/tslint)
+* [tslint-microsoft-contrib](https://github.com/Microsoft/tslint-microsoft-contrib)
+`npm run check`でチェック実行。改修の際には、必ずチェックすること。
+
+# test
+mochaフレームワークでテスト実行。
+* [mocha](https://www.npmjs.com/package/mocha)
+`npm test`でテスト実行。だが、現状テストコードなし。テストコードを増やしていくことが望ましい。
