@@ -15,6 +15,9 @@ import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 import * as querystring from 'querystring';
 import * as request from 'request';
+import * as util from 'util';
+
+const debug = util.debuglog('chevre-api:task:controller:analysis');
 
 const MONGOLAB_URI = process.env.MONGOLAB_URI;
 const STATUS_CODE_OK = 200;
@@ -44,14 +47,14 @@ export function checkArrayUnique(): void {
         if (err) throw err;
 
         let paymentNos: string[] = JSON.parse(data);
-        console.log(paymentNos.length);
+        debug(paymentNos.length.toString());
 
         // 配列から重複削除
         paymentNos = paymentNos.filter((element, index, self) => {
             return self.indexOf(element) === index;
         });
 
-        console.log(paymentNos.length);
+        debug(paymentNos.length.toString());
         process.exit(0);
     });
 }
@@ -136,7 +139,7 @@ export function waiting2sagyo2(): void {
         });
 
         Promise.all(promises).then(() => {
-            console.log(paymentNos.length);
+            debug(paymentNos.length.toString());
 
             // DBでWAITINGでないものがあるかどうかを確認
             const promisesOfCountWaitingReservations = paymentNos.map((paymentNo) => {
@@ -158,7 +161,7 @@ export function waiting2sagyo2(): void {
             });
 
             Promise.all(promisesOfCountWaitingReservations).then(() => {
-                console.log(paymentNos.length);
+                debug(paymentNos.length.toString());
                 logger.info('promised.');
 
                 // 内部関係者で確保する
@@ -204,7 +207,7 @@ export function waiting2sagyo2(): void {
                             },
                             (udpateReservationErr, raw) => {
                                 logger.info('updated.', udpateReservationErr, raw);
-                                console.log(paymentNos.length);
+                                debug(paymentNos.length.toString());
                                 mongoose.disconnect();
                                 process.exit(0);
                             }
@@ -275,7 +278,7 @@ export function cvsWaiting2reserved(): void {
         });
 
         Promise.all(promises).then(() => {
-            console.log(paymentNos.length);
+            debug(paymentNos.length.toString());
 
             logger.info('counting not in WAITING_SETTLEMENT');
             Models.Reservation.count(
@@ -317,7 +320,7 @@ export function cvsWaiting2reserved(): void {
                         },
                         (updateReservationErr, raw) => {
                             logger.info('updated.', updateReservationErr, raw);
-                            console.log(paymentNos.length);
+                            debug(paymentNos.length.toString());
                             mongoose.disconnect();
                             process.exit(0);
                         }
@@ -385,7 +388,7 @@ export function payDesignWaiting2reserved(): void {
                     },
                     (updateReservationErr, raw) => {
                         logger.info('updated.', updateReservationErr, raw);
-                        console.log(paymentNos.length);
+                        debug(paymentNos.length.toString());
                         mongoose.disconnect();
                         process.exit(0);
                     }
@@ -461,7 +464,7 @@ export function cvsCanceled2sagyo2(): void {
                     },
                     (updateReservationErr, raw) => {
                         logger.info('updated.', updateReservationErr, raw);
-                        console.log(paymentNos.length);
+                        debug(paymentNos.length.toString());
                         mongoose.disconnect();
                         process.exit(0);
                     }
@@ -479,7 +482,7 @@ export function createReservationsFromLogs(): void {
         if (err) throw err;
 
         const paymentNos: string[] = JSON.parse(data);
-        console.log(paymentNos.length);
+        debug(paymentNos.length.toString());
 
         const promises = paymentNos.map((paymentNo) => {
             return new Promise((resolve, reject) => {
@@ -653,9 +656,9 @@ export function getPaymentNosWithEmail(): void {
         (err, orderIds) => {
             if (err) throw err;
 
-            console.log('orderIds length is ', orderIds.length);
+            debug('orderIds length is ', orderIds.length);
             const file = `${__dirname}/../../../../logs/${process.env.NODE_ENV}/orderIds.txt`;
-            console.log(file);
+            debug(file);
             fs.writeFileSync(file, orderIds.join('\n'), 'utf8');
 
             mongoose.disconnect();
@@ -664,9 +667,9 @@ export function getPaymentNosWithEmail(): void {
     );
 
     // fs.readFile(`${process.cwd()}/logs/${process.env.NODE_ENV}/orderIds.json`, 'utf8', (err, data) => {
-    //     console.log(err);
+    //     debug(err);
     //     let orderIds: Array<string> = JSON.parse(data);
-    //     console.log('orderIds length is ', orderIds.length);
+    //     debug('orderIds length is ', orderIds.length);
 
     //     mongoose.connect(MONGOLAB_URI);
     //     logger.info('finding...');
@@ -674,9 +677,9 @@ export function getPaymentNosWithEmail(): void {
     //         is_sent: true,
     //         payment_no: {$in: orderIds}
     //     }, (err, paymentNos) => {
-    //         console.log('paymentNos length is ', paymentNos.length);
+    //         debug('paymentNos length is ', paymentNos.length);
     //         let file = `${__dirname}/../../../../logs/${process.env.NODE_ENV}/paymentNos.txt`;
-    //         console.log(file);
+    //         debug(file);
     //         fs.writeFileSync(file, paymentNos.join("\n"), 'utf8');
 
     //         mongoose.disconnect();
@@ -695,7 +698,7 @@ export function createEmailCues(): void {
         if (err) throw err;
 
         const orderIds: string[] = JSON.parse(data);
-        console.log('orderIds length is ', orderIds.length);
+        debug('orderIds length is ', orderIds.length);
 
         const cues = orderIds.map((orderId) => {
             return {
@@ -785,7 +788,7 @@ export function searchTrade(): void {
 
             }
 
-            console.log(`${statusStr} \\${searchTradeResult.Amount}`);
+            debug(`${statusStr} \\${searchTradeResult.Amount}`);
             process.exit(0);
         }
     );

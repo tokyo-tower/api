@@ -36,49 +36,36 @@ const logger = log4js.getLogger('system');
 export function createFromJson(): void {
     mongoose.connect(MONGOLAB_URI, {});
 
-    fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/sponsors.json`, 'utf8', (err, data) => {
-        if (err) throw err;
+    fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/sponsors.json`, 'utf8', async (err, data) => {
+        if (err instanceof Error) throw err;
         const sponsors: any[] = JSON.parse(data);
 
         // あれば更新、なければ追加
-        const promises = sponsors.map((sponsor) => {
+        const promises = sponsors.map(async (sponsor) => {
             // パスワードハッシュ化
             const SIZE = 64;
             const passwordSalt = crypto.randomBytes(SIZE).toString('hex');
             sponsor.password_salt = passwordSalt;
             sponsor.password_hash = Util.createHash(sponsor.password, passwordSalt);
 
-            return new Promise((resolve, reject) => {
-                logger.debug('updating sponsor...');
-                Models.Sponsor.findOneAndUpdate(
-                    {
-                        user_id: sponsor.user_id
-                    },
-                    sponsor,
-                    {
-                        new: true,
-                        upsert: true
-                    },
-                    (updateErr) => {
-                        logger.debug('sponsor updated', updateErr);
-                        (err) ? reject(err) : resolve();
-                    }
-                );
-            });
+            logger.debug('updating sponsor...');
+            await Models.Sponsor.findOneAndUpdate(
+                {
+                    user_id: sponsor.user_id
+                },
+                sponsor,
+                {
+                    new: true,
+                    upsert: true
+                }
+            ).exec();
+            logger.debug('sponsor updated');
         });
 
-        Promise.all(promises).then(
-            () => {
-                logger.info('promised.');
-                mongoose.disconnect();
-                process.exit(0);
-            },
-            (promiseErr) => {
-                logger.error('promised.', promiseErr);
-                mongoose.disconnect();
-                process.exit(0);
-            }
-        );
+        await Promise.all(promises);
+        logger.info('promised.');
+        mongoose.disconnect();
+        process.exit(0);
     });
 }
 
@@ -88,7 +75,7 @@ export function createFromJson(): void {
  */
 // tslint:disable-next-line:prefer-function-over-method
 export function createPasswords(): void {
-    const file = `${__dirname}/../../../../data/${process.env.NODE_ENV}/sponsorPasswords.txt`;
+    const file = `${__dirname}/../../../data/${process.env.NODE_ENV}/sponsorPasswords.txt`;
     const passwords = [];
     const l = 8;
     const c = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -98,7 +85,7 @@ export function createPasswords(): void {
     while (passwords.length < NUMBER_OF_PASSWORD) {
         let password = '';
         // 数字を含むパスワードが生成されるまで繰り返す
-        while (password.length < l || !password.match(/[0-9]+/g)) {
+        while (password.length < l || password.match(/[0-9]+/g) === null) {
             if (password.length >= l) {
                 password = '';
             }
@@ -106,7 +93,6 @@ export function createPasswords(): void {
             // tslint:disable-next-line:insecure-random
             password += c[Math.floor(Math.random() * cl)];
         }
-        console.log(password);
         passwords.push(password);
     }
 

@@ -37,7 +37,7 @@ export function createFromJson() {
     mongoose.connect(MONGOLAB_URI, {});
 
     fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/windows.json`, 'utf8', (err, data) => {
-        if (err) throw err;
+        if (err instanceof Error) throw err;
         let windows: any[] = JSON.parse(data);
 
         // パスワードハッシュ化
@@ -50,18 +50,15 @@ export function createFromJson() {
         });
 
         logger.info('removing all windows...');
-        Models.Window.remove({}, (removeErr) => {
-            if (removeErr) throw removeErr;
+        Models.Window.remove({}, async (removeErr) => {
+            if (removeErr !== null) throw removeErr;
 
             logger.debug('creating windows...');
-            Models.Window.create(
-                windows,
-                (createErr) => {
-                    logger.info('windows created.', createErr);
-                    mongoose.disconnect();
-                    process.exit(0);
-                }
-            );
+            await Models.Window.create(windows);
+            logger.info('windows created.');
+
+            mongoose.disconnect();
+            process.exit(0);
         });
     });
 }

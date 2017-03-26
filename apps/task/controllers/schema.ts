@@ -47,35 +47,23 @@ const collectionNames = [
  * @memberOf task/SchemaController
  */
 export function createCollections() {
-    mongodb.MongoClient.connect(process.env.MONGOLAB_URI, (err, db) => {
-        if (err) throw err;
+    mongodb.MongoClient.connect(process.env.MONGOLAB_URI, async (err, db) => {
+        if (err !== null) throw err;
 
-        const promises = collectionNames.map((collectionName) => {
-            return new Promise((resolve, reject) => {
-                logger.debug('dropping collection...', collectionName);
-                db.collection(collectionName).drop((dropErr) => {
-                    logger.debug('collection dropped.', collectionName, dropErr);
-                    logger.debug('creating collection.', collectionName);
-                    db.createCollection(collectionName, {}, (createCollectionErr) => {
-                        logger.debug('collection created.', collectionName, createCollectionErr);
-                        (err) ? reject(err) : resolve();
-                    });
-                });
-            });
+        const promises = collectionNames.map(async (collectionName) => {
+            logger.debug('dropping collection...', collectionName);
+            await db.collection(collectionName).drop();
+            logger.debug('collection dropped.', collectionName);
+
+            logger.debug('creating collection.', collectionName);
+            await db.createCollection(collectionName, {});
+            logger.debug('collection created.', collectionName);
         });
 
-        Promise.all(promises).then(
-            () => {
-                logger.info('promised.');
-                db.close();
-                process.exit(0);
-            },
-            (promiseErr) => {
-                logger.error('promised.', promiseErr);
-                db.close();
-                process.exit(0);
-            }
-        );
+        await Promise.all(promises);
+        logger.info('promised.');
+        await db.close();
+        process.exit(0);
     });
 }
 
@@ -85,33 +73,19 @@ export function createCollections() {
  * @memberOf task/SchemaController
  */
 export function dropIndexes() {
-    mongodb.MongoClient.connect(process.env.MONGOLAB_URI, (err, db) => {
-        if (err) throw err;
+    mongodb.MongoClient.connect(process.env.MONGOLAB_URI, async (err, db) => {
+        if (err !== null) throw err;
 
-        const promises = collectionNames.map((collectionName) => {
-            return new Promise((resolve, reject) => {
-                logger.debug('dropping index.', collectionName);
-                db.collection(collectionName).dropIndexes(
-                    (dropIndexesErr) => {
-                        logger.debug('index droped.', collectionName, dropIndexesErr);
-                        (dropIndexesErr) ? reject(dropIndexesErr) : resolve();
-                    }
-                );
-            });
+        const promises = collectionNames.map(async (collectionName) => {
+            logger.debug('dropping index.', collectionName);
+            await db.collection(collectionName).dropIndexes();
+            logger.debug('index droped.', collectionName);
         });
 
-        Promise.all(promises).then(
-            () => {
-                logger.info('promised.');
-                db.close();
-                process.exit(0);
-            },
-            (promiseErr) => {
-                logger.error('promised.', promiseErr);
-                db.close();
-                process.exit(0);
-            }
-        );
+        await Promise.all(promises);
+        logger.info('promised.');
+        await db.close();
+        process.exit(0);
     });
 }
 
@@ -122,120 +96,94 @@ export function dropIndexes() {
  */
 export function createIndexes() {
     // tslint:disable-next-line:max-func-body-length
-    mongodb.MongoClient.connect(process.env.MONGOLAB_URI, (err, db) => {
-        if (err) throw err;
+    mongodb.MongoClient.connect(process.env.MONGOLAB_URI, async (err, db) => {
+        if (err !== null) throw err;
 
-        const promises = [];
+        const promises: Promise<any>[] = [];
 
-        promises.push(new Promise((resolve, reject) => {
-            db.collection('reservations').createIndex(
+        promises.push(new Promise(async (resolve) => {
+            await db.collection('reservations').createIndex(
                 { performance: 1, seat_code: 1 },
-                { unique: true },
-                (createIndexErr) => {
-                    logger.debug('index created.', createIndexErr);
-                    (createIndexErr) ? reject(createIndexErr) : resolve();
-                }
+                { unique: true }
             );
+            logger.debug('index created.');
+            resolve();
         }));
 
-        promises.push(new Promise((resolve, reject) => {
-            db.collection('reservation_email_cues').createIndex(
+        promises.push(new Promise(async (resolve) => {
+            await db.collection('reservation_email_cues').createIndex(
                 { payment_no: 1 },
-                { unique: true },
-                (createIndexErr) => {
-                    logger.debug('index created.', createIndexErr);
-                    (createIndexErr) ? reject(createIndexErr) : resolve();
-                }
+                { unique: true }
             );
+            logger.debug('index created.');
+            resolve();
         }));
 
-        promises.push(new Promise((resolve, reject) => {
-            db.collection('staffs').createIndex(
+        promises.push(new Promise(async (resolve) => {
+            await db.collection('staffs').createIndex(
                 { user_id: 1 },
-                { unique: true },
-                (createIndexErr) => {
-                    logger.debug('index created.', createIndexErr);
-                    (createIndexErr) ? reject(createIndexErr) : resolve();
-                }
+                { unique: true }
             );
+            logger.debug('index created.');
+            resolve();
         }));
 
-        promises.push(new Promise((resolve, reject) => {
-            db.collection('sponsors').createIndex(
+        promises.push(new Promise(async (resolve) => {
+            await db.collection('sponsors').createIndex(
                 { user_id: 1 },
-                { unique: true },
-                (createIndexErr) => {
-                    logger.debug('index created.', createIndexErr);
-                    (createIndexErr) ? reject(createIndexErr) : resolve();
-                }
+                { unique: true }
             );
+            logger.debug('index created.');
+            resolve();
         }));
 
-        promises.push(new Promise((resolve, reject) => {
-            db.collection('pre_customers').createIndex(
+        promises.push(new Promise(async (resolve) => {
+            await db.collection('pre_customers').createIndex(
                 { user_id: 1 },
-                { unique: true },
-                (createIndexErr) => {
-                    logger.debug('index created.', createIndexErr);
-                    (createIndexErr) ? reject(createIndexErr) : resolve();
-                }
+                { unique: true }
             );
+            logger.debug('index created.');
+            resolve();
         }));
 
-        promises.push(new Promise((resolve, reject) => {
-            db.collection('windows').createIndex(
+        promises.push(new Promise(async (resolve) => {
+            await db.collection('windows').createIndex(
                 { user_id: 1 },
-                { unique: true },
-                (createIndexErr) => {
-                    logger.debug('index created.', createIndexErr);
-                    (createIndexErr) ? reject(createIndexErr) : resolve();
-                }
+                { unique: true }
             );
+            logger.debug('index created.');
+            resolve();
         }));
 
-        promises.push(new Promise((resolve, reject) => {
-            db.collection('tel_staffs').createIndex(
+        promises.push(new Promise(async (resolve) => {
+            await db.collection('tel_staffs').createIndex(
                 { user_id: 1 },
-                { unique: true },
-                (createIndexErr) => {
-                    logger.debug('index created.', createIndexErr);
-                    (createIndexErr) ? reject(createIndexErr) : resolve();
-                }
+                { unique: true }
             );
+            logger.debug('index created.');
+            resolve();
         }));
 
-        promises.push(new Promise((resolve, reject) => {
-            db.collection('members').createIndex(
+        promises.push(new Promise(async (resolve) => {
+            await db.collection('members').createIndex(
                 { user_id: 1 },
-                { unique: true },
-                (createIndexErr) => {
-                    logger.debug('index created.', createIndexErr);
-                    (createIndexErr) ? reject(createIndexErr) : resolve();
-                }
+                { unique: true }
             );
+            logger.debug('index created.');
+            resolve();
         }));
 
-        promises.push(new Promise((resolve, reject) => {
-            db.collection('performances').createIndex(
-                { day: 1, start_time: 1 },
-                (createIndexErr) => {
-                    logger.debug('index created.', createIndexErr);
-                    (createIndexErr) ? reject(createIndexErr) : resolve();
-                }
+        promises.push(new Promise(async (resolve) => {
+            await db.collection('performances').createIndex(
+                { day: 1, start_time: 1 }
             );
+            logger.debug('index created.');
+            resolve();
         }));
 
-        Promise.all(promises).then(
-            () => {
-                logger.info('promised.');
-                db.close();
-                process.exit(0);
-            },
-            (promiseErr) => {
-                logger.error('promised.', promiseErr);
-                db.close();
-                process.exit(0);
-            }
-        );
+        await Promise.all(promises);
+        logger.info('promised.');
+        await db.close();
+        process.exit(0);
     });
 }

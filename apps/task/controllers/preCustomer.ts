@@ -36,30 +36,26 @@ const logger = log4js.getLogger('system');
  * @memberOf task/PreCustomerController
  */
 export function createCollection() {
-    mongodb.MongoClient.connect(process.env.MONGOLAB_URI, (err, db) => {
-        if (err) throw err;
+    mongodb.MongoClient.connect(process.env.MONGOLAB_URI, async (err, db) => {
+        if (err !== null) throw err;
 
         const collectionName = 'pre_customers';
         logger.debug('dropping collection...', collectionName);
-        db.collection(collectionName).drop((dropErr) => {
-            logger.debug('collection dropped.', collectionName, dropErr);
-            logger.debug('creating collection.', collectionName);
-            db.createCollection(collectionName, {}, (createCollectionErr) => {
-                logger.debug('collection created.', collectionName, createCollectionErr);
+        await db.collection(collectionName).drop();
+        logger.debug('collection dropped.', collectionName);
 
-                db.collection(collectionName).createIndex(
-                    { user_id: 1 },
-                    { unique: true },
-                    (createIndexErr) => {
-                        logger.debug('index created.', createIndexErr);
+        logger.debug('creating collection.', collectionName);
+        await db.createCollection(collectionName, {});
+        logger.debug('collection created.', collectionName);
 
-                        db.close();
-                        process.exit(0);
-                    }
-                );
-            });
-        });
+        await db.collection(collectionName).createIndex(
+            { user_id: 1 },
+            { unique: true }
+        );
+        logger.debug('index created.');
 
+        await db.close();
+        process.exit(0);
     });
 }
 
@@ -71,8 +67,8 @@ export function createCollection() {
 export function createFromJson(): void {
     mongoose.connect(MONGOLAB_URI, {});
 
-    fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/preCustomers.json`, 'utf8', (err, data) => {
-        if (err) throw err;
+    fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/preCustomers.json`, 'utf8', async (err, data) => {
+        if (err instanceof Error) throw err;
         const preCustomers: any[] = JSON.parse(data);
 
         // あれば更新、なければ追加
@@ -85,16 +81,12 @@ export function createFromJson(): void {
             return preCustomer;
         });
 
-        Models.PreCustomer.remove((removeErr: any) => {
-            if (removeErr) throw removeErr;
+        await Models.PreCustomer.remove({}).exec();
+        logger.debug('creating perCustomers...length:', docs.length);
+        await Models.PreCustomer.insertMany(docs);
+        logger.debug('perCustomers created.');
 
-            logger.debug('creating perCustomers...length:', docs.length);
-            Models.PreCustomer.insertMany(docs, (insertErr) => {
-                logger.debug('perCustomers created.', insertErr);
-
-                mongoose.disconnect();
-                process.exit(0);
-            });
-        });
+        mongoose.disconnect();
+        process.exit(0);
     });
 }

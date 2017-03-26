@@ -1,6 +1,14 @@
 // tslint:disable-next-line:no-reference
 /// <reference path='../typings/index.d.ts' />
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * タスクコマンドルーター
@@ -52,9 +60,9 @@ program
 program
     .command('createStaffReservationsByPerformanceId <performanceId>')
     .description('パフォーマンス指定で内部関係者の先抑えを行うタスク')
-    .action((performanceId) => {
-    StaffController.createReservationsByPerformanceId(performanceId);
-});
+    .action((performanceId) => __awaiter(this, void 0, void 0, function* () {
+    yield StaffController.createReservationsByPerformanceId(performanceId);
+}));
 program
     .command('sponsor <method>')
     .description('外部関係者タスク')
@@ -73,6 +81,12 @@ program
     .action((method) => {
     PerformanceController[method]();
 });
+program
+    .command('performance updateStatuses')
+    .description('空席状況更新タスク')
+    .action(() => __awaiter(this, void 0, void 0, function* () {
+    yield PerformanceController.updateStatuses();
+}));
 program
     .command('releasePerformance <performanceId>')
     .description('ID指定でパフォーマンスを公開するタスク')

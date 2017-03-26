@@ -6,10 +6,13 @@
 
 import { Models } from '@motionpicture/chevre-domain';
 
+import * as createDebug from 'debug';
 import * as fs from 'fs-extra';
 import * as log4js from 'log4js';
 import * as mongoose from 'mongoose';
 import * as request from 'request';
+
+const debug = createDebug('chevre-api:task:controller:film');
 
 const MONGOLAB_URI = process.env.MONGOLAB_URI;
 const STATUS_CODE_OK = 200;
@@ -35,24 +38,18 @@ const logger = log4js.getLogger('system');
 export function createTicketTypeGroupsFromJson(): void {
     mongoose.connect(MONGOLAB_URI, {});
 
-    fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/ticketTypeGroups.json`, 'utf8', (err, data) => {
-        if (err) throw err;
+    fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/ticketTypeGroups.json`, 'utf8', async (err, data) => {
+        if (err instanceof Error) throw err;
         const groups = JSON.parse(data);
 
         logger.info('removing all groups...');
-        Models.TicketTypeGroup.remove({}, (removeErr) => {
-            if (removeErr) throw removeErr;
+        await Models.TicketTypeGroup.remove({}).exec();
 
-            logger.debug('creating groups...');
-            Models.TicketTypeGroup.create(
-                groups,
-                (createErr) => {
-                    logger.info('groups created.', createErr);
-                    mongoose.disconnect();
-                    process.exit(0);
-                }
-            );
-        });
+        logger.debug('creating groups...');
+        await Models.TicketTypeGroup.create(groups);
+        logger.info('groups created.');
+        mongoose.disconnect();
+        process.exit(0);
     });
 }
 
@@ -62,42 +59,29 @@ export function createTicketTypeGroupsFromJson(): void {
 export function createFromJson(): void {
     mongoose.connect(MONGOLAB_URI, {});
 
-    fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/films.json`, 'utf8', (err, data) => {
-        if (err) throw err;
+    fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/films.json`, 'utf8', async (err, data) => {
+        if (err instanceof Error) throw err;
         const films: any[] = JSON.parse(data);
 
-        const promises = films.map((film) => {
-            return new Promise((resolve, reject) => {
-                logger.debug('updating film...');
-                Models.Film.findOneAndUpdate(
-                    {
-                        _id: film._id
-                    },
-                    film,
-                    {
-                        new: true,
-                        upsert: true
-                    },
-                    (updateFilmErr) => {
-                        logger.debug('film updated', updateFilmErr);
-                        (updateFilmErr) ? reject(updateFilmErr) : resolve();
-                    }
-                );
-            });
+        const promises = films.map(async (film) => {
+            logger.debug('updating film...');
+            await Models.Film.findOneAndUpdate(
+                {
+                    _id: film._id
+                },
+                film,
+                {
+                    new: true,
+                    upsert: true
+                }
+            ).exec();
+            logger.debug('film updated');
         });
 
-        Promise.all(promises).then(
-            () => {
-                logger.info('promised.');
-                mongoose.disconnect();
-                process.exit(0);
-            },
-            (promiseErr) => {
-                logger.error('promised.', promiseErr);
-                mongoose.disconnect();
-                process.exit(0);
-            }
-        );
+        await Promise.all(promises);
+        logger.info('promised.');
+        mongoose.disconnect();
+        process.exit(0);
     });
 }
 
@@ -110,7 +94,7 @@ export function getImages() {
     mongoose.connect(MONGOLAB_URI, {});
 
     Models.Film.find({}, 'name', { sort: { _id: 1 } }, (err, films) => {
-        if (err) throw err;
+        if (err !== null) throw err;
 
         let i = 0;
 
@@ -120,9 +104,6 @@ export function getImages() {
                 json: true,
                 headers: {
                     'Ocp-Apim-Subscription-Key': '3bca568e7b684e218eb2a11d0cdce9c0'
-                    // User-Agent: Mozilla/5.0 (compatible; MSIE 10.0; Windows Phone 8.0; Trident/6.0; IEMobile/10.0; ARM; Touch; NOKIA; Lumia 822)
-                    // X-Search-ClientIP: 999.999.999.999
-                    // X-MSEdge-ClientID: <blobFromPriorResponseGoesHere>
                 }
             };
 
@@ -131,16 +112,17 @@ export function getImages() {
             //     json: true
             // };
 
-            console.log('searching...', film.get('name').ja);
+            debug('searching...', film.get('name').ja);
             request.get(options, (error, response, body) => {
-                if (!error && response.statusCode === STATUS_CODE_OK) {
+                if (error !== null && response.statusCode === STATUS_CODE_OK) {
                     if (body.value.length > 0) {
                         const image = body.value[0].thumbnailUrl;
-                        console.log('thumbnailUrl:', image);
+                        debug('thumbnailUrl:', image);
 
                         request.get({ url: image, encoding: null }, (errorOfImageRequest, responseOfImageRequest, bodyOfImageRequest) => {
                             logger.debug('image saved.', error);
-                            if (!errorOfImageRequest && responseOfImageRequest.statusCode === STATUS_CODE_OK) {
+                            if (errorOfImageRequest !== null && responseOfImageRequest.statusCode === STATUS_CODE_OK) {
+                                // tslint:disable-next-line:max-line-length
                                 fs.writeFileSync(`${__dirname}/../../../../public/images/film/${film.get('_id').toString()}.jpg`, bodyOfImageRequest, 'binary');
                             }
 

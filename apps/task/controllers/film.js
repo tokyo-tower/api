@@ -4,12 +4,22 @@
  * @namespace task/FilmController
  */
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
+const createDebug = require("debug");
 const fs = require("fs-extra");
 const log4js = require("log4js");
 const mongoose = require("mongoose");
 const request = require("request");
+const debug = createDebug('chevre-api:task:controller:film');
 const MONGOLAB_URI = process.env.MONGOLAB_URI;
 const STATUS_CODE_OK = 200;
 // todo ログ出力方法考える
@@ -31,22 +41,18 @@ const logger = log4js.getLogger('system');
  */
 function createTicketTypeGroupsFromJson() {
     mongoose.connect(MONGOLAB_URI, {});
-    fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/ticketTypeGroups.json`, 'utf8', (err, data) => {
-        if (err)
+    fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/ticketTypeGroups.json`, 'utf8', (err, data) => __awaiter(this, void 0, void 0, function* () {
+        if (err instanceof Error)
             throw err;
         const groups = JSON.parse(data);
         logger.info('removing all groups...');
-        chevre_domain_1.Models.TicketTypeGroup.remove({}, (removeErr) => {
-            if (removeErr)
-                throw removeErr;
-            logger.debug('creating groups...');
-            chevre_domain_1.Models.TicketTypeGroup.create(groups, (createErr) => {
-                logger.info('groups created.', createErr);
-                mongoose.disconnect();
-                process.exit(0);
-            });
-        });
-    });
+        yield chevre_domain_1.Models.TicketTypeGroup.remove({}).exec();
+        logger.debug('creating groups...');
+        yield chevre_domain_1.Models.TicketTypeGroup.create(groups);
+        logger.info('groups created.');
+        mongoose.disconnect();
+        process.exit(0);
+    }));
 }
 exports.createTicketTypeGroupsFromJson = createTicketTypeGroupsFromJson;
 /**
@@ -54,34 +60,25 @@ exports.createTicketTypeGroupsFromJson = createTicketTypeGroupsFromJson;
  */
 function createFromJson() {
     mongoose.connect(MONGOLAB_URI, {});
-    fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/films.json`, 'utf8', (err, data) => {
-        if (err)
+    fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/films.json`, 'utf8', (err, data) => __awaiter(this, void 0, void 0, function* () {
+        if (err instanceof Error)
             throw err;
         const films = JSON.parse(data);
-        const promises = films.map((film) => {
-            return new Promise((resolve, reject) => {
-                logger.debug('updating film...');
-                chevre_domain_1.Models.Film.findOneAndUpdate({
-                    _id: film._id
-                }, film, {
-                    new: true,
-                    upsert: true
-                }, (updateFilmErr) => {
-                    logger.debug('film updated', updateFilmErr);
-                    (updateFilmErr) ? reject(updateFilmErr) : resolve();
-                });
-            });
-        });
-        Promise.all(promises).then(() => {
-            logger.info('promised.');
-            mongoose.disconnect();
-            process.exit(0);
-        }, (promiseErr) => {
-            logger.error('promised.', promiseErr);
-            mongoose.disconnect();
-            process.exit(0);
-        });
-    });
+        const promises = films.map((film) => __awaiter(this, void 0, void 0, function* () {
+            logger.debug('updating film...');
+            yield chevre_domain_1.Models.Film.findOneAndUpdate({
+                _id: film._id
+            }, film, {
+                new: true,
+                upsert: true
+            }).exec();
+            logger.debug('film updated');
+        }));
+        yield Promise.all(promises);
+        logger.info('promised.');
+        mongoose.disconnect();
+        process.exit(0);
+    }));
 }
 exports.createFromJson = createFromJson;
 /**
@@ -92,7 +89,7 @@ exports.createFromJson = createFromJson;
 function getImages() {
     mongoose.connect(MONGOLAB_URI, {});
     chevre_domain_1.Models.Film.find({}, 'name', { sort: { _id: 1 } }, (err, films) => {
-        if (err)
+        if (err !== null)
             throw err;
         let i = 0;
         const next = (film) => {
@@ -101,24 +98,22 @@ function getImages() {
                 json: true,
                 headers: {
                     'Ocp-Apim-Subscription-Key': '3bca568e7b684e218eb2a11d0cdce9c0'
-                    // User-Agent: Mozilla/5.0 (compatible; MSIE 10.0; Windows Phone 8.0; Trident/6.0; IEMobile/10.0; ARM; Touch; NOKIA; Lumia 822)
-                    // X-Search-ClientIP: 999.999.999.999
-                    // X-MSEdge-ClientID: <blobFromPriorResponseGoesHere>
                 }
             };
             // let options = {
             //     url: `https://api.photozou.jp/rest/search_public.json?limit=1&keyword=${encodeURIComponent(film.get('name').ja)}`,
             //     json: true
             // };
-            console.log('searching...', film.get('name').ja);
+            debug('searching...', film.get('name').ja);
             request.get(options, (error, response, body) => {
-                if (!error && response.statusCode === STATUS_CODE_OK) {
+                if (error !== null && response.statusCode === STATUS_CODE_OK) {
                     if (body.value.length > 0) {
                         const image = body.value[0].thumbnailUrl;
-                        console.log('thumbnailUrl:', image);
+                        debug('thumbnailUrl:', image);
                         request.get({ url: image, encoding: null }, (errorOfImageRequest, responseOfImageRequest, bodyOfImageRequest) => {
                             logger.debug('image saved.', error);
-                            if (!errorOfImageRequest && responseOfImageRequest.statusCode === STATUS_CODE_OK) {
+                            if (errorOfImageRequest !== null && responseOfImageRequest.statusCode === STATUS_CODE_OK) {
+                                // tslint:disable-next-line:max-line-length
                                 fs.writeFileSync(`${__dirname}/../../../../public/images/film/${film.get('_id').toString()}.jpg`, bodyOfImageRequest, 'binary');
                             }
                             if (i === films.length - 1) {

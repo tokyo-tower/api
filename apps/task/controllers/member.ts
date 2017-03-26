@@ -37,8 +37,8 @@ const logger = log4js.getLogger('system');
 export function createFromJson() {
     mongoose.connect(MONGOLAB_URI, {});
 
-    fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/members.json`, 'utf8', (err, data) => {
-        if (err) throw err;
+    fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/members.json`, 'utf8', async (err, data) => {
+        if (err instanceof Error) throw err;
         let members: any[] = JSON.parse(data);
 
         // パスワードハッシュ化
@@ -52,19 +52,13 @@ export function createFromJson() {
             };
         });
         logger.info('removing all members...');
-        Models.Member.remove({}, (removeErr) => {
-            if (removeErr) throw removeErr;
+        await Models.Member.remove({}).exec();
 
-            logger.debug('creating members...');
-            Models.Member.create(
-                members,
-                (createErr) => {
-                    logger.info('members created.', createErr);
-                    mongoose.disconnect();
-                    process.exit(0);
-                }
-            );
-        });
+        logger.debug('creating members...');
+        await Models.Member.create(members);
+        logger.info('members created.');
+        mongoose.disconnect();
+        process.exit(0);
     });
 }
 
@@ -76,42 +70,30 @@ export function createFromJson() {
 export function createReservationsFromJson() {
     mongoose.connect(MONGOLAB_URI, {});
 
-    fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/memberReservations.json`, 'utf8', (err, data) => {
-        if (err) throw err;
+    fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/memberReservations.json`, 'utf8', async (err, data) => {
+        if (err instanceof Error) throw err;
         const reservations: any[] = JSON.parse(data);
 
         logger.debug('creating reservations...');
-        const promises = reservations.map((reservationFromJson) => {
-            return new Promise((resolve, reject) => {
-                logger.info('removing reservation...');
-                // すでに予約があれば削除してから新規作成
-                Models.Reservation.remove(
-                    {
-                        performance: reservationFromJson.performance,
-                        seat_code: reservationFromJson.seat_code
-                    },
-                    (removeErr) => {
-                        logger.info('reservation removed.', removeErr);
-                        if (removeErr) return reject(removeErr);
+        const promises = reservations.map(async (reservationFromJson) => {
+            logger.info('removing reservation...');
+            // すでに予約があれば削除してから新規作成
+            await Models.Reservation.remove(
+                {
+                    performance: reservationFromJson.performance,
+                    seat_code: reservationFromJson.seat_code
+                }
+            ).exec();
+            logger.info('reservation removed.');
 
-                        logger.info('creating reservationFromJson...', reservationFromJson);
-                        Models.Reservation.create(reservationFromJson, (createErr) => {
-                            logger.info('reservationFromJson created.', createErr);
-                            (createErr) ? reject(createErr) : resolve();
-                        });
-                    }
-                );
-            });
+            logger.info('creating reservationFromJson...', reservationFromJson);
+            await Models.Reservation.create(reservationFromJson);
+            logger.info('reservationFromJson created.');
         });
 
-        Promise.all(promises).then(() => {
-            logger.info('promised.');
-            mongoose.disconnect();
-            process.exit(0);
-        }).catch((promiseErr) => {
-            logger.info('promised.', promiseErr);
-            mongoose.disconnect();
-            process.exit(0);
-        });
+        await Promise.all(promises);
+        logger.info('promised.');
+        mongoose.disconnect();
+        process.exit(0);
     });
 }

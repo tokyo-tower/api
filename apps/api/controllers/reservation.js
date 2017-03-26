@@ -84,7 +84,6 @@ function email(req, res) {
             attachment.setDisposition('inline');
             attachment.setContentId('logo');
             mail.addAttachment(attachment);
-            console.log('sending an email...email:', mail);
             const sg = sendgrid(process.env.SENDGRID_API_KEY);
             const request = sg.emptyRequest({
                 host: 'api.sendgrid.com',
@@ -96,8 +95,7 @@ function email(req, res) {
                 test: false,
                 port: ''
             });
-            sg.API(request).then((response) => {
-                console.log('an email sent.', response);
+            sg.API(request).then((_) => {
                 res.json({
                     success: true
                 });

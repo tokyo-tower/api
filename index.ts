@@ -5,8 +5,11 @@
  * Module dependencies.
  */
 
+import * as createDebug from 'debug';
 import * as http from 'http';
 import * as app from './apps/api/app';
+
+const debug = createDebug('chevre-api:index');
 
 /**
  * Get port from environment and store in Express.
@@ -87,5 +90,5 @@ function onListening() {
     const bind = typeof addr === 'string'
         ? 'pipe ' + addr
         : 'port ' + addr.port;
-    console.log('Listening on ' + bind);
+    debug('Listening on ' + bind);
 }

@@ -5,8 +5,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Module dependencies.
  */
+const createDebug = require("debug");
 const http = require("http");
 const app = require("./apps/api/app");
+const debug = createDebug('chevre-api:index');
 /**
  * Get port from environment and store in Express.
  */
@@ -70,5 +72,5 @@ function onListening() {
     const bind = typeof addr === 'string'
         ? 'pipe ' + addr
         : 'port ' + addr.port;
-    console.log('Listening on ' + bind);
+    debug('Listening on ' + bind);
 }

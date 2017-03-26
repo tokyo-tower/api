@@ -7,7 +7,7 @@
 import * as crypto from 'crypto';
 import * as log4js from 'log4js';
 
-interface Prefecture {
+interface IPrefecture {
     code: string;
     name: {
         ja: string;
@@ -99,7 +99,7 @@ export function toFullWidth(str: string): string {
  *
  * @memberOf Util
  */
-export function getPrefectrues(): Prefecture[] {
+export function getPrefectrues(): IPrefecture[] {
     return [
         { code: '01', name: { ja: '北海道', en: 'Hokkaido Government' } },
         { code: '02', name: { ja: '青森県', en: 'Aomori Prefectural Government' } },

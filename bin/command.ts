@@ -58,8 +58,8 @@ program
 program
     .command('createStaffReservationsByPerformanceId <performanceId>')
     .description('パフォーマンス指定で内部関係者の先抑えを行うタスク')
-    .action((performanceId) => {
-        StaffController.createReservationsByPerformanceId(performanceId);
+    .action(async (performanceId) => {
+        await StaffController.createReservationsByPerformanceId(performanceId);
     });
 
 program
@@ -81,6 +81,13 @@ program
     .description('パフォーマンスタスク')
     .action((method) => {
         (<any>PerformanceController)[method]();
+    });
+
+program
+    .command('performance updateStatuses')
+    .description('空席状況更新タスク')
+    .action(async () => {
+        await PerformanceController.updateStatuses();
     });
 
 program

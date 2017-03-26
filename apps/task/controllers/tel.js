@@ -4,6 +4,14 @@
  * @namespace task/TelController
  */
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const Util = require("../../../common/Util/Util");
@@ -33,7 +41,7 @@ const logger = log4js.getLogger('system');
 function createFromJson() {
     mongoose.connect(MONGOLAB_URI, {});
     fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/telStaffs.json`, 'utf8', (err, data) => {
-        if (err)
+        if (err instanceof Error)
             throw err;
         let telStaffs = JSON.parse(data);
         // パスワードハッシュ化
@@ -45,20 +53,19 @@ function createFromJson() {
             return telStaff;
         });
         logger.info('removing all telStaffs...');
-        chevre_domain_1.Models.TelStaff.remove({}, (removeErr) => {
-            if (removeErr) {
+        chevre_domain_1.Models.TelStaff.remove({}, (removeErr) => __awaiter(this, void 0, void 0, function* () {
+            if (removeErr !== null) {
                 logger.info('telStaffs removed.', err);
                 mongoose.disconnect();
                 process.exit(0);
                 return;
             }
             logger.debug('creating telStaffs...');
-            chevre_domain_1.Models.TelStaff.create(telStaffs, (createErr) => {
-                logger.info('telStaffs created.', createErr);
-                mongoose.disconnect();
-                process.exit(0);
-            });
-        });
+            yield chevre_domain_1.Models.TelStaff.create(telStaffs);
+            logger.info('telStaffs created.');
+            mongoose.disconnect();
+            process.exit(0);
+        }));
     });
 }
 exports.createFromJson = createFromJson;

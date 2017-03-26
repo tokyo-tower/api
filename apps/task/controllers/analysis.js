@@ -15,6 +15,8 @@ const moment = require("moment");
 const mongoose = require("mongoose");
 const querystring = require("querystring");
 const request = require("request");
+const util = require("util");
+const debug = util.debuglog('chevre-api:task:controller:analysis');
 const MONGOLAB_URI = process.env.MONGOLAB_URI;
 const STATUS_CODE_OK = 200;
 // todo ログ出力方法考える
@@ -41,12 +43,12 @@ function checkArrayUnique() {
         if (err)
             throw err;
         let paymentNos = JSON.parse(data);
-        console.log(paymentNos.length);
+        debug(paymentNos.length.toString());
         // 配列から重複削除
         paymentNos = paymentNos.filter((element, index, self) => {
             return self.indexOf(element) === index;
         });
-        console.log(paymentNos.length);
+        debug(paymentNos.length.toString());
         process.exit(0);
     });
 }
@@ -128,7 +130,7 @@ function waiting2sagyo2() {
             });
         });
         Promise.all(promises).then(() => {
-            console.log(paymentNos.length);
+            debug(paymentNos.length.toString());
             // DBでWAITINGでないものがあるかどうかを確認
             const promisesOfCountWaitingReservations = paymentNos.map((paymentNo) => {
                 return new Promise((resolve, reject) => {
@@ -146,7 +148,7 @@ function waiting2sagyo2() {
                 });
             });
             Promise.all(promisesOfCountWaitingReservations).then(() => {
-                console.log(paymentNos.length);
+                debug(paymentNos.length.toString());
                 logger.info('promised.');
                 // 内部関係者で確保する
                 chevre_domain_1.Models.Staff.findOne({
@@ -182,7 +184,7 @@ function waiting2sagyo2() {
                         multi: true
                     }, (udpateReservationErr, raw) => {
                         logger.info('updated.', udpateReservationErr, raw);
-                        console.log(paymentNos.length);
+                        debug(paymentNos.length.toString());
                         mongoose.disconnect();
                         process.exit(0);
                     });
@@ -247,7 +249,7 @@ function cvsWaiting2reserved() {
             });
         });
         Promise.all(promises).then(() => {
-            console.log(paymentNos.length);
+            debug(paymentNos.length.toString());
             logger.info('counting not in WAITING_SETTLEMENT');
             chevre_domain_1.Models.Reservation.count({
                 payment_no: { $in: paymentNos },
@@ -279,7 +281,7 @@ function cvsWaiting2reserved() {
                     multi: true
                 }, (updateReservationErr, raw) => {
                     logger.info('updated.', updateReservationErr, raw);
-                    console.log(paymentNos.length);
+                    debug(paymentNos.length.toString());
                     mongoose.disconnect();
                     process.exit(0);
                 });
@@ -334,7 +336,7 @@ function payDesignWaiting2reserved() {
                 multi: true
             }, (updateReservationErr, raw) => {
                 logger.info('updated.', updateReservationErr, raw);
-                console.log(paymentNos.length);
+                debug(paymentNos.length.toString());
                 mongoose.disconnect();
                 process.exit(0);
             });
@@ -396,7 +398,7 @@ function cvsCanceled2sagyo2() {
                 multi: true
             }, (updateReservationErr, raw) => {
                 logger.info('updated.', updateReservationErr, raw);
-                console.log(paymentNos.length);
+                debug(paymentNos.length.toString());
                 mongoose.disconnect();
                 process.exit(0);
             });
@@ -412,7 +414,7 @@ function createReservationsFromLogs() {
         if (err)
             throw err;
         const paymentNos = JSON.parse(data);
-        console.log(paymentNos.length);
+        debug(paymentNos.length.toString());
         const promises = paymentNos.map((paymentNo) => {
             return new Promise((resolve, reject) => {
                 fs.readFile(`${process.cwd()}/logs/reservationsGmoError/${paymentNo[paymentNo.length - 1]}/${paymentNo}.log`, 'utf8', (readFileErr, reservationLogData) => {
@@ -573,26 +575,26 @@ function getPaymentNosWithEmail() {
     }, (err, orderIds) => {
         if (err)
             throw err;
-        console.log('orderIds length is ', orderIds.length);
+        debug('orderIds length is ', orderIds.length);
         const file = `${__dirname}/../../../../logs/${process.env.NODE_ENV}/orderIds.txt`;
-        console.log(file);
+        debug(file);
         fs.writeFileSync(file, orderIds.join('\n'), 'utf8');
         mongoose.disconnect();
         process.exit(0);
     });
     // fs.readFile(`${process.cwd()}/logs/${process.env.NODE_ENV}/orderIds.json`, 'utf8', (err, data) => {
-    //     console.log(err);
+    //     debug(err);
     //     let orderIds: Array<string> = JSON.parse(data);
-    //     console.log('orderIds length is ', orderIds.length);
+    //     debug('orderIds length is ', orderIds.length);
     //     mongoose.connect(MONGOLAB_URI);
     //     logger.info('finding...');
     //     Models.ReservationEmailCue.distinct('payment_no', {
     //         is_sent: true,
     //         payment_no: {$in: orderIds}
     //     }, (err, paymentNos) => {
-    //         console.log('paymentNos length is ', paymentNos.length);
+    //         debug('paymentNos length is ', paymentNos.length);
     //         let file = `${__dirname}/../../../../logs/${process.env.NODE_ENV}/paymentNos.txt`;
-    //         console.log(file);
+    //         debug(file);
     //         fs.writeFileSync(file, paymentNos.join("\n"), 'utf8');
     //         mongoose.disconnect();
     //         process.exit(0);
@@ -609,7 +611,7 @@ function createEmailCues() {
         if (err)
             throw err;
         const orderIds = JSON.parse(data);
-        console.log('orderIds length is ', orderIds.length);
+        debug('orderIds length is ', orderIds.length);
         const cues = orderIds.map((orderId) => {
             return {
                 payment_no: orderId,
@@ -683,7 +685,7 @@ function searchTrade() {
             default:
                 break;
         }
-        console.log(`${statusStr} \\${searchTradeResult.Amount}`);
+        debug(`${statusStr} \\${searchTradeResult.Amount}`);
         process.exit(0);
     });
 }

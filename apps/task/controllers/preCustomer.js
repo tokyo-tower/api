@@ -4,6 +4,14 @@
  * @namespace task/PreCustomerController
  */
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const Util = require("../../../common/Util/Util");
@@ -33,24 +41,21 @@ const logger = log4js.getLogger('system');
  * @memberOf task/PreCustomerController
  */
 function createCollection() {
-    mongodb.MongoClient.connect(process.env.MONGOLAB_URI, (err, db) => {
-        if (err)
+    mongodb.MongoClient.connect(process.env.MONGOLAB_URI, (err, db) => __awaiter(this, void 0, void 0, function* () {
+        if (err !== null)
             throw err;
         const collectionName = 'pre_customers';
         logger.debug('dropping collection...', collectionName);
-        db.collection(collectionName).drop((dropErr) => {
-            logger.debug('collection dropped.', collectionName, dropErr);
-            logger.debug('creating collection.', collectionName);
-            db.createCollection(collectionName, {}, (createCollectionErr) => {
-                logger.debug('collection created.', collectionName, createCollectionErr);
-                db.collection(collectionName).createIndex({ user_id: 1 }, { unique: true }, (createIndexErr) => {
-                    logger.debug('index created.', createIndexErr);
-                    db.close();
-                    process.exit(0);
-                });
-            });
-        });
-    });
+        yield db.collection(collectionName).drop();
+        logger.debug('collection dropped.', collectionName);
+        logger.debug('creating collection.', collectionName);
+        yield db.createCollection(collectionName, {});
+        logger.debug('collection created.', collectionName);
+        yield db.collection(collectionName).createIndex({ user_id: 1 }, { unique: true });
+        logger.debug('index created.');
+        yield db.close();
+        process.exit(0);
+    }));
 }
 exports.createCollection = createCollection;
 /**
@@ -60,8 +65,8 @@ exports.createCollection = createCollection;
  */
 function createFromJson() {
     mongoose.connect(MONGOLAB_URI, {});
-    fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/preCustomers.json`, 'utf8', (err, data) => {
-        if (err)
+    fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/preCustomers.json`, 'utf8', (err, data) => __awaiter(this, void 0, void 0, function* () {
+        if (err instanceof Error)
             throw err;
         const preCustomers = JSON.parse(data);
         // あれば更新、なければ追加
@@ -73,16 +78,12 @@ function createFromJson() {
             preCustomer.password_hash = Util.createHash(preCustomer.password, passwordSalt);
             return preCustomer;
         });
-        chevre_domain_1.Models.PreCustomer.remove((removeErr) => {
-            if (removeErr)
-                throw removeErr;
-            logger.debug('creating perCustomers...length:', docs.length);
-            chevre_domain_1.Models.PreCustomer.insertMany(docs, (insertErr) => {
-                logger.debug('perCustomers created.', insertErr);
-                mongoose.disconnect();
-                process.exit(0);
-            });
-        });
-    });
+        yield chevre_domain_1.Models.PreCustomer.remove({}).exec();
+        logger.debug('creating perCustomers...length:', docs.length);
+        yield chevre_domain_1.Models.PreCustomer.insertMany(docs);
+        logger.debug('perCustomers created.');
+        mongoose.disconnect();
+        process.exit(0);
+    }));
 }
 exports.createFromJson = createFromJson;

@@ -9,11 +9,14 @@ import * as i18n from 'i18n';
 import * as mongoose from 'mongoose';
 import * as passport from 'passport';
 import * as passportHttpBearer from 'passport-http-bearer';
+import * as util from 'util';
 
 import { Models } from '@motionpicture/chevre-domain';
 import benchmarks from './middlewares/benchmarks';
 import cors from './middlewares/cors';
 import logger from './middlewares/logger';
+
+const debug = util.debuglog('chevre-api:app');
 
 const bearerStrategy = passportHttpBearer.Strategy;
 const MONGOLAB_URI = process.env.MONGOLAB_URI;
@@ -54,15 +57,13 @@ if (process.env.NODE_ENV !== 'production') {
         });
     });
 
-    app.get('/api/disconnect', (req, res) => {
-        console.log('ip:', req.ip);
+    app.get('/api/disconnect', (_, res) => {
         mongoose.disconnect((err: any) => {
             res.send('disconnected.' + err.toString());
         });
     });
 
-    app.get('/api/connect', (req, res) => {
-        console.log('ip:', req.ip);
+    app.get('/api/connect', (_, res) => {
         mongoose.connect(MONGOLAB_URI, {}, (err) => {
             res.send('connected.' + err.toString());
         });
@@ -100,22 +101,22 @@ mongoose.connect(MONGOLAB_URI, {});
 if (process.env.NODE_ENV !== 'production') {
     const db = mongoose.connection;
     db.on('connecting', () => {
-        console.log('connecting');
+        debug('connecting');
     });
     db.on('error', (error: any) => {
         console.error('Error in MongoDb connection: ', error);
     });
     db.on('connected', () => {
-        console.log('connected.');
+        debug('connected.');
     });
     db.once('open', () => {
-        console.log('connection open.');
+        debug('connection open.');
     });
     db.on('reconnected', () => {
-        console.log('reconnected.');
+        debug('reconnected.');
     });
     db.on('disconnected', () => {
-        console.log('disconnected.');
+        debug('disconnected.');
     });
 }
 

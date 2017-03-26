@@ -10,10 +10,12 @@ const i18n = require("i18n");
 const mongoose = require("mongoose");
 const passport = require("passport");
 const passportHttpBearer = require("passport-http-bearer");
+const util = require("util");
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const benchmarks_1 = require("./middlewares/benchmarks");
 const cors_1 = require("./middlewares/cors");
 const logger_1 = require("./middlewares/logger");
+const debug = util.debuglog('chevre-api:app');
 const bearerStrategy = passportHttpBearer.Strategy;
 const MONGOLAB_URI = process.env.MONGOLAB_URI;
 passport.use(new bearerStrategy((token, cb) => {
@@ -42,14 +44,12 @@ if (process.env.NODE_ENV !== 'production') {
             throw new Error('500 manually.');
         });
     });
-    app.get('/api/disconnect', (req, res) => {
-        console.log('ip:', req.ip);
+    app.get('/api/disconnect', (_, res) => {
         mongoose.disconnect((err) => {
             res.send('disconnected.' + err.toString());
         });
     });
-    app.get('/api/connect', (req, res) => {
-        console.log('ip:', req.ip);
+    app.get('/api/connect', (_, res) => {
         mongoose.connect(MONGOLAB_URI, {}, (err) => {
             res.send('connected.' + err.toString());
         });
@@ -80,22 +80,22 @@ mongoose.connect(MONGOLAB_URI, {});
 if (process.env.NODE_ENV !== 'production') {
     const db = mongoose.connection;
     db.on('connecting', () => {
-        console.log('connecting');
+        debug('connecting');
     });
     db.on('error', (error) => {
         console.error('Error in MongoDb connection: ', error);
     });
     db.on('connected', () => {
-        console.log('connected.');
+        debug('connected.');
     });
     db.once('open', () => {
-        console.log('connection open.');
+        debug('connection open.');
     });
     db.on('reconnected', () => {
-        console.log('reconnected.');
+        debug('reconnected.');
     });
     db.on('disconnected', () => {
-        console.log('disconnected.');
+        debug('disconnected.');
     });
 }
 module.exports = app;

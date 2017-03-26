@@ -37,7 +37,7 @@ export function createFromJson(): void {
     mongoose.connect(MONGOLAB_URI, {});
 
     fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/telStaffs.json`, 'utf8', (err, data) => {
-        if (err) throw err;
+        if (err instanceof Error) throw err;
         let telStaffs: any[] = JSON.parse(data);
 
         // パスワードハッシュ化
@@ -50,8 +50,8 @@ export function createFromJson(): void {
         });
 
         logger.info('removing all telStaffs...');
-        Models.TelStaff.remove({}, (removeErr) => {
-            if (removeErr) {
+        Models.TelStaff.remove({}, async (removeErr) => {
+            if (removeErr !== null) {
                 logger.info('telStaffs removed.', err);
                 mongoose.disconnect();
                 process.exit(0);
@@ -59,14 +59,10 @@ export function createFromJson(): void {
             }
 
             logger.debug('creating telStaffs...');
-            Models.TelStaff.create(
-                telStaffs,
-                (createErr) => {
-                    logger.info('telStaffs created.', createErr);
-                    mongoose.disconnect();
-                    process.exit(0);
-                }
-            );
+            await Models.TelStaff.create(telStaffs);
+            logger.info('telStaffs created.');
+            mongoose.disconnect();
+            process.exit(0);
         });
     });
 }

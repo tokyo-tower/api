@@ -36,54 +36,39 @@ const logger = log4js.getLogger('system');
 export function createFromJson(): void {
     mongoose.connect(MONGOLAB_URI, {});
 
-    fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/performances.json`, 'utf8', (readFileErr, data) => {
-        if (readFileErr) throw readFileErr;
+    fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/performances.json`, 'utf8', async (readFileErr, data) => {
+        if (readFileErr instanceof Error) throw readFileErr;
         const performances: any[] = JSON.parse(data);
 
-        Models.Screen.find({}, 'name theater').populate('theater', 'name').exec((err, screens) => {
-            if (err) throw err;
+        const screens = await Models.Screen.find({}, 'name theater').populate('theater', 'name').exec();
 
-            // あれば更新、なければ追加
-            const promises = performances.map((performance) => {
-                return new Promise((resolve, reject) => {
-                    // 劇場とスクリーン名称を追加
-                    const screenOfPerformance = screens.find((screen) => {
-                        return (screen.get('_id').toString() === performance.screen);
-                    });
-                    if (!screenOfPerformance) return reject(new Error('screen not found.'));
-
-                    performance.screen_name = screenOfPerformance.get('name');
-                    performance.theater_name = screenOfPerformance.get('theater').get('name');
-
-                    logger.debug('updating performance...');
-                    Models.Performance.findOneAndUpdate(
-                        { _id: performance._id },
-                        performance,
-                        {
-                            new: true,
-                            upsert: true
-                        },
-                        (updateErr) => {
-                            logger.debug('performance updated', updateErr);
-                            (updateErr) ? reject(updateErr) : resolve();
-                        }
-                    );
-                });
+        // あれば更新、なければ追加
+        const promises = performances.map(async (performance) => {
+            // 劇場とスクリーン名称を追加
+            const screenOfPerformance = screens.find((screen) => {
+                return (screen.get('_id').toString() === performance.screen);
             });
+            if (screenOfPerformance === undefined) throw new Error('screen not found.');
 
-            Promise.all(promises).then(
-                () => {
-                    logger.info('promised.');
-                    mongoose.disconnect();
-                    process.exit(0);
-                },
-                (promiseErr) => {
-                    logger.error('promised.', promiseErr);
-                    mongoose.disconnect();
-                    process.exit(0);
+            performance.screen_name = screenOfPerformance.get('name');
+            performance.theater_name = screenOfPerformance.get('theater').get('name');
+
+            logger.debug('updating performance...');
+            await Models.Performance.findOneAndUpdate(
+                { _id: performance._id },
+                performance,
+                {
+                    new: true,
+                    upsert: true
                 }
-            );
+            ).exec();
+            logger.debug('performance updated');
         });
+
+        await Promise.all(promises);
+        logger.info('promised.');
+        mongoose.disconnect();
+        process.exit(0);
     });
 }
 
@@ -92,71 +77,58 @@ export function createFromJson(): void {
  *
  * @memberOf task/PerformanceController
  */
-export function updateStatuses() {
+export async function updateStatuses() {
     mongoose.connect(MONGOLAB_URI, {});
 
     logger.info('finding performances...');
-    Models.Performance.find(
+    const performances = await Models.Performance.find(
         {},
         'day start_time screen'
     )
         .populate('screen', 'seats_number')
-        .exec((err, performances) => {
-            logger.info('performances found.', err);
-            if (err) {
-                mongoose.disconnect();
-                process.exit(0);
-                return;
-            }
+        .exec();
 
-            const performanceStatusesModel = PerformanceStatusesModel.create();
+    logger.info('performances found.');
 
-            logger.info('aggregating...');
-            Models.Reservation.aggregate(
-                [
-                    {
-                        $group: {
-                            _id: '$performance',
-                            count: { $sum: 1 }
-                        }
-                    }
-                ],
-                (aggregateErr: any, results: any[]) => {
-                    logger.info('aggregated.', aggregateErr);
-                    if (aggregateErr) {
-                        mongoose.disconnect();
-                        process.exit(0);
-                        return;
-                    }
+    const performanceStatusesModel = PerformanceStatusesModel.create();
 
-                    // パフォーマンスIDごとに
-                    const reservationNumbers: {
-                        [key: string]: number
-                    } = {};
-                    results.forEach((result) => {
-                        reservationNumbers[result._id] = parseInt(result.count, DEFAULT_RADIX);
-                    });
-
-                    performances.forEach((performance) => {
-                        // パフォーマンスごとに空席ステータスを算出する
-                        if (!reservationNumbers.hasOwnProperty(performance.get('_id').toString())) {
-                            reservationNumbers[performance.get('_id').toString()] = 0;
-                        }
-
-                        // TODO anyで逃げているが、型定義をちゃんとかけばもっとよく書ける
-                        const status = (<any>performance).getSeatStatus(reservationNumbers[performance.get('_id').toString()]);
-                        performanceStatusesModel.setStatus(performance._id.toString(), status);
-                    });
-
-                    logger.info('saving performanceStatusesModel...', performanceStatusesModel);
-                    PerformanceStatusesModel.store(performanceStatusesModel, (storeErr) => {
-                        logger.info('performanceStatusesModel saved.', storeErr);
-                        mongoose.disconnect();
-                        process.exit(0);
-                    });
+    logger.info('aggregating...');
+    const results: any[] = await Models.Reservation.aggregate(
+        [
+            {
+                $group: {
+                    _id: '$performance',
+                    count: { $sum: 1 }
                 }
-            );
-        });
+            }
+        ]
+    ).exec();
+
+    // パフォーマンスIDごとに
+    const reservationNumbers: {
+        [key: string]: number
+    } = {};
+    results.forEach((result) => {
+        reservationNumbers[result._id] = parseInt(result.count, DEFAULT_RADIX);
+    });
+
+    performances.forEach((performance) => {
+        // パフォーマンスごとに空席ステータスを算出する
+        if (!reservationNumbers.hasOwnProperty(performance.get('_id').toString())) {
+            reservationNumbers[performance.get('_id').toString()] = 0;
+        }
+
+        // TODO anyで逃げているが、型定義をちゃんとかけばもっとよく書ける
+        const status = (<any>performance).getSeatStatus(reservationNumbers[performance.get('_id').toString()]);
+        performanceStatusesModel.setStatus(performance._id.toString(), status);
+    });
+
+    logger.info('saving performanceStatusesModel...', performanceStatusesModel);
+    PerformanceStatusesModel.store(performanceStatusesModel, (storeErr) => {
+        logger.info('performanceStatusesModel saved.', storeErr);
+        mongoose.disconnect();
+        process.exit(0);
+    });
 }
 
 /**

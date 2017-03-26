@@ -4,6 +4,14 @@
  * @namespace task/WindowController
  */
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const Util = require("../../../common/Util/Util");
@@ -33,7 +41,7 @@ const logger = log4js.getLogger('system');
 function createFromJson() {
     mongoose.connect(MONGOLAB_URI, {});
     fs.readFile(`${process.cwd()}/data/${process.env.NODE_ENV}/windows.json`, 'utf8', (err, data) => {
-        if (err)
+        if (err instanceof Error)
             throw err;
         let windows = JSON.parse(data);
         // パスワードハッシュ化
@@ -45,16 +53,15 @@ function createFromJson() {
             return window;
         });
         logger.info('removing all windows...');
-        chevre_domain_1.Models.Window.remove({}, (removeErr) => {
-            if (removeErr)
+        chevre_domain_1.Models.Window.remove({}, (removeErr) => __awaiter(this, void 0, void 0, function* () {
+            if (removeErr !== null)
                 throw removeErr;
             logger.debug('creating windows...');
-            chevre_domain_1.Models.Window.create(windows, (createErr) => {
-                logger.info('windows created.', createErr);
-                mongoose.disconnect();
-                process.exit(0);
-            });
-        });
+            yield chevre_domain_1.Models.Window.create(windows);
+            logger.info('windows created.');
+            mongoose.disconnect();
+            process.exit(0);
+        }));
     });
 }
 exports.createFromJson = createFromJson;

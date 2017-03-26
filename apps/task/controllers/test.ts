@@ -9,6 +9,7 @@ import { ReservationUtil } from '@motionpicture/chevre-domain';
 import * as Util from '../../../common/Util/Util';
 
 import * as conf from 'config';
+import * as createDebug from 'debug';
 import * as fs from 'fs-extra';
 import * as log4js from 'log4js';
 import * as moment from 'moment';
@@ -16,6 +17,8 @@ import * as mongodb from 'mongodb';
 import * as mongoose from 'mongoose';
 import * as querystring from 'querystring';
 import * as request from 'request';
+
+const debug = createDebug('chevre-api:task:controller:test');
 
 const MONGOLAB_URI = process.env.MONGOLAB_URI;
 
@@ -78,7 +81,7 @@ export function checkFullWidthLetter() {
  */
 export function listIndexes(): void {
     mongodb.MongoClient.connect(process.env.MONGOLAB_URI, (err, db) => {
-        console.log(err);
+        debug(err);
         const collectionNames = [
             'authentications',
             'customer_cancel_requests',
@@ -103,7 +106,7 @@ export function listIndexes(): void {
                 db.collection(collectionName).indexInformation((indexInfoErr, info) => {
                     if (indexInfoErr) return reject();
 
-                    console.log(collectionName, 'indexInformation is', info);
+                    debug(collectionName, 'indexInformation is', info);
                     resolve();
                 });
             });
@@ -174,9 +177,9 @@ export function getPaymentNosWithEmail(): void {
             processed: true
         },
         (err, orderIds) => {
-            console.log('orderIds length is ', err, orderIds.length);
+            debug('orderIds length is ', err, orderIds.length);
             const file = `${__dirname}/../../../../logs/${process.env.NODE_ENV}/orderIds.txt`;
-            console.log(file);
+            debug(file);
             fs.writeFileSync(file, orderIds.join('\n'), 'utf8');
 
             mongoose.disconnect();
@@ -185,9 +188,9 @@ export function getPaymentNosWithEmail(): void {
     );
 
     // fs.readFile(`${process.cwd()}/logs/${process.env.NODE_ENV}/orderIds.json`, 'utf8', (err, data) => {
-    //     console.log(err);
+    //     debug(err);
     //     let orderIds: Array<string> = JSON.parse(data);
-    //     console.log('orderIds length is ', orderIds.length);
+    //     debug('orderIds length is ', orderIds.length);
 
     //     mongoose.connect(MONGOLAB_URI);
     //     logger.info('finding...');
@@ -195,9 +198,9 @@ export function getPaymentNosWithEmail(): void {
     //         is_sent: true,
     //         payment_no: {$in: orderIds}
     //     }, (err, paymentNos) => {
-    //         console.log('paymentNos length is ', paymentNos.length);
+    //         debug('paymentNos length is ', paymentNos.length);
     //         let file = `${__dirname}/../../../../logs/${process.env.NODE_ENV}/paymentNos.txt`;
-    //         console.log(file);
+    //         debug(file);
     //         fs.writeFileSync(file, paymentNos.join("\n"), 'utf8');
 
     //         mongoose.disconnect();
@@ -214,7 +217,7 @@ export function getPaymentNosWithEmail(): void {
 export function createEmailCues(): void {
     fs.readFile(`${__dirname}/../../../../logs/${process.env.NODE_ENV}/20161021_orderIds4reemail.json`, 'utf8', (err, data) => {
         const orderIds: string[] = JSON.parse(data);
-        console.log('orderIds length is ', orderIds.length, err);
+        debug('orderIds length is ', orderIds.length, err);
 
         const cues = orderIds.map((orderId) => {
             return {
@@ -247,11 +250,11 @@ export function release(): void {
             status: ReservationUtil.STATUS_KEPT_BY_CHEVRE
         },
         (err, count) => {
-            console.log(err, count);
+            debug(err, count);
             // Models.Reservation.remove({
             //     status: ReservationUtil.STATUS_KEPT_BY_CHEVRE
             // }, (err) => {
-            //     console.log(err);
+            //     debug(err);
             mongoose.disconnect();
             process.exit(0);
             // });

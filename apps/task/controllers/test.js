@@ -9,6 +9,7 @@ const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const chevre_domain_2 = require("@motionpicture/chevre-domain");
 const Util = require("../../../common/Util/Util");
 const conf = require("config");
+const createDebug = require("debug");
 const fs = require("fs-extra");
 const log4js = require("log4js");
 const moment = require("moment");
@@ -16,6 +17,7 @@ const mongodb = require("mongodb");
 const mongoose = require("mongoose");
 const querystring = require("querystring");
 const request = require("request");
+const debug = createDebug('chevre-api:task:controller:test');
 const MONGOLAB_URI = process.env.MONGOLAB_URI;
 // todo ログ出力方法考える
 log4js.configure({
@@ -73,7 +75,7 @@ exports.checkFullWidthLetter = checkFullWidthLetter;
  */
 function listIndexes() {
     mongodb.MongoClient.connect(process.env.MONGOLAB_URI, (err, db) => {
-        console.log(err);
+        debug(err);
         const collectionNames = [
             'authentications',
             'customer_cancel_requests',
@@ -97,7 +99,7 @@ function listIndexes() {
                 db.collection(collectionName).indexInformation((indexInfoErr, info) => {
                     if (indexInfoErr)
                         return reject();
-                    console.log(collectionName, 'indexInformation is', info);
+                    debug(collectionName, 'indexInformation is', info);
                     resolve();
                 });
             });
@@ -149,26 +151,26 @@ function getPaymentNosWithEmail() {
         status: { $in: ['PAYSUCCESS'] },
         processed: true
     }, (err, orderIds) => {
-        console.log('orderIds length is ', err, orderIds.length);
+        debug('orderIds length is ', err, orderIds.length);
         const file = `${__dirname}/../../../../logs/${process.env.NODE_ENV}/orderIds.txt`;
-        console.log(file);
+        debug(file);
         fs.writeFileSync(file, orderIds.join('\n'), 'utf8');
         mongoose.disconnect();
         process.exit(0);
     });
     // fs.readFile(`${process.cwd()}/logs/${process.env.NODE_ENV}/orderIds.json`, 'utf8', (err, data) => {
-    //     console.log(err);
+    //     debug(err);
     //     let orderIds: Array<string> = JSON.parse(data);
-    //     console.log('orderIds length is ', orderIds.length);
+    //     debug('orderIds length is ', orderIds.length);
     //     mongoose.connect(MONGOLAB_URI);
     //     logger.info('finding...');
     //     Models.ReservationEmailCue.distinct('payment_no', {
     //         is_sent: true,
     //         payment_no: {$in: orderIds}
     //     }, (err, paymentNos) => {
-    //         console.log('paymentNos length is ', paymentNos.length);
+    //         debug('paymentNos length is ', paymentNos.length);
     //         let file = `${__dirname}/../../../../logs/${process.env.NODE_ENV}/paymentNos.txt`;
-    //         console.log(file);
+    //         debug(file);
     //         fs.writeFileSync(file, paymentNos.join("\n"), 'utf8');
     //         mongoose.disconnect();
     //         process.exit(0);
@@ -183,7 +185,7 @@ exports.getPaymentNosWithEmail = getPaymentNosWithEmail;
 function createEmailCues() {
     fs.readFile(`${__dirname}/../../../../logs/${process.env.NODE_ENV}/20161021_orderIds4reemail.json`, 'utf8', (err, data) => {
         const orderIds = JSON.parse(data);
-        console.log('orderIds length is ', orderIds.length, err);
+        debug('orderIds length is ', orderIds.length, err);
         const cues = orderIds.map((orderId) => {
             return {
                 payment_no: orderId,
@@ -211,11 +213,11 @@ function release() {
     chevre_domain_1.Models.Reservation.count({
         status: chevre_domain_2.ReservationUtil.STATUS_KEPT_BY_CHEVRE
     }, (err, count) => {
-        console.log(err, count);
+        debug(err, count);
         // Models.Reservation.remove({
         //     status: ReservationUtil.STATUS_KEPT_BY_CHEVRE
         // }, (err) => {
-        //     console.log(err);
+        //     debug(err);
         mongoose.disconnect();
         process.exit(0);
         // });
