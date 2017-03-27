@@ -1,3 +1,5 @@
+// tslint:disable
+// todo fix tslint
 /**
  * 分析タスクコントローラー
  *

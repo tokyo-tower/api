@@ -5,6 +5,8 @@
  * Module dependencies.
  */
 
+const startTime = process.hrtime();
+
 import * as createDebug from 'debug';
 import * as http from 'http';
 import * as app from './apps/api/app';
@@ -15,7 +17,7 @@ const debug = createDebug('chevre-api:index');
  * Get port from environment and store in Express.
  */
 
-const port = normalizePort(process.env.PORT || '3000');
+const port = normalizePort((process.env.PORT === undefined) ? '3000' : process.env.PORT);
 app.set('port', port);
 
 /**
@@ -54,7 +56,7 @@ function normalizePort(val: any) {
 }
 
 /**
- * Event listener for HTTP server "error" event.
+ * Event listener for HTTP server 'error' event.
  */
 
 function onError(error: any) {
@@ -64,7 +66,7 @@ function onError(error: any) {
 
     const bind = typeof port === 'string'
         ? 'Pipe ' + port
-        : 'Port ' + port;
+        : 'Port ' + (<number>port).toString();
 
     // handle specific listen errors with friendly messages
     switch (error.code) {
@@ -82,13 +84,16 @@ function onError(error: any) {
 }
 
 /**
- * Event listener for HTTP server "listening" event.
+ * Event listener for HTTP server 'listening' event.
  */
 
 function onListening() {
     const addr = server.address();
     const bind = typeof addr === 'string'
-        ? 'pipe ' + addr
-        : 'port ' + addr.port;
+        ? 'pipe ' + <string>addr
+        : 'port ' + addr.port.toString();
     debug('Listening on ' + bind);
+
+    const diff = process.hrtime(startTime);
+    debug(`api server listening took ${diff[0]} seconds and ${diff[1]} nanoseconds.`);
 }
