@@ -16,66 +16,74 @@ const DEFAULT_RADIX = 10;
  *
  * @memberOf api/PerformanceController
  */
+// tslint:disable-next-line:cyclomatic-complexity
 export async function search(req: Request, res: Response) {
-    const limit: number | null = (req.query.limit !== undefined) ? parseInt(req.query.limit, DEFAULT_RADIX) : null;
-    const page: number = (req.query.page !== undefined) ? parseInt(req.query.page, DEFAULT_RADIX) : 1;
-
-    const day: string | null = (req.query.day !== undefined) ? req.query.day : null; // 上映日
-    const section: string | null = (req.query.section !== undefined) ? req.query.section : null; // 部門
-    const words: string | null = (req.query.words !== undefined) ? req.query.words : null; // フリーワード
-    // この時間以降開始のパフォーマンスに絞る(timestamp milliseconds)
-    const startFrom: number | null = (req.query.start_from !== undefined) ? parseInt(req.query.start_from, DEFAULT_RADIX) : null;
-    const theater: string | null = (req.query.theater !== undefined) ? req.query.theater : null; // 劇場
-    const screen: string | null = (req.query.screen !== undefined) ? req.query.screen : null; // スクリーン
-
-    // 検索条件を作成
-    let andConditions: any[] = [
-        { canceled: false }
-    ];
-
-    if (day !== null) {
-        andConditions.push({
-            day: day
-        });
-    }
-
-    if (theater !== null) {
-        andConditions.push({
-            theater: theater
-        });
-    }
-
-    if (screen !== null) {
-        andConditions.push({
-            screen: screen
-        });
-    }
-
-    if (startFrom !== null) {
-        const now = moment(startFrom);
-        // tslint:disable-next-line:no-magic-numbers
-        const tomorrow = moment(startFrom).add(+24, 'hours');
-
-        andConditions.push({
-            $or: [
-                {
-                    day: now.format('YYYYMMDD'),
-                    start_time: {
-                        $gte: now.format('HHmm')
-                    }
-                },
-                {
-                    day: {
-                        $gte: tomorrow.format('YYYYMMDD')
-                    }
-                }
-            ]
-        });
-    }
-
-    // 作品条件を追加する
-    // tslint:disable-next-line:max-func-body-length no-shadowed-variable
     try {
+        // tslint:disable-next-line:max-line-length
+        const limit: number | null = (req.query.limit !== undefined && req.query.limit !== '') ? parseInt(req.query.limit, DEFAULT_RADIX) : null;
+        const page: number = (req.query.page !== undefined && req.query.page !== '') ? parseInt(req.query.page, DEFAULT_RADIX) : 1;
+
+        // 上映日
+        const day: string | null = (req.query.day !== undefined && req.query.day !== '') ? req.query.day : null;
+        // 部門
+        const section: string | null = (req.query.section !== undefined && req.query.section !== '') ? req.query.section : null;
+        // フリーワード
+        const words: string | null = (req.query.words !== undefined && req.query.words !== '') ? req.query.words : null;
+        // この時間以降開始のパフォーマンスに絞る(timestamp milliseconds)
+        // tslint:disable-line:max-line-length
+        const startFrom: number | null = (req.query.start_from !== undefined && req.query.start_from !== '') ? parseInt(req.query.start_from, DEFAULT_RADIX) : null;
+        // 劇場
+        const theater: string | null = (req.query.theater !== undefined && req.query.theater !== '') ? req.query.theater : null;
+        // スクリーン
+        const screen: string | null = (req.query.screen !== undefined && req.query.screen !== '') ? req.query.screen : null;
+
+        // 検索条件を作成
+        let andConditions: any[] = [
+            { canceled: false }
+        ];
+
+        if (day !== null) {
+            andConditions.push({
+                day: day
+            });
+        }
+
+        if (theater !== null) {
+            andConditions.push({
+                theater: theater
+            });
+        }
+
+        if (screen !== null) {
+            andConditions.push({
+                screen: screen
+            });
+        }
+
+        if (startFrom !== null) {
+            const now = moment(startFrom);
+            // tslint:disable-next-line:no-magic-numbers
+            const tomorrow = moment(startFrom).add(+24, 'hours');
+
+            andConditions.push({
+                $or: [
+                    {
+                        day: now.format('YYYYMMDD'),
+                        start_time: {
+                            $gte: now.format('HHmm')
+                        }
+                    },
+                    {
+                        day: {
+                            $gte: tomorrow.format('YYYYMMDD')
+                        }
+                    }
+                ]
+            });
+        }
+
+        // 作品条件を追加する
+        // tslint:disable-next-line:max-func-body-length no-shadowed-variable
         andConditions = await addFilmConditions(andConditions, section, words);
 
         let conditions: any = null;
@@ -155,6 +163,7 @@ export async function search(req: Request, res: Response) {
             });
         });
     } catch (error) {
+        console.error(error);
         res.json({
             success: false,
             results: [],

@@ -27,7 +27,7 @@
     "qr-image": "^3.1.0",
     "request": "^2.81.0",
     "sendgrid": "^4.8.0",
-    "validator": "^5.5.0"
+    "validator": "^7.0.0"
   },
   "description": "This is a repogitory for CHEVRE API.",
   "devDependencies": {
@@ -78,5 +78,5 @@
     "version": "git add -A",
     "postversion": "git push origin --tags"
   },
-  "version": "1.0.2"
+  "version": "1.0.3"
 }
