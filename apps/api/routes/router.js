@@ -36,8 +36,10 @@ router.use((req, res) => {
 // error handlers
 // tslint:disable-next-line:variable-name
 router.use((err, _req, res, next) => {
-    if (res.headersSent)
-        return next(err);
+    if (res.headersSent) {
+        next(err);
+        return;
+    }
     const STATUS_CODE_BAD_REQUEST = 400;
     res.status(STATUS_CODE_BAD_REQUEST);
     res.json({
