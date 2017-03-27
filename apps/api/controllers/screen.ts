@@ -13,29 +13,30 @@ import * as fs from 'fs-extra';
  *
  * @memberOf api/ScreenController
  */
-export function show(req: Request, res: Response, next: NextFunction) {
-    // スクリーンを取得
-    Models.Screen.count(
-        {
-            _id: req.params.id
-        },
-        (err, count) => {
-            if (err) {
-                res.send('false');
-                return;
+export async function show(req: Request, res: Response, next: NextFunction) {
+    try {
+        // スクリーンを取得
+        const count = await Models.Screen.count(
+            {
+                _id: req.params.id
             }
-            if (count === 0) {
-                res.send('false');
-                return;
-            }
+        ).exec();
 
-            // スクリーン座席表HTMLを出力
-            res.type('txt');
-            fs.readFile(`${__dirname}/../../../common/views/screens/${req.params.id}.ejs`, 'utf8', (readFileErr, data) => {
-                if (readFileErr) return next(readFileErr);
-
-                res.send(data);
-            });
+        if (count === 0) {
+            res.type('txt').send('false');
+            return;
         }
-    );
+
+        // スクリーン座席表HTMLを出力
+        fs.readFile(`${__dirname}/../../../common/views/screens/${req.params.id}.ejs`, 'utf8', (readFileErr, data) => {
+            if (readFileErr instanceof Error) {
+                next(readFileErr);
+                return;
+            }
+
+            res.type('txt').send(data);
+        });
+    } catch (error) {
+        res.send('false');
+    }
 }
