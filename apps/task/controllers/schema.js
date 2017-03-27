@@ -13,8 +13,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const createDebug = require("debug");
 const log4js = require("log4js");
 const mongodb = require("mongodb");
+const debug = createDebug('chevre-api:task:controller:schema');
 // todo ログ出力方法考える
 log4js.configure({
     appenders: [
@@ -57,12 +59,18 @@ function createCollections() {
         if (err !== null)
             throw err;
         const promises = collectionNames.map((collectionName) => __awaiter(this, void 0, void 0, function* () {
-            logger.debug('dropping collection...', collectionName);
-            yield db.collection(collectionName).drop();
-            logger.debug('collection dropped.', collectionName);
-            logger.debug('creating collection.', collectionName);
+            // 初めてコレクションを作成の場合、dropに失敗する
+            try {
+                debug('dropping collection...', collectionName);
+                yield db.collection(collectionName).drop();
+                debug('collection dropped.', collectionName);
+            }
+            catch (error) {
+                debug('fain in dropping collection.', error);
+            }
+            debug('creating collection.', collectionName);
             yield db.createCollection(collectionName, {});
-            logger.debug('collection created.', collectionName);
+            debug('collection created.', collectionName);
         }));
         yield Promise.all(promises);
         logger.info('promised.');
@@ -81,9 +89,9 @@ function dropIndexes() {
         if (err !== null)
             throw err;
         const promises = collectionNames.map((collectionName) => __awaiter(this, void 0, void 0, function* () {
-            logger.debug('dropping index.', collectionName);
+            debug('dropping index.', collectionName);
             yield db.collection(collectionName).dropIndexes();
-            logger.debug('index droped.', collectionName);
+            debug('index droped.', collectionName);
         }));
         yield Promise.all(promises);
         logger.info('promised.');
@@ -105,47 +113,47 @@ function createIndexes() {
         const promises = [];
         promises.push(new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             yield db.collection('reservations').createIndex({ performance: 1, seat_code: 1 }, { unique: true });
-            logger.debug('index created.');
+            debug('index created.');
             resolve();
         })));
         promises.push(new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             yield db.collection('reservation_email_cues').createIndex({ payment_no: 1 }, { unique: true });
-            logger.debug('index created.');
+            debug('index created.');
             resolve();
         })));
         promises.push(new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             yield db.collection('staffs').createIndex({ user_id: 1 }, { unique: true });
-            logger.debug('index created.');
+            debug('index created.');
             resolve();
         })));
         promises.push(new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             yield db.collection('sponsors').createIndex({ user_id: 1 }, { unique: true });
-            logger.debug('index created.');
+            debug('index created.');
             resolve();
         })));
         promises.push(new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             yield db.collection('pre_customers').createIndex({ user_id: 1 }, { unique: true });
-            logger.debug('index created.');
+            debug('index created.');
             resolve();
         })));
         promises.push(new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             yield db.collection('windows').createIndex({ user_id: 1 }, { unique: true });
-            logger.debug('index created.');
+            debug('index created.');
             resolve();
         })));
         promises.push(new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             yield db.collection('tel_staffs').createIndex({ user_id: 1 }, { unique: true });
-            logger.debug('index created.');
+            debug('index created.');
             resolve();
         })));
         promises.push(new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             yield db.collection('members').createIndex({ user_id: 1 }, { unique: true });
-            logger.debug('index created.');
+            debug('index created.');
             resolve();
         })));
         promises.push(new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             yield db.collection('performances').createIndex({ day: 1, start_time: 1 });
-            logger.debug('index created.');
+            debug('index created.');
             resolve();
         })));
         yield Promise.all(promises);

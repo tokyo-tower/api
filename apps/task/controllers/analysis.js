@@ -9,14 +9,14 @@ const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const chevre_domain_2 = require("@motionpicture/chevre-domain");
 const GMOUtil = require("../../../common/Util/GMO/GMOUtil");
 const conf = require("config");
+const createDebug = require("debug");
 const fs = require("fs-extra");
 const log4js = require("log4js");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const querystring = require("querystring");
 const request = require("request");
-const util = require("util");
-const debug = util.debuglog('chevre-api:task:controller:analysis');
+const debug = createDebug('chevre-api:task:controller:analysis');
 const MONGOLAB_URI = process.env.MONGOLAB_URI;
 const STATUS_CODE_OK = 200;
 // todo ログ出力方法考える

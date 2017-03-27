@@ -4,8 +4,11 @@
  * @namespace task/SchemaController
  */
 
+import * as createDebug from 'debug';
 import * as log4js from 'log4js';
 import * as mongodb from 'mongodb';
+
+const debug = createDebug('chevre-api:task:controller:schema');
 
 // todo ログ出力方法考える
 log4js.configure({
@@ -51,13 +54,18 @@ export function createCollections() {
         if (err !== null) throw err;
 
         const promises = collectionNames.map(async (collectionName) => {
-            logger.debug('dropping collection...', collectionName);
-            await db.collection(collectionName).drop();
-            logger.debug('collection dropped.', collectionName);
+            // 初めてコレクションを作成の場合、dropに失敗する
+            try {
+                debug('dropping collection...', collectionName);
+                await db.collection(collectionName).drop();
+                debug('collection dropped.', collectionName);
+            } catch (error) {
+                debug('fain in dropping collection.', error);
+            }
 
-            logger.debug('creating collection.', collectionName);
+            debug('creating collection.', collectionName);
             await db.createCollection(collectionName, {});
-            logger.debug('collection created.', collectionName);
+            debug('collection created.', collectionName);
         });
 
         await Promise.all(promises);
@@ -77,9 +85,9 @@ export function dropIndexes() {
         if (err !== null) throw err;
 
         const promises = collectionNames.map(async (collectionName) => {
-            logger.debug('dropping index.', collectionName);
+            debug('dropping index.', collectionName);
             await db.collection(collectionName).dropIndexes();
-            logger.debug('index droped.', collectionName);
+            debug('index droped.', collectionName);
         });
 
         await Promise.all(promises);
@@ -106,7 +114,7 @@ export function createIndexes() {
                 { performance: 1, seat_code: 1 },
                 { unique: true }
             );
-            logger.debug('index created.');
+            debug('index created.');
             resolve();
         }));
 
@@ -115,7 +123,7 @@ export function createIndexes() {
                 { payment_no: 1 },
                 { unique: true }
             );
-            logger.debug('index created.');
+            debug('index created.');
             resolve();
         }));
 
@@ -124,7 +132,7 @@ export function createIndexes() {
                 { user_id: 1 },
                 { unique: true }
             );
-            logger.debug('index created.');
+            debug('index created.');
             resolve();
         }));
 
@@ -133,7 +141,7 @@ export function createIndexes() {
                 { user_id: 1 },
                 { unique: true }
             );
-            logger.debug('index created.');
+            debug('index created.');
             resolve();
         }));
 
@@ -142,7 +150,7 @@ export function createIndexes() {
                 { user_id: 1 },
                 { unique: true }
             );
-            logger.debug('index created.');
+            debug('index created.');
             resolve();
         }));
 
@@ -151,7 +159,7 @@ export function createIndexes() {
                 { user_id: 1 },
                 { unique: true }
             );
-            logger.debug('index created.');
+            debug('index created.');
             resolve();
         }));
 
@@ -160,7 +168,7 @@ export function createIndexes() {
                 { user_id: 1 },
                 { unique: true }
             );
-            logger.debug('index created.');
+            debug('index created.');
             resolve();
         }));
 
@@ -169,7 +177,7 @@ export function createIndexes() {
                 { user_id: 1 },
                 { unique: true }
             );
-            logger.debug('index created.');
+            debug('index created.');
             resolve();
         }));
 
@@ -177,7 +185,7 @@ export function createIndexes() {
             await db.collection('performances').createIndex(
                 { day: 1, start_time: 1 }
             );
-            logger.debug('index created.');
+            debug('index created.');
             resolve();
         }));
 

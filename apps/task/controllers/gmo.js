@@ -4,6 +4,14 @@
  * @namespace task/GMOController
  */
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const chevre_domain_2 = require("@motionpicture/chevre-domain");
@@ -15,7 +23,7 @@ const log4js = require("log4js");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const MONGOLAB_URI = process.env.MONGOLAB_URI;
-const MONGOLAB_URI_FOR_GMO = process.env.MONGOLAB_URI_GMO;
+const MONGOLAB_URI_GMO = process.env.MONGOLAB_URI_GMO;
 // todo ログ出力方法考える
 log4js.configure({
     appenders: [
@@ -40,14 +48,18 @@ function watch() {
     let count = 0;
     const INTERVAL_MILLISECONDS = 500;
     const MAX_NUMBER_OF_PARALLEL_TASK = 10;
-    setInterval(() => {
+    setInterval(() => __awaiter(this, void 0, void 0, function* () {
         if (count > MAX_NUMBER_OF_PARALLEL_TASK)
             return;
         count += 1;
-        processOne(() => {
-            count -= 1;
-        });
-    }, INTERVAL_MILLISECONDS);
+        try {
+            yield processOne();
+        }
+        catch (error) {
+            console.error(error);
+        }
+        count -= 1;
+    }), INTERVAL_MILLISECONDS);
 }
 exports.watch = watch;
 /**
@@ -55,260 +67,238 @@ exports.watch = watch;
  *
  * @memberOf task/GMOController
  */
-function processOne(cb) {
-    logger.info('finding notification...');
-    const db4gmo = mongoose.createConnection(MONGOLAB_URI_FOR_GMO);
-    db4gmo.collection('gmo_notifications').findOneAndUpdate({
-        process_status: chevre_domain_4.GMONotificationUtil.PROCESS_STATUS_UNPROCESSED
-    }, {
-        $set: {
-            process_status: chevre_domain_4.GMONotificationUtil.PROCESS_STATUS_PROCESSING
+// tslint:disable-next-line:max-func-body-length cyclomatic-complexity
+function processOne() {
+    return __awaiter(this, void 0, void 0, function* () {
+        logger.info('finding notification...');
+        const db4gmo = mongoose.createConnection(MONGOLAB_URI_GMO);
+        const gmoModel = db4gmo.model(chevre_domain_1.Models.GMONotification.modelName, chevre_domain_1.Models.GMONotification.schema);
+        const notification = yield gmoModel.findOneAndUpdate({
+            process_status: chevre_domain_4.GMONotificationUtil.PROCESS_STATUS_UNPROCESSED
+        }, {
+            $set: {
+                process_status: chevre_domain_4.GMONotificationUtil.PROCESS_STATUS_PROCESSING
+            }
+        }, {
+            new: true
+        }).exec();
+        logger.info('notification found.', notification);
+        yield db4gmo.close();
+        if (notification === null) {
+            yield next(null, null);
+            return;
         }
-    }, ((err, result) => {
-        db4gmo.close();
-        logger.info('notification found.', err, result);
-        const notification = result.value;
-        if (err)
-            return next(err, null, cb);
-        if (!notification)
-            return next(null, notification, cb);
         // 内容の整合性チェック
-        logger.info('finding reservations...payment_no:', notification.order_id);
-        chevre_domain_1.Models.Reservation.find({
-            payment_no: notification.order_id
-            // tslint:disable-next-line:max-func-body-length
-        }, 
-        // tslint:disable-next-line:max-func-body-length
-        (findReservationErr, reservations) => {
-            logger.info('reservations found.', findReservationErr, reservations.length);
-            if (findReservationErr)
-                return next(findReservationErr, notification, cb);
-            if (reservations.length === 0)
-                return next(null, notification, cb);
+        logger.info('finding reservations...payment_no:', notification.get('order_id'));
+        try {
+            const reservations = yield chevre_domain_1.Models.Reservation.find({
+                payment_no: notification.get('order_id')
+            }).exec();
+            logger.info('reservations found.', reservations.length);
+            if (reservations.length === 0) {
+                yield next(null, notification);
+                return;
+            }
             // チェック文字列
-            const shopPassString = GMOUtil.createShopPassString(notification.shop_id, notification.order_id, notification.amount, conf.get('gmo_payment_shop_password'), moment(reservations[0].get('purchased_at')).format('YYYYMMDDHHmmss'));
+            const shopPassString = GMOUtil.createShopPassString(notification.get('shop_id'), notification.get('order_id'), notification.get('amount'), conf.get('gmo_payment_shop_password'), moment(reservations[0].get('purchased_at')).format('YYYYMMDDHHmmss'));
             logger.info('shopPassString must be ', reservations[0].get('gmo_shop_pass_string'));
             if (shopPassString !== reservations[0].get('gmo_shop_pass_string')) {
                 // 不正な結果通知なので、処理済みにする
-                return next(null, notification, cb);
+                yield next(null, notification);
+                return;
             }
             // クレジットカード決済の場合
-            if (notification.pay_type === GMOUtil.PAY_TYPE_CREDIT) {
-                switch (notification.status) {
+            let rawUpdateReservation;
+            if (notification.get('pay_type') === GMOUtil.PAY_TYPE_CREDIT) {
+                switch (notification.get('status')) {
                     case GMOUtil.STATUS_CREDIT_CAPTURE:
                         // 予約完了ステータスへ変更
-                        logger.info('updating reservations by paymentNo...', notification.order_id);
-                        chevre_domain_1.Models.Reservation.update({ payment_no: notification.order_id }, {
-                            gmo_shop_id: notification.shop_id,
-                            gmo_amount: notification.amount,
-                            gmo_tax: notification.tax,
-                            gmo_access_id: notification.access_id,
-                            gmo_forward: notification.forward,
-                            gmo_method: notification.method,
-                            gmo_approve: notification.approve,
-                            gmo_tran_id: notification.tran_id,
-                            gmo_tran_date: notification.tran_date,
-                            gmo_pay_type: notification.pay_type,
-                            gmo_status: notification.status,
+                        logger.info('updating reservations by paymentNo...', notification.get('order_id'));
+                        rawUpdateReservation = yield chevre_domain_1.Models.Reservation.update({ payment_no: notification.get('order_id') }, {
+                            gmo_shop_id: notification.get('shop_id'),
+                            gmo_amount: notification.get('amount'),
+                            gmo_tax: notification.get('tax'),
+                            gmo_access_id: notification.get('access_id'),
+                            gmo_forward: notification.get('forward'),
+                            gmo_method: notification.get('method'),
+                            gmo_approve: notification.get('approve'),
+                            gmo_tran_id: notification.get('tran_id'),
+                            gmo_tran_date: notification.get('tran_date'),
+                            gmo_pay_type: notification.get('pay_type'),
+                            gmo_status: notification.get('status'),
                             status: chevre_domain_2.ReservationUtil.STATUS_RESERVED,
                             updated_user: 'system'
-                        }, { multi: true }, (updateErr, raw) => {
-                            logger.info('reservations updated.', updateErr, raw);
-                            if (updateErr)
-                                return next(updateErr, notification, cb);
-                            // 完了メールキュー追加(あれば更新日時を更新するだけ)
-                            logger.info('creating reservationEmailCue...');
-                            chevre_domain_1.Models.ReservationEmailCue.findOneAndUpdate({
-                                payment_no: notification.order_id,
-                                template: chevre_domain_3.ReservationEmailCueUtil.TEMPLATE_COMPLETE
-                            }, {
-                                $set: { updated_at: Date.now() },
-                                $setOnInsert: { status: chevre_domain_3.ReservationEmailCueUtil.STATUS_UNSENT }
-                            }, {
-                                upsert: true,
-                                new: true
-                            }, (updateEmailCueErr, cue) => {
-                                logger.info('reservationEmailCue created.', updateEmailCueErr, cue);
-                                if (updateEmailCueErr)
-                                    return next(updateEmailCueErr, notification, cb);
-                                // あったにせよなかったにせよ処理済に
-                                next(null, notification, cb);
-                            });
-                        });
+                        }, { multi: true }).exec();
+                        logger.info('reservations updated.', rawUpdateReservation);
+                        // 完了メールキュー追加(あれば更新日時を更新するだけ)
+                        logger.info('creating reservationEmailCue...');
+                        yield chevre_domain_1.Models.ReservationEmailCue.findOneAndUpdate({
+                            payment_no: notification.get('order_id'),
+                            template: chevre_domain_3.ReservationEmailCueUtil.TEMPLATE_COMPLETE
+                        }, {
+                            $set: { updated_at: Date.now() },
+                            $setOnInsert: { status: chevre_domain_3.ReservationEmailCueUtil.STATUS_UNSENT }
+                        }, {
+                            upsert: true,
+                            new: true
+                        }).exec();
+                        logger.info('reservationEmailCue created.');
+                        // あったにせよなかったにせよ処理済に
+                        yield next(null, notification);
                         break;
                     case GMOUtil.STATUS_CREDIT_UNPROCESSED:
                         // 未決済の場合、放置
                         // ユーザーが「戻る」フローでキャンセルされる、あるいは、時間経過で空席になる
-                        next(null, notification, cb);
+                        yield next(null, notification);
                         break;
                     case GMOUtil.STATUS_CREDIT_AUTHENTICATED:
                     case GMOUtil.STATUS_CREDIT_CHECK:
-                        next(null, notification, cb);
+                        yield next(null, notification);
                         break;
                     case GMOUtil.STATUS_CREDIT_AUTH:
-                        next(null, notification, cb);
+                        yield next(null, notification);
                         break;
                     case GMOUtil.STATUS_CREDIT_SALES:
-                        next(null, notification, cb);
+                        yield next(null, notification);
                         break;
                     case GMOUtil.STATUS_CREDIT_VOID:
                         // 空席に戻さない(つくったけれども、連動しない方向で仕様決定)
-                        next(null, notification, cb);
+                        yield next(null, notification);
                         break;
                     case GMOUtil.STATUS_CREDIT_RETURN:
-                        next(null, notification, cb);
+                        yield next(null, notification);
                         break;
                     case GMOUtil.STATUS_CREDIT_RETURNX:
-                        next(null, notification, cb);
+                        yield next(null, notification);
                         break;
                     case GMOUtil.STATUS_CREDIT_SAUTH:
-                        next(null, notification, cb);
+                        yield next(null, notification);
                         break;
                     default:
-                        next(null, notification, cb);
+                        yield next(null, notification);
                         break;
                 }
             }
-            else if (notification.pay_type === GMOUtil.PAY_TYPE_CVS) {
-                switch (notification.status) {
+            else if (notification.get('pay_type') === GMOUtil.PAY_TYPE_CVS) {
+                switch (notification.get('status')) {
                     case GMOUtil.STATUS_CVS_PAYSUCCESS:
                         // 予約完了ステータスへ変更
-                        logger.info('updating reservations by paymentNo...', notification.order_id);
-                        chevre_domain_1.Models.Reservation.update({ payment_no: notification.order_id }, {
+                        logger.info('updating reservations by paymentNo...', notification.get('order_id'));
+                        rawUpdateReservation = yield chevre_domain_1.Models.Reservation.update({ payment_no: notification.get('order_id') }, {
                             status: chevre_domain_2.ReservationUtil.STATUS_RESERVED,
                             updated_user: 'system'
-                        }, { multi: true }, (updateErr, raw) => {
-                            logger.info('reservations updated.', updateErr, raw);
-                            if (updateErr)
-                                return next(updateErr, notification, cb);
-                            // 完了メールキュー追加(あれば更新日時を更新するだけ)
-                            logger.info('creating reservationEmailCue...');
-                            chevre_domain_1.Models.ReservationEmailCue.findOneAndUpdate({
-                                payment_no: notification.order_id,
-                                template: chevre_domain_3.ReservationEmailCueUtil.TEMPLATE_COMPLETE
-                            }, {
-                                $set: { updated_at: Date.now() },
-                                $setOnInsert: { status: chevre_domain_3.ReservationEmailCueUtil.STATUS_UNSENT }
-                            }, {
-                                upsert: true,
-                                new: true
-                            }, (updateEmailCueErr, cue) => {
-                                logger.info('reservationEmailCue created.', updateEmailCueErr, cue);
-                                if (updateEmailCueErr)
-                                    return next(updateEmailCueErr, notification, cb);
-                                // あったにせよなかったにせよ処理済に
-                                next(null, notification, cb);
-                            });
-                        });
+                        }, { multi: true }).exec();
+                        logger.info('reservations updated.', rawUpdateReservation);
+                        // 完了メールキュー追加(あれば更新日時を更新するだけ)
+                        logger.info('creating reservationEmailCue...');
+                        yield chevre_domain_1.Models.ReservationEmailCue.findOneAndUpdate({
+                            payment_no: notification.get('order_id'),
+                            template: chevre_domain_3.ReservationEmailCueUtil.TEMPLATE_COMPLETE
+                        }, {
+                            $set: { updated_at: Date.now() },
+                            $setOnInsert: { status: chevre_domain_3.ReservationEmailCueUtil.STATUS_UNSENT }
+                        }, {
+                            upsert: true,
+                            new: true
+                        }).exec();
+                        logger.info('reservationEmailCue created.');
+                        // あったにせよなかったにせよ処理済に
+                        yield next(null, notification);
                         break;
                     case GMOUtil.STATUS_CVS_REQSUCCESS:
                         // GMOパラメータを予約に追加
-                        logger.info('updating reservations by paymentNo...', notification.order_id);
-                        chevre_domain_1.Models.Reservation.update({ payment_no: notification.order_id }, {
-                            gmo_shop_id: notification.shop_id,
-                            gmo_amount: notification.amount,
-                            gmo_tax: notification.tax,
-                            gmo_cvs_code: notification.cvs_code,
-                            gmo_cvs_conf_no: notification.cvs_conf_no,
-                            gmo_cvs_receipt_no: notification.cvs_receipt_no,
-                            gmo_payment_term: notification.payment_term,
+                        logger.info('updating reservations by paymentNo...', notification.get('order_id'));
+                        rawUpdateReservation = yield chevre_domain_1.Models.Reservation.update({ payment_no: notification.get('order_id') }, {
+                            gmo_shop_id: notification.get('shop_id'),
+                            gmo_amount: notification.get('amount'),
+                            gmo_tax: notification.get('tax'),
+                            gmo_cvs_code: notification.get('cvs_code'),
+                            gmo_cvs_conf_no: notification.get('cvs_conf_no'),
+                            gmo_cvs_receipt_no: notification.get('cvs_receipt_no'),
+                            gmo_payment_term: notification.get('payment_term'),
                             updated_user: 'system'
-                        }, { multi: true }, (updateErr, raw) => {
-                            logger.info('reservations updated.', updateErr, raw);
-                            if (updateErr)
-                                return next(updateErr, notification, cb);
-                            // 仮予約完了メールキュー追加(あれば更新日時を更新するだけ)
-                            logger.info('creating reservationEmailCue...');
-                            chevre_domain_1.Models.ReservationEmailCue.findOneAndUpdate({
-                                payment_no: notification.order_id,
-                                template: chevre_domain_3.ReservationEmailCueUtil.TEMPLATE_TEMPORARY
-                            }, {
-                                $set: { updated_at: Date.now() },
-                                $setOnInsert: { status: chevre_domain_3.ReservationEmailCueUtil.STATUS_UNSENT }
-                            }, {
-                                upsert: true,
-                                new: true
-                            }, (updateEmailCueErr, cue) => {
-                                logger.info('reservationEmailCue created.', updateEmailCueErr, cue);
-                                if (updateEmailCueErr)
-                                    return next(updateEmailCueErr, notification, cb);
-                                // あったにせよなかったにせよ処理済に
-                                next(null, notification, cb);
-                            });
-                        });
+                        }, { multi: true }).exec();
+                        logger.info('reservations updated.', rawUpdateReservation);
+                        // 仮予約完了メールキュー追加(あれば更新日時を更新するだけ)
+                        logger.info('creating reservationEmailCue...');
+                        yield chevre_domain_1.Models.ReservationEmailCue.findOneAndUpdate({
+                            payment_no: notification.get('order_id'),
+                            template: chevre_domain_3.ReservationEmailCueUtil.TEMPLATE_TEMPORARY
+                        }, {
+                            $set: { updated_at: Date.now() },
+                            $setOnInsert: { status: chevre_domain_3.ReservationEmailCueUtil.STATUS_UNSENT }
+                        }, {
+                            upsert: true,
+                            new: true
+                        }).exec();
+                        logger.info('reservationEmailCue created.');
+                        // あったにせよなかったにせよ処理済に
+                        yield next(null, notification);
                         break;
                     case GMOUtil.STATUS_CVS_UNPROCESSED:
-                        next(null, notification, cb);
+                        yield next(null, notification);
                         break;
                     case GMOUtil.STATUS_CVS_PAYFAIL: // 決済失敗
                     case GMOUtil.STATUS_CVS_CANCEL:
                         // 空席に戻す
-                        logger.info('removing reservations...payment_no:', notification.order_id);
-                        const promises = reservations.map((reservation) => {
-                            return new Promise((resolve, reject) => {
-                                logger.info('removing reservation...', reservation.get('_id'));
-                                reservation.remove((removeErr) => {
-                                    logger.info('reservation removed.', reservation.get('_id'), removeErr);
-                                    (removeErr) ? reject(removeErr) : resolve();
-                                });
-                            });
-                        });
-                        Promise.all(promises).then(() => {
-                            // processedフラグをたてる
-                            next(null, notification, cb);
-                        }, (promiseErr) => {
-                            next(promiseErr, notification, cb);
-                        });
+                        logger.info('removing reservations...payment_no:', notification.get('order_id'));
+                        const promises = reservations.map((reservation) => __awaiter(this, void 0, void 0, function* () {
+                            logger.info('removing reservation...', reservation.get('_id'));
+                            yield reservation.remove();
+                            logger.info('reservation removed.', reservation.get('_id'));
+                        }));
+                        yield Promise.all(promises);
+                        // processedフラグをたてる
+                        yield next(null, notification);
                         break;
                     case GMOUtil.STATUS_CVS_EXPIRED:
                         // 内部で確保する仕様の場合
-                        chevre_domain_1.Models.Staff.findOne({
+                        const staff = yield chevre_domain_1.Models.Staff.findOne({
                             user_id: '2016sagyo2'
-                        }, (findStaffErr, staff) => {
-                            logger.info('staff found.', findStaffErr, staff);
-                            if (findStaffErr)
-                                return next(findStaffErr, notification, cb);
-                            logger.info('updating reservations...');
-                            chevre_domain_1.Models.Reservation.update({
-                                payment_no: notification.order_id
-                            }, {
-                                status: chevre_domain_2.ReservationUtil.STATUS_RESERVED,
-                                purchaser_group: chevre_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
-                                charge: 0,
-                                ticket_type_charge: 0,
-                                ticket_type_name_en: 'Free',
-                                ticket_type_name_ja: '無料',
-                                ticket_type_code: '00',
-                                staff: staff.get('_id'),
-                                staff_user_id: staff.get('user_id'),
-                                staff_email: staff.get('email'),
-                                staff_name: staff.get('name'),
-                                staff_signature: 'system',
-                                updated_user: 'system',
-                                // "purchased_at": Date.now(), // 購入日更新しない
-                                watcher_name_updated_at: null,
-                                watcher_name: ''
-                            }, {
-                                multi: true
-                            }, (updateErr, raw) => {
-                                logger.info('updated.', updateErr, raw);
-                                next(updateErr, notification, cb);
-                            });
-                        });
-                        // 何もしない仕様の場合
-                        // next(null, notification, cb);
+                        }).exec();
+                        logger.info('staff found.', staff);
+                        logger.info('updating reservations...');
+                        rawUpdateReservation = yield chevre_domain_1.Models.Reservation.update({
+                            payment_no: notification.get('order_id')
+                        }, {
+                            status: chevre_domain_2.ReservationUtil.STATUS_RESERVED,
+                            purchaser_group: chevre_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
+                            charge: 0,
+                            ticket_type_charge: 0,
+                            ticket_type_name_en: 'Free',
+                            ticket_type_name_ja: '無料',
+                            ticket_type_code: '00',
+                            staff: staff.get('_id'),
+                            staff_user_id: staff.get('user_id'),
+                            staff_email: staff.get('email'),
+                            staff_name: staff.get('name'),
+                            staff_signature: 'system',
+                            updated_user: 'system',
+                            // "purchased_at": Date.now(), // 購入日更新しない
+                            watcher_name_updated_at: null,
+                            watcher_name: ''
+                        }, {
+                            multi: true
+                        }).exec();
+                        logger.info('updated.', rawUpdateReservation);
+                        yield next(null, notification);
                         break;
                     default:
-                        next(null, notification, cb);
+                        yield next(null, notification);
                         break;
                 }
             }
             else {
                 // 他の決済は本案件では非対応
-                return next(null, notification, cb);
+                yield next(null, notification);
+                return;
             }
-        });
-    }));
+        }
+        catch (error) {
+            yield next(error, notification);
+            return;
+        }
+    });
 }
 exports.processOne = processOne;
 /**
@@ -318,23 +308,25 @@ exports.processOne = processOne;
  *
  * @ignore
  */
-function next(err, notification, cb) {
-    if (!notification)
-        return cb();
-    const status = (err) ? chevre_domain_4.GMONotificationUtil.PROCESS_STATUS_UNPROCESSED : chevre_domain_4.GMONotificationUtil.PROCESS_STATUS_PROCESSED;
-    // processedフラグをたてる
-    logger.info('setting process_status...', status);
-    const db4gmo = mongoose.createConnection(MONGOLAB_URI_FOR_GMO);
-    notification.process_status = status;
-    db4gmo.collection('gmo_notifications').findOneAndUpdate({
-        _id: notification._id
-    }, {
-        $set: {
-            process_status: status
-        }
-    }, (updateGmoNotificationErr, result) => {
-        logger.info('notification saved.', updateGmoNotificationErr, result);
-        db4gmo.close();
-        cb();
+function next(err, notification) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (notification === null)
+            return;
+        const status = (err instanceof Error) ? chevre_domain_4.GMONotificationUtil.PROCESS_STATUS_UNPROCESSED : chevre_domain_4.GMONotificationUtil.PROCESS_STATUS_PROCESSED;
+        // processedフラグをたてる
+        logger.info('setting process_status...', status);
+        const db4gmo = mongoose.createConnection(MONGOLAB_URI_GMO);
+        const gmoModel = db4gmo.model(chevre_domain_1.Models.GMONotification.modelName, chevre_domain_1.Models.GMONotification.schema);
+        const result = yield gmoModel.findOneAndUpdate({
+            _id: notification.get('_id')
+        }, {
+            $set: {
+                process_status: status
+            }
+        }, {
+            new: true
+        }).exec();
+        logger.info('notification saved.', result);
+        yield db4gmo.close();
     });
 }

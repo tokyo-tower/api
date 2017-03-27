@@ -9,15 +9,15 @@ import { ReservationUtil } from '@motionpicture/chevre-domain';
 import * as GMOUtil from '../../../common/Util/GMO/GMOUtil';
 
 import * as conf from 'config';
+import * as createDebug from 'debug';
 import * as fs from 'fs-extra';
 import * as log4js from 'log4js';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 import * as querystring from 'querystring';
 import * as request from 'request';
-import * as util from 'util';
 
-const debug = util.debuglog('chevre-api:task:controller:analysis');
+const debug = createDebug('chevre-api:task:controller:analysis');
 
 const MONGOLAB_URI = process.env.MONGOLAB_URI;
 const STATUS_CODE_OK = 200;
