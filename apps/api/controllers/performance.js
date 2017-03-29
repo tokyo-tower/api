@@ -15,6 +15,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const moment = require("moment");
+const _ = require("underscore");
 const DEFAULT_RADIX = 10;
 /**
  * 検索する
@@ -26,21 +27,21 @@ function search(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             // tslint:disable-next-line:max-line-length
-            const limit = (req.query.limit !== undefined && req.query.limit !== '') ? parseInt(req.query.limit, DEFAULT_RADIX) : null;
-            const page = (req.query.page !== undefined && req.query.page !== '') ? parseInt(req.query.page, DEFAULT_RADIX) : 1;
+            const limit = (!_.isEmpty(req.query.limit)) ? parseInt(req.query.limit, DEFAULT_RADIX) : null;
+            const page = (!_.isEmpty(req.query.page)) ? parseInt(req.query.page, DEFAULT_RADIX) : 1;
             // 上映日
-            const day = (req.query.day !== undefined && req.query.day !== '') ? req.query.day : null;
+            const day = (!_.isEmpty(req.query.day)) ? req.query.day : null;
             // 部門
-            const section = (req.query.section !== undefined && req.query.section !== '') ? req.query.section : null;
+            const section = (!_.isEmpty(req.query.section)) ? req.query.section : null;
             // フリーワード
-            const words = (req.query.words !== undefined && req.query.words !== '') ? req.query.words : null;
+            const words = (!_.isEmpty(req.query.words)) ? req.query.words : null;
             // この時間以降開始のパフォーマンスに絞る(timestamp milliseconds)
             // tslint:disable-line:max-line-length
-            const startFrom = (req.query.start_from !== undefined && req.query.start_from !== '') ? parseInt(req.query.start_from, DEFAULT_RADIX) : null;
+            const startFrom = (!_.isEmpty(req.query.start_from)) ? parseInt(req.query.start_from, DEFAULT_RADIX) : null;
             // 劇場
-            const theater = (req.query.theater !== undefined && req.query.theater !== '') ? req.query.theater : null;
+            const theater = (!_.isEmpty(req.query.theater)) ? req.query.theater : null;
             // スクリーン
-            const screen = (req.query.screen !== undefined && req.query.screen !== '') ? req.query.screen : null;
+            const screen = (!_.isEmpty(req.query.screen)) ? req.query.screen : null;
             // 検索条件を作成
             let andConditions = [
                 { canceled: false }
