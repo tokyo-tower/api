@@ -1,9 +1,9 @@
+"use strict";
 /**
  * CORSミドルウェア
  *
  * @module corsMiddleware
  */
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * CORS settings.

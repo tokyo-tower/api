@@ -1,9 +1,9 @@
+"use strict";
 /**
  * ベンチマークミドルウェア
  *
  * @module benchmarksMiddleware
  */
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const createDebug = require("debug");
 const debug = createDebug('chevre-api:middleware:benchmarks');

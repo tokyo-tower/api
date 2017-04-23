@@ -1,9 +1,9 @@
+"use strict";
 /**
  * GMOタスクコントローラー
  *
  * @namespace task/GMOController
  */
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -18,7 +18,6 @@ const chevre_domain_2 = require("@motionpicture/chevre-domain");
 const chevre_domain_3 = require("@motionpicture/chevre-domain");
 const chevre_domain_4 = require("@motionpicture/chevre-domain");
 const GMOUtil = require("../../../common/Util/GMO/GMOUtil");
-const conf = require("config");
 const log4js = require("log4js");
 const moment = require("moment");
 const mongoose = require("mongoose");
@@ -100,7 +99,7 @@ function processOne() {
                 return;
             }
             // チェック文字列
-            const shopPassString = GMOUtil.createShopPassString(notification.get('shop_id'), notification.get('order_id'), notification.get('amount'), conf.get('gmo_payment_shop_password'), moment(reservations[0].get('purchased_at')).format('YYYYMMDDHHmmss'));
+            const shopPassString = GMOUtil.createShopPassString(notification.get('shop_id'), notification.get('order_id'), notification.get('amount'), process.env.GMO_SHOP_PASS, moment(reservations[0].get('purchased_at')).format('YYYYMMDDHHmmss'));
             logger.info('shopPassString must be ', reservations[0].get('gmo_shop_pass_string'));
             if (shopPassString !== reservations[0].get('gmo_shop_pass_string')) {
                 // 不正な結果通知なので、処理済みにする

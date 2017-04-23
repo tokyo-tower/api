@@ -9,11 +9,11 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/chevre-domain": "^1.0.3",
+    "@motionpicture/chevre-domain": "^3.0.2",
     "body-parser": "^1.17.1",
     "commander": "^2.9.0",
     "config": "^1.21.0",
-    "debug": "^2.6.3",
+    "debug": "^2.6.4",
     "ejs": "^2.5.5",
     "email-templates": "^2.4.1",
     "express": "^4.15.2",
@@ -26,14 +26,14 @@
     "passport-http-bearer": "^1.0.1",
     "qr-image": "^3.1.0",
     "request": "^2.81.0",
-    "sendgrid": "^4.9.0",
+    "sendgrid": "^4.10.0",
     "underscore": "^1.8.3",
     "validator": "^7.0.0"
   },
   "description": "This is a repogitory for CHEVRE API.",
   "devDependencies": {
     "@types/body-parser": "0.0.34",
-    "@types/commander": "^2.3.31",
+    "@types/commander": "^2.9.0",
     "@types/config": "0.0.32",
     "@types/debug": "0.0.29",
     "@types/email-templates": "0.0.32",
@@ -41,7 +41,7 @@
     "@types/fs-extra": "0.0.37",
     "@types/i18n": "^0.5.20",
     "@types/log4js": "0.0.32",
-    "@types/mocha": "^2.2.40",
+    "@types/mocha": "^2.2.41",
     "@types/numeral": "0.0.19",
     "@types/passport": "^0.3.3",
     "@types/passport-http-bearer": "^1.0.30",
@@ -55,8 +55,8 @@
     "rimraf": "^2.6.1",
     "tslint": "^4.5.1",
     "tslint-microsoft-contrib": "^4.0.1",
-    "typescript": "^2.2.2",
-    "typings": "^2.1.0"
+    "typescript": "^2.3.0",
+    "typings": "^2.1.1"
   },
   "engines": {
     "node": ">=6.9.1",
@@ -80,5 +80,5 @@
     "version": "git add -A",
     "postversion": "git push origin --tags"
   },
-  "version": "1.0.3"
+  "version": "1.0.4"
 }

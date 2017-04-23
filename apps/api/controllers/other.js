@@ -1,9 +1,9 @@
+"use strict";
 /**
  * その他コントローラー
  *
  * @namespace api/OtherController
  */
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 環境変数リストを出力する

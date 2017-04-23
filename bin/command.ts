@@ -13,13 +13,10 @@ import * as FilmController from '../apps/task/controllers/film';
 import * as GMOController from '../apps/task/controllers/gmo';
 import * as MemberController from '../apps/task/controllers/member';
 import * as PerformanceController from '../apps/task/controllers/performance';
-import * as PreCustomerController from '../apps/task/controllers/preCustomer';
 import * as ReservationController from '../apps/task/controllers/reservation';
 import * as ReservationEmailCueController from '../apps/task/controllers/reservationEmailCue';
 import * as SchemaController from '../apps/task/controllers/schema';
-import * as SponsorController from '../apps/task/controllers/sponsor';
 import * as StaffController from '../apps/task/controllers/staff';
-import * as TelController from '../apps/task/controllers/tel';
 import * as TestController from '../apps/task/controllers/test';
 import * as TheaterController from '../apps/task/controllers/theater';
 import * as WindowController from '../apps/task/controllers/window';
@@ -63,20 +60,6 @@ program
     });
 
 program
-    .command('sponsor <method>')
-    .description('外部関係者タスク')
-    .action((method) => {
-        (<any>SponsorController)[method]();
-    });
-
-program
-    .command('preCustomer <method>')
-    .description('1.5次販売ユーザータスク')
-    .action((method) => {
-        (<any>PreCustomerController)[method]();
-    });
-
-program
     .command('performance <method>')
     .description('パフォーマンスタスク')
     .action((method) => {
@@ -116,13 +99,6 @@ program
     .description('メルマガ会員タスク')
     .action((method) => {
         (<any>MemberController)[method]();
-    });
-
-program
-    .command('tel <method>')
-    .description('電話窓口タスク')
-    .action((method) => {
-        (<any>TelController)[method]();
     });
 
 program

@@ -1,3 +1,4 @@
+"use strict";
 // tslint:disable
 // todo fix tslint
 /**
@@ -5,7 +6,14 @@
  *
  * @namespace task/TestController
  */
-"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const chevre_domain_2 = require("@motionpicture/chevre-domain");
@@ -40,11 +48,11 @@ const logger = log4js.getLogger('system');
  * @memberOf task/TestController
  */
 function publishPaymentNo() {
-    mongoose.connect(MONGOLAB_URI, {});
-    chevre_domain_2.ReservationUtil.publishPaymentNo((err, paymentNo) => {
-        logger.info('paymentNo is', err, paymentNo);
+    return __awaiter(this, void 0, void 0, function* () {
+        mongoose.connect(MONGOLAB_URI, {});
+        const paymentNo = yield chevre_domain_2.ReservationUtil.publishPaymentNo();
+        logger.info('paymentNo is', paymentNo);
         mongoose.disconnect();
-        process.exit(0);
     });
 }
 exports.publishPaymentNo = publishPaymentNo;

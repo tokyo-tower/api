@@ -1,9 +1,9 @@
+"use strict";
 /**
  * 言語設定ミドルウェア
  *
  * @module setLocaleMiddleware
  */
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable-next-line:variable-name
 exports.default = (req, _res, next) => {

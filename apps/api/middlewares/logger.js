@@ -1,9 +1,9 @@
+"use strict";
 /**
  * ロガーミドルウェア
  *
  * @module loggerMiddleware
  */
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const log4js = require("log4js");
 const env = (process.env.NODE_ENV !== undefined) ? process.env.NODE_ENV : 'development';

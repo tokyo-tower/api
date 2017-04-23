@@ -1,9 +1,9 @@
+"use strict";
 /**
  * 座席予約タスクコントローラー
  *
  * @namespace task/ReservationController
  */
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -104,7 +104,7 @@ function releaseSeatsKeptByMembers() {
         // 内部関係者で確保する
         chevre_domain_1.Models.Staff.findOne({
             user_id: '2016sagyo2'
-        }, (err, staff) => {
+        }, (err, staff) => __awaiter(this, void 0, void 0, function* () {
             logger.info('staff found.', err, staff);
             if (err !== null) {
                 mongoose.disconnect();
@@ -112,77 +112,80 @@ function releaseSeatsKeptByMembers() {
                 return;
             }
             // 購入番号発行
-            chevre_domain_2.ReservationUtil.publishPaymentNo((publishErr, paymentNo) => __awaiter(this, void 0, void 0, function* () {
+            let paymentNo = '';
+            try {
+                paymentNo = yield chevre_domain_2.ReservationUtil.publishPaymentNo();
                 logger.info('paymentNo is', paymentNo);
-                if (publishErr instanceof Error) {
-                    mongoose.disconnect();
-                    process.exit(0);
-                    return;
-                }
-                const reservations = yield chevre_domain_1.Models.Reservation.find({
-                    status: chevre_domain_2.ReservationUtil.STATUS_KEPT_BY_MEMBER
-                }).exec();
-                const promises = reservations.map((reservation, index) => __awaiter(this, void 0, void 0, function* () {
-                    logger.info('finding performance...');
-                    const performance = yield chevre_domain_1.Models.Performance.findOne({
-                        _id: reservation.get('performance')
-                    })
-                        .populate('film', 'name is_mx4d copyright')
-                        .populate('screen', 'name')
-                        .populate('theater', 'name address')
-                        .exec();
-                    logger.info('updating reservation...');
-                    const raw = yield reservation.update({
-                        status: chevre_domain_2.ReservationUtil.STATUS_RESERVED,
-                        staff: staff.get('_id'),
-                        staff_user_id: staff.get('user_id'),
-                        staff_email: staff.get('email'),
-                        staff_name: staff.get('name'),
-                        staff_signature: 'system',
-                        entered: false,
-                        updated_user: 'system',
-                        purchased_at: Date.now(),
-                        watcher_name_updated_at: null,
-                        watcher_name: '',
-                        film_copyright: performance.get('film').get('copyright'),
-                        film_is_mx4d: performance.get('film').get('is_mx4d'),
-                        film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.get('film').get('_id')}.jpg`,
-                        film_name_en: performance.get('film').get('name.en'),
-                        film_name_ja: performance.get('film').get('name.ja'),
-                        film: performance.get('film').get('_id'),
-                        screen_name_en: performance.get('screen').get('name.en'),
-                        screen_name_ja: performance.get('screen').get('name.ja'),
-                        screen: performance.get('screen').get('_id'),
-                        theater_name_en: performance.get('theater').get('name.en'),
-                        theater_name_ja: performance.get('theater').get('name.ja'),
-                        theater_address_en: performance.get('theater').get('address.en'),
-                        theater_address_ja: performance.get('theater').get('address.ja'),
-                        theater: performance.get('theater').get('_id'),
-                        performance_canceled: performance.get('canceled'),
-                        performance_end_time: performance.get('end_time'),
-                        performance_start_time: performance.get('start_time'),
-                        performance_open_time: performance.get('open_time'),
-                        performance_day: performance.get('day'),
-                        purchaser_group: chevre_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
-                        payment_no: paymentNo,
-                        payment_seat_index: index,
-                        charge: 0,
-                        ticket_type_charge: 0,
-                        ticket_type_name_en: 'Free',
-                        ticket_type_name_ja: '無料',
-                        ticket_type_code: '00',
-                        seat_grade_additional_charge: 0,
-                        seat_grade_name_en: 'Normal Seat',
-                        seat_grade_name_ja: 'ノーマルシート'
-                    }).exec();
-                    logger.info('reservation updated.', raw);
-                }));
-                yield Promise.all(promises);
-                logger.info('promised.', err);
+            }
+            catch (error) {
+                console.error(error);
                 mongoose.disconnect();
                 process.exit(0);
+                return;
+            }
+            const reservations = yield chevre_domain_1.Models.Reservation.find({
+                status: chevre_domain_2.ReservationUtil.STATUS_KEPT_BY_MEMBER
+            }).exec();
+            const promises = reservations.map((reservation, index) => __awaiter(this, void 0, void 0, function* () {
+                logger.info('finding performance...');
+                const performance = yield chevre_domain_1.Models.Performance.findOne({
+                    _id: reservation.get('performance')
+                })
+                    .populate('film', 'name is_mx4d copyright')
+                    .populate('screen', 'name')
+                    .populate('theater', 'name address')
+                    .exec();
+                logger.info('updating reservation...');
+                const raw = yield reservation.update({
+                    status: chevre_domain_2.ReservationUtil.STATUS_RESERVED,
+                    staff: staff.get('_id'),
+                    staff_user_id: staff.get('user_id'),
+                    staff_email: staff.get('email'),
+                    staff_name: staff.get('name'),
+                    staff_signature: 'system',
+                    entered: false,
+                    updated_user: 'system',
+                    purchased_at: Date.now(),
+                    watcher_name_updated_at: null,
+                    watcher_name: '',
+                    film_copyright: performance.get('film').get('copyright'),
+                    film_is_mx4d: performance.get('film').get('is_mx4d'),
+                    film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.get('film').get('_id')}.jpg`,
+                    film_name_en: performance.get('film').get('name.en'),
+                    film_name_ja: performance.get('film').get('name.ja'),
+                    film: performance.get('film').get('_id'),
+                    screen_name_en: performance.get('screen').get('name.en'),
+                    screen_name_ja: performance.get('screen').get('name.ja'),
+                    screen: performance.get('screen').get('_id'),
+                    theater_name_en: performance.get('theater').get('name.en'),
+                    theater_name_ja: performance.get('theater').get('name.ja'),
+                    theater_address_en: performance.get('theater').get('address.en'),
+                    theater_address_ja: performance.get('theater').get('address.ja'),
+                    theater: performance.get('theater').get('_id'),
+                    performance_canceled: performance.get('canceled'),
+                    performance_end_time: performance.get('end_time'),
+                    performance_start_time: performance.get('start_time'),
+                    performance_open_time: performance.get('open_time'),
+                    performance_day: performance.get('day'),
+                    purchaser_group: chevre_domain_2.ReservationUtil.PURCHASER_GROUP_STAFF,
+                    payment_no: paymentNo,
+                    payment_seat_index: index,
+                    charge: 0,
+                    ticket_type_charge: 0,
+                    ticket_type_name_en: 'Free',
+                    ticket_type_name_ja: '無料',
+                    ticket_type_code: '00',
+                    seat_grade_additional_charge: 0,
+                    seat_grade_name_en: 'Normal Seat',
+                    seat_grade_name_ja: 'ノーマルシート'
+                }).exec();
+                logger.info('reservation updated.', raw);
             }));
-        });
+            yield Promise.all(promises);
+            logger.info('promised.', err);
+            mongoose.disconnect();
+            process.exit(0);
+        }));
         // 空席にする場合はこちら
         // logger.info('releasing reservations kept by members...');
         // Models.Reservation.remove(
@@ -237,8 +240,8 @@ function releaseGarbages() {
                 request.post({
                     url: gmoUrl,
                     form: {
-                        ShopID: conf.get('gmo_payment_shop_id'),
-                        ShopPass: conf.get('gmo_payment_shop_password'),
+                        ShopID: process.env.GMO_SHOP_ID,
+                        ShopPass: process.env.GMO_SHOP_PASS,
                         OrderID: reservation.get('payment_no'),
                         PayType: reservation.get('payment_method')
                     }

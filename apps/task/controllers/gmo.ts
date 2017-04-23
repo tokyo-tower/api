@@ -10,7 +10,6 @@ import { ReservationEmailCueUtil } from '@motionpicture/chevre-domain';
 import { GMONotificationUtil } from '@motionpicture/chevre-domain';
 import * as GMOUtil from '../../../common/Util/GMO/GMOUtil';
 
-import * as conf from 'config';
 import * as log4js from 'log4js';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
@@ -113,7 +112,7 @@ export async function processOne() {
             notification.get('shop_id'),
             notification.get('order_id'),
             notification.get('amount'),
-            conf.get<string>('gmo_payment_shop_password'),
+            process.env.GMO_SHOP_PASS,
             moment(reservations[0].get('purchased_at')).format('YYYYMMDDHHmmss')
         );
         logger.info('shopPassString must be ', reservations[0].get('gmo_shop_pass_string'));

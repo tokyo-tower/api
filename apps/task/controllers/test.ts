@@ -43,13 +43,11 @@ const logger = log4js.getLogger('system');
  *
  * @memberOf task/TestController
  */
-export function publishPaymentNo(): void {
+export async function publishPaymentNo() {
     mongoose.connect(MONGOLAB_URI, {});
-    ReservationUtil.publishPaymentNo((err, paymentNo) => {
-        logger.info('paymentNo is', err, paymentNo);
-        mongoose.disconnect();
-        process.exit(0);
-    });
+    const paymentNo = await ReservationUtil.publishPaymentNo();
+    logger.info('paymentNo is', paymentNo);
+    mongoose.disconnect();
 }
 
 /**

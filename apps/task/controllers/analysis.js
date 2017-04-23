@@ -1,3 +1,4 @@
+"use strict";
 // tslint:disable
 // todo fix tslint
 /**
@@ -5,12 +6,10 @@
  *
  * @namespace task/AnalysisController
  */
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const chevre_domain_2 = require("@motionpicture/chevre-domain");
 const GMOUtil = require("../../../common/Util/GMO/GMOUtil");
-const conf = require("config");
 const createDebug = require("debug");
 const fs = require("fs-extra");
 const log4js = require("log4js");
@@ -78,8 +77,8 @@ function waiting2sagyo2() {
                 request.post({
                     url: gmoUrl,
                     form: {
-                        ShopID: conf.get('gmo_payment_shop_id'),
-                        ShopPass: conf.get('gmo_payment_shop_password'),
+                        ShopID: process.env.GMO_SHOP_ID,
+                        ShopPass: process.env.GMO_SHOP_PASS,
                         OrderID: paymentNo,
                         PayType: GMOUtil.PAY_TYPE_CREDIT
                     }
@@ -95,8 +94,8 @@ function waiting2sagyo2() {
                         request.post({
                             url: gmoUrl,
                             form: {
-                                ShopID: conf.get('gmo_payment_shop_id'),
-                                ShopPass: conf.get('gmo_payment_shop_password'),
+                                ShopID: process.env.GMO_SHOP_ID,
+                                ShopPass: process.env.GMO_SHOP_PASS,
                                 OrderID: paymentNo,
                                 PayType: GMOUtil.PAY_TYPE_CVS
                             }
@@ -224,8 +223,8 @@ function cvsWaiting2reserved() {
                 request.post({
                     url: gmoUrl,
                     form: {
-                        ShopID: conf.get('gmo_payment_shop_id'),
-                        ShopPass: conf.get('gmo_payment_shop_password'),
+                        ShopID: process.env.GMO_SHOP_ID,
+                        ShopPass: process.env.GMO_SHOP_PASS,
                         OrderID: paymentNo,
                         PayType: GMOUtil.PAY_TYPE_CVS
                     }
@@ -472,8 +471,8 @@ function cancelGMO() {
     options = {
         // url: 'https://pt01.mul-pay.jp/payment/SearchTrade.idPass',
         form: {
-            ShopID: conf.get('gmo_payment_shop_id'),
-            ShopPass: conf.get('gmo_payment_shop_password'),
+            ShopID: process.env.GMO_SHOP_ID,
+            ShopPass: process.env.GMO_SHOP_PASS,
             OrderID: paymentNo
         }
     };
@@ -494,8 +493,8 @@ function cancelGMO() {
         options = {
             // url: 'https://pt01.mul-pay.jp/payment/AlterTran.idPass',
             form: {
-                ShopID: conf.get('gmo_payment_shop_id'),
-                ShopPass: conf.get('gmo_payment_shop_password'),
+                ShopID: process.env.GMO_SHOP_ID,
+                ShopPass: process.env.GMO_SHOP_PASS,
                 AccessID: searchTradeResult.AccessID,
                 AccessPass: searchTradeResult.AccessPass,
                 JobCd: GMOUtil.STATUS_CREDIT_VOID
@@ -643,8 +642,8 @@ function searchTrade() {
     request.post({
         url: 'https://pt01.mul-pay.jp/payment/SearchTrade.idPass',
         form: {
-            ShopID: conf.get('gmo_payment_shop_id'),
-            ShopPass: conf.get('gmo_payment_shop_password'),
+            ShopID: process.env.GMO_SHOP_ID,
+            ShopPass: process.env.GMO_SHOP_PASS,
             OrderID: paymentNo,
             PayType: GMOUtil.PAY_TYPE_CREDIT
         }

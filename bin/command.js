@@ -1,6 +1,6 @@
+"use strict";
 // tslint:disable-next-line:no-reference
 /// <reference path='../typings/index.d.ts' />
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -21,13 +21,10 @@ const FilmController = require("../apps/task/controllers/film");
 const GMOController = require("../apps/task/controllers/gmo");
 const MemberController = require("../apps/task/controllers/member");
 const PerformanceController = require("../apps/task/controllers/performance");
-const PreCustomerController = require("../apps/task/controllers/preCustomer");
 const ReservationController = require("../apps/task/controllers/reservation");
 const ReservationEmailCueController = require("../apps/task/controllers/reservationEmailCue");
 const SchemaController = require("../apps/task/controllers/schema");
-const SponsorController = require("../apps/task/controllers/sponsor");
 const StaffController = require("../apps/task/controllers/staff");
-const TelController = require("../apps/task/controllers/tel");
 const TestController = require("../apps/task/controllers/test");
 const TheaterController = require("../apps/task/controllers/theater");
 const WindowController = require("../apps/task/controllers/window");
@@ -64,18 +61,6 @@ program
     yield StaffController.createReservationsByPerformanceId(performanceId);
 }));
 program
-    .command('sponsor <method>')
-    .description('外部関係者タスク')
-    .action((method) => {
-    SponsorController[method]();
-});
-program
-    .command('preCustomer <method>')
-    .description('1.5次販売ユーザータスク')
-    .action((method) => {
-    PreCustomerController[method]();
-});
-program
     .command('performance <method>')
     .description('パフォーマンスタスク')
     .action((method) => {
@@ -110,12 +95,6 @@ program
     .description('メルマガ会員タスク')
     .action((method) => {
     MemberController[method]();
-});
-program
-    .command('tel <method>')
-    .description('電話窓口タスク')
-    .action((method) => {
-    TelController[method]();
 });
 program
     .command('window <method>')

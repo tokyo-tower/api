@@ -125,89 +125,90 @@ function createReservationsByScreenId(screenId: string, cb: (err: Error | null) 
             staffsByName[staff.get('name')] = staff;
         }
 
-        ReservationUtil.publishPaymentNo(async (publishErr, paymentNo) => {
+        let paymentNo: string = '';
+        try {
+            paymentNo = await ReservationUtil.publishPaymentNo();
             logger.debug('paymentNo is', paymentNo);
-            if (publishErr instanceof Error) {
-                cb(publishErr);
-                return;
-            }
+        } catch (error) {
+            cb(error);
+            return;
+        }
 
-            let reservations: any[] = [];
+        let reservations: any[] = [];
 
-            // スクリーンのパフォーマンスをすべて取得
-            const performances = await Models.Performance.find(
-                { screen: screenId }
-            )
-                .populate('film', 'name is_mx4d copyright')
-                .populate('screen', 'name')
-                .populate('theater', 'name address')
-                .exec();
+        // スクリーンのパフォーマンスをすべて取得
+        const performances = await Models.Performance.find(
+            { screen: screenId }
+        )
+            .populate('film', 'name is_mx4d copyright')
+            .populate('screen', 'name')
+            .populate('theater', 'name address')
+            .exec();
 
-            for (const performance of performances) {
-                let reservationsByPerformance = JSON.parse(data);
-                reservationsByPerformance = reservationsByPerformance.map((reservation: any, index: number) => {
-                    const staffOfReservation = staffsByName[reservation.staff_name];
+        for (const performance of performances) {
+            let reservationsByPerformance = JSON.parse(data);
+            reservationsByPerformance = reservationsByPerformance.map((reservation: any, index: number) => {
+                const staffOfReservation = staffsByName[reservation.staff_name];
 
-                    return {
-                        performance: performance.get('_id'),
-                        seat_code: reservation.seat_code,
-                        status: ReservationUtil.STATUS_RESERVED,
-                        staff: staffOfReservation.get('_id'),
-                        staff_user_id: staffOfReservation.get('user_id'),
-                        staff_email: staffOfReservation.get('email'),
-                        staff_name: staffOfReservation.get('name'),
-                        staff_signature: 'system',
-                        entered: false,
-                        updated_user: 'system',
-                        purchased_at: Date.now(),
-                        watcher_name_updated_at: Date.now(),
-                        watcher_name: '',
-                        film_copyright: performance.get('film').get('copyright'),
-                        film_is_mx4d: performance.get('film').get('is_mx4d'),
-                        film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.get('film').get('_id')}.jpg`,
-                        film_name_en: performance.get('film').get('name.en'),
-                        film_name_ja: performance.get('film').get('name.ja'),
-                        film: performance.get('film').get('_id'),
-                        screen_name_en: performance.get('screen').get('name.en'),
-                        screen_name_ja: performance.get('screen').get('name.ja'),
-                        screen: performance.get('screen').get('_id'),
-                        theater_name_en: performance.get('theater').get('name.en'),
-                        theater_name_ja: performance.get('theater').get('name.ja'),
-                        theater_address_en: performance.get('theater').get('address.en'),
-                        theater_address_ja: performance.get('theater').get('address.ja'),
-                        theater: performance.get('theater').get('_id'),
-                        performance_canceled: performance.get('canceled'),
-                        performance_end_time: performance.get('end_time'),
-                        performance_start_time: performance.get('start_time'),
-                        performance_open_time: performance.get('open_time'),
-                        performance_day: performance.get('day'),
-                        purchaser_group: ReservationUtil.PURCHASER_GROUP_STAFF,
-                        payment_no: paymentNo,
-                        payment_seat_index: index,
-                        charge: 0,
-                        ticket_type_charge: 0,
-                        ticket_type_name_en: 'Free',
-                        ticket_type_name_ja: '無料',
-                        ticket_type_code: '00',
-                        seat_grade_additional_charge: 0,
-                        seat_grade_name_en: 'Normal Seat',
-                        seat_grade_name_ja: 'ノーマルシート'
-                    };
-                });
+                return {
+                    performance: performance.get('_id'),
+                    seat_code: reservation.seat_code,
+                    status: ReservationUtil.STATUS_RESERVED,
+                    staff: staffOfReservation.get('_id'),
+                    staff_user_id: staffOfReservation.get('user_id'),
+                    staff_email: staffOfReservation.get('email'),
+                    staff_name: staffOfReservation.get('name'),
+                    staff_signature: 'system',
+                    entered: false,
+                    updated_user: 'system',
+                    purchased_at: Date.now(),
+                    watcher_name_updated_at: Date.now(),
+                    watcher_name: '',
+                    film_copyright: performance.get('film').get('copyright'),
+                    film_is_mx4d: performance.get('film').get('is_mx4d'),
+                    film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.get('film').get('_id')}.jpg`,
+                    film_name_en: performance.get('film').get('name.en'),
+                    film_name_ja: performance.get('film').get('name.ja'),
+                    film: performance.get('film').get('_id'),
+                    screen_name_en: performance.get('screen').get('name.en'),
+                    screen_name_ja: performance.get('screen').get('name.ja'),
+                    screen: performance.get('screen').get('_id'),
+                    theater_name_en: performance.get('theater').get('name.en'),
+                    theater_name_ja: performance.get('theater').get('name.ja'),
+                    theater_address_en: performance.get('theater').get('address.en'),
+                    theater_address_ja: performance.get('theater').get('address.ja'),
+                    theater: performance.get('theater').get('_id'),
+                    performance_canceled: performance.get('canceled'),
+                    performance_end_time: performance.get('end_time'),
+                    performance_start_time: performance.get('start_time'),
+                    performance_open_time: performance.get('open_time'),
+                    performance_day: performance.get('day'),
+                    purchaser_group: ReservationUtil.PURCHASER_GROUP_STAFF,
+                    payment_no: paymentNo,
+                    payment_seat_index: index,
+                    charge: 0,
+                    ticket_type_charge: 0,
+                    ticket_type_name_en: 'Free',
+                    ticket_type_name_ja: '無料',
+                    ticket_type_code: '00',
+                    seat_grade_additional_charge: 0,
+                    seat_grade_name_en: 'Normal Seat',
+                    seat_grade_name_ja: 'ノーマルシート'
+                };
+            });
 
-                reservations = reservations.concat(reservationsByPerformance);
-            }
+            reservations = reservations.concat(reservationsByPerformance);
+        }
 
-            logger.debug('creating staff reservations...length:', reservations.length);
-            let insertManyError: Error | null = null;
-            try {
-                await Models.Reservation.insertMany(reservations);
-            } catch (error) {
-                insertManyError = error;
-            }
-            logger.debug('staff reservations created.');
-            cb(insertManyError);
-        });
+        logger.debug('creating staff reservations...length:', reservations.length);
+        let insertManyError: Error | null = null;
+        try {
+            await Models.Reservation.insertMany(reservations);
+        } catch (error) {
+            insertManyError = error;
+        }
+        logger.debug('staff reservations created.');
+        cb(insertManyError);
     });
 }
 
@@ -235,7 +236,6 @@ export async function createReservationsByPerformanceId(performanceId: string) {
     }
 
     fs.readFile(
-        // tslint:disable-next-line:max-line-length
         `${process.cwd()}/data/${process.env.NODE_ENV}/staffReservations_${performance.get('screen').get('_id').toString()}.json`, 'utf8',
         async (readFileerr, data) => {
             if (readFileerr instanceof Error) {
@@ -254,82 +254,80 @@ export async function createReservationsByPerformanceId(performanceId: string) {
                 staffsByName[staff.get('name')] = staff;
             }
 
-            ReservationUtil.publishPaymentNo(async (publishErr, paymentNo) => {
-                logger.info('paymentNo published.', publishErr, paymentNo);
-                if (publishErr instanceof Error) {
-                    mongoose.disconnect();
-                    process.exit(0);
-                    return;
-                }
-
-                const reservations: any[] = JSON.parse(data);
-                const promises = reservations.map(async (reservation, index) => {
-                    const staffOfReservation = staffsByName[reservation.staff_name];
-
-                    const newReservation = {
-                        performance: performance.get('_id'),
-                        seat_code: reservation.seat_code,
-                        status: ReservationUtil.STATUS_RESERVED,
-                        staff: staffOfReservation.get('_id'),
-                        staff_user_id: staffOfReservation.get('user_id'),
-                        staff_email: staffOfReservation.get('email'),
-                        staff_name: staffOfReservation.get('name'),
-                        staff_signature: 'system',
-                        entered: false,
-                        updated_user: 'system',
-                        purchased_at: Date.now(),
-                        watcher_name_updated_at: Date.now(),
-                        watcher_name: '',
-                        film_copyright: performance.get('film').get('copyright'),
-                        film_is_mx4d: performance.get('film').get('is_mx4d'),
-                        film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.get('film').get('_id')}.jpg`,
-                        film_name_en: performance.get('film').get('name.en'),
-                        film_name_ja: performance.get('film').get('name.ja'),
-                        film: performance.get('film').get('_id'),
-                        screen_name_en: performance.get('screen').get('name.en'),
-                        screen_name_ja: performance.get('screen').get('name.ja'),
-                        screen: performance.get('screen').get('_id'),
-                        theater_name_en: performance.get('theater').get('name.en'),
-                        theater_name_ja: performance.get('theater').get('name.ja'),
-                        theater_address_en: performance.get('theater').get('address.en'),
-                        theater_address_ja: performance.get('theater').get('address.ja'),
-                        theater: performance.get('theater').get('_id'),
-                        performance_canceled: performance.get('canceled'),
-                        performance_end_time: performance.get('end_time'),
-                        performance_start_time: performance.get('start_time'),
-                        performance_open_time: performance.get('open_time'),
-                        performance_day: performance.get('day'),
-                        purchaser_group: ReservationUtil.PURCHASER_GROUP_STAFF,
-                        payment_no: paymentNo,
-                        payment_seat_index: index,
-                        charge: 0,
-                        ticket_type_charge: 0,
-                        ticket_type_name_en: 'Free',
-                        ticket_type_name_ja: '無料',
-                        ticket_type_code: '00',
-                        seat_grade_additional_charge: 0,
-                        seat_grade_name_en: 'Normal Seat',
-                        seat_grade_name_ja: 'ノーマルシート'
-                    };
-
-                    logger.info('creating reservation...');
-                    // 途中で終了しないように。最後まで予約渡来し続ける。
-                    try {
-                        await Models.Reservation.create([newReservation]);
-                    } catch (error) {
-                        logger.error(error);
-                    }
-                    logger.info('reservation created.');
-
-                });
-
-                await Promise.all(promises);
-                logger.info('promised');
+            let paymentNo: string = '';
+            try {
+                paymentNo = await ReservationUtil.publishPaymentNo();
+                logger.info('paymentNo published.', paymentNo);
+            } catch (error) {
                 mongoose.disconnect();
                 process.exit(0);
+                return;
+            }
+
+            const reservations: any[] = JSON.parse(data);
+            const promises = reservations.map(async (reservation, index) => {
+                const staffOfReservation = staffsByName[reservation.staff_name];
+
+                const newReservation = {
+                    performance: performance.get('_id'),
+                    seat_code: reservation.seat_code,
+                    status: ReservationUtil.STATUS_RESERVED,
+                    staff: staffOfReservation.get('_id'),
+                    staff_user_id: staffOfReservation.get('user_id'),
+                    staff_email: staffOfReservation.get('email'),
+                    staff_name: staffOfReservation.get('name'),
+                    staff_signature: 'system',
+                    entered: false,
+                    updated_user: 'system',
+                    purchased_at: Date.now(),
+                    watcher_name_updated_at: Date.now(),
+                    watcher_name: '',
+                    film_copyright: performance.get('film').get('copyright'),
+                    film_is_mx4d: performance.get('film').get('is_mx4d'),
+                    film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.get('film').get('_id')}.jpg`,
+                    film_name_en: performance.get('film').get('name.en'),
+                    film_name_ja: performance.get('film').get('name.ja'),
+                    film: performance.get('film').get('_id'),
+                    screen_name_en: performance.get('screen').get('name.en'),
+                    screen_name_ja: performance.get('screen').get('name.ja'),
+                    screen: performance.get('screen').get('_id'),
+                    theater_name_en: performance.get('theater').get('name.en'),
+                    theater_name_ja: performance.get('theater').get('name.ja'),
+                    theater_address_en: performance.get('theater').get('address.en'),
+                    theater_address_ja: performance.get('theater').get('address.ja'),
+                    theater: performance.get('theater').get('_id'),
+                    performance_canceled: performance.get('canceled'),
+                    performance_end_time: performance.get('end_time'),
+                    performance_start_time: performance.get('start_time'),
+                    performance_open_time: performance.get('open_time'),
+                    performance_day: performance.get('day'),
+                    purchaser_group: ReservationUtil.PURCHASER_GROUP_STAFF,
+                    payment_no: paymentNo,
+                    payment_seat_index: index,
+                    charge: 0,
+                    ticket_type_charge: 0,
+                    ticket_type_name_en: 'Free',
+                    ticket_type_name_ja: '無料',
+                    ticket_type_code: '00',
+                    seat_grade_additional_charge: 0,
+                    seat_grade_name_en: 'Normal Seat',
+                    seat_grade_name_ja: 'ノーマルシート'
+                };
+
+                logger.info('creating reservation...');
+                // 途中で終了しないように。最後まで予約渡来し続ける。
+                try {
+                    await Models.Reservation.create([newReservation]);
+                } catch (error) {
+                    logger.error(error);
+                }
+                logger.info('reservation created.');
             });
-            // });
+
+            await Promise.all(promises);
+            logger.info('promised');
+            mongoose.disconnect();
+            process.exit(0);
         }
     );
-    // });
 }
