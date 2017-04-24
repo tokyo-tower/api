@@ -1,8 +1,0 @@
-{
-  "name": "chevre-api",
-  "version": "0.0.0",
-  "dependencies": {},
-  "globalDependencies": {
-    "qr-image": "file:./definitions/qr-image.d.ts"
-  }
-}

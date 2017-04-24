@@ -40,11 +40,8 @@
     },
     "exclude": [
         "config",
-        "data",
-        "definitions",
         "locales",
         "node_modules",
-        "public",
-        "typings"
+        "public"
     ]
 }

@@ -1,14 +1,12 @@
 "use strict";
-// tslint:disable-next-line:no-reference
-/// <reference path='./typings/index.d.ts' />
-Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Module dependencies.
  */
+Object.defineProperty(exports, "__esModule", { value: true });
 const startTime = process.hrtime();
 const createDebug = require("debug");
 const http = require("http");
-const app = require("./apps/api/app");
+const app = require("./app/app");
 const debug = createDebug('chevre-api:index');
 /**
  * Get port from environment and store in Express.

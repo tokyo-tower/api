@@ -1,6 +1,3 @@
-// tslint:disable-next-line:no-reference
-/// <reference path='./typings/index.d.ts' />
-
 /**
  * Module dependencies.
  */
@@ -9,7 +6,7 @@ const startTime = process.hrtime();
 
 import * as createDebug from 'debug';
 import * as http from 'http';
-import * as app from './apps/api/app';
+import * as app from './app/app';
 
 const debug = createDebug('chevre-api:index');
 
