@@ -85,7 +85,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 i18n.configure({
     locales: ['en', 'ja'],
     defaultLocale: 'en',
-    directory: __dirname + '/../../locales',
+    directory: __dirname + '/../locales',
     objectNotation: true,
     updateFiles: false // ページのビューで自動的に言語ファイルを更新しない
 });

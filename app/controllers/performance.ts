@@ -5,10 +5,12 @@
  */
 
 import { Models, PerformanceStatusesModel } from '@motionpicture/chevre-domain';
-
+import * as createDebug from 'debug';
 import { Request, Response } from 'express';
 import * as moment from 'moment';
 import * as _ from 'underscore';
+
+const debug = createDebug('chevre-api:controller:performance');
 
 const DEFAULT_RADIX = 10;
 
@@ -101,6 +103,7 @@ export async function search(req: Request, res: Response) {
         const performancesCount = await Models.Performance.count(conditions).exec();
 
         // 必要な項目だけ指定すること(レスポンスタイムに大きく影響するので)
+        debug('locale is', req.getLocale());
         let fields = '';
         if (req.getLocale() === 'ja') {
             fields = 'day open_time start_time film screen screen_name.ja theater theater_name.ja';

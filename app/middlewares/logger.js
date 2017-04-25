@@ -7,10 +7,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const log4js = require("log4js");
 const env = (process.env.NODE_ENV !== undefined) ? process.env.NODE_ENV : 'development';
-// ディレクトリなければ作成(初回アクセス時だけ)
-// let logDir = `${__dirname}/../../../logs/${env}/api`;
-// let fs = require('fs-extra');
-// fs.mkdirsSync(logDir);
 log4js.configure({
     appenders: [
         {

@@ -14,8 +14,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
+const createDebug = require("debug");
 const moment = require("moment");
 const _ = require("underscore");
+const debug = createDebug('chevre-api:controller:performance');
 const DEFAULT_RADIX = 10;
 /**
  * 検索する
@@ -95,6 +97,7 @@ function search(req, res) {
             // 総数検索
             const performancesCount = yield chevre_domain_1.Models.Performance.count(conditions).exec();
             // 必要な項目だけ指定すること(レスポンスタイムに大きく影響するので)
+            debug('locale is', req.getLocale());
             let fields = '';
             if (req.getLocale() === 'ja') {
                 fields = 'day open_time start_time film screen screen_name.ja theater theater_name.ja';

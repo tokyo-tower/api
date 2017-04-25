@@ -28,7 +28,7 @@ export async function show(req: Request, res: Response, next: NextFunction) {
         }
 
         // スクリーン座席表HTMLを出力
-        fs.readFile(`${__dirname}/../../../common/views/screens/${req.params.id}.ejs`, 'utf8', (readFileErr, data) => {
+        fs.readFile(`${__dirname}/../../common/views/screens/${req.params.id}.ejs`, 'utf8', (readFileErr, data) => {
             if (readFileErr instanceof Error) {
                 next(readFileErr);
                 return;

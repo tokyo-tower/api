@@ -93,7 +93,7 @@ export async function email(req: Request, res: Response) {
                 const attachment = new sendgrid.mail.Attachment();
                 attachment.setFilename('logo.png');
                 attachment.setType('image/png');
-                attachment.setContent(fs.readFileSync(`${__dirname}/../../../public/images/email/logo.png`).toString('base64'));
+                attachment.setContent(fs.readFileSync(`${__dirname}/../../public/images/email/logo.png`).toString('base64'));
                 attachment.setDisposition('inline');
                 attachment.setContentId('logo');
                 mail.addAttachment(attachment);
