@@ -133,19 +133,23 @@ export async function email(req: Request, res: Response) {
 }
 
 /**
- * 入場グラグをたてる
+ * 入場履歴を追加する
  *
  * @memberOf ReservationController
  */
-export async function enter(req: Request, res: Response) {
+export async function checkin(req: Request, res: Response) {
     try {
-        await Models.Reservation.update(
+        await Models.Reservation.findByIdAndUpdate(
+            req.params.id,
             {
-                _id: req.params.id
-            },
-            {
-                entered: true,
-                entered_at: req.body.entered_at
+                $push: {
+                    checkins: {
+                        when: moment().toDate(),
+                        where: req.body.where, // どこで
+                        why: req.body.why, // 何のために
+                        how: req.body.how // どうやって
+                    }
+                }
             }
         ).exec();
 

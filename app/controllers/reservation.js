@@ -124,18 +124,22 @@ function email(req, res) {
 }
 exports.email = email;
 /**
- * 入場グラグをたてる
+ * 入場履歴を追加する
  *
  * @memberOf ReservationController
  */
-function enter(req, res) {
+function checkin(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            yield chevre_domain_1.Models.Reservation.update({
-                _id: req.params.id
-            }, {
-                entered: true,
-                entered_at: req.body.entered_at
+            yield chevre_domain_1.Models.Reservation.findByIdAndUpdate(req.params.id, {
+                $push: {
+                    checkins: {
+                        when: moment().toDate(),
+                        where: req.body.where,
+                        why: req.body.why,
+                        how: req.body.how // どうやって
+                    }
+                }
             }).exec();
             res.json({
                 success: true
@@ -148,7 +152,7 @@ function enter(req, res) {
         }
     });
 }
-exports.enter = enter;
+exports.checkin = checkin;
 /**
  * ムビチケユーザーで検索する
  *

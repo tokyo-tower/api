@@ -22,8 +22,8 @@ router.post('/login', setLocale_1.default, AuthController.login);
 // 要認証サービス
 router.all('/reservations', passport.authenticate('bearer', { session: false }), setLocale_1.default, ReservationController.findByMvtkUser);
 router.all('/reservation/:id', passport.authenticate('bearer', { session: false }), setLocale_1.default, ReservationController.findById);
-// enter
-router.post('/reservation/:id/enter', setLocale_1.default, ReservationController.enter);
+// 入場
+router.post('/reservation/:id/checkin', setLocale_1.default, ReservationController.checkin);
 // 環境変数
 router.get('/environmentVariables', OtherController.environmentVariables);
 // 404

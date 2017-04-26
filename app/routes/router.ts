@@ -29,8 +29,8 @@ router.post('/login', setLocale, AuthController.login);
 router.all('/reservations', passport.authenticate('bearer', { session: false }), setLocale, ReservationController.findByMvtkUser);
 router.all('/reservation/:id', passport.authenticate('bearer', { session: false }), setLocale, ReservationController.findById);
 
-// enter
-router.post('/reservation/:id/enter', setLocale, ReservationController.enter);
+// 入場
+router.post('/reservation/:id/checkin', setLocale, ReservationController.checkin);
 
 // 環境変数
 router.get('/environmentVariables', OtherController.environmentVariables);

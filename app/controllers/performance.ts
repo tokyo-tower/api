@@ -136,35 +136,31 @@ export async function search(req: Request, res: Response) {
         const performances = <any[]>await query.lean(true).exec();
 
         // 空席情報を追加
-        PerformanceStatusesModel.find((findPerformanceStatusesErr, performanceStatuses) => {
-            if (findPerformanceStatusesErr instanceof Error) {
-                console.error(findPerformanceStatusesErr);
-            }
+        const performanceStatuses = await PerformanceStatusesModel.find();
 
-            const results = performances.map((performance) => {
-                return {
-                    _id: performance._id,
-                    day: performance.day,
-                    open_time: performance.open_time,
-                    start_time: performance.start_time,
-                    seat_status: (performanceStatuses !== undefined) ? performanceStatuses.getStatus(performance._id.toString()) : null,
-                    theater_name: performance.theater_name[req.getLocale()],
-                    screen_name: performance.screen_name[req.getLocale()],
-                    film_id: performance.film._id,
-                    film_name: performance.film.name[req.getLocale()],
-                    film_sections: performance.film.sections.map((filmSection: any) => filmSection.name[req.getLocale()]),
-                    film_minutes: performance.film.minutes,
-                    film_copyright: performance.film.copyright,
-                    film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.film._id}.jpg`
-                };
-            });
+        const results = performances.map((performance) => {
+            return {
+                _id: performance._id,
+                day: performance.day,
+                open_time: performance.open_time,
+                start_time: performance.start_time,
+                seat_status: (performanceStatuses !== undefined) ? performanceStatuses.getStatus(performance._id.toString()) : null,
+                theater_name: performance.theater_name[req.getLocale()],
+                screen_name: performance.screen_name[req.getLocale()],
+                film_id: performance.film._id,
+                film_name: performance.film.name[req.getLocale()],
+                film_sections: performance.film.sections.map((filmSection: any) => filmSection.name[req.getLocale()]),
+                film_minutes: performance.film.minutes,
+                film_copyright: performance.film.copyright,
+                film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.film._id}.jpg`
+            };
+        });
 
-            res.json({
-                success: true,
-                results: results,
-                performances_count: performancesCount,
-                films_count: filmIds.length
-            });
+        res.json({
+            success: true,
+            results: results,
+            performances_count: performancesCount,
+            films_count: filmIds.length
         });
     } catch (error) {
         console.error(error);
