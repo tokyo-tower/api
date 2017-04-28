@@ -9,11 +9,11 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/chevre-domain": "^5.0.1",
+    "@motionpicture/chevre-domain": "^7.0.0",
     "body-parser": "^1.17.1",
     "commander": "^2.9.0",
     "config": "^1.21.0",
-    "debug": "^2.6.4",
+    "debug": "^2.6.6",
     "ejs": "^2.5.5",
     "email-templates": "^2.4.1",
     "express": "^4.15.2",
@@ -57,7 +57,7 @@
     "supertest": "^3.0.0",
     "tslint": "^4.5.1",
     "tslint-microsoft-contrib": "^4.0.1",
-    "typescript": "^2.3.0"
+    "typescript": "^2.3.1"
   },
   "engines": {
     "node": ">=6.9.1",
@@ -80,5 +80,5 @@
     "version": "git add -A",
     "postversion": "git push origin --tags"
   },
-  "version": "2.0.0"
+  "version": "2.0.1"
 }
