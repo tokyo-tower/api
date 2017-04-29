@@ -14,7 +14,6 @@ import * as passportHttpBearer from 'passport-http-bearer';
 import { Models } from '@motionpicture/chevre-domain';
 import benchmarks from './middlewares/benchmarks';
 import cors from './middlewares/cors';
-import logger from './middlewares/logger';
 
 const debug = createDebug('chevre-api:app');
 
@@ -42,10 +41,6 @@ passport.use(new bearerStrategy(
 const app = express();
 
 app.use(cors);
-
-if (process.env.NODE_ENV === 'development') {
-    app.use(logger); // ロガー
-}
 
 if (process.env.NODE_ENV !== 'production') {
     // サーバーエラーテスト

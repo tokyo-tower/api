@@ -16,9 +16,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const chevre_domain_2 = require("@motionpicture/chevre-domain");
 const conf = require("config");
-const fs = require("fs-extra");
 const moment = require("moment");
-const qr = require("qr-image");
 const sendgrid = require("sendgrid");
 const validator = require("validator");
 /**
@@ -26,7 +24,6 @@ const validator = require("validator");
  *
  * @memberOf ReservationController
  */
-// tslint:disable-next-line:max-func-body-length
 function email(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const id = req.body.id;
@@ -40,10 +37,7 @@ function email(req, res) {
             return;
         }
         try {
-            const reservation = yield chevre_domain_1.Models.Reservation.findOne({
-                _id: id,
-                status: chevre_domain_2.ReservationUtil.STATUS_RESERVED
-            }).exec();
+            const reservation = yield chevre_domain_1.Models.Reservation.findOne({ _id: id, status: chevre_domain_2.ReservationUtil.STATUS_RESERVED }).exec();
             if (reservation === null) {
                 res.json({
                     success: false,
@@ -63,46 +57,27 @@ function email(req, res) {
                 title_ja: titleJa,
                 title_en: titleEn,
                 ReservationUtil: chevre_domain_2.ReservationUtil
-            }, (renderErr, html) => __awaiter(this, void 0, void 0, function* () {
-                if (renderErr instanceof Error) {
-                    res.json({
-                        success: false,
-                        message: req.__('Message.UnexpectedError')
-                    });
-                    return;
-                }
-                const mail = new sendgrid.mail.Mail(new sendgrid.mail.Email(conf.get('email.from'), conf.get('email.fromname')), `${titleJa} ${titleEn}`, new sendgrid.mail.Email(to), new sendgrid.mail.Content('text/html', html));
-                const reservationId = reservation.get('_id').toString();
-                const attachmentQR = new sendgrid.mail.Attachment();
-                attachmentQR.setFilename(`QR_${reservationId}.png`);
-                attachmentQR.setType('image/png');
-                attachmentQR.setContent(qr.imageSync(reservation.get('qr_str'), { type: 'png' }).toString('base64'));
-                attachmentQR.setDisposition('inline');
-                attachmentQR.setContentId(`qrcode_${reservationId}`);
-                mail.addAttachment(attachmentQR);
-                // logo
-                const attachment = new sendgrid.mail.Attachment();
-                attachment.setFilename('logo.png');
-                attachment.setType('image/png');
-                attachment.setContent(fs.readFileSync(`${__dirname}/../../public/images/email/logo.png`).toString('base64'));
-                attachment.setDisposition('inline');
-                attachment.setContentId('logo');
-                mail.addAttachment(attachment);
-                const sg = sendgrid(process.env.SENDGRID_API_KEY);
-                const request = sg.emptyRequest({
-                    host: 'api.sendgrid.com',
-                    method: 'POST',
-                    path: '/v3/mail/send',
-                    headers: {},
-                    body: mail.toJSON(),
-                    queryParams: {},
-                    test: false,
-                    port: ''
-                });
+            }, (renderErr, text) => __awaiter(this, void 0, void 0, function* () {
                 try {
+                    if (renderErr instanceof Error) {
+                        throw renderErr;
+                    }
+                    const mail = new sendgrid.mail.Mail(new sendgrid.mail.Email(conf.get('email.from'), conf.get('email.fromname')), `${titleJa} ${titleEn}`, new sendgrid.mail.Email(to), new sendgrid.mail.Content('text/plain', text));
+                    const sg = sendgrid(process.env.SENDGRID_API_KEY);
+                    const request = sg.emptyRequest({
+                        host: 'api.sendgrid.com',
+                        method: 'POST',
+                        path: '/v3/mail/send',
+                        headers: {},
+                        body: mail.toJSON(),
+                        queryParams: {},
+                        test: false,
+                        port: ''
+                    });
                     yield sg.API(request);
                     res.json({
-                        success: true
+                        success: true,
+                        message: ''
                     });
                 }
                 catch (error) {

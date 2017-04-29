@@ -9,9 +9,7 @@ import { ReservationUtil } from '@motionpicture/chevre-domain';
 
 import * as conf from 'config';
 import { Request, Response } from 'express';
-import * as fs from 'fs-extra';
 import * as moment from 'moment';
-import * as qr from 'qr-image';
 import * as sendgrid from 'sendgrid';
 import * as validator from 'validator';
 
@@ -20,7 +18,6 @@ import * as validator from 'validator';
  *
  * @memberOf ReservationController
  */
-// tslint:disable-next-line:max-func-body-length
 export async function email(req: Request, res: Response) {
     const id = req.body.id;
     const to = req.body.to;
@@ -34,13 +31,7 @@ export async function email(req: Request, res: Response) {
     }
 
     try {
-        const reservation = await Models.Reservation.findOne(
-            {
-                _id: id,
-                status: ReservationUtil.STATUS_RESERVED
-            }
-        ).exec();
-
+        const reservation = await Models.Reservation.findOne({ _id: id, status: ReservationUtil.STATUS_RESERVED }).exec();
         if (reservation === null) {
             res.json({
                 success: false,
@@ -54,7 +45,8 @@ export async function email(req: Request, res: Response) {
         const titleEn = `This is a notification that you have been invited to Tokyo International Film Festival by Mr./Ms. ${reservation.get('purchaser_name_en')}.`;
 
         res.render(
-            'email/resevation', {
+            'email/resevation',
+            {
                 layout: false,
                 reservations: [reservation],
                 to: to,
@@ -64,56 +56,35 @@ export async function email(req: Request, res: Response) {
                 title_en: titleEn,
                 ReservationUtil: ReservationUtil
             },
-            async (renderErr, html) => {
-                if (renderErr instanceof Error) {
-                    res.json({
-                        success: false,
-                        message: req.__('Message.UnexpectedError')
-                    });
-                    return;
-                }
-
-                const mail = new sendgrid.mail.Mail(
-                    new sendgrid.mail.Email(conf.get<string>('email.from'), conf.get<string>('email.fromname')),
-                    `${titleJa} ${titleEn}`,
-                    new sendgrid.mail.Email(to),
-                    new sendgrid.mail.Content('text/html', html)
-                );
-
-                const reservationId = reservation.get('_id').toString();
-                const attachmentQR = new sendgrid.mail.Attachment();
-                attachmentQR.setFilename(`QR_${reservationId}.png`);
-                attachmentQR.setType('image/png');
-                attachmentQR.setContent((<Buffer>qr.imageSync(reservation.get('qr_str'), { type: 'png' })).toString('base64'));
-                attachmentQR.setDisposition('inline');
-                attachmentQR.setContentId(`qrcode_${reservationId}`);
-                mail.addAttachment(attachmentQR);
-
-                // logo
-                const attachment = new sendgrid.mail.Attachment();
-                attachment.setFilename('logo.png');
-                attachment.setType('image/png');
-                attachment.setContent(fs.readFileSync(`${__dirname}/../../public/images/email/logo.png`).toString('base64'));
-                attachment.setDisposition('inline');
-                attachment.setContentId('logo');
-                mail.addAttachment(attachment);
-
-                const sg = sendgrid(process.env.SENDGRID_API_KEY);
-                const request = sg.emptyRequest({
-                    host: 'api.sendgrid.com',
-                    method: 'POST',
-                    path: '/v3/mail/send',
-                    headers: {},
-                    body: mail.toJSON(),
-                    queryParams: {},
-                    test: false,
-                    port: ''
-                });
-
+            async (renderErr, text) => {
                 try {
+                    if (renderErr instanceof Error) {
+                        throw renderErr;
+                    }
+
+                    const mail = new sendgrid.mail.Mail(
+                        new sendgrid.mail.Email(conf.get<string>('email.from'), conf.get<string>('email.fromname')),
+                        `${titleJa} ${titleEn}`,
+                        new sendgrid.mail.Email(to),
+                        new sendgrid.mail.Content('text/plain', text)
+                    );
+
+                    const sg = sendgrid(process.env.SENDGRID_API_KEY);
+                    const request = sg.emptyRequest({
+                        host: 'api.sendgrid.com',
+                        method: 'POST',
+                        path: '/v3/mail/send',
+                        headers: {},
+                        body: mail.toJSON(),
+                        queryParams: {},
+                        test: false,
+                        port: ''
+                    });
+
                     await sg.API(request);
                     res.json({
-                        success: true
+                        success: true,
+                        message: ''
                     });
                 } catch (error) {
                     console.error('an email unsent.', error);

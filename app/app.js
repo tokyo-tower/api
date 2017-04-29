@@ -22,7 +22,6 @@ const passportHttpBearer = require("passport-http-bearer");
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const benchmarks_1 = require("./middlewares/benchmarks");
 const cors_1 = require("./middlewares/cors");
-const logger_1 = require("./middlewares/logger");
 const debug = createDebug('chevre-api:app');
 const bearerStrategy = passportHttpBearer.Strategy;
 const MONGOLAB_URI = process.env.MONGOLAB_URI;
@@ -42,9 +41,6 @@ passport.use(new bearerStrategy((token, cb) => __awaiter(this, void 0, void 0, f
 })));
 const app = express();
 app.use(cors_1.default);
-if (process.env.NODE_ENV === 'development') {
-    app.use(logger_1.default); // ロガー
-}
 if (process.env.NODE_ENV !== 'production') {
     // サーバーエラーテスト
     app.get('/dev/500', (req) => {
