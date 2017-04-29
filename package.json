@@ -9,13 +9,13 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/chevre-domain": "^7.0.0",
+    "@motionpicture/chevre-domain": "^7.0.2",
     "body-parser": "^1.17.1",
     "config": "^1.21.0",
     "debug": "^2.6.6",
     "ejs": "^2.5.5",
     "express": "^4.15.2",
-    "fs-extra": "^0.28.0",
+    "fs-extra": "^3.0.0",
     "i18n": "^0.8.3",
     "moment": "^2.18.1",
     "passport": "^0.3.2",
@@ -30,7 +30,7 @@
     "@types/config": "0.0.32",
     "@types/debug": "0.0.29",
     "@types/express": "^4.0.35",
-    "@types/fs-extra": "0.0.37",
+    "@types/fs-extra": "^2.1.0",
     "@types/i18n": "^0.5.20",
     "@types/mocha": "^2.2.41",
     "@types/passport": "^0.3.3",
@@ -43,10 +43,11 @@
     "mocha": "^3.3.0",
     "nsp": "^2.6.3",
     "rimraf": "^2.6.1",
+    "snyk": "^1.29.0",
     "supertest": "^3.0.0",
     "tslint": "^4.5.1",
     "tslint-microsoft-contrib": "^4.0.1",
-    "typescript": "^2.3.1"
+    "typescript": "^2.3.2"
   },
   "engines": {
     "node": ">=6.9.1",
@@ -60,7 +61,7 @@
   "repository": {},
   "scripts": {
     "build": "tsc",
-    "check": "tslint --type-check --project tsconfig.json -c tslint.json index.ts app/**/*.ts && nsp check",
+    "check": "tslint --type-check --project tsconfig.json -c tslint.json index.ts app/**/*.ts && nsp check && snyk auth && snyk test --ignore-policy",
     "clean": "rimraf app/**/*.js index.js npm-debug.log* docs/*",
     "jsdoc": "node_modules/.bin/jsdoc -c jsdoc.json",
     "start": "node ./index.js",
@@ -69,5 +70,5 @@
     "version": "git add -A",
     "postversion": "git push origin --tags"
   },
-  "version": "2.0.2"
+  "version": "2.0.3"
 }

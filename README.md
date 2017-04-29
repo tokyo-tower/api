@@ -11,7 +11,6 @@ set CHEVRE_PERFORMANCE_STATUSES_REDIS_PORT=**********パフォーマンス空席
 set CHEVRE_PERFORMANCE_STATUSES_REDIS_KEY=**********パフォーマンス空席状況保管先redis key**********
 set FRONTEND_ENDPOINT=**********frontendのエンドポイント**********
 set MONGOLAB_URI=**********mongodb接続URI**********
-set MONGOLAB_URI_GMO=**********gmo結果通知保管先mongodb接続URI**********
 set GMO_SITE_ID=**********gmo サイトID**********
 set GMO_SHOP_ID=**********gmo ショップID**********
 set GMO_SHOP_PASS=**********gmo ショップパスワード**********
