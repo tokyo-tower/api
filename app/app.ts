@@ -8,35 +8,11 @@ import * as createDebug from 'debug';
 import * as express from 'express';
 import * as i18n from 'i18n';
 import * as mongoose from 'mongoose';
-import * as passport from 'passport';
-import * as passportHttpBearer from 'passport-http-bearer';
 
-import { Models } from '@motionpicture/chevre-domain';
 import benchmarks from './middlewares/benchmarks';
 import cors from './middlewares/cors';
 
 const debug = createDebug('chevre-api:app');
-
-const bearerStrategy = passportHttpBearer.Strategy;
-const MONGOLAB_URI = process.env.MONGOLAB_URI;
-
-// oauth認証を使用する場合
-passport.use(new bearerStrategy(
-    async (token, cb) => {
-        try {
-            const authentication = await Models.Authentication.findOne({ token: token }).exec();
-
-            if (authentication === null) {
-                cb(null, false);
-                return;
-            }
-
-            cb(null, authentication);
-        } catch (error) {
-            cb(error);
-        }
-    }
-));
 
 const app = express();
 
@@ -44,13 +20,13 @@ app.use(cors);
 
 if (process.env.NODE_ENV !== 'production') {
     // サーバーエラーテスト
-    app.get('/dev/500', (req) => {
-        // tslint:disable-next-line:no-empty
-        req.on('data', () => {
+    app.get('/dev/uncaughtexception', (req) => {
+        req.on('data', (chunk) => {
+            debug(chunk);
         });
 
         req.on('end', () => {
-            throw new Error('500 manually.');
+            throw new Error('uncaughtexception manually');
         });
     });
 
@@ -61,7 +37,7 @@ if (process.env.NODE_ENV !== 'production') {
     });
 
     app.get('/api/connect', (_, res) => {
-        mongoose.connect(MONGOLAB_URI, {}, (err) => {
+        mongoose.connect(process.env.MONGOLAB_URI, {}, (err) => {
             res.send('connected.' + err.toString());
         });
     });
@@ -74,7 +50,7 @@ app.set('views', `${__dirname}/views`);
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // i18n を利用する設定
 i18n.configure({
@@ -93,7 +69,7 @@ app.use('/', router);
 
 // Use native promises
 (<any>mongoose).Promise = global.Promise;
-mongoose.connect(MONGOLAB_URI, {});
+mongoose.connect(process.env.MONGOLAB_URI, {});
 
 if (process.env.NODE_ENV !== 'production') {
     const db = mongoose.connection;
