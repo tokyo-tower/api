@@ -5,7 +5,6 @@ const router = express.Router();
 const passport = require("passport");
 const setLocale_1 = require("../middlewares/setLocale");
 const AuthController = require("../controllers/auth");
-const OtherController = require("../controllers/other");
 const PerformanceController = require("../controllers/performance");
 const ReservationController = require("../controllers/reservation");
 const ScreenController = require("../controllers/screen");
@@ -24,27 +23,4 @@ router.all('/reservations', passport.authenticate('bearer', { session: false }),
 router.all('/reservation/:id', passport.authenticate('bearer', { session: false }), setLocale_1.default, ReservationController.findById);
 // 入場
 router.post('/reservation/:id/checkin', setLocale_1.default, ReservationController.checkin);
-// 環境変数
-router.get('/environmentVariables', OtherController.environmentVariables);
-// 404
-router.use((req, res) => {
-    res.json({
-        success: false,
-        message: `router for [${req.originalUrl}] not found.`
-    });
-});
-// error handlers
-// tslint:disable-next-line:variable-name
-router.use((err, _req, res, next) => {
-    if (res.headersSent) {
-        next(err);
-        return;
-    }
-    const STATUS_CODE_BAD_REQUEST = 400;
-    res.status(STATUS_CODE_BAD_REQUEST);
-    res.json({
-        success: false,
-        message: 'Internal Server Error'
-    });
-});
 exports.default = router;

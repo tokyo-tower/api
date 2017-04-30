@@ -6,17 +6,39 @@
 import * as bodyParser from 'body-parser';
 import * as createDebug from 'debug';
 import * as express from 'express';
+import expressValidator = require('express-validator'); // tslint:disable-line:no-require-imports
+import * as helmet from 'helmet';
 import * as i18n from 'i18n';
 import * as mongoose from 'mongoose';
 
+import mongooseConnectionOptions from '../mongooseConnectionOptions';
+
 import benchmarks from './middlewares/benchmarks';
 import cors from './middlewares/cors';
+import errorHandler from './middlewares/errorHandler';
+import notFoundHandler from './middlewares/notFoundHandler';
+
+import devRouter from './routes/dev';
+import router from './routes/router';
 
 const debug = createDebug('chevre-api:app');
 
 const app = express();
 
 app.use(cors);
+app.use(helmet());
+app.use(helmet.contentSecurityPolicy({
+    directives: {
+        defaultSrc: ['\'self\'']
+        // styleSrc: ['\'unsafe-inline\'']
+    }
+}));
+app.use((<any>helmet).referrerPolicy({ policy: 'no-referrer' })); // 型定義が非対応のためany
+const SIXTY_DAYS_IN_SECONDS = 5184000;
+app.use(helmet.hsts({
+    maxAge: SIXTY_DAYS_IN_SECONDS,
+    includeSubdomains: false
+}));
 
 if (process.env.NODE_ENV !== 'production') {
     // サーバーエラーテスト
@@ -29,18 +51,6 @@ if (process.env.NODE_ENV !== 'production') {
             throw new Error('uncaughtexception manually');
         });
     });
-
-    app.get('/api/disconnect', (_, res) => {
-        mongoose.disconnect((err: any) => {
-            res.send('disconnected.' + <string>err.toString());
-        });
-    });
-
-    app.get('/api/connect', (_, res) => {
-        mongoose.connect(process.env.MONGOLAB_URI, {}, (err) => {
-            res.send('connected.' + err.toString());
-        });
-    });
 }
 
 app.use(benchmarks); // ベンチマーク的な
@@ -51,6 +61,7 @@ app.set('view engine', 'ejs');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
 
 // i18n を利用する設定
 i18n.configure({
@@ -64,33 +75,20 @@ i18n.configure({
 app.use(i18n.init);
 
 // ルーティング
-import router from './routes/router';
 app.use('/', router);
+
+if (process.env.NODE_ENV !== 'production') {
+    app.use('/dev', devRouter);
+}
+
+// 404
+app.use(notFoundHandler);
+
+// error handlers
+app.use(errorHandler);
 
 // Use native promises
 (<any>mongoose).Promise = global.Promise;
-mongoose.connect(process.env.MONGOLAB_URI, {});
-
-if (process.env.NODE_ENV !== 'production') {
-    const db = mongoose.connection;
-    db.on('connecting', () => {
-        debug('connecting');
-    });
-    db.on('error', (error: any) => {
-        console.error('Error in MongoDb connection: ', error);
-    });
-    db.on('connected', () => {
-        debug('connected.');
-    });
-    db.once('open', () => {
-        debug('connection open.');
-    });
-    db.on('reconnected', () => {
-        debug('reconnected.');
-    });
-    db.on('disconnected', () => {
-        debug('disconnected.');
-    });
-}
+mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions);
 
 export = app;

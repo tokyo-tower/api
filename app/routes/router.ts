@@ -5,7 +5,6 @@ import * as passport from 'passport';
 import setLocale from '../middlewares/setLocale';
 
 import * as AuthController from '../controllers/auth';
-import * as OtherController from '../controllers/other';
 import * as PerformanceController from '../controllers/performance';
 import * as ReservationController from '../controllers/reservation';
 import * as ScreenController from '../controllers/screen';
@@ -31,32 +30,5 @@ router.all('/reservation/:id', passport.authenticate('bearer', { session: false 
 
 // 入場
 router.post('/reservation/:id/checkin', setLocale, ReservationController.checkin);
-
-// 環境変数
-router.get('/environmentVariables', OtherController.environmentVariables);
-
-// 404
-router.use((req, res) => {
-    res.json({
-        success: false,
-        message: `router for [${req.originalUrl}] not found.`
-    });
-});
-
-// error handlers
-// tslint:disable-next-line:variable-name
-router.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
-    if (res.headersSent) {
-        next(err);
-        return;
-    }
-
-    const STATUS_CODE_BAD_REQUEST = 400;
-    res.status(STATUS_CODE_BAD_REQUEST);
-    res.json({
-        success: false,
-        message: 'Internal Server Error'
-    });
-});
 
 export default router;
