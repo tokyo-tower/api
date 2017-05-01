@@ -39,10 +39,8 @@ describe('予約ルーター 入場', () => {
                 why: 'for test',
                 how: 'supertest'
             })
-            .expect('Content-Type', /json/)
-            .then(async (response) => {
-                assert(response.body.success);
-
+            .expect(httpStatus.NO_CONTENT)
+            .then(async () => {
                 // 入場履歴が追加されているかどうか確認
                 reservationDoc = await reservationModel.findById(reservationDoc.get('id'));
                 assert(reservationDoc.get('checked_in'));
@@ -50,6 +48,13 @@ describe('予約ルーター 入場', () => {
                 // テストデータ削除
                 reservationDoc.remove();
             });
+    });
+
+    it('予約存在しない', async () => {
+        await supertest(app)
+            .post('/reservation/5905b0003431b21604da462a/checkin')
+            .expect('Content-Type', /json/)
+            .expect(httpStatus.NOT_FOUND);
     });
 });
 

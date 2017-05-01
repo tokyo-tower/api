@@ -49,6 +49,14 @@ router.get(
 // router.all('/reservation/:id', passport.authenticate('bearer', { session: false }), setLocale, ReservationController.findById);
 
 // 入場
-router.post('/reservation/:id/checkin', setLocale, ReservationController.checkin);
+router.post(
+    '/reservation/:id/checkin',
+    setLocale,
+    (__1, __2, next) => {
+        next();
+    },
+    validator,
+    ReservationController.checkin
+);
 
 export default router;

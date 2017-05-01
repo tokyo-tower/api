@@ -92,9 +92,9 @@ export async function transfer(req: Request, res: Response, next: NextFunction) 
  *
  * @memberOf controller/reservation
  */
-export async function checkin(req: Request, res: Response) {
+export async function checkin(req: Request, res: Response, next: NextFunction) {
     try {
-        await Models.Reservation.findByIdAndUpdate(
+        const reservation = await Models.Reservation.findByIdAndUpdate(
             req.params.id,
             {
                 $push: {
@@ -108,20 +108,22 @@ export async function checkin(req: Request, res: Response) {
             }
         ).exec();
 
-        res.json({
-            success: true
-        });
+        if (reservation === null) {
+            res.status(NOT_FOUND).json({
+                data: null
+            });
+        } else {
+            res.status(NO_CONTENT).end();
+        }
     } catch (error) {
-        res.json({
-            success: false
-        });
+        next(error);
     }
 }
 
 /**
  * ムビチケユーザーで検索する
  *
- * @memberOf ReservationController
+ * @memberOf controller/reservation
  */
 export async function findByMvtkUser(_: Request, res: Response) {
     // ひとまずデモ段階では、一般予約を10件返す
@@ -150,7 +152,7 @@ export async function findByMvtkUser(_: Request, res: Response) {
 /**
  * IDで検索する
  *
- * @memberOf ReservationController
+ * @memberOf controller/reservation
  */
 export async function findById(req: Request, res: Response) {
     const id = req.params.id;

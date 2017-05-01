@@ -87,10 +87,10 @@ exports.transfer = transfer;
  *
  * @memberOf controller/reservation
  */
-function checkin(req, res) {
+function checkin(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            yield chevre_domain_1.Models.Reservation.findByIdAndUpdate(req.params.id, {
+            const reservation = yield chevre_domain_1.Models.Reservation.findByIdAndUpdate(req.params.id, {
                 $push: {
                     checkins: {
                         when: moment().toDate(),
@@ -100,14 +100,17 @@ function checkin(req, res) {
                     }
                 }
             }).exec();
-            res.json({
-                success: true
-            });
+            if (reservation === null) {
+                res.status(http_status_1.NOT_FOUND).json({
+                    data: null
+                });
+            }
+            else {
+                res.status(http_status_1.NO_CONTENT).end();
+            }
         }
         catch (error) {
-            res.json({
-                success: false
-            });
+            next(error);
         }
     });
 }
@@ -115,7 +118,7 @@ exports.checkin = checkin;
 /**
  * ムビチケユーザーで検索する
  *
- * @memberOf ReservationController
+ * @memberOf controller/reservation
  */
 function findByMvtkUser(_, res) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -143,7 +146,7 @@ exports.findByMvtkUser = findByMvtkUser;
 /**
  * IDで検索する
  *
- * @memberOf ReservationController
+ * @memberOf controller/reservation
  */
 function findById(req, res) {
     return __awaiter(this, void 0, void 0, function* () {

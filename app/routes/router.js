@@ -30,5 +30,7 @@ router.get('/screen/:id/show', (__1, __2, next) => {
 // router.all('/reservations', passport.authenticate('bearer', { session: false }), setLocale, ReservationController.findByMvtkUser);
 // router.all('/reservation/:id', passport.authenticate('bearer', { session: false }), setLocale, ReservationController.findById);
 // 入場
-router.post('/reservation/:id/checkin', setLocale_1.default, ReservationController.checkin);
+router.post('/reservation/:id/checkin', setLocale_1.default, (__1, __2, next) => {
+    next();
+}, validator_1.default, ReservationController.checkin);
 exports.default = router;
