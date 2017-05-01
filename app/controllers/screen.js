@@ -2,7 +2,7 @@
 /**
  * スクリーンコントローラー
  *
- * @namespace ScreenController
+ * @namespace controller/screen
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -15,20 +15,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const fs = require("fs-extra");
+const http_status_1 = require("http-status");
 /**
  * スクリーンの座席マップを生成する
  *
- * @memberOf ScreenController
+ * @memberOf controller/screen
  */
 function show(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            // スクリーンを取得
-            const count = yield chevre_domain_1.Models.Screen.count({
-                _id: req.params.id
-            }).exec();
+            // スクリーンの存在確認
+            const count = yield chevre_domain_1.Models.Screen.count({ _id: req.params.id }).exec();
             if (count === 0) {
-                res.type('txt').send('false');
+                res.status(http_status_1.NOT_FOUND);
+                res.json({
+                    data: null
+                });
                 return;
             }
             // スクリーン座席表HTMLを出力
@@ -37,11 +39,13 @@ function show(req, res, next) {
                     next(readFileErr);
                     return;
                 }
-                res.type('txt').send(data);
+                res.status(http_status_1.OK).json({
+                    data: data
+                });
             });
         }
         catch (error) {
-            res.send('false');
+            next(error);
         }
     });
 }

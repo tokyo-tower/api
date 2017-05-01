@@ -15,14 +15,16 @@ const ScreenController = require("../controllers/screen");
 // search performances
 router.get('/:locale/performance/search', setLocale_1.default, PerformanceController.search);
 // 予約メール転送
-router.post('/:locale/reservation/:id/transfer', setLocale_1.default, (req, _, next) => {
+router.post('/:locale/reservation/:id/transfer', setLocale_1.default, (req, __, next) => {
     // メールアドレスの有効性チェック
     req.checkBody('to', 'invalid to')
         .isEmail().withMessage(req.__('Message.invalid{{fieldName}}', { fieldName: req.__('Form.FieldName.email') }));
     next();
 }, validator_1.default, ReservationController.transfer);
 // show screen html
-router.get('/screen/:id/show', ScreenController.show);
+router.get('/screen/:id/show', (__1, __2, next) => {
+    next();
+}, validator_1.default, ScreenController.show);
 // router.post('/login', setLocale, AuthController.login);
 // 要認証サービス
 // router.all('/reservations', passport.authenticate('bearer', { session: false }), setLocale, ReservationController.findByMvtkUser);

@@ -21,7 +21,7 @@ router.get('/:locale/performance/search', setLocale, PerformanceController.searc
 router.post(
     '/:locale/reservation/:id/transfer',
     setLocale,
-    (req, _, next) => {
+    (req, __, next) => {
         // メールアドレスの有効性チェック
         req.checkBody('to', 'invalid to')
             .isEmail().withMessage(req.__('Message.invalid{{fieldName}}', { fieldName: req.__('Form.FieldName.email') }));
@@ -33,7 +33,14 @@ router.post(
 );
 
 // show screen html
-router.get('/screen/:id/show', ScreenController.show);
+router.get(
+    '/screen/:id/show',
+    (__1, __2, next) => {
+        next();
+    },
+    validator,
+    ScreenController.show
+);
 
 // router.post('/login', setLocale, AuthController.login);
 

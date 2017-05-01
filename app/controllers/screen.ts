@@ -1,29 +1,28 @@
 /**
  * スクリーンコントローラー
  *
- * @namespace ScreenController
+ * @namespace controller/screen
  */
 
 import { Models } from '@motionpicture/chevre-domain';
 import { NextFunction, Request, Response } from 'express';
 import * as fs from 'fs-extra';
+import { NOT_FOUND, OK } from 'http-status';
 
 /**
  * スクリーンの座席マップを生成する
  *
- * @memberOf ScreenController
+ * @memberOf controller/screen
  */
 export async function show(req: Request, res: Response, next: NextFunction) {
     try {
-        // スクリーンを取得
-        const count = await Models.Screen.count(
-            {
-                _id: req.params.id
-            }
-        ).exec();
-
+        // スクリーンの存在確認
+        const count = await Models.Screen.count({ _id: req.params.id }).exec();
         if (count === 0) {
-            res.type('txt').send('false');
+            res.status(NOT_FOUND);
+            res.json({
+                data: null
+            });
             return;
         }
 
@@ -34,9 +33,11 @@ export async function show(req: Request, res: Response, next: NextFunction) {
                 return;
             }
 
-            res.type('txt').send(data);
+            res.status(OK).json({
+                data: data
+            });
         });
     } catch (error) {
-        res.send('false');
+        next(error);
     }
 }
