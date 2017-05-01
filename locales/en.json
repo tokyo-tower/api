@@ -1,4 +1,26 @@
 {
+	"Form": {
+		"FieldName": {
+			"name": "Name (in half-width alphabets)",
+			"lastName": "Family name",
+			"firstName": "Given name",
+			"tel": "Telephone number",
+			"email": "Email address",
+			"emailConfirm": "Email Confirm",
+			"emailConfirmDomain": "Email Confirm(Domain)",
+			"password": "Password",
+			"paymentMethod": "Method of payment",
+			"userId": "User number",
+			"signature": "Signature",
+			"language": "Language",
+			"paymentNo": "Transaction number",
+			"last4DigitsOfTel": "Last 4 digits of tel",
+			"remember": "Enable automatic log in<br>from the next time",
+			"age": "Age",
+			"address": "Area of residence",
+			"gender": "Gender"
+		}
+	},
 	"Message": {
 		"Searching": "Searching...",
 		"PleaseSelectSeat": "Please select seats.",

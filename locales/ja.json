@@ -1,4 +1,26 @@
 {
+	"Form": {
+		"FieldName": {
+			"name": "お名前 (カタカナ)",
+			"lastName": "セイ",
+			"firstName": "メイ",
+			"tel": "電話番号",
+			"email": "メールアドレス",
+			"emailConfirm": "メールアドレス(確認)",
+			"emailConfirmDomain": "メールアドレス(確認)ドメイン",
+			"password": "パスワード",
+			"paymentMethod": "決済方法",
+			"userId": "ユーザー番号",
+			"signature": "署名",
+			"language": "使用言語",
+			"paymentNo": "購入番号",
+			"last4DigitsOfTel": "電話番号下4桁",
+			"remember": "次回から自動的にログインする",
+			"age": "年齢",
+			"address": "お住まいの地域",
+			"gender": "性別"
+		}
+	},
 	"Message": {
 		"Searching": "検索しています...",
 		"PleaseSelectSeat": "座席を選択してください",

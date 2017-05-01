@@ -20,7 +20,7 @@ export default (req: express.Request, res: express.Response, next: express.NextF
             const diff = process.hrtime(startTime);
             debug(
                 '%s benchmark: took %s seconds and %s nanoseconds. memoryUsage:%s (%s - %s)',
-                res.statusMessage, diff[0], diff[1], memoryUsage, startMemory.rss, endMemory.rss
+                res.statusCode, diff[0], diff[1], memoryUsage, startMemory.rss, endMemory.rss
             );
         });
     }

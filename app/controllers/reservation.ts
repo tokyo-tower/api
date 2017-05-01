@@ -1,41 +1,34 @@
 /**
  * 座席予約コントローラー
  *
- * @namespace ReservationController
+ * @namespace controller/reservation
  */
 
 import { Models } from '@motionpicture/chevre-domain';
 import { ReservationUtil } from '@motionpicture/chevre-domain';
 
 import * as conf from 'config';
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
+import { NO_CONTENT, NOT_FOUND } from 'http-status';
 import * as moment from 'moment';
 import * as sendgrid from 'sendgrid';
-import * as validator from 'validator';
+// import * as validator from 'validator';
 
 /**
  * 予約情報メールを送信する
  *
- * @memberOf ReservationController
+ * @memberOf controller/reservation
  */
-export async function email(req: Request, res: Response) {
-    const id = req.body.id;
-    const to = req.body.to;
-    // メールアドレスの有効性チェック
-    if (!validator.isEmail(to)) {
-        res.json({
-            success: false,
-            message: req.__('Message.invalid{{fieldName}}', { fieldName: req.__('Form.FieldName.email') })
-        });
-        return;
-    }
-
+export async function transfer(req: Request, res: Response, next: NextFunction) {
     try {
+        const id = req.params.id;
+        const to = req.body.to;
+
         const reservation = await Models.Reservation.findOne({ _id: id, status: ReservationUtil.STATUS_RESERVED }).exec();
         if (reservation === null) {
+            res.status(NOT_FOUND);
             res.json({
-                success: false,
-                message: req.__('Message.NotFound')
+                data: null
             });
             return;
         }
@@ -82,31 +75,22 @@ export async function email(req: Request, res: Response) {
                     });
 
                     await sg.API(request);
-                    res.json({
-                        success: true,
-                        message: ''
-                    });
+                    res.status(NO_CONTENT).end();
                 } catch (error) {
                     console.error('an email unsent.', error);
-                    res.json({
-                        success: false,
-                        message: error.message
-                    });
+                    next(error);
                 }
             }
         );
     } catch (error) {
-        res.json({
-            success: false,
-            message: req.__('Message.UnexpectedError')
-        });
+        next(error);
     }
 }
 
 /**
  * 入場履歴を追加する
  *
- * @memberOf ReservationController
+ * @memberOf controller/reservation
  */
 export async function checkin(req: Request, res: Response) {
     try {

@@ -3,6 +3,7 @@ const router = express.Router();
 
 // import * as passport from 'passport';
 import setLocale from '../middlewares/setLocale';
+import validator from '../middlewares/validator';
 
 // import * as AuthController from '../controllers/auth';
 import * as PerformanceController from '../controllers/performance';
@@ -16,8 +17,20 @@ import * as ScreenController from '../controllers/screen';
 // search performances
 router.get('/:locale/performance/search', setLocale, PerformanceController.search);
 
-// reservation email
-router.post('/:locale/reservation/email', setLocale, ReservationController.email);
+// 予約メール転送
+router.post(
+    '/:locale/reservation/:id/transfer',
+    setLocale,
+    (req, _, next) => {
+        // メールアドレスの有効性チェック
+        req.checkBody('to', 'invalid to')
+            .isEmail().withMessage(req.__('Message.invalid{{fieldName}}', { fieldName: req.__('Form.FieldName.email') }));
+
+        next();
+    },
+    validator,
+    ReservationController.transfer
+);
 
 // show screen html
 router.get('/screen/:id/show', ScreenController.show);

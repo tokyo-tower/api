@@ -2,7 +2,7 @@
 /**
  * 座席予約コントローラー
  *
- * @namespace ReservationController
+ * @namespace controller/reservation
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -16,32 +16,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const chevre_domain_1 = require("@motionpicture/chevre-domain");
 const chevre_domain_2 = require("@motionpicture/chevre-domain");
 const conf = require("config");
+const http_status_1 = require("http-status");
 const moment = require("moment");
 const sendgrid = require("sendgrid");
-const validator = require("validator");
+// import * as validator from 'validator';
 /**
  * 予約情報メールを送信する
  *
- * @memberOf ReservationController
+ * @memberOf controller/reservation
  */
-function email(req, res) {
+function transfer(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
-        const id = req.body.id;
-        const to = req.body.to;
-        // メールアドレスの有効性チェック
-        if (!validator.isEmail(to)) {
-            res.json({
-                success: false,
-                message: req.__('Message.invalid{{fieldName}}', { fieldName: req.__('Form.FieldName.email') })
-            });
-            return;
-        }
         try {
+            const id = req.params.id;
+            const to = req.body.to;
             const reservation = yield chevre_domain_1.Models.Reservation.findOne({ _id: id, status: chevre_domain_2.ReservationUtil.STATUS_RESERVED }).exec();
             if (reservation === null) {
+                res.status(http_status_1.NOT_FOUND);
                 res.json({
-                    success: false,
-                    message: req.__('Message.NotFound')
+                    data: null
                 });
                 return;
             }
@@ -75,33 +68,24 @@ function email(req, res) {
                         port: ''
                     });
                     yield sg.API(request);
-                    res.json({
-                        success: true,
-                        message: ''
-                    });
+                    res.status(http_status_1.NO_CONTENT).end();
                 }
                 catch (error) {
                     console.error('an email unsent.', error);
-                    res.json({
-                        success: false,
-                        message: error.message
-                    });
+                    next(error);
                 }
             }));
         }
         catch (error) {
-            res.json({
-                success: false,
-                message: req.__('Message.UnexpectedError')
-            });
+            next(error);
         }
     });
 }
-exports.email = email;
+exports.transfer = transfer;
 /**
  * 入場履歴を追加する
  *
- * @memberOf ReservationController
+ * @memberOf controller/reservation
  */
 function checkin(req, res) {
     return __awaiter(this, void 0, void 0, function* () {

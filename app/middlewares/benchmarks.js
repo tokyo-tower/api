@@ -15,7 +15,7 @@ exports.default = (req, res, next) => {
             const endMemory = process.memoryUsage();
             const memoryUsage = endMemory.rss - startMemory.rss;
             const diff = process.hrtime(startTime);
-            debug('%s benchmark: took %s seconds and %s nanoseconds. memoryUsage:%s (%s - %s)', res.statusMessage, diff[0], diff[1], memoryUsage, startMemory.rss, endMemory.rss);
+            debug('%s benchmark: took %s seconds and %s nanoseconds. memoryUsage:%s (%s - %s)', res.statusCode, diff[0], diff[1], memoryUsage, startMemory.rss, endMemory.rss);
         });
     }
     next();
