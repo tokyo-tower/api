@@ -1,10 +1,10 @@
-<%= title_ja %>
-<%= title_en %>
+<%= titleJa %>
+<%= titleEn %>
 
 <%= to %> 様
 Dear <%= to %>,
 
-<%- reservations[0].get('purchaser_name_ja') %>様よりCHEVRE_EVENT_NAMEのチケットが届いております。下記の内容をご確認ください。
+<%- reservations[0].get('purchaser_name').ja %>様よりCHEVRE_EVENT_NAMEのチケットが届いております。下記の内容をご確認ください。
 ご入場の際に本メールのQRコードが必要となりますので、ご鑑賞当日は必ずお持ちください。
 QRコードは画像保存または印刷していただくと便利です。
 <% if (reservations[0].get('purchaser_group') === ReservationUtil.PURCHASER_GROUP_STAFF) { %>
@@ -12,7 +12,7 @@ QRコードは画像保存または印刷していただくと便利です。
 <% } %>
 尚、お取り扱いには十分ご注意ください。
 ＊本メールはご鑑賞後まで、大切に保管してください。
-Please find the attached ticket for Tokyo International Film Festival from Mr./Ms. <%- reservations[0].get('purchaser_name_en') %> and confirm the following details.
+Please find the attached ticket for Tokyo International Film Festival from Mr./Ms. <%- reservations[0].get('purchaser_name').en %> and confirm the following details.
 Be sure to bring the QR code attached to the email with you when attending because it is required for admission. 
 It is recommended to save the QR code as image data or print it for your convenience. 
 <% if (reservations[0].get('purchaser_group') === ReservationUtil.PURCHASER_GROUP_STAFF) { %>
@@ -25,21 +25,21 @@ Handle carefully.
 --------------------
 
 作品名 (Title) :
-<%- reservations[0].get('film_name_ja') %>
-<%- reservations[0].get('film_name_en') %>
+<%- reservations[0].get('film_name').ja %>
+<%- reservations[0].get('film_name').en %>
 
 購入番号 (Transaction number) :
 <%- reservations[0].get('payment_no') %>
 
 劇場 (Location) :
-<%- reservations[0].get('location_str_ja') %>
-<%- reservations[0].get('theater_address_ja') %>
-<%- reservations[0].get('theater_name_en') %> <%- reservations[0].get('screen_name_en') %>
-<%- reservations[0].get('theater_address_en') %>
+<%- reservations[0].get('location_str').ja %>
+<%- reservations[0].get('theater_address').ja %>
+<%- reservations[0].get('theater_name').en %> <%- reservations[0].get('screen_name').en %>
+<%- reservations[0].get('theater_address').en %>
 
 時間 (Date and time) :
-<%- reservations[0].get('performance_start_str_ja') %>
-<%- reservations[0].get('performance_start_str_en') %>
+<%- reservations[0].get('performance_start_str').ja %>
+<%- reservations[0].get('performance_start_str').en %>
 
 
 ※学生（小学生は除く）の方は、劇場へのご入場の際に、必ず学生証または生徒手帳のご提示をお願いします。

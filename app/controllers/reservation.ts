@@ -33,9 +33,9 @@ export async function transfer(req: Request, res: Response, next: NextFunction) 
             return;
         }
 
-        const titleJa = `${reservation.get('purchaser_name_ja')}様よりCHEVRE_EVENT_NAMEのチケットが届いております`;
+        const titleJa = `${reservation.get('purchaser_name').ja}様よりCHEVRE_EVENT_NAMEのチケットが届いております`;
         // tslint:disable-next-line:max-line-length
-        const titleEn = `This is a notification that you have been invited to Tokyo International Film Festival by Mr./Ms. ${reservation.get('purchaser_name_en')}.`;
+        const titleEn = `This is a notification that you have been invited to Tokyo International Film Festival by Mr./Ms. ${reservation.get('purchaser_name').en}.`;
 
         res.render(
             'email/resevation',
@@ -45,8 +45,8 @@ export async function transfer(req: Request, res: Response, next: NextFunction) 
                 to: to,
                 moment: moment,
                 conf: conf,
-                title_ja: titleJa,
-                title_en: titleEn,
+                titleJa: titleJa,
+                titleEn: titleEn,
                 ReservationUtil: ReservationUtil
             },
             async (renderErr, text) => {
