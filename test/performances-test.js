@@ -24,11 +24,9 @@ describe('パフォーマンスルーターテスト 検索', () => {
             .set('authorization', 'Bearer ' + process.env.CHEVRE_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .send({})
-            .expect('Content-Type', /json/)
-            .expect(httpStatus.BAD_REQUEST)
+            .expect(httpStatus.FORBIDDEN)
             .then((response) => __awaiter(this, void 0, void 0, function* () {
-            assert(Array.isArray(response.body.errors));
-            assert.equal(response.body.errors[0].title, 'invalid scopes');
+            assert.equal(response.text, 'Forbidden');
         }));
     }));
     it('ok', () => __awaiter(this, void 0, void 0, function* () {

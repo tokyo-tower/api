@@ -18,11 +18,9 @@ describe('パフォーマンスルーターテスト 検索', () => {
             .set('Accept', 'application/json')
             .send({
             })
-            .expect('Content-Type', /json/)
-            .expect(httpStatus.BAD_REQUEST)
+            .expect(httpStatus.FORBIDDEN)
             .then(async (response) => {
-                assert(Array.isArray(response.body.errors));
-                assert.equal((<any[]>response.body.errors)[0].title, 'invalid scopes');
+                assert.equal(response.text, 'Forbidden');
             });
     });
 

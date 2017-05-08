@@ -2,7 +2,7 @@ import * as express from 'express';
 
 const router = express.Router();
 
-import requireScopes from '../middlewares/requireScopes';
+import requireScope from '../middlewares/requireScope';
 import setLocale from '../middlewares/setLocale';
 import validator from '../middlewares/validator';
 
@@ -18,7 +18,7 @@ import * as ScreenController from '../controllers/screen';
 // search performances
 router.get(
     '/:locale/performance/search',
-    requireScopes(['performances.readonly']),
+    requireScope(['performances.readonly']),
     setLocale,
     PerformanceController.search
 );
