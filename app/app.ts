@@ -13,12 +13,14 @@ import * as mongoose from 'mongoose';
 
 import mongooseConnectionOptions from '../mongooseConnectionOptions';
 
+import authentication from './middlewares/authentication';
 import benchmarks from './middlewares/benchmarks';
 import cors from './middlewares/cors';
 import errorHandler from './middlewares/errorHandler';
 import notFoundHandler from './middlewares/notFoundHandler';
 
 import devRouter from './routes/dev';
+import oauthRouter from './routes/oauth';
 import router from './routes/router';
 
 const debug = createDebug('chevre-api:app');
@@ -75,6 +77,10 @@ i18n.configure({
 app.use(i18n.init);
 
 // ルーティング
+app.use('/oauth', oauthRouter);
+
+app.use(authentication); // oauth
+
 app.use('/', router);
 
 if (process.env.NODE_ENV !== 'production') {

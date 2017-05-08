@@ -7,34 +7,17 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 const createDebug = require("debug");
-const jwt = require("jsonwebtoken");
-const passport = require("passport");
-const passportHttpBearer = require("passport-http-bearer");
+const jwt = require("express-jwt");
 const debug = createDebug('chevre-api:middleware:authentication');
-passport.use(new passportHttpBearer.Strategy(
-// {
-//     scope: ['admin'],
-//     realm: '',
-//     passReqToCallback: false
-// },
-(token, done) => {
-    debug('token is', token);
-    jwt.verify(token, process.env.SSKTS_API_SECRET, (err, decoded) => {
-        if (err !== null) {
-            done(null, false, {
-                message: err.message,
-                scope: ''
-            });
-        }
-        else {
-            debug('decoded is', decoded);
-            done(null, {}, {
-                message: '',
-                scope: ''
-            });
-        }
-    });
-}));
-exports.default = passport.authenticate('bearer', {
-    session: false
-});
+exports.default = [
+    jwt({
+        secret: process.env.CHEVRE_API_SECRET
+        // todo チェック項目を増強する
+        // audience: 'http://myapi/protected',
+        // issuer: 'http://issuer'
+    }),
+    (req, __, next) => {
+        debug('req.user:', req.user);
+        next();
+    }
+];

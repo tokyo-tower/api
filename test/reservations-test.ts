@@ -19,6 +19,15 @@ describe('予約ルーター 入場', () => {
 
         // 予約全削除
         await chevre.Models.Reservation.remove({}).exec();
+
+        await supertest(app)
+            .post('/oauth/token')
+            .send({
+                scopes: ['admin']
+            })
+            .then((response) => {
+                process.env.CHEVRE_API_ACCESS_TOKEN = response.body.access_token;
+            });
     });
 
     it('ok', async () => {
@@ -34,6 +43,8 @@ describe('予約ルーター 入場', () => {
 
         await supertest(app)
             .post(`/reservation/${reservationDoc.get('id')}/checkin`)
+            .set('authorization', 'Bearer ' + process.env.CHEVRE_API_ACCESS_TOKEN)
+            .set('Accept', 'application/json')
             .send({
                 where: 'here',
                 why: 'for test',
@@ -53,6 +64,8 @@ describe('予約ルーター 入場', () => {
     it('予約存在しない', async () => {
         await supertest(app)
             .post('/reservation/5905b0003431b21604da462a/checkin')
+            .set('authorization', 'Bearer ' + process.env.CHEVRE_API_ACCESS_TOKEN)
+            .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.NOT_FOUND);
     });
@@ -62,6 +75,15 @@ describe('予約ルーター メール転送', () => {
     let connection: mongoose.Connection;
     before(async () => {
         connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+
+        await supertest(app)
+            .post('/oauth/token')
+            .send({
+                scopes: ['admin']
+            })
+            .then((response) => {
+                process.env.CHEVRE_API_ACCESS_TOKEN = response.body.access_token;
+            });
     });
 
     it('ok', async () => {
@@ -75,6 +97,8 @@ describe('予約ルーター メール転送', () => {
 
         await supertest(app)
             .post(`/ja/reservation/${reservationDoc.get('id')}/transfer`)
+            .set('authorization', 'Bearer ' + process.env.CHEVRE_API_ACCESS_TOKEN)
+            .set('Accept', 'application/json')
             .send({
                 to: 'hello@motionpicture.jp'
             })
@@ -88,6 +112,8 @@ describe('予約ルーター メール転送', () => {
     it('メールアドレス不適切', async () => {
         await supertest(app)
             .post('/ja/reservation/5905b0003431b21604da462a/transfer')
+            .set('authorization', 'Bearer ' + process.env.CHEVRE_API_ACCESS_TOKEN)
+            .set('Accept', 'application/json')
             .send({
                 to: 'invalidemail'
             })
@@ -98,6 +124,8 @@ describe('予約ルーター メール転送', () => {
     it('予約存在しない', async () => {
         await supertest(app)
             .post('/ja/reservation/5905b0003431b21604da462a/transfer')
+            .set('authorization', 'Bearer ' + process.env.CHEVRE_API_ACCESS_TOKEN)
+            .set('Accept', 'application/json')
             .send({
                 to: 'hello@motionpicture.jp'
             })

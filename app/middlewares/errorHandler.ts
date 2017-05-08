@@ -5,7 +5,7 @@
  * 現時点では、雑にコントロールしてある
  */
 import { NextFunction, Request, Response } from 'express';
-import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from 'http-status';
+import { BAD_REQUEST, INTERNAL_SERVER_ERROR, UNAUTHORIZED } from 'http-status';
 import logger from '../logger';
 
 export default (err: any, __: Request, res: Response, next: NextFunction) => {
@@ -18,14 +18,19 @@ export default (err: any, __: Request, res: Response, next: NextFunction) => {
 
     // エラーオブジェクトの場合は、キャッチされた例外でクライント依存のエラーの可能性が高い
     if (err instanceof Error) {
-        res.status(BAD_REQUEST).json({
-            errors: [
-                {
-                    title: err.name,
-                    detail: err.message
-                }
-            ]
-        });
+        // oauth認証失敗
+        if (err.name === 'UnauthorizedError') {
+            res.status(UNAUTHORIZED).end('Unauthorized');
+        } else {
+            res.status(BAD_REQUEST).json({
+                errors: [
+                    {
+                        title: err.name,
+                        detail: err.message
+                    }
+                ]
+            });
+        }
     } else {
         res.status(INTERNAL_SERVER_ERROR).json({
             errors: [

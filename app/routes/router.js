@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const router = express.Router();
-// import * as passport from 'passport';
+const requireScopes_1 = require("../middlewares/requireScopes");
 const setLocale_1 = require("../middlewares/setLocale");
 const validator_1 = require("../middlewares/validator");
 // import * as AuthController from '../controllers/auth';
@@ -13,7 +13,7 @@ const ScreenController = require("../controllers/screen");
  * URLルーティング
  */
 // search performances
-router.get('/:locale/performance/search', setLocale_1.default, PerformanceController.search);
+router.get('/:locale/performance/search', requireScopes_1.default(['performances.readonly']), setLocale_1.default, PerformanceController.search);
 // 予約メール転送
 router.post('/:locale/reservation/:id/transfer', setLocale_1.default, (req, __, next) => {
     // メールアドレスの有効性チェック

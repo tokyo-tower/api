@@ -1,7 +1,8 @@
 import * as express from 'express';
+
 const router = express.Router();
 
-// import * as passport from 'passport';
+import requireScopes from '../middlewares/requireScopes';
 import setLocale from '../middlewares/setLocale';
 import validator from '../middlewares/validator';
 
@@ -15,7 +16,12 @@ import * as ScreenController from '../controllers/screen';
  */
 
 // search performances
-router.get('/:locale/performance/search', setLocale, PerformanceController.search);
+router.get(
+    '/:locale/performance/search',
+    requireScopes(['performances.readonly']),
+    setLocale,
+    PerformanceController.search
+);
 
 // 予約メール転送
 router.post(

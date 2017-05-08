@@ -12,11 +12,13 @@ const helmet = require("helmet");
 const i18n = require("i18n");
 const mongoose = require("mongoose");
 const mongooseConnectionOptions_1 = require("../mongooseConnectionOptions");
+const authentication_1 = require("./middlewares/authentication");
 const benchmarks_1 = require("./middlewares/benchmarks");
 const cors_1 = require("./middlewares/cors");
 const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const dev_1 = require("./routes/dev");
+const oauth_1 = require("./routes/oauth");
 const router_1 = require("./routes/router");
 const debug = createDebug('chevre-api:app');
 const app = express();
@@ -63,6 +65,8 @@ i18n.configure({
 // i18n の設定を有効化
 app.use(i18n.init);
 // ルーティング
+app.use('/oauth', oauth_1.default);
+app.use(authentication_1.default); // oauth
 app.use('/', router_1.default);
 if (process.env.NODE_ENV !== 'production') {
     app.use('/dev', dev_1.default);

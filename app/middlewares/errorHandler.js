@@ -10,14 +10,20 @@ exports.default = (err, __, res, next) => {
     }
     // エラーオブジェクトの場合は、キャッチされた例外でクライント依存のエラーの可能性が高い
     if (err instanceof Error) {
-        res.status(http_status_1.BAD_REQUEST).json({
-            errors: [
-                {
-                    title: err.name,
-                    detail: err.message
-                }
-            ]
-        });
+        // oauth認証失敗
+        if (err.name === 'UnauthorizedError') {
+            res.status(http_status_1.UNAUTHORIZED).end('Unauthorized');
+        }
+        else {
+            res.status(http_status_1.BAD_REQUEST).json({
+                errors: [
+                    {
+                        title: err.name,
+                        detail: err.message
+                    }
+                ]
+            });
+        }
     }
     else {
         res.status(http_status_1.INTERNAL_SERVER_ERROR).json({

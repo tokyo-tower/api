@@ -6,39 +6,23 @@
  */
 
 import * as createDebug from 'debug';
-import * as jwt from 'jsonwebtoken';
-import * as passport from 'passport';
-import * as passportHttpBearer from 'passport-http-bearer';
+import { NextFunction, Request, Response } from 'express';
+import * as jwt from 'express-jwt';
 
 const debug = createDebug('chevre-api:middleware:authentication');
 
-passport.use(new passportHttpBearer.Strategy(
-    // {
-    //     scope: ['admin'],
-    //     realm: '',
-    //     passReqToCallback: false
-    // },
-    (token, done) => {
-        debug('token is', token);
+export default [
+    jwt(
+        {
+            secret: process.env.CHEVRE_API_SECRET
+            // todo チェック項目を増強する
+            // audience: 'http://myapi/protected',
+            // issuer: 'http://issuer'
+        }
+    ),
+    (req: Request, __: Response, next: NextFunction) => {
+        debug('req.user:', req.user);
 
-        jwt.verify(token, <string>process.env.SSKTS_API_SECRET, (err, decoded) => {
-            if (err !== null) {
-                done(null, false, {
-                    message: err.message,
-                    scope: ''
-                });
-            } else {
-                debug('decoded is', decoded);
-                done(null, {}, {
-                    message: '',
-                    scope: ''
-                });
-
-            }
-        });
+        next();
     }
-));
-
-export default passport.authenticate('bearer', {
-    session: false
-});
+];
