@@ -22,7 +22,11 @@ describe('スクリーンルーター 座席html取得', () => {
         yield supertest(app)
             .post('/oauth/token')
             .send({
-            scopes: ['admin']
+            grant_type: 'password',
+            username: 'motionpicture',
+            password: 'motionpicture',
+            client_id: 'chevre-frontend',
+            scope: ['admin']
         })
             .then((response) => {
             process.env.CHEVRE_API_ACCESS_TOKEN = response.body.access_token;

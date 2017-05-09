@@ -4,6 +4,7 @@
  * @ignore
  */
 
+// import * as chevre from '@motionpicture/chevre-domain';
 import * as createDebug from 'debug';
 import * as express from 'express';
 import * as jwt from 'jsonwebtoken';
@@ -15,11 +16,14 @@ const debug = createDebug('chevre-api:*');
 // todo どこで定義するか
 const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 1800;
 
-router.all(
+router.post(
     '/token',
     (__1, __2, next) => {
-        // req.checkBody('assertion', 'invalid assertion').notEmpty().withMessage('assertion is required')
-        //     .equals(process.env.SSKTS_API_REFRESH_TOKEN);
+        // req.checkBody('grant_type', 'invalid grant_type').notEmpty().withMessage('assertion is required')
+        //     .equals('password');
+        // req.checkBody('username', 'invalid username').notEmpty().withMessage('username is required');
+        // req.checkBody('password', 'invalid password').notEmpty().withMessage('password is required');
+        // req.checkBody('client_id', 'invalid client_id').notEmpty().withMessage('client_id is required');
         // req.checkBody('scope', 'invalid scope').notEmpty().withMessage('scope is required')
         //     .equals('admin');
 
@@ -28,9 +32,27 @@ router.all(
     validator,
     async (req, res, next) => {
         try {
+            // client_idの存在確認
+            // const numberOfClient = await chevre.Models.Client.count({ _id: req.body.client_id }).exec();
+            // debug('numberOfClient:', numberOfClient);
+            // if (numberOfClient === 0) {
+            //     throw new Error('client not found');
+            // }
+
+            // usernameとpassword照合
+            // const owner = await chevre.Models.Owner.findOne({ username: req.body.username }).exec();
+            // if (owner === null) {
+            //     throw new Error('owner not found');
+            // }
+            // if (owner.get('password_hash') !== chevre.CommonUtil.createHash(req.body.password, owner.get('password_salt'))) {
+            //     throw new Error('invalid username or password');
+            // }
+
+            // jsonwebtoken生成
+            // todo user情報をトークンに含める必要あり
             jwt.sign(
                 {
-                    scopes: req.body.scopes
+                    scope: req.body.scope
                 },
                 process.env.CHEVRE_API_SECRET,
                 {

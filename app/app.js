@@ -12,7 +12,7 @@ const helmet = require("helmet");
 const i18n = require("i18n");
 const mongoose = require("mongoose");
 const mongooseConnectionOptions_1 = require("../mongooseConnectionOptions");
-const authentication_1 = require("./middlewares/authentication");
+// import authentication from './middlewares/authentication';
 const benchmarks_1 = require("./middlewares/benchmarks");
 const cors_1 = require("./middlewares/cors");
 const errorHandler_1 = require("./middlewares/errorHandler");
@@ -66,7 +66,8 @@ i18n.configure({
 app.use(i18n.init);
 // ルーティング
 app.use('/oauth', oauth_1.default);
-app.use(authentication_1.default); // oauth
+// todo oauth認証を導入する
+// app.use(authentication); // oauth
 app.use('/', router_1.default);
 if (process.env.NODE_ENV !== 'production') {
     app.use('/dev', dev_1.default);

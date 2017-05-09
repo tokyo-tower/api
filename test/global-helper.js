@@ -13,15 +13,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const httpStatus = require("http-status");
 const supertest = require("supertest");
 const app = require("../app/app");
 before(() => __awaiter(this, void 0, void 0, function* () {
+    // todo テスト用のオーナーとクライアントを生成
     yield supertest(app)
         .post('/oauth/token')
         .send({
-        // assertion: process.env.SSKTS_API_REFRESH_TOKEN,
-        scopes: ['admin']
+        grant_type: 'password',
+        username: 'motionpicture',
+        password: 'motionpicture',
+        client_id: 'chevre-frontend',
+        scope: ['admin']
     })
+        .expect(httpStatus.OK)
         .then((response) => {
         process.env.CHEVRE_API_ACCESS_TOKEN = response.body.access_token;
     });

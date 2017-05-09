@@ -17,11 +17,14 @@ type IScope = string;
 
 export default (permittedScopes: IScope[]) => {
     return (req: Request, res: Response, next: NextFunction) => {
-        debug('req.user.scopes:', req.user.scopes);
+        debug('req.user.scope:', req.user.scope);
 
         // スコープチェック
-        debug('checking scopes requirements...', permittedScopes);
-        const permittedUserScope = permittedScopes.find((permittedScope: string) => req.user.scopes.indexOf(permittedScope) >= 0);
+        debug('checking scope requirements...', permittedScopes);
+        if (!Array.isArray(req.user.scope)) {
+            next(new Error('invalid scope'));
+        }
+        const permittedUserScope = permittedScopes.find((permittedScope: string) => req.user.scope.indexOf(permittedScope) >= 0);
         if (permittedUserScope === undefined) {
             res.status(FORBIDDEN).end('Forbidden');
             return;

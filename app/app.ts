@@ -13,7 +13,7 @@ import * as mongoose from 'mongoose';
 
 import mongooseConnectionOptions from '../mongooseConnectionOptions';
 
-import authentication from './middlewares/authentication';
+// import authentication from './middlewares/authentication';
 import benchmarks from './middlewares/benchmarks';
 import cors from './middlewares/cors';
 import errorHandler from './middlewares/errorHandler';
@@ -79,7 +79,8 @@ app.use(i18n.init);
 // ルーティング
 app.use('/oauth', oauthRouter);
 
-app.use(authentication); // oauth
+// todo oauth認証を導入する
+// app.use(authentication); // oauth
 
 app.use('/', router);
 

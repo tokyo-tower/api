@@ -28,7 +28,11 @@ describe('予約ルーター 入場', () => {
         yield supertest(app)
             .post('/oauth/token')
             .send({
-            scopes: ['admin']
+            grant_type: 'password',
+            username: 'motionpicture',
+            password: 'motionpicture',
+            client_id: 'chevre-frontend',
+            scope: ['admin']
         })
             .then((response) => {
             process.env.CHEVRE_API_ACCESS_TOKEN = response.body.access_token;
@@ -77,7 +81,11 @@ describe('予約ルーター メール転送', () => {
         yield supertest(app)
             .post('/oauth/token')
             .send({
-            scopes: ['admin']
+            grant_type: 'password',
+            username: 'motionpicture',
+            password: 'motionpicture',
+            client_id: 'chevre-frontend',
+            scope: ['admin']
         })
             .then((response) => {
             process.env.CHEVRE_API_ACCESS_TOKEN = response.body.access_token;

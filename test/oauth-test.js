@@ -1,6 +1,6 @@
 "use strict";
 /**
- * パフォーマンスルーターテスト
+ * oauthルーターテスト
  *
  * @ignore
  */
@@ -17,29 +17,35 @@ const assert = require("assert");
 const httpStatus = require("http-status");
 const supertest = require("supertest");
 const app = require("../app/app");
-describe('パフォーマンスルーターテスト 検索', () => {
-    // it('スコープ不足', async () => {
+describe('oauthルーターテスト アクセストークン発行', () => {
+    // it('存在しないクライアント', async () => {
     //     await supertest(app)
     //         .post('/oauth/token')
     //         .send({
     //             grant_type: 'password',
-    //             username: 'motionpicture',
-    //             password: 'motionpicture',
-    //             client_id: 'chevre-frontend',
-    //             scope: []
+    //             username: 'xxx',
+    //             password: 'xxx',
+    //             client_id: 'xxx',
+    //             scope: ['admin']
     //         })
+    //         .expect(httpStatus.BAD_REQUEST)
     //         .then((response) => {
-    //             process.env.CHEVRE_API_ACCESS_TOKEN = response.body.access_token;
+    //             assert(Array.isArray(response.body.errors));
     //         });
+    // });
+    // it('ユーザー認証失敗', async () => {
     //     await supertest(app)
-    //         .get('/ja/performance/search')
-    //         .set('authorization', 'Bearer ' + process.env.CHEVRE_API_ACCESS_TOKEN)
-    //         .set('Accept', 'application/json')
+    //         .post('/oauth/token')
     //         .send({
+    //             grant_type: 'password',
+    //             username: 'password',
+    //             password: 'password',
+    //             client_id: 'chevre-frontend',
+    //             scope: ['admin']
     //         })
-    //         .expect(httpStatus.FORBIDDEN)
-    //         .then(async (response) => {
-    //             assert.equal(response.text, 'Forbidden');
+    //         .expect(httpStatus.BAD_REQUEST)
+    //         .then((response) => {
+    //             assert(Array.isArray(response.body.errors));
     //         });
     // });
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
@@ -50,20 +56,11 @@ describe('パフォーマンスルーターテスト 検索', () => {
             username: 'motionpicture',
             password: 'motionpicture',
             client_id: 'chevre-frontend',
-            scope: ['performances.readonly']
+            scope: ['admin']
         })
-            .then((response) => {
-            process.env.CHEVRE_API_ACCESS_TOKEN = response.body.access_token;
-        });
-        yield supertest(app)
-            .get('/ja/performance/search')
-            .set('authorization', 'Bearer ' + process.env.CHEVRE_API_ACCESS_TOKEN)
-            .set('Accept', 'application/json')
-            .send({})
-            .expect('Content-Type', /json/)
             .expect(httpStatus.OK)
             .then((response) => {
-            assert(Array.isArray(response.body.data));
+            assert.equal(typeof response.body.access_token, 'string');
         });
     }));
 });
