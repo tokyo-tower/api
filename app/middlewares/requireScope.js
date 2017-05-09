@@ -7,7 +7,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const createDebug = require("debug");
 const http_status_1 = require("http-status");
-const debug = createDebug('chevre-api:middleware:authentication');
+const debug = createDebug('ttts-api:middleware:authentication');
 exports.default = (permittedScopes) => {
     return (req, res, next) => {
         debug('req.user.scope:', req.user.scope);

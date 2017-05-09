@@ -4,13 +4,13 @@
  * @namespace controller/performance
  */
 
-import { Models, PerformanceStatusesModel } from '@motionpicture/chevre-domain';
+import { Models, PerformanceStatusesModel } from '@motionpicture/ttts-domain';
 import * as createDebug from 'debug';
 import { Request, Response } from 'express';
 import * as moment from 'moment';
 import * as _ from 'underscore';
 
-const debug = createDebug('chevre-api:controller:performance');
+const debug = createDebug('ttts-api:controller:performance');
 const DEFAULT_RADIX = 10;
 
 /**

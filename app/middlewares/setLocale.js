@@ -6,7 +6,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 const createDebug = require("debug");
-const debug = createDebug('chevre-api:middleware:setLocale');
+const debug = createDebug('ttts-api:middleware:setLocale');
 // tslint:disable-next-line:variable-name
 exports.default = (req, _res, next) => {
     // todo URLパラメータで言語管理

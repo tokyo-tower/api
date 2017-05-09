@@ -13,7 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const chevre_domain_1 = require("@motionpicture/chevre-domain");
+const ttts_domain_1 = require("@motionpicture/ttts-domain");
 const crypto = require("crypto");
 /**
  * ログイン
@@ -25,7 +25,7 @@ function login(_, res) {
         const SIZE = 64;
         const token = crypto.randomBytes(SIZE).toString('hex');
         try {
-            const authentication = yield chevre_domain_1.Models.Authentication.findOneAndUpdate({
+            const authentication = yield ttts_domain_1.Models.Authentication.findOneAndUpdate({
                 mvtk_kiin_cd: '00000775' // テスト用会員コード
             }, {
                 token: token

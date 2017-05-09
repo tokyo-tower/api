@@ -34,7 +34,7 @@ describe('oauthルーターテスト アクセストークン発行', () => {
     //             grant_type: 'password',
     //             username: 'password',
     //             password: 'password',
-    //             client_id: 'chevre-frontend',
+    //             client_id: 'ttts-frontend',
     //             scope: ['admin']
     //         })
     //         .expect(httpStatus.BAD_REQUEST)
@@ -50,7 +50,7 @@ describe('oauthルーターテスト アクセストークン発行', () => {
                 grant_type: 'password',
                 username: 'motionpicture',
                 password: 'motionpicture',
-                client_id: 'chevre-frontend',
+                client_id: 'ttts-frontend',
                 scope: ['admin']
             })
             .expect(httpStatus.OK)

@@ -9,7 +9,7 @@ import { BAD_REQUEST, INTERNAL_SERVER_ERROR, UNAUTHORIZED } from 'http-status';
 import logger from '../logger';
 
 export default (err: any, __: Request, res: Response, next: NextFunction) => {
-    logger.error('chevre-api:iddleware:errorHandler', err);
+    logger.error('ttts-api:iddleware:errorHandler', err);
 
     if (res.headersSent) {
         next(err);

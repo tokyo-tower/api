@@ -24,11 +24,11 @@ before(() => __awaiter(this, void 0, void 0, function* () {
         grant_type: 'password',
         username: 'motionpicture',
         password: 'motionpicture',
-        client_id: 'chevre-frontend',
+        client_id: 'ttts-frontend',
         scope: ['admin']
     })
         .expect(httpStatus.OK)
         .then((response) => {
-        process.env.CHEVRE_API_ACCESS_TOKEN = response.body.access_token;
+        process.env.TTTS_API_ACCESS_TOKEN = response.body.access_token;
     });
 }));

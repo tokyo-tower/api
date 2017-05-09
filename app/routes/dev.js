@@ -11,7 +11,7 @@ const createDebug = require("debug");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const mongooseConnectionOptions_1 = require("../../mongooseConnectionOptions");
-const debug = createDebug('chevre-api:routes:dev');
+const debug = createDebug('ttts-api:routes:dev');
 router.get('/500', () => {
     throw new Error('500 manually');
 });

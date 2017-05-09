@@ -9,12 +9,12 @@ import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
 import * as jwt from 'express-jwt';
 
-const debug = createDebug('chevre-api:middleware:authentication');
+const debug = createDebug('ttts-api:middleware:authentication');
 
 export default [
     jwt(
         {
-            secret: process.env.CHEVRE_API_SECRET
+            secret: process.env.TTTS_API_SECRET
             // todo チェック項目を増強する
             // audience: 'http://myapi/protected',
             // issuer: 'http://issuer'

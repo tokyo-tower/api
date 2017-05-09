@@ -8,10 +8,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const createDebug = require("debug");
 const jwt = require("express-jwt");
-const debug = createDebug('chevre-api:middleware:authentication');
+const debug = createDebug('ttts-api:middleware:authentication');
 exports.default = [
     jwt({
-        secret: process.env.CHEVRE_API_SECRET
+        secret: process.env.TTTS_API_SECRET
         // todo チェック項目を増強する
         // audience: 'http://myapi/protected',
         // issuer: 'http://issuer'

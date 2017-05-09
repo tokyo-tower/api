@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/chevre-domain": "^9.0.1",
+    "@motionpicture/ttts-domain": "^3.0.0",
     "body-parser": "^1.17.1",
     "config": "^1.26.1",
     "debug": "^2.6.6",
@@ -28,7 +28,7 @@
     "validator": "^7.0.0",
     "winston": "^2.3.1"
   },
-  "description": "This is a repogitory for CHEVRE API.",
+  "description": "This is a repogitory for TTTS API.",
   "devDependencies": {
     "@types/body-parser": "0.0.34",
     "@types/config": "0.0.32",
@@ -63,7 +63,7 @@
   "keywords": [],
   "license": "UNLICENSED",
   "main": "index.js",
-  "name": "chevre-api",
+  "name": "ttts-api",
   "private": true,
   "repository": {},
   "scripts": {
