@@ -119,7 +119,12 @@ export async function search(req: Request, res: Response) {
 
     // 空席情報を追加
     const performanceStatuses = await PerformanceStatusesModel.find();
-
+    const getStatus = (id: string) => {
+        if (performanceStatuses !== undefined && performanceStatuses.hasOwnProperty(id)) {
+            return (<any>performanceStatuses)[id];
+        }
+        return null;
+    };
     const data = performances.map((performance) => {
         return {
             type: 'performances',
@@ -128,7 +133,8 @@ export async function search(req: Request, res: Response) {
                 day: performance.day,
                 open_time: performance.open_time,
                 start_time: performance.start_time,
-                seat_status: (performanceStatuses !== undefined) ? performanceStatuses.getStatus(performance._id.toString()) : null,
+                //seat_status: (performanceStatuses !== undefined) ? performanceStatuses.getStatus(performance._id.toString()) : null,
+                seat_status: getStatus(performance._id.toString()),
                 theater_name: performance.theater_name[req.getLocale()],
                 screen_name: performance.screen_name[req.getLocale()],
                 film: performance.film._id,
