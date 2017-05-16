@@ -1,0 +1,41 @@
+{
+  "name": "ttts-api-mock",
+  "version": "1.0.0",
+  "description": "ttts api mock",
+  "scripts": {
+    "clean": "rimraf docs/**/* npm-debug.log*",
+    "docs": "gulp docs",
+    "docs:watch": "gulp watch",
+    "serve": "drakov --config drakovrc.js",
+    "start": "npm run serve",
+    "start:development": "npm run docs && concurrently \"npm run docs:watch\" \"npm run serve\"",
+    "test": "mocha --no-timeouts --recursive",
+    "preversion": "npm run clean && npm run docs && npm test",
+    "version": "git add -A",
+    "postversion": "git push origin"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://m-p.backlog.jp/git/TTTS/api-mock.git"
+  },
+  "author": "Motionpicture co.,ltd.",
+  "contributors": [
+    {
+      "name": "Tetsu Yamazaki",
+      "email": "yamazaki@motionpicture.jp"
+    }
+  ],
+  "license": "UNLICENSED",
+  "dependencies": {
+    "drakov": "^1.0.4"
+  },
+  "devDependencies": {
+    "aglio": "^2.3.0",
+    "concurrently": "^3.4.0",
+    "gulp": "^3.9.1",
+    "gulp-aglio": "0.0.10",
+    "mocha": "^3.3.0",
+    "request": "^2.81.0",
+    "rimraf": "^2.6.1"
+  }
+}
