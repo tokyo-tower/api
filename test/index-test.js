@@ -39,6 +39,7 @@ describe('/oauth/token', () => {
             body: {
                 grant_type: 'client_credintials',
                 client_id: 'motionpicture',
+                client_secret: 'motionpicture',
                 scope: [
                     'performances.readonly'
                 ]

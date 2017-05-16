@@ -5,8 +5,6 @@ HOST: http://ttts-api-mock-development.ap-northeast-1.elasticbeanstalk.com
 
 東京タワーチケットシステムが提供するapiは、チケットシステムデータとのやりとりを行うアプリケーション開発を可能にするためのものです。
 
-パブリックなデータには、マスターデータ等が含まれます。
-
 基本仕様は以下に従っています。
 
 [JSON API](http://jsonapi.org/)
@@ -49,18 +47,11 @@ errors[].detail           | String                    | 詳細なエラー内容
 
 
 
-<!-- include(routes/oauth.token.md) -->
+<!-- include(routes/oauth.md) -->
 
-# Group Reservations
-予約リソース
+<!-- include(routes/authorizations.md) -->
 
-<!-- include(routes/reservations.authorize.md) -->
-<!-- include(routes/reservations.unauthorize.md) -->
-<!-- include(routes/reservations.confirm.md) -->
-<!-- include(routes/reservations.cancel.md) -->
-
-# Group Performances
-パフォーマンスリソース
+<!-- include(routes/reservations.md) -->
 
 <!-- include(routes/performances.md) -->
 

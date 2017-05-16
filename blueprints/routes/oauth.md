@@ -25,7 +25,10 @@
 + Request クライアント認証 (application/json)
     + Attributes
         + `grant_type`: `client_credintials` (string, required) - 認証タイプ(固定値)
-        + `client_id`: `motionpicture` (string, required) - クライアントID(api利用時にmotionpictureが発行するのでアプリケーション側で大切に保管してください)
+        + `client_id`: `motionpicture` (string, required)
+            クライアントID(api利用時にmotionpictureが発行するのでアプリケーション側で大切に保管してください)
+        + `client_secret`: `motionpicture` (string, required)
+            クライアントシークレット(api利用時にmotionpictureが発行するのでアプリケーション側で大切に保管してください)
         + `scope` (array[string], fixed-type, required) - 必要なスコープは、各APIの説明を参照してください。
             + `performances.readonly` (string, required)
 
