@@ -43,11 +43,11 @@ describe('予約ルーター 入場', () => {
             status: TTTS.ReservationUtil.STATUS_RESERVED
         });
 
-        assert(!reservationDoc.get('checked_in'));
+        assert(reservationDoc.get('checked_in') === false);
 
         await supertest(app)
             .post(`/reservation/${reservationDoc.get('id')}/checkin`)
-            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
                 where: 'here',
@@ -57,18 +57,18 @@ describe('予約ルーター 入場', () => {
             .expect(httpStatus.NO_CONTENT)
             .then(async () => {
                 // 入場履歴が追加されているかどうか確認
-                reservationDoc = await reservationModel.findById(reservationDoc.get('id'));
+                reservationDoc = await reservationModel.findById(reservationDoc.get('id')).exec();
                 assert(reservationDoc.get('checked_in'));
 
                 // テストデータ削除
-                reservationDoc.remove();
+                await reservationDoc.remove();
             });
     });
 
     it('予約存在しない', async () => {
         await supertest(app)
             .post('/reservation/5905b0003431b21604da462a/checkin')
-            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.NOT_FOUND);
@@ -105,7 +105,7 @@ describe('予約ルーター メール転送', () => {
 
         await supertest(app)
             .post(`/ja/reservation/${reservationDoc.get('id')}/transfer`)
-            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
                 to: 'hello@motionpicture.jp'
@@ -113,14 +113,14 @@ describe('予約ルーター メール転送', () => {
             .expect(httpStatus.NO_CONTENT)
             .then(async () => {
                 // テストデータ削除
-                reservationDoc.remove();
+                await reservationDoc.remove();
             });
     });
 
     it('メールアドレス不適切', async () => {
         await supertest(app)
             .post('/ja/reservation/5905b0003431b21604da462a/transfer')
-            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
                 to: 'invalidemail'
@@ -132,7 +132,7 @@ describe('予約ルーター メール転送', () => {
     it('予約存在しない', async () => {
         await supertest(app)
             .post('/ja/reservation/5905b0003431b21604da462a/transfer')
-            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
                 to: 'hello@motionpicture.jp'

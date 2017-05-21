@@ -57,7 +57,7 @@ describe('パフォーマンスルーターテスト 検索', () => {
         });
         yield supertest(app)
             .get('/ja/performance/search')
-            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({})
             .expect('Content-Type', /json/)

@@ -35,7 +35,7 @@ describe('スクリーンルーター 座席html取得', () => {
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
             .get('/screen/00101/show')
-            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({})
             .expect(httpStatus.OK)
@@ -46,7 +46,7 @@ describe('スクリーンルーター 座席html取得', () => {
     it('存在しない', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
             .get('/screen/xxx/show')
-            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.NOT_FOUND);

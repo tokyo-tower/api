@@ -46,10 +46,10 @@ describe('予約ルーター 入場', () => {
             seat_code: 'xxx',
             status: TTTS.ReservationUtil.STATUS_RESERVED
         });
-        assert(!reservationDoc.get('checked_in'));
+        assert(reservationDoc.get('checked_in') === false);
         yield supertest(app)
             .post(`/reservation/${reservationDoc.get('id')}/checkin`)
-            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
             where: 'here',
@@ -59,16 +59,16 @@ describe('予約ルーター 入場', () => {
             .expect(httpStatus.NO_CONTENT)
             .then(() => __awaiter(this, void 0, void 0, function* () {
             // 入場履歴が追加されているかどうか確認
-            reservationDoc = yield reservationModel.findById(reservationDoc.get('id'));
+            reservationDoc = yield reservationModel.findById(reservationDoc.get('id')).exec();
             assert(reservationDoc.get('checked_in'));
             // テストデータ削除
-            reservationDoc.remove();
+            yield reservationDoc.remove();
         }));
     }));
     it('予約存在しない', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
             .post('/reservation/5905b0003431b21604da462a/checkin')
-            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.NOT_FOUND);
@@ -101,7 +101,7 @@ describe('予約ルーター メール転送', () => {
         });
         yield supertest(app)
             .post(`/ja/reservation/${reservationDoc.get('id')}/transfer`)
-            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
             to: 'hello@motionpicture.jp'
@@ -109,13 +109,13 @@ describe('予約ルーター メール転送', () => {
             .expect(httpStatus.NO_CONTENT)
             .then(() => __awaiter(this, void 0, void 0, function* () {
             // テストデータ削除
-            reservationDoc.remove();
+            yield reservationDoc.remove();
         }));
     }));
     it('メールアドレス不適切', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
             .post('/ja/reservation/5905b0003431b21604da462a/transfer')
-            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
             to: 'invalidemail'
@@ -126,7 +126,7 @@ describe('予約ルーター メール転送', () => {
     it('予約存在しない', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
             .post('/ja/reservation/5905b0003431b21604da462a/transfer')
-            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
             to: 'hello@motionpicture.jp'

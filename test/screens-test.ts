@@ -29,20 +29,20 @@ describe('スクリーンルーター 座席html取得', () => {
     it('ok', async () => {
         await supertest(app)
             .get('/screen/00101/show')
-            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
             })
             .expect(httpStatus.OK)
             .then(async (response) => {
-                assert(typeof response.body.data === 'string')
+                assert(typeof response.body.data === 'string');
             });
     });
 
     it('存在しない', async () => {
         await supertest(app)
             .get('/screen/xxx/show')
-            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.NOT_FOUND);
