@@ -12,9 +12,10 @@
 認証時には必要なスコープを必ず指定してください。
 
 **利用可能なスコープ**
-| scope                              | description                        |
-| :--------------------------------- | :--------------------------------- |
-| performances.readonly              | パフォーマンス読み込み               |
+| scope                              | description
+| :--------------------------------- | :--------------------------------- 
+| transactions                       | 座席予約取引処理
+| performances.readonly              | パフォーマンス読み込み
 
 ::: note
 返却値には、`access_token`と`expires_in`が含まれます。
@@ -29,8 +30,9 @@
             クライアントID(api利用時にmotionpictureが発行するのでアプリケーション側で大切に保管してください)
         + `client_secret`: `motionpicture` (string, required)
             クライアントシークレット(api利用時にmotionpictureが発行するのでアプリケーション側で大切に保管してください)
-        + `scope` (array[string], fixed-type, required) - 必要なスコープは、各APIの説明を参照してください。
-            + `performances.readonly` (string, required)
+        + `scope` (array, fixed-type, required) - 必要なスコープは、各APIの説明を参照してください。
+            + `transactions` (string)
+            + `performances.readonly` (string)
 
 + Response 200 (application/json)
     + Attributes

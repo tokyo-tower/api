@@ -37,6 +37,10 @@
 ### パフォーマンス検索 [GET]
 条件指定でパフォーマンスを検索します
 
+::: note
+This action requires an `access_token` with `performances.readonly` scope.
+:::
+
 example:
 ```no-highlight
 /performances?theater=001&limit=5

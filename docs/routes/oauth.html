@@ -3,7 +3,7 @@
   "<span class="hljs-attribute">client_id</span>": <span class="hljs-value"><span class="hljs-string">"motionpicture"</span></span>,
   "<span class="hljs-attribute">client_secret</span>": <span class="hljs-value"><span class="hljs-string">"motionpicture"</span></span>,
   "<span class="hljs-attribute">scope</span>": <span class="hljs-value">[
-    <span class="hljs-string">"Hello, world!"</span>,
+    <span class="hljs-string">"transactions"</span>,
     <span class="hljs-string">"performances.readonly"</span>
   ]
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
@@ -24,9 +24,14 @@
     </span>}</span>,
     "<span class="hljs-attribute">scope</span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
-      "<span class="hljs-attribute">items</span>": <span class="hljs-value">{
-        "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
-      </span>}</span>,
+      "<span class="hljs-attribute">items</span>": <span class="hljs-value">[
+        {
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>},
+        {
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span>
+        </span>}
+      ]</span>,
       "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"必要なスコープは、各APIの説明を参照してください。"</span>
     </span>}
   </span>}</span>,
@@ -118,6 +123,10 @@
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align:left">transactions</td>
+<td style="text-align:left">座席予約取引処理</td>
+</tr>
 <tr>
 <td style="text-align:left">performances.readonly</td>
 <td style="text-align:left">パフォーマンス読み込み</td>
