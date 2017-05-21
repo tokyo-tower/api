@@ -1,4 +1,4 @@
-# 元祖興行パッケージチケット予約システムAPIアプリケーション
+# 東京タワーチケット予約システムAPIアプリケーション
 
 # Getting Started
 
@@ -14,6 +14,7 @@ set MONGOLAB_URI=**********mongodb接続URI**********
 set GMO_SITE_ID=**********gmo サイトID**********
 set GMO_SHOP_ID=**********gmo ショップID**********
 set GMO_SHOP_PASS=**********gmo ショップパスワード**********
+set TTTS_API_SECRET=**********JWTに使用する鍵文字列**********
 ```
 
 only on Aure WebApps
@@ -34,4 +35,4 @@ set WEBSITE_TIME_ZONE=Tokyo Standard Time
 # test
 mochaフレームワークでテスト実行。
 * [mocha](https://www.npmjs.com/package/mocha)
-`npm test`でテスト実行。だが、現状テストコードなし。テストコードを増やしていくことが望ましい。
+`npm test`でテスト実行。
