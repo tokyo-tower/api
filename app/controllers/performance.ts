@@ -123,6 +123,7 @@ export async function search(req: Request, res: Response) {
         if (performanceStatuses !== undefined && performanceStatuses.hasOwnProperty(id)) {
             return (<any>performanceStatuses)[id];
         }
+
         return null;
     };
     const data = performances.map((performance) => {

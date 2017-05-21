@@ -18,11 +18,11 @@ const createDebug = require("debug");
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const validator_1 = require("../middlewares/validator");
-const router = express.Router();
+const oauthRouter = express.Router();
 const debug = createDebug('ttts-api:*');
 // todo どこで定義するか
 const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 1800;
-router.post('/token', (__1, __2, next) => {
+oauthRouter.post('/token', (__1, __2, next) => {
     // req.checkBody('grant_type', 'invalid grant_type').notEmpty().withMessage('assertion is required')
     //     .equals('password');
     // req.checkBody('username', 'invalid username').notEmpty().withMessage('username is required');
@@ -72,4 +72,4 @@ router.post('/token', (__1, __2, next) => {
         next(error);
     }
 }));
-exports.default = router;
+exports.default = oauthRouter;

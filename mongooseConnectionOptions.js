@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *
  * @ignore
  */
-const options = {
+const mongooseConnectionOptions = {
     server: {
         socketOptions: {
             autoReconnect: true,
@@ -23,4 +23,4 @@ const options = {
         }
     }
 };
-exports.default = options;
+exports.default = mongooseConnectionOptions;

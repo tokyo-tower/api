@@ -3,7 +3,7 @@
  *
  * @ignore
  */
-const options = {
+const mongooseConnectionOptions = {
     server: {
         socketOptions: {
             autoReconnect: true,
@@ -22,4 +22,4 @@ const options = {
     }
 };
 
-export default options;
+export default mongooseConnectionOptions;

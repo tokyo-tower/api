@@ -30,6 +30,7 @@ export async function transfer(req: Request, res: Response, next: NextFunction) 
             res.json({
                 data: null
             });
+
             return;
         }
 

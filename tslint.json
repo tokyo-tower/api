@@ -11,7 +11,6 @@
         "arrow-return-shorthand": [
             true
         ],
-        "curly": false,
         "export-name": false,
         "import-name": false,
         "interface-over-type-literal": true,
@@ -28,7 +27,6 @@
         "no-relative-imports": false,
         "no-unnecessary-initializer": true,
         "no-unsafe-any": false,
-        "no-use-before-declare": false,
         "prefer-function-over-method": true,
         "prefer-method-signature": true,
         "typedef": [

@@ -27,6 +27,7 @@ export default (permittedScopes: IScope[]) => {
         const permittedUserScope = permittedScopes.find((permittedScope: string) => req.user.scope.indexOf(permittedScope) >= 0);
         if (permittedUserScope === undefined) {
             res.status(FORBIDDEN).end('Forbidden');
+
             return;
         }
 

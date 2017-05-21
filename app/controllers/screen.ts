@@ -23,6 +23,7 @@ export async function show(req: Request, res: Response, next: NextFunction) {
             res.json({
                 data: null
             });
+
             return;
         }
 
@@ -30,6 +31,7 @@ export async function show(req: Request, res: Response, next: NextFunction) {
         fs.readFile(`${__dirname}/../views/_screens/${req.params.id}.ejs`, 'utf8', (readFileErr, data) => {
             if (readFileErr instanceof Error) {
                 next(readFileErr);
+
                 return;
             }
 

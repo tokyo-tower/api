@@ -11,12 +11,12 @@ import * as jwt from 'jsonwebtoken';
 
 import validator from '../middlewares/validator';
 
-const router = express.Router();
+const oauthRouter = express.Router();
 const debug = createDebug('ttts-api:*');
 // todo どこで定義するか
 const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 1800;
 
-router.post(
+oauthRouter.post(
     '/token',
     (__1, __2, next) => {
         // req.checkBody('grant_type', 'invalid grant_type').notEmpty().withMessage('assertion is required')
@@ -78,4 +78,4 @@ router.post(
         }
     });
 
-export default router;
+export default oauthRouter;
