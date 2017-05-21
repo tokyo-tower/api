@@ -1,24 +1,25 @@
 # Data Structure
 
-## MultilingualString
+## Performances.MultilingualString
 + en: `english name` (string, optional) - 英語名称
 + ja: `日本語名称` (string, optional) - 日本語名称
 + kr: `한국어 명칭` (string, optional) - 韓国語名称
 
-## Performance
-+ type: `performances` (string) - リソースタイプ
-+ id: `59119065e3157c1884d3c333` (string) - パフォーマンスID
+## Performances.Performance
++ type: `performances` (string, required) - リソースタイプ
++ id: `59119065e3157c1884d3c333` (string, required) - パフォーマンスID
 + atrributes (object)
-    + day: `20171025` (string) - 上映日
-    + open_time: `1210` (string) - 開場時刻
-    + start_time: `1230` (string) - 開演時刻
-    + seat_status: `◎` (string) - 空席状況
-    + theater_name: (MultilingualString) - 劇場名称
-    + screen_name: (MultilingualString) - スクリーン名称
-    + film: `000004` (string) - 作品ID
-    + film_name: (MultilingualString) - 作品名称
-    + film_minutes: `98` (number) - 作品上映時間
-    + film_copyright: `©2016「いきなり先生」製作委員会` (string) - 作品コピーライト
+    + day: `20171025` (string, required) - 上映日(YYYYMMDD)
+    + start_time: `1210` (string, required) - 開場時刻(hhmm)
+    + end_time: `1230` (string, required) - 開演時刻(hhmm)
+    + seat_status: `◎` (string, required) - 空席状況(○×△ではない形に変更予定)
+    + theater: `001` (string, required) - 劇場ID
+    + theater_name: (Performances.MultilingualString, required) - 劇場名
+    + screen: `00101` (string, required) - スクリーンID
+    + screen_name: (Performances.MultilingualString, required) - スクリーン名
+    + film: `000004` (string, required) - 作品ID
+    + film_name: (Performances.MultilingualString, required) - 作品名
+    + film_minutes: `98` (number, required) - 作品上映時間
 
 
 
@@ -35,10 +36,15 @@
     + day: `20110101` (string, optional) - 上映日
 
 ### パフォーマンス検索 [GET]
-条件指定でパフォーマンスを検索します
+条件指定でパフォーマンスを検索します。
 
 ::: note
 This action requires an `access_token` with `performances.readonly` scope.
+:::
+
+::: note
+検索条件と、レスポンスのatrributesについては、実際にapiを組み込むアプリケーションの都合によって、随時追加の可能性があります。
+検索条件が足りない、あるいは、レスポンスの情報が足りない場合、api開発者へリクエストを投げてください。
 :::
 
 example:
@@ -48,8 +54,6 @@ example:
 
 + Response 200 (application/json)
     + Attributes
-        + data (array[Performance], fixed-type) - パフォーマンスリスト
-            + (Performance)
-            + (Performance)
+        + data (array[Performances.Performance], fixed-type) - パフォーマンスリスト
 
 <!-- include(../response/400.md) -->
