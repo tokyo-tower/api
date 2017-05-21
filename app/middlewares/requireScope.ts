@@ -8,7 +8,7 @@ import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
 import { FORBIDDEN } from 'http-status';
 
-const debug = createDebug('chevre-api:middleware:authentication');
+const debug = createDebug('ttts-api:middleware:authentication');
 
 /**
  * スコープインターフェース

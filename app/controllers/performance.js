@@ -13,11 +13,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const chevre_domain_1 = require("@motionpicture/chevre-domain");
+const ttts_domain_1 = require("@motionpicture/ttts-domain");
 const createDebug = require("debug");
 const moment = require("moment");
 const _ = require("underscore");
-const debug = createDebug('chevre-api:controller:performance');
+const debug = createDebug('ttts-api:controller:performance');
 const DEFAULT_RADIX = 10;
 /**
  * 検索する
@@ -79,9 +79,9 @@ function search(req, res) {
             conditions = { $and: andConditions };
         }
         // 作品件数取得
-        const filmIds = yield chevre_domain_1.Models.Performance.distinct('film', conditions).exec();
+        const filmIds = yield ttts_domain_1.Models.Performance.distinct('film', conditions).exec();
         // 総数検索
-        const performancesCount = yield chevre_domain_1.Models.Performance.count(conditions).exec();
+        const performancesCount = yield ttts_domain_1.Models.Performance.count(conditions).exec();
         // 必要な項目だけ指定すること(レスポンスタイムに大きく影響するので)
         debug('locale:', req.getLocale());
         let fields = '';
@@ -91,7 +91,7 @@ function search(req, res) {
         else {
             fields = 'day open_time start_time film screen screen_name.en theater theater_name.en';
         }
-        const query = chevre_domain_1.Models.Performance.find(conditions, fields);
+        const query = ttts_domain_1.Models.Performance.find(conditions, fields);
         if (limit !== null) {
             query.skip(limit * (page - 1)).limit(limit);
         }
@@ -110,7 +110,7 @@ function search(req, res) {
         });
         const performances = yield query.lean(true).exec();
         // 空席情報を追加
-        const performanceStatuses = yield chevre_domain_1.PerformanceStatusesModel.find();
+        const performanceStatuses = yield ttts_domain_1.PerformanceStatusesModel.find();
         const getStatus = (id) => {
             if (performanceStatuses !== undefined && performanceStatuses.hasOwnProperty(id)) {
                 return performanceStatuses[id];
@@ -175,7 +175,7 @@ function addFilmConditions(andConditions, section, words) {
         }
         // 条件があれば作品検索してID条件として追加
         if (filmAndConditions.length > 0) {
-            const filmIds = yield chevre_domain_1.Models.Film.distinct('_id', { $and: filmAndConditions }).exec();
+            const filmIds = yield ttts_domain_1.Models.Film.distinct('_id', { $and: filmAndConditions }).exec();
             debug('filmIds:', filmIds);
             // 該当作品がない場合、filmIdsが空配列となりok
             andConditions.push({ film: { $in: filmIds } });

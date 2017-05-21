@@ -4,7 +4,7 @@
  * @ignore
  */
 
-import * as chevre from '@motionpicture/chevre-domain';
+import * as TTTS from '@motionpicture/ttts-domain';
 import * as assert from 'assert';
 import * as httpStatus from 'http-status';
 import * as mongoose from 'mongoose';
@@ -18,7 +18,7 @@ describe('予約ルーター 入場', () => {
         connection = mongoose.createConnection(process.env.MONGOLAB_URI);
 
         // 予約全削除
-        await chevre.Models.Reservation.remove({}).exec();
+        await TTTS.Models.Reservation.remove({}).exec();
 
         await supertest(app)
             .post('/oauth/token')
@@ -26,28 +26,28 @@ describe('予約ルーター 入場', () => {
                 grant_type: 'password',
                 username: 'motionpicture',
                 password: 'motionpicture',
-                client_id: 'chevre-frontend',
+                client_id: 'ttts-frontend',
                 scope: ['admin']
             })
             .then((response) => {
-                process.env.CHEVRE_API_ACCESS_TOKEN = response.body.access_token;
+                process.env.TTTS_API_ACCESS_TOKEN = response.body.access_token;
             });
     });
 
     it('ok', async () => {
         // テストデータ作成
-        const reservationModel = connection.model(chevre.Models.Reservation.modelName, chevre.Models.Reservation.schema);
+        const reservationModel = connection.model(TTTS.Models.Reservation.modelName, TTTS.Models.Reservation.schema);
         let reservationDoc = await reservationModel.create({
             performance: 'xxx',
             seat_code: 'xxx',
-            status: chevre.ReservationUtil.STATUS_RESERVED
+            status: TTTS.ReservationUtil.STATUS_RESERVED
         });
 
         assert(!reservationDoc.get('checked_in'));
 
         await supertest(app)
             .post(`/reservation/${reservationDoc.get('id')}/checkin`)
-            .set('authorization', 'Bearer ' + process.env.CHEVRE_API_ACCESS_TOKEN)
+            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .send({
                 where: 'here',
@@ -68,7 +68,7 @@ describe('予約ルーター 入場', () => {
     it('予約存在しない', async () => {
         await supertest(app)
             .post('/reservation/5905b0003431b21604da462a/checkin')
-            .set('authorization', 'Bearer ' + process.env.CHEVRE_API_ACCESS_TOKEN)
+            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.NOT_FOUND);
@@ -86,26 +86,26 @@ describe('予約ルーター メール転送', () => {
                 grant_type: 'password',
                 username: 'motionpicture',
                 password: 'motionpicture',
-                client_id: 'chevre-frontend',
+                client_id: 'ttts-frontend',
                 scope: ['admin']
             })
             .then((response) => {
-                process.env.CHEVRE_API_ACCESS_TOKEN = response.body.access_token;
+                process.env.TTTS_API_ACCESS_TOKEN = response.body.access_token;
             });
     });
 
     it('ok', async () => {
         // テストデータ作成
-        const reservationModel = connection.model(chevre.Models.Reservation.modelName, chevre.Models.Reservation.schema);
+        const reservationModel = connection.model(TTTS.Models.Reservation.modelName, TTTS.Models.Reservation.schema);
         const reservationDoc = await reservationModel.create({
             performance: 'xxx',
             seat_code: 'xxx',
-            status: chevre.ReservationUtil.STATUS_RESERVED
+            status: TTTS.ReservationUtil.STATUS_RESERVED
         });
 
         await supertest(app)
             .post(`/ja/reservation/${reservationDoc.get('id')}/transfer`)
-            .set('authorization', 'Bearer ' + process.env.CHEVRE_API_ACCESS_TOKEN)
+            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .send({
                 to: 'hello@motionpicture.jp'
@@ -120,7 +120,7 @@ describe('予約ルーター メール転送', () => {
     it('メールアドレス不適切', async () => {
         await supertest(app)
             .post('/ja/reservation/5905b0003431b21604da462a/transfer')
-            .set('authorization', 'Bearer ' + process.env.CHEVRE_API_ACCESS_TOKEN)
+            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .send({
                 to: 'invalidemail'
@@ -132,7 +132,7 @@ describe('予約ルーター メール転送', () => {
     it('予約存在しない', async () => {
         await supertest(app)
             .post('/ja/reservation/5905b0003431b21604da462a/transfer')
-            .set('authorization', 'Bearer ' + process.env.CHEVRE_API_ACCESS_TOKEN)
+            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .send({
                 to: 'hello@motionpicture.jp'

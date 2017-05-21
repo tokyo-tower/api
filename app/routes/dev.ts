@@ -12,7 +12,7 @@ import * as mongoose from 'mongoose';
 
 import mongooseConnectionOptions from '../../mongooseConnectionOptions';
 
-const debug = createDebug('chevre-api:routes:dev');
+const debug = createDebug('ttts-api:routes:dev');
 
 router.get(
     '/500',

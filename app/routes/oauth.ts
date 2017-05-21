@@ -4,7 +4,7 @@
  * @ignore
  */
 
-// import * as chevre from '@motionpicture/chevre-domain';
+// import * as TTTS from '@motionpicture/ttts-domain';
 import * as createDebug from 'debug';
 import * as express from 'express';
 import * as jwt from 'jsonwebtoken';
@@ -12,7 +12,7 @@ import * as jwt from 'jsonwebtoken';
 import validator from '../middlewares/validator';
 
 const router = express.Router();
-const debug = createDebug('chevre-api:*');
+const debug = createDebug('ttts-api:*');
 // todo どこで定義するか
 const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 1800;
 
@@ -33,18 +33,18 @@ router.post(
     async (req, res, next) => {
         try {
             // client_idの存在確認
-            // const numberOfClient = await chevre.Models.Client.count({ _id: req.body.client_id }).exec();
+            // const numberOfClient = await TTTS.Models.Client.count({ _id: req.body.client_id }).exec();
             // debug('numberOfClient:', numberOfClient);
             // if (numberOfClient === 0) {
             //     throw new Error('client not found');
             // }
 
             // usernameとpassword照合
-            // const owner = await chevre.Models.Owner.findOne({ username: req.body.username }).exec();
+            // const owner = await TTTS.Models.Owner.findOne({ username: req.body.username }).exec();
             // if (owner === null) {
             //     throw new Error('owner not found');
             // }
-            // if (owner.get('password_hash') !== chevre.CommonUtil.createHash(req.body.password, owner.get('password_salt'))) {
+            // if (owner.get('password_hash') !== TTTS.CommonUtil.createHash(req.body.password, owner.get('password_salt'))) {
             //     throw new Error('invalid username or password');
             // }
 
@@ -54,7 +54,7 @@ router.post(
                 {
                     scope: req.body.scope
                 },
-                process.env.CHEVRE_API_SECRET,
+                process.env.TTTS_API_SECRET,
                 {
                     expiresIn: ACCESS_TOKEN_EXPIRES_IN_SECONDS
                 },

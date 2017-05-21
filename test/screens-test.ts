@@ -18,18 +18,18 @@ describe('スクリーンルーター 座席html取得', () => {
                 grant_type: 'password',
                 username: 'motionpicture',
                 password: 'motionpicture',
-                client_id: 'chevre-frontend',
+                client_id: 'ttts-frontend',
                 scope: ['admin']
             })
             .then((response) => {
-                process.env.CHEVRE_API_ACCESS_TOKEN = response.body.access_token;
+                process.env.TTTS_API_ACCESS_TOKEN = response.body.access_token;
             });
     });
 
     it('ok', async () => {
         await supertest(app)
             .get('/screen/00101/show')
-            .set('authorization', 'Bearer ' + process.env.CHEVRE_API_ACCESS_TOKEN)
+            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .send({
             })
@@ -42,7 +42,7 @@ describe('スクリーンルーター 座席html取得', () => {
     it('存在しない', async () => {
         await supertest(app)
             .get('/screen/xxx/show')
-            .set('authorization', 'Bearer ' + process.env.CHEVRE_API_ACCESS_TOKEN)
+            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.NOT_FOUND);

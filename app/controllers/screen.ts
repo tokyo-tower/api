@@ -4,7 +4,7 @@
  * @namespace controller/screen
  */
 
-import { Models } from '@motionpicture/chevre-domain';
+import { Models } from '@motionpicture/ttts-domain';
 import { NextFunction, Request, Response } from 'express';
 import * as fs from 'fs-extra';
 import { NOT_FOUND, OK } from 'http-status';

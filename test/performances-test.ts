@@ -18,16 +18,16 @@ describe('パフォーマンスルーターテスト 検索', () => {
     //             grant_type: 'password',
     //             username: 'motionpicture',
     //             password: 'motionpicture',
-    //             client_id: 'chevre-frontend',
+    //             client_id: 'ttts-frontend',
     //             scope: []
     //         })
     //         .then((response) => {
-    //             process.env.CHEVRE_API_ACCESS_TOKEN = response.body.access_token;
+    //             process.env.TTTS_API_ACCESS_TOKEN = response.body.access_token;
     //         });
 
     //     await supertest(app)
     //         .get('/ja/performance/search')
-    //         .set('authorization', 'Bearer ' + process.env.CHEVRE_API_ACCESS_TOKEN)
+    //         .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
     //         .set('Accept', 'application/json')
     //         .send({
     //         })
@@ -44,16 +44,16 @@ describe('パフォーマンスルーターテスト 検索', () => {
                 grant_type: 'password',
                 username: 'motionpicture',
                 password: 'motionpicture',
-                client_id: 'chevre-frontend',
+                client_id: 'ttts-frontend',
                 scope: ['performances.readonly']
             })
             .then((response) => {
-                process.env.CHEVRE_API_ACCESS_TOKEN = response.body.access_token;
+                process.env.TTTS_API_ACCESS_TOKEN = response.body.access_token;
             });
 
         await supertest(app)
             .get('/ja/performance/search')
-            .set('authorization', 'Bearer ' + process.env.CHEVRE_API_ACCESS_TOKEN)
+            .set('authorization', 'Bearer ' + process.env.TTTS_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .send({
             })

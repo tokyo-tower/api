@@ -20,7 +20,7 @@ const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const dev_1 = require("./routes/dev");
 const oauth_1 = require("./routes/oauth");
 const router_1 = require("./routes/router");
-const debug = createDebug('chevre-api:app');
+const debug = createDebug('ttts-api:app');
 const app = express();
 app.use(cors_1.default);
 app.use(helmet());

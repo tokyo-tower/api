@@ -13,8 +13,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const chevre_domain_1 = require("@motionpicture/chevre-domain");
-const chevre_domain_2 = require("@motionpicture/chevre-domain");
+const ttts_domain_1 = require("@motionpicture/ttts-domain");
+const ttts_domain_2 = require("@motionpicture/ttts-domain");
 const conf = require("config");
 const http_status_1 = require("http-status");
 const moment = require("moment");
@@ -30,7 +30,7 @@ function transfer(req, res, next) {
         try {
             const id = req.params.id;
             const to = req.body.to;
-            const reservation = yield chevre_domain_1.Models.Reservation.findOne({ _id: id, status: chevre_domain_2.ReservationUtil.STATUS_RESERVED }).exec();
+            const reservation = yield ttts_domain_1.Models.Reservation.findOne({ _id: id, status: ttts_domain_2.ReservationUtil.STATUS_RESERVED }).exec();
             if (reservation === null) {
                 res.status(http_status_1.NOT_FOUND);
                 res.json({
@@ -38,7 +38,7 @@ function transfer(req, res, next) {
                 });
                 return;
             }
-            const titleJa = `${reservation.get('purchaser_name').ja}様よりCHEVRE_EVENT_NAMEのチケットが届いております`;
+            const titleJa = `${reservation.get('purchaser_name').ja}様よりTTTS_EVENT_NAMEのチケットが届いております`;
             // tslint:disable-next-line:max-line-length
             const titleEn = `This is a notification that you have been invited to Tokyo International Film Festival by Mr./Ms. ${reservation.get('purchaser_name').en}.`;
             res.render('email/resevation', {
@@ -49,7 +49,7 @@ function transfer(req, res, next) {
                 conf: conf,
                 titleJa: titleJa,
                 titleEn: titleEn,
-                ReservationUtil: chevre_domain_2.ReservationUtil
+                ReservationUtil: ttts_domain_2.ReservationUtil
             }, (renderErr, text) => __awaiter(this, void 0, void 0, function* () {
                 try {
                     if (renderErr instanceof Error) {
@@ -90,7 +90,7 @@ exports.transfer = transfer;
 function checkin(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const reservation = yield chevre_domain_1.Models.Reservation.findByIdAndUpdate(req.params.id, {
+            const reservation = yield ttts_domain_1.Models.Reservation.findByIdAndUpdate(req.params.id, {
                 $push: {
                     checkins: {
                         when: moment().toDate(),
@@ -125,9 +125,9 @@ function findByMvtkUser(_, res) {
         // ひとまずデモ段階では、一般予約を10件返す
         const LIMIT = 10;
         try {
-            const reservations = yield chevre_domain_1.Models.Reservation.find({
-                purchaser_group: chevre_domain_2.ReservationUtil.PURCHASER_GROUP_CUSTOMER,
-                status: chevre_domain_2.ReservationUtil.STATUS_RESERVED
+            const reservations = yield ttts_domain_1.Models.Reservation.find({
+                purchaser_group: ttts_domain_2.ReservationUtil.PURCHASER_GROUP_CUSTOMER,
+                status: ttts_domain_2.ReservationUtil.STATUS_RESERVED
             }).limit(LIMIT).exec();
             res.json({
                 success: true,
@@ -152,9 +152,9 @@ function findById(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const id = req.params.id;
         try {
-            const reservation = yield chevre_domain_1.Models.Reservation.findOne({
+            const reservation = yield ttts_domain_1.Models.Reservation.findOne({
                 _id: id,
-                status: chevre_domain_2.ReservationUtil.STATUS_RESERVED
+                status: ttts_domain_2.ReservationUtil.STATUS_RESERVED
             }).exec();
             res.json({
                 success: true,

@@ -6,7 +6,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 const createDebug = require("debug");
-const debug = createDebug('chevre-api:middleware:benchmarks');
+const debug = createDebug('ttts-api:middleware:benchmarks');
 exports.default = (req, res, next) => {
     if (process.env.NODE_ENV === 'development') {
         const startMemory = process.memoryUsage();

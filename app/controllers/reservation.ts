@@ -4,8 +4,8 @@
  * @namespace controller/reservation
  */
 
-import { Models } from '@motionpicture/chevre-domain';
-import { ReservationUtil } from '@motionpicture/chevre-domain';
+import { Models } from '@motionpicture/ttts-domain';
+import { ReservationUtil } from '@motionpicture/ttts-domain';
 
 import * as conf from 'config';
 import { NextFunction, Request, Response } from 'express';
@@ -33,7 +33,7 @@ export async function transfer(req: Request, res: Response, next: NextFunction) 
             return;
         }
 
-        const titleJa = `${reservation.get('purchaser_name').ja}様よりCHEVRE_EVENT_NAMEのチケットが届いております`;
+        const titleJa = `${reservation.get('purchaser_name').ja}様よりTTTS_EVENT_NAMEのチケットが届いております`;
         // tslint:disable-next-line:max-line-length
         const titleEn = `This is a notification that you have been invited to Tokyo International Film Festival by Mr./Ms. ${reservation.get('purchaser_name').en}.`;
 

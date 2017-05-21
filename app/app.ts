@@ -23,7 +23,7 @@ import devRouter from './routes/dev';
 import oauthRouter from './routes/oauth';
 import router from './routes/router';
 
-const debug = createDebug('chevre-api:app');
+const debug = createDebug('ttts-api:app');
 
 const app = express();
 
