@@ -1,15 +1,40 @@
 # Group Reservations
 
-## 本予約 [/reservations]
+## 本予約 [/reservations/settle]
 
 ### 本予約 [POST]
 仮予約IDリストから予約を確定する
 
+**決済方法**
+value                     | description
+:------------------------ | :------------------------ 
+
+**購入者区分**
+value                     | description
+:------------------------ | :------------------------ 
+01                        | 一般
+06                        | 窓口
+
+**購入者性別**
+value                     | description
+:------------------------ | :------------------------ 
+
+::: note
+窓口購入の場合、購入者情報は固定値を渡してください。
+:::
+
 + Request (application/json)
     + Attributes
-        + authorizations: (array[string], fixed_type)
+        + authorizations: (array, fixed_type)
             + `59119065e3157c1884d3c333` (string, required) - 仮予約ID
+            + `59119065e3157c1884d3c334` (string, required) - 仮予約ID
         + payment_method: `0` (string, required) - 決済方法
+        + purchaser_group: `06` (string, required) - 購入者区分
+        + purchaser_first_name: `タロウ` (string, required) - 購入者名
+        + purchaser_last_name: `モーションピクチャー` (string, required) - 購入者性
+        + purchaser_email: `motionpicture@example.com` (string, required) - 購入者メールアドレス
+        + purchaser_tel: `09012345678` (string, required) - 購入者電話番号
+        + purchaser_gender: `0` (string, required) - 購入者性別
 
 + Response 200 (application/json)
     + Attributes
@@ -25,14 +50,15 @@
 <!-- include(../response/400.md) -->
 
 
-## 本予約取消 [/reservations/{performance_day}/{payment_no}]
+## 本予約取消 [/reservations/cancel]
 
-+ Parameters
-    + performance_day: `20170511` (string, required) - 上映日
-    + payment_no: `1234567` (string, required) - 購入番号
-
-### 本予約取消 [DELETE]
+### 本予約取消 [POST]
 上映日と購入番号から本予約を取り消す
+
++ Request (application/json)
+    + Attributes
+        + performance_day: `20170511` (string, required) - 上映日
+        + payment_no: `1234567` (string, required) - 購入番号
 
 + Response 204
 
