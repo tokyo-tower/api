@@ -84,13 +84,9 @@ function search(req, res) {
         const performancesCount = yield ttts_domain_1.Models.Performance.count(conditions).exec();
         // 必要な項目だけ指定すること(レスポンスタイムに大きく影響するので)
         debug('locale:', req.getLocale());
-        let fields = '';
-        if (req.getLocale() === 'ja') {
-            fields = 'day open_time start_time film screen screen_name.ja theater theater_name.ja';
-        }
-        else {
-            fields = 'day open_time start_time film screen screen_name.en theater theater_name.en';
-        }
+        const fields = (req.getLocale() === 'ja') ?
+            'day open_time start_time end_time film screen screen_name.ja theater theater_name.ja' :
+            'day open_time start_time end_time film screen screen_name.en theater theater_name.en';
         const query = ttts_domain_1.Models.Performance.find(conditions, fields);
         if (limit !== null) {
             query.skip(limit * (page - 1)).limit(limit);
@@ -125,6 +121,7 @@ function search(req, res) {
                     day: performance.day,
                     open_time: performance.open_time,
                     start_time: performance.start_time,
+                    end_time: performance.end_time,
                     //seat_status: (performanceStatuses !== undefined) ? performanceStatuses.getStatus(performance._id.toString()) : null,
                     seat_status: getStatus(performance._id.toString()),
                     theater_name: performance.theater_name[req.getLocale()],
