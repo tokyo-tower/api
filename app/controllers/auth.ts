@@ -7,6 +7,7 @@
 import { Models } from '@motionpicture/ttts-domain';
 import * as crypto from 'crypto';
 import { Request, Response } from 'express';
+import * as mongoose from 'mongoose';
 
 /**
  * ログイン
@@ -33,8 +34,8 @@ export async function login(_: Request, res: Response) {
 
         res.json({
             success: true,
-            access_token: authentication.get('token'),
-            mvtk_kiin_cd: authentication.get('mvtk_kiin_cd') // テスト用会員コード
+            access_token: (<mongoose.Document>authentication).get('token'),
+            mvtk_kiin_cd: (<mongoose.Document>authentication).get('mvtk_kiin_cd') // テスト用会員コード
         });
     } catch (error) {
         res.json({

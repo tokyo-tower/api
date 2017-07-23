@@ -54,7 +54,7 @@ oauthRouter.post(
                 {
                     scope: req.body.scope
                 },
-                process.env.TTTS_API_SECRET,
+                <string>process.env.TTTS_API_SECRET,
                 {
                     expiresIn: ACCESS_TOKEN_EXPIRES_IN_SECONDS
                 },

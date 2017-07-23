@@ -63,7 +63,7 @@ export async function transfer(req: Request, res: Response, next: NextFunction) 
                         new sendgrid.mail.Content('text/plain', text)
                     );
 
-                    const sg = sendgrid(process.env.SENDGRID_API_KEY);
+                    const sg = sendgrid(<string>process.env.SENDGRID_API_KEY);
                     const request = sg.emptyRequest({
                         host: 'api.sendgrid.com',
                         method: 'POST',

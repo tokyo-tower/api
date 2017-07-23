@@ -15,7 +15,7 @@ import * as app from '../app/app';
 describe('予約ルーター 入場', () => {
     let connection: mongoose.Connection;
     before(async () => {
-        connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+        connection = mongoose.createConnection(<string>process.env.MONGOLAB_URI);
 
         // 予約全削除
         await TTTS.Models.Reservation.remove({}).exec();
@@ -57,7 +57,7 @@ describe('予約ルーター 入場', () => {
             .expect(httpStatus.NO_CONTENT)
             .then(async () => {
                 // 入場履歴が追加されているかどうか確認
-                reservationDoc = await reservationModel.findById(reservationDoc.get('id')).exec();
+                reservationDoc = <mongoose.Document>await reservationModel.findById(reservationDoc.get('id')).exec();
                 assert(reservationDoc.get('checked_in'));
 
                 // テストデータ削除
@@ -78,7 +78,7 @@ describe('予約ルーター 入場', () => {
 describe('予約ルーター メール転送', () => {
     let connection: mongoose.Connection;
     before(async () => {
-        connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+        connection = mongoose.createConnection(<string>process.env.MONGOLAB_URI);
 
         await supertest(app)
             .post('/oauth/token')

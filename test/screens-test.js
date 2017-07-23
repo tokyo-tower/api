@@ -13,12 +13,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const TTTS = require("@motionpicture/ttts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
+const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../app/app");
 describe('スクリーンルーター 座席html取得', () => {
+    let connection;
     before(() => __awaiter(this, void 0, void 0, function* () {
+        connection = mongoose.createConnection(process.env.MONGOLAB_URI);
         yield supertest(app)
             .post('/oauth/token')
             .send({
@@ -33,8 +37,12 @@ describe('スクリーンルーター 座席html取得', () => {
         });
     }));
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
+        // テストデータ作成
+        const screenId = '00101';
+        const screenModel = connection.model(TTTS.Models.Screen.modelName, TTTS.Models.Screen.schema);
+        yield screenModel.findByIdAndUpdate(screenId, {}, { upsert: true }).exec();
         yield supertest(app)
-            .get('/screen/00101/show')
+            .get(`/screen/${screenId}/show`)
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({})
@@ -42,6 +50,7 @@ describe('スクリーンルーター 座席html取得', () => {
             .then((response) => __awaiter(this, void 0, void 0, function* () {
             assert(typeof response.body.data === 'string');
         }));
+        yield screenModel.findByIdAndRemove(screenId).exec();
     }));
     it('存在しない', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)

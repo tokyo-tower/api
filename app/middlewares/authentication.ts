@@ -14,7 +14,7 @@ const debug = createDebug('ttts-api:middleware:authentication');
 export default [
     jwt(
         {
-            secret: process.env.TTTS_API_SECRET
+            secret: <string>process.env.TTTS_API_SECRET
             // todo チェック項目を増強する
             // audience: 'http://myapi/protected',
             // issuer: 'http://issuer'

@@ -59,7 +59,7 @@ describe('予約ルーター 入場', () => {
             .expect(httpStatus.NO_CONTENT)
             .then(() => __awaiter(this, void 0, void 0, function* () {
             // 入場履歴が追加されているかどうか確認
-            reservationDoc = yield reservationModel.findById(reservationDoc.get('id')).exec();
+            reservationDoc = (yield reservationModel.findById(reservationDoc.get('id')).exec());
             assert(reservationDoc.get('checked_in'));
             // テストデータ削除
             yield reservationDoc.remove();
