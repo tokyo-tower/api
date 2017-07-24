@@ -13,7 +13,9 @@
     }
   ],
   "dependencies": {
+    "@motionpicture/gmo-service": "^4.0.0",
     "@motionpicture/ttts-domain": "^11.2.0",
+    "@types/when": "^2.4.29",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.17.2",
     "debug": "^2.6.8",

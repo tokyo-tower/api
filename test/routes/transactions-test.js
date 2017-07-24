@@ -16,9 +16,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const ttts = require("@motionpicture/ttts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
-// import * as mongoose from 'mongoose';
 const supertest = require("supertest");
 const app = require("../../app/app");
+const Resources = require("../resources");
 describe('座席仮予約', () => {
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
         // テストデータ作成
@@ -79,7 +79,7 @@ describe('座席仮予約解除', () => {
             .then((response) => __awaiter(this, void 0, void 0, function* () {
             assert.equal(response.text, '');
             // 予約が解放されていることを確認
-            reservationDoc = yield ttts.Models.Reservation.findById(reservationDoc).exec();
+            reservationDoc = (yield ttts.Models.Reservation.findById(reservationDoc.get('id')).exec());
             assert.equal(reservationDoc.get('status'), ttts.ReservationUtil.STATUS_AVAILABLE);
             // テストデータ削除
             yield reservationDoc.remove();
@@ -109,15 +109,85 @@ describe('座席仮予約解除', () => {
     }));
 });
 describe('座席本予約', () => {
+    // tslint:disable-next-line:max-func-body-length
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
+        // テストデータ作成
+        yield ttts.Models.Theater.findByIdAndUpdate(Resources.theater.id, Resources.theater, { new: true, upsert: true }).exec();
+        yield ttts.Models.Screen.findByIdAndUpdate(Resources.screen.id, Resources.screen, { new: true, upsert: true }).exec();
+        yield ttts.Models.Film.findByIdAndUpdate(Resources.film.id, Resources.film, { new: true, upsert: true }).exec();
+        const performanceDoc = yield ttts.Models.Performance.findOneAndUpdate({
+            day: Resources.performance.day,
+            film: Resources.performance.film,
+            screen: Resources.performance.screen,
+            start_time: Resources.performance.start_time
+        }, Resources.performance, { new: true, upsert: true }).exec();
+        const reservations = [
+            {
+                performance: performanceDoc.get('id'),
+                seat_code: Resources.screen.sections[0].seats[0].code,
+                status: ttts.ReservationUtil.STATUS_TEMPORARY
+            },
+            {
+                performance: performanceDoc.get('id'),
+                seat_code: Resources.screen.sections[0].seats[1].code,
+                status: ttts.ReservationUtil.STATUS_TEMPORARY
+            }
+        ];
+        const reservationDocs = yield Promise.all(reservations.map((reservation) => __awaiter(this, void 0, void 0, function* () {
+            return yield ttts.Models.Reservation.findOneAndUpdate({
+                performance: reservation.performance,
+                seat_code: reservation.seat_code
+            }, reservation, { new: true, upsert: true }).exec();
+        })));
+        const data = {
+            performance: performanceDoc.get('id'),
+            authorizations: reservationDocs.map((reservationDoc) => {
+                return {
+                    id: reservationDoc.get('id'),
+                    attributes: {
+                        ticket_type: '001',
+                        ticket_type_name: {
+                            en: 'english name',
+                            ja: '日本語名称',
+                            kr: '한국어 명칭'
+                        },
+                        ticket_type_charge: 1800,
+                        charge: 1800
+                    }
+                };
+            }),
+            payment_method: 0,
+            purchaser_group: '06',
+            purchaser_first_name: 'タロウ',
+            purchaser_last_name: 'モーションピクチャー',
+            purchaser_email: 'motionpicture@example.com',
+            purchaser_tel: '09012345678',
+            purchaser_gender: '0'
+        };
         yield supertest(app)
             .post('/transactions/confirm')
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
-            .send({})
+            .send(data)
             .expect(httpStatus.OK)
             .then((response) => __awaiter(this, void 0, void 0, function* () {
-            assert.deepEqual(response.body.data, {});
+            assert(Array.isArray(response.body.data));
+            // レスポンスデータの型を確認
+            response.body.data.forEach((reservation) => {
+                assert.equal(typeof reservation.id, 'string');
+                assert.equal(typeof reservation.attributes.seat_code, 'string');
+                assert.equal(typeof reservation.attributes.payment_no, 'string');
+                assert.equal(typeof reservation.attributes.qr_str, 'string');
+            });
+            // 予約が解放されていることを確認
+            yield Promise.all(reservationDocs.map((doc) => __awaiter(this, void 0, void 0, function* () {
+                const reservationDoc = yield ttts.Models.Reservation.findById(doc.get('id')).exec();
+                assert.equal(reservationDoc.get('status'), ttts.ReservationUtil.STATUS_RESERVED);
+            })));
+            // テストデータ削除
+            yield Promise.all(reservationDocs.map((doc) => __awaiter(this, void 0, void 0, function* () {
+                yield doc.remove();
+            })));
         }));
     }));
 });

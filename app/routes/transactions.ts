@@ -4,6 +4,8 @@
  * @module routes/transactions
  */
 
+import * as GMO from '@motionpicture/gmo-service';
+import * as ttts from '@motionpicture/ttts-domain';
 import * as express from 'express';
 import * as httpStatus from 'http-status';
 
@@ -13,7 +15,6 @@ import * as TransactionController from '../controllers/transaction';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
-import setLocale from '../middlewares/setLocale';
 import validator from '../middlewares/validator';
 
 transactionRouter.use(authentication);
@@ -24,7 +25,6 @@ transactionRouter.use(authentication);
 transactionRouter.post(
     '/authorizations',
     permitScopes(['transactions.authorizations']),
-    setLocale,
     (req, __2, next) => {
         req.checkBody('performance').notEmpty().withMessage('performance is required');
 
@@ -58,10 +58,6 @@ transactionRouter.post(
 transactionRouter.delete(
     '/authorizations/:id',
     permitScopes(['transactions.authorizations']),
-    setLocale,
-    (__1, __2, next) => {
-        next();
-    },
     validator,
     async (req, res, next) => {
         try {
@@ -88,17 +84,72 @@ transactionRouter.delete(
 transactionRouter.post(
     '/confirm',
     permitScopes(['transactions']),
-    setLocale,
-    (__1, __2, next) => {
+    (req, __, next) => {
+        req.checkBody('performance').notEmpty().withMessage('performance is required');
+
+        if (!Array.isArray(req.body.authorizations)) {
+            req.body.authorizations = [req.body.authorizations];
+        }
+        req.checkBody('authorizations').notEmpty().withMessage('authorizations is required');
+        (<any[]>req.body.authorizations).forEach((__1, index) => {
+            req.checkBody(`authorizations.${index}.id`).notEmpty().withMessage('authorizations.id is required');
+            req.checkBody(`authorizations.${index}.attributes`).notEmpty().withMessage('authorizations.attributes is required');
+            req.checkBody(`authorizations.${index}.attributes.ticket_type`)
+                .notEmpty().withMessage('authorizations.attributes.ticket_type is required');
+            req.checkBody(`authorizations.${index}.attributes.ticket_type_name`)
+                .notEmpty().withMessage('authorizations.attributes.ticket_type_name is required');
+            req.checkBody(`authorizations.${index}.attributes.ticket_type_charge`)
+                .notEmpty().withMessage('authorizations.attributes.ticket_type_charge is required')
+                .isInt().withMessage('authorizations.attributes.ticket_type_charge must be number');
+            req.checkBody(`authorizations.${index}.attributes.charge`)
+                .notEmpty().withMessage('authorizations.attributes.charge is required')
+                .isInt().withMessage('authorizations.attributes.charge must be number');
+        });
+
+        const availablePaymentMethod = [
+            GMO.utils.util.PayType.Cash,
+            GMO.utils.util.PayType.Credit
+        ];
+        req.checkBody('payment_method').notEmpty().withMessage('required')
+            .matches(new RegExp(`^(${availablePaymentMethod.join('|')})$`))
+            .withMessage(`must be one of '${availablePaymentMethod.join('\', \'')}'`);
+
+        const availablePurchaserGroups = [
+            ttts.ReservationUtil.PURCHASER_GROUP_CUSTOMER,
+            ttts.ReservationUtil.PURCHASER_GROUP_STAFF,
+            ttts.ReservationUtil.PURCHASER_GROUP_WINDOW
+        ];
+        req.checkBody('purchaser_group').notEmpty().withMessage('required')
+            .matches(new RegExp(`^(${availablePurchaserGroups.join('|')})$`))
+            .withMessage(`must be one of '${availablePurchaserGroups.join('\', \'')}'`);
+
+        req.checkBody('purchaser_first_name').notEmpty().withMessage('purchaser_first_name is required');
+        req.checkBody('purchaser_last_name').notEmpty().withMessage('purchaser_last_name is required');
+        req.checkBody('purchaser_email').notEmpty().withMessage('purchaser_email is required');
+        req.checkBody('purchaser_tel').notEmpty().withMessage('purchaser_tel is required');
+        req.checkBody('purchaser_gender').notEmpty().withMessage('purchaser_gender is required');
+
         next();
     },
     validator,
-    async (__, res, next) => {
+    async (req, res, next) => {
         try {
-            await TransactionController.confirm();
+            const reservations = await TransactionController.confirm(
+                req.body.performance,
+                req.body.authorizations,
+                req.body.payment_method,
+                {
+                    group: req.body.purchaser_group,
+                    first_name: req.body.purchaser_first_name,
+                    last_name: req.body.purchaser_last_name,
+                    email: req.body.purchaser_email,
+                    tel: req.body.purchaser_tel,
+                    gender: req.body.purchaser_gender
+                }
+            );
 
             res.status(httpStatus.OK).json({
-                data: {}
+                data: reservations
             });
         } catch (error) {
             next(error);
@@ -109,7 +160,6 @@ transactionRouter.post(
 transactionRouter.post(
     '/cancel',
     permitScopes(['transactions']),
-    setLocale,
     (__1, __2, next) => {
         next();
     },
