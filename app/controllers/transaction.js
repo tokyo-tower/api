@@ -34,7 +34,7 @@ function createAuthorization(performanceId) {
             expired_at: moment().add(TEMPORARY_RESERVATION_EXPIRES_IN_MINUTES, 'minutes').toDate()
         }, {
             new: true
-        });
+        }).exec();
         if (reservationDoc === null) {
             return monapt.None;
         }
@@ -149,9 +149,3 @@ function confirm(performanceId, authorizations, paymentMethod, purchaser) {
     });
 }
 exports.confirm = confirm;
-function cancel() {
-    return __awaiter(this, void 0, void 0, function* () {
-        debug('canceling reservations...');
-    });
-}
-exports.cancel = cancel;

@@ -236,18 +236,3 @@ describe('座席本予約', () => {
             });
     });
 });
-
-describe('座席本予約取消', () => {
-    it('ok', async () => {
-        await supertest(app)
-            .post('/transactions/cancel')
-            .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
-            .set('Accept', 'application/json')
-            .send({
-            })
-            .expect(httpStatus.OK)
-            .then(async (response) => {
-                assert.deepEqual(response.body.data, {});
-            });
-    });
-});

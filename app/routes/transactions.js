@@ -132,17 +132,4 @@ transactionRouter.post('/confirm', permitScopes_1.default(['transactions']), (re
         next(error);
     }
 }));
-transactionRouter.post('/cancel', permitScopes_1.default(['transactions']), (__1, __2, next) => {
-    next();
-}, validator_1.default, (__, res, next) => __awaiter(this, void 0, void 0, function* () {
-    try {
-        yield TransactionController.cancel();
-        res.status(httpStatus.OK).json({
-            data: {}
-        });
-    }
-    catch (error) {
-        next(error);
-    }
-}));
 exports.default = transactionRouter;

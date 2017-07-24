@@ -191,16 +191,3 @@ describe('座席本予約', () => {
         }));
     }));
 });
-describe('座席本予約取消', () => {
-    it('ok', () => __awaiter(this, void 0, void 0, function* () {
-        yield supertest(app)
-            .post('/transactions/cancel')
-            .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
-            .set('Accept', 'application/json')
-            .send({})
-            .expect(httpStatus.OK)
-            .then((response) => __awaiter(this, void 0, void 0, function* () {
-            assert.deepEqual(response.body.data, {});
-        }));
-    }));
-});

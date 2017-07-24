@@ -157,24 +157,4 @@ transactionRouter.post(
     }
 );
 
-transactionRouter.post(
-    '/cancel',
-    permitScopes(['transactions']),
-    (__1, __2, next) => {
-        next();
-    },
-    validator,
-    async (__, res, next) => {
-        try {
-            await TransactionController.cancel();
-
-            res.status(httpStatus.OK).json({
-                data: {}
-            });
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
 export default transactionRouter;

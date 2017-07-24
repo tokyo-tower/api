@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 座席仮予約エンドポイントを追加。
 - 座席仮予約解除エンドポイントを追加。
 - 座席本予約エンドポイントを追加。
+- 座席本予約取消エンドポイントを追加。
 
 ### Changed
 - パフォーマンス検索のレスポンスを多言語化。

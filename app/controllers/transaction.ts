@@ -11,6 +11,7 @@ import * as moment from 'moment';
 import * as monapt from 'monapt';
 
 const debug = createDebug('ttts-api:controllers:transaction');
+
 /**
  * 仮予約有効期間(分)
  * POSの要件に応じてここを調整してください。
@@ -40,7 +41,7 @@ export async function createAuthorization(performanceId: string): Promise<monapt
         {
             new: true
         }
-    );
+    ).exec();
 
     if (reservationDoc === null) {
         return monapt.None;
@@ -202,8 +203,4 @@ export async function confirm(
             };
         });
     });
-}
-
-export async function cancel(): Promise<void> {
-    debug('canceling reservations...');
 }
