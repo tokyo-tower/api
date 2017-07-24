@@ -1,7 +1,7 @@
 /**
  * スクリーンコントローラー
  *
- * @namespace controller/screen
+ * @namespace controllers/screen
  */
 
 import { Models } from '@motionpicture/ttts-domain';
@@ -12,7 +12,7 @@ import { NOT_FOUND, OK } from 'http-status';
 /**
  * スクリーンの座席マップを生成する
  *
- * @memberOf controller/screen
+ * @memberof controllers/screen
  */
 export async function show(req: Request, res: Response, next: NextFunction) {
     try {

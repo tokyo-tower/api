@@ -1,30 +1,30 @@
 /**
  * 座席予約コントローラー
  *
- * @namespace controller/reservation
+ * @namespace controllers/reservation
  */
 
-import { Models } from '@motionpicture/ttts-domain';
-import { ReservationUtil } from '@motionpicture/ttts-domain';
-
-import * as conf from 'config';
+import * as ttts from '@motionpicture/ttts-domain';
+import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
 import { NO_CONTENT, NOT_FOUND } from 'http-status';
 import * as moment from 'moment';
 import * as sendgrid from 'sendgrid';
 // import * as validator from 'validator';
 
+const debug = createDebug('ttts-api:controllers:reservation');
+
 /**
  * 予約情報メールを送信する
  *
- * @memberOf controller/reservation
+ * @memberof controllers/reservation
  */
 export async function transfer(req: Request, res: Response, next: NextFunction) {
     try {
         const id = req.params.id;
         const to = req.body.to;
 
-        const reservation = await Models.Reservation.findOne({ _id: id, status: ReservationUtil.STATUS_RESERVED }).exec();
+        const reservation = await ttts.Models.Reservation.findOne({ _id: id, status: ttts.ReservationUtil.STATUS_RESERVED }).exec();
         if (reservation === null) {
             res.status(NOT_FOUND);
             res.json({
@@ -45,10 +45,9 @@ export async function transfer(req: Request, res: Response, next: NextFunction) 
                 reservations: [reservation],
                 to: to,
                 moment: moment,
-                conf: conf,
                 titleJa: titleJa,
                 titleEn: titleEn,
-                ReservationUtil: ReservationUtil
+                ReservationUtil: ttts.ReservationUtil
             },
             async (renderErr, text) => {
                 try {
@@ -57,13 +56,13 @@ export async function transfer(req: Request, res: Response, next: NextFunction) 
                     }
 
                     const mail = new sendgrid.mail.Mail(
-                        new sendgrid.mail.Email(conf.get<string>('email.from'), conf.get<string>('email.fromname')),
+                        new sendgrid.mail.Email(<string>process.env.EMAIL_FROM_ADDRESS, <string>process.env.EMAIL_FROM_NAME),
                         `${titleJa} ${titleEn}`,
                         new sendgrid.mail.Email(to),
                         new sendgrid.mail.Content('text/plain', text)
                     );
 
-                    const sg = sendgrid(process.env.SENDGRID_API_KEY);
+                    const sg = sendgrid(<string>process.env.SENDGRID_API_KEY);
                     const request = sg.emptyRequest({
                         host: 'api.sendgrid.com',
                         method: 'POST',
@@ -91,11 +90,11 @@ export async function transfer(req: Request, res: Response, next: NextFunction) 
 /**
  * 入場履歴を追加する
  *
- * @memberOf controller/reservation
+ * @memberof controllers/reservation
  */
 export async function checkin(req: Request, res: Response, next: NextFunction) {
     try {
-        const reservation = await Models.Reservation.findByIdAndUpdate(
+        const reservation = await ttts.Models.Reservation.findByIdAndUpdate(
             req.params.id,
             {
                 $push: {
@@ -121,59 +120,28 @@ export async function checkin(req: Request, res: Response, next: NextFunction) {
     }
 }
 
-/**
- * ムビチケユーザーで検索する
- *
- * @memberOf controller/reservation
- */
-export async function findByMvtkUser(_: Request, res: Response) {
-    // ひとまずデモ段階では、一般予約を10件返す
-    const LIMIT = 10;
+export async function cancel(performanceDay: string, paymentNo: string): Promise<string[]> {
+    // 該当予約を検索
+    const reservationIds = await ttts.Models.Reservation.distinct(
+        '_id',
+        {
+            performance_day: performanceDay,
+            payment_no: paymentNo,
+            status: ttts.ReservationUtil.STATUS_RESERVED
+        }
+    ).exec().then((ids) => ids.map((id) => <string>id.toString()));
 
-    try {
-        const reservations = await Models.Reservation.find(
+    debug('canceling reservations...', performanceDay, paymentNo, reservationIds);
+
+    return await Promise.all(reservationIds.map(async (id) => {
+        const canceledReservation = <ttts.mongoose.Document>await ttts.Models.Reservation.findByIdAndUpdate(
+            id,
             {
-                purchaser_group: ReservationUtil.PURCHASER_GROUP_CUSTOMER,
-                status: ReservationUtil.STATUS_RESERVED
-            }
-        ).limit(LIMIT).exec();
-
-        res.json({
-            success: true,
-            reservations: reservations
-        });
-    } catch (error) {
-        res.json({
-            success: false,
-            reservations: []
-        });
-    }
-}
-
-/**
- * IDで検索する
- *
- * @memberOf controller/reservation
- */
-export async function findById(req: Request, res: Response) {
-    const id = req.params.id;
-
-    try {
-        const reservation = await Models.Reservation.findOne(
-            {
-                _id: id,
-                status: ReservationUtil.STATUS_RESERVED
+                $set: { status: ttts.ReservationUtil.STATUS_AVAILABLE },
+                $unset: { payment_no: 1, ticket_type: 1, expired_at: 1 }
             }
         ).exec();
 
-        res.json({
-            success: true,
-            reservation: reservation
-        });
-    } catch (error) {
-        res.json({
-            success: false,
-            reservation: null
-        });
-    }
+        return <string>canceledReservation.get('id');
+    }));
 }

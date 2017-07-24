@@ -1,7 +1,7 @@
 /**
  * パフォーマンスコントローラー
  *
- * @namespace controller/performance
+ * @namespace controllers/performance
  */
 
 import { Models, PerformanceStatusesModel } from '@motionpicture/ttts-domain';
@@ -16,7 +16,7 @@ const DEFAULT_RADIX = 10;
 /**
  * 検索する
  *
- * @memberOf controller/performance
+ * @memberof controllers/performance
  */
 // tslint:disable-next-line:max-func-body-length
 export async function search(req: Request, res: Response) {
@@ -88,21 +88,14 @@ export async function search(req: Request, res: Response) {
     const performancesCount = await Models.Performance.count(conditions).exec();
 
     // 必要な項目だけ指定すること(レスポンスタイムに大きく影響するので)
-    debug('locale:', req.getLocale());
-    const fields = (req.getLocale() === 'ja') ?
-        'day open_time start_time end_time film screen screen_name.ja theater theater_name.ja' :
-        'day open_time start_time end_time film screen screen_name.en theater theater_name.en';
+    const fields = 'day open_time start_time end_time film screen screen_name theater theater_name';
     const query = Models.Performance.find(conditions, fields);
 
     if (limit !== null) {
         query.skip(limit * (page - 1)).limit(limit);
     }
 
-    if (req.getLocale() === 'ja') {
-        query.populate('film', 'name.ja sections.name.ja minutes copyright');
-    } else {
-        query.populate('film', 'name.en sections.name.en minutes copyright');
-    }
+    query.populate('film', 'name sections.name minutes copyright');
 
     // 上映日、開始時刻
     query.setOptions({
@@ -115,7 +108,7 @@ export async function search(req: Request, res: Response) {
     const performances = <any[]>await query.lean(true).exec();
 
     // 空席情報を追加
-    const performanceStatuses = await PerformanceStatusesModel.find();
+    const performanceStatuses = await PerformanceStatusesModel.find().catch(() => undefined);
     const getStatus = (id: string) => {
         if (performanceStatuses !== undefined && performanceStatuses.hasOwnProperty(id)) {
             return (<any>performanceStatuses)[id];
@@ -134,11 +127,11 @@ export async function search(req: Request, res: Response) {
                 end_time: performance.end_time,
                 //seat_status: (performanceStatuses !== undefined) ? performanceStatuses.getStatus(performance._id.toString()) : null,
                 seat_status: getStatus(performance._id.toString()),
-                theater_name: performance.theater_name[req.getLocale()],
-                screen_name: performance.screen_name[req.getLocale()],
+                theater_name: performance.theater_name,
+                screen_name: performance.screen_name,
                 film: performance.film._id,
-                film_name: performance.film.name[req.getLocale()],
-                film_sections: performance.film.sections.map((filmSection: any) => filmSection.name[req.getLocale()]),
+                film_name: performance.film.name,
+                film_sections: performance.film.sections.map((filmSection: any) => filmSection.name),
                 film_minutes: performance.film.minutes,
                 film_copyright: performance.film.copyright,
                 film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.film._id}.jpg`

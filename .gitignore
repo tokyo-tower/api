@@ -4,6 +4,8 @@ iisnode/
 .env*
 docs/
 .vscode/
+coverage/
+.nyc_output/
 
 !.gitignore
 !.gitkeep

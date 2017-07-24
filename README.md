@@ -15,6 +15,9 @@ set GMO_SITE_ID=**********gmo サイトID**********
 set GMO_SHOP_ID=**********gmo ショップID**********
 set GMO_SHOP_PASS=**********gmo ショップパスワード**********
 set TTTS_API_SECRET=**********JWTに使用する鍵文字列**********
+set OFFICIAL_WEBSITE_URL=**********オフィシャルウェブサイトURL**********
+set EMAIL_FROM_ADDRESS=**********メール送信fromアドレス**********
+set EMAIL_FROM_NAME=**********メール送信from名前**********
 ```
 
 only on Aure WebApps

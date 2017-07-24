@@ -2,7 +2,7 @@
 /**
  * スクリーンコントローラー
  *
- * @namespace controller/screen
+ * @namespace controllers/screen
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -19,7 +19,7 @@ const http_status_1 = require("http-status");
 /**
  * スクリーンの座席マップを生成する
  *
- * @memberOf controller/screen
+ * @memberof controllers/screen
  */
 function show(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {

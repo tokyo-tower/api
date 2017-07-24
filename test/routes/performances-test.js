@@ -16,7 +16,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const assert = require("assert");
 const httpStatus = require("http-status");
 const supertest = require("supertest");
-const app = require("../app/app");
+const app = require("../../app/app");
 describe('パフォーマンスルーターテスト 検索', () => {
     // it('スコープ不足', async () => {
     //     await supertest(app)
@@ -44,19 +44,7 @@ describe('パフォーマンスルーターテスト 検索', () => {
     // });
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
-            .post('/oauth/token')
-            .send({
-            grant_type: 'password',
-            username: 'motionpicture',
-            password: 'motionpicture',
-            client_id: 'ttts-frontend',
-            scope: ['performances.readonly']
-        })
-            .then((response) => {
-            process.env.TTTS_API_ACCESS_TOKEN = response.body.access_token;
-        });
-        yield supertest(app)
-            .get('/ja/performance/search')
+            .get('/performances')
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({})

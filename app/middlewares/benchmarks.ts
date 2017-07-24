@@ -7,7 +7,7 @@
 import * as createDebug from 'debug';
 import * as express from 'express';
 
-const debug = createDebug('ttts-api:middleware:benchmarks');
+const debug = createDebug('ttts-api:middlewares:benchmarks');
 
 export default (req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (process.env.NODE_ENV === 'development') {

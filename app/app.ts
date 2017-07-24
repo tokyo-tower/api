@@ -3,25 +3,29 @@
  *
  * @module app
  */
+
+import * as ttts from '@motionpicture/ttts-domain';
 import * as bodyParser from 'body-parser';
 import * as createDebug from 'debug';
 import * as express from 'express';
 import expressValidator = require('express-validator'); // tslint:disable-line:no-require-imports
 import * as helmet from 'helmet';
 import * as i18n from 'i18n';
-import * as mongoose from 'mongoose';
 
 import mongooseConnectionOptions from '../mongooseConnectionOptions';
 
-// import authentication from './middlewares/authentication';
 import benchmarks from './middlewares/benchmarks';
 import cors from './middlewares/cors';
 import errorHandler from './middlewares/errorHandler';
 import notFoundHandler from './middlewares/notFoundHandler';
 
 import devRouter from './routes/dev';
-import oauthRouter from './routes/oauth';
+import oAuthRouter from './routes/oAuth';
+import performanceRouter from './routes/performances';
+import reservationRouter from './routes/reservations';
 import router from './routes/router';
+import screenRouter from './routes/screens';
+import transactionRouter from './routes/transactions';
 
 const debug = createDebug('ttts-api:app');
 
@@ -77,12 +81,12 @@ i18n.configure({
 app.use(i18n.init);
 
 // ルーティング
-app.use('/oauth', oauthRouter);
-
-// todo oauth認証を導入する
-// app.use(authentication); // oauth
-
+app.use('/oauth', oAuthRouter);
 app.use('/', router);
+app.use('/performances', performanceRouter);
+app.use('/reservations', reservationRouter);
+app.use('/screens', screenRouter);
+app.use('/transactions', transactionRouter);
 
 if (process.env.NODE_ENV !== 'production') {
     app.use('/dev', devRouter);
@@ -94,8 +98,8 @@ app.use(notFoundHandler);
 // error handlers
 app.use(errorHandler);
 
-// Use native promises
-(<any>mongoose).Promise = global.Promise;
-mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions);
+// @types/mongooseが古くて、新しいMongoDBクライアントの接続オプションに適合していない
+// 型定義の更新待ち
+ttts.mongoose.connect(<string>process.env.MONGOLAB_URI, <any>mongooseConnectionOptions);
 
 export = app;

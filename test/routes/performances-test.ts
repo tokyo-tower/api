@@ -8,7 +8,7 @@ import * as assert from 'assert';
 import * as httpStatus from 'http-status';
 import * as supertest from 'supertest';
 
-import * as app from '../app/app';
+import * as app from '../../app/app';
 
 describe('パフォーマンスルーターテスト 検索', () => {
     // it('スコープ不足', async () => {
@@ -39,20 +39,7 @@ describe('パフォーマンスルーターテスト 検索', () => {
 
     it('ok', async () => {
         await supertest(app)
-            .post('/oauth/token')
-            .send({
-                grant_type: 'password',
-                username: 'motionpicture',
-                password: 'motionpicture',
-                client_id: 'ttts-frontend',
-                scope: ['performances.readonly']
-            })
-            .then((response) => {
-                process.env.TTTS_API_ACCESS_TOKEN = response.body.access_token;
-            });
-
-        await supertest(app)
-            .get('/ja/performance/search')
+            .get('/performances')
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({

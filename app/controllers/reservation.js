@@ -2,7 +2,7 @@
 /**
  * 座席予約コントローラー
  *
- * @namespace controller/reservation
+ * @namespace controllers/reservation
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -13,24 +13,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
-const ttts_domain_2 = require("@motionpicture/ttts-domain");
-const conf = require("config");
+const ttts = require("@motionpicture/ttts-domain");
+const createDebug = require("debug");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const sendgrid = require("sendgrid");
 // import * as validator from 'validator';
+const debug = createDebug('ttts-api:controllers:reservation');
 /**
  * 予約情報メールを送信する
  *
- * @memberOf controller/reservation
+ * @memberof controllers/reservation
  */
 function transfer(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const id = req.params.id;
             const to = req.body.to;
-            const reservation = yield ttts_domain_1.Models.Reservation.findOne({ _id: id, status: ttts_domain_2.ReservationUtil.STATUS_RESERVED }).exec();
+            const reservation = yield ttts.Models.Reservation.findOne({ _id: id, status: ttts.ReservationUtil.STATUS_RESERVED }).exec();
             if (reservation === null) {
                 res.status(http_status_1.NOT_FOUND);
                 res.json({
@@ -46,16 +46,15 @@ function transfer(req, res, next) {
                 reservations: [reservation],
                 to: to,
                 moment: moment,
-                conf: conf,
                 titleJa: titleJa,
                 titleEn: titleEn,
-                ReservationUtil: ttts_domain_2.ReservationUtil
+                ReservationUtil: ttts.ReservationUtil
             }, (renderErr, text) => __awaiter(this, void 0, void 0, function* () {
                 try {
                     if (renderErr instanceof Error) {
                         throw renderErr;
                     }
-                    const mail = new sendgrid.mail.Mail(new sendgrid.mail.Email(conf.get('email.from'), conf.get('email.fromname')), `${titleJa} ${titleEn}`, new sendgrid.mail.Email(to), new sendgrid.mail.Content('text/plain', text));
+                    const mail = new sendgrid.mail.Mail(new sendgrid.mail.Email(process.env.EMAIL_FROM_ADDRESS, process.env.EMAIL_FROM_NAME), `${titleJa} ${titleEn}`, new sendgrid.mail.Email(to), new sendgrid.mail.Content('text/plain', text));
                     const sg = sendgrid(process.env.SENDGRID_API_KEY);
                     const request = sg.emptyRequest({
                         host: 'api.sendgrid.com',
@@ -85,12 +84,12 @@ exports.transfer = transfer;
 /**
  * 入場履歴を追加する
  *
- * @memberOf controller/reservation
+ * @memberof controllers/reservation
  */
 function checkin(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const reservation = yield ttts_domain_1.Models.Reservation.findByIdAndUpdate(req.params.id, {
+            const reservation = yield ttts.Models.Reservation.findByIdAndUpdate(req.params.id, {
                 $push: {
                     checkins: {
                         when: moment().toDate(),
@@ -115,58 +114,22 @@ function checkin(req, res, next) {
     });
 }
 exports.checkin = checkin;
-/**
- * ムビチケユーザーで検索する
- *
- * @memberOf controller/reservation
- */
-function findByMvtkUser(_, res) {
+function cancel(performanceDay, paymentNo) {
     return __awaiter(this, void 0, void 0, function* () {
-        // ひとまずデモ段階では、一般予約を10件返す
-        const LIMIT = 10;
-        try {
-            const reservations = yield ttts_domain_1.Models.Reservation.find({
-                purchaser_group: ttts_domain_2.ReservationUtil.PURCHASER_GROUP_CUSTOMER,
-                status: ttts_domain_2.ReservationUtil.STATUS_RESERVED
-            }).limit(LIMIT).exec();
-            res.json({
-                success: true,
-                reservations: reservations
-            });
-        }
-        catch (error) {
-            res.json({
-                success: false,
-                reservations: []
-            });
-        }
-    });
-}
-exports.findByMvtkUser = findByMvtkUser;
-/**
- * IDで検索する
- *
- * @memberOf controller/reservation
- */
-function findById(req, res) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const id = req.params.id;
-        try {
-            const reservation = yield ttts_domain_1.Models.Reservation.findOne({
-                _id: id,
-                status: ttts_domain_2.ReservationUtil.STATUS_RESERVED
+        // 該当予約を検索
+        const reservationIds = yield ttts.Models.Reservation.distinct('_id', {
+            performance_day: performanceDay,
+            payment_no: paymentNo,
+            status: ttts.ReservationUtil.STATUS_RESERVED
+        }).exec().then((ids) => ids.map((id) => id.toString()));
+        debug('canceling reservations...', performanceDay, paymentNo, reservationIds);
+        return yield Promise.all(reservationIds.map((id) => __awaiter(this, void 0, void 0, function* () {
+            const canceledReservation = yield ttts.Models.Reservation.findByIdAndUpdate(id, {
+                $set: { status: ttts.ReservationUtil.STATUS_AVAILABLE },
+                $unset: { payment_no: 1, ticket_type: 1, expired_at: 1 }
             }).exec();
-            res.json({
-                success: true,
-                reservation: reservation
-            });
-        }
-        catch (error) {
-            res.json({
-                success: false,
-                reservation: null
-            });
-        }
+            return canceledReservation.get('id');
+        })));
     });
 }
-exports.findById = findById;
+exports.cancel = cancel;

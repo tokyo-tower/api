@@ -13,28 +13,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const ttts = require("@motionpicture/ttts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
+// import * as mongoose from 'mongoose';
 const supertest = require("supertest");
-const app = require("../app/app");
+const app = require("../../app/app");
 describe('スクリーンルーター 座席html取得', () => {
-    before(() => __awaiter(this, void 0, void 0, function* () {
-        yield supertest(app)
-            .post('/oauth/token')
-            .send({
-            grant_type: 'password',
-            username: 'motionpicture',
-            password: 'motionpicture',
-            client_id: 'ttts-frontend',
-            scope: ['admin']
-        })
-            .then((response) => {
-            process.env.TTTS_API_ACCESS_TOKEN = response.body.access_token;
-        });
-    }));
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
+        // テストデータ作成
+        const screenId = '00101';
+        yield ttts.Models.Screen.findByIdAndUpdate(screenId, {}, { upsert: true }).exec();
         yield supertest(app)
-            .get('/screen/00101/show')
+            .get(`/screens/${screenId}/show`)
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({})
@@ -42,10 +33,11 @@ describe('スクリーンルーター 座席html取得', () => {
             .then((response) => __awaiter(this, void 0, void 0, function* () {
             assert(typeof response.body.data === 'string');
         }));
+        yield ttts.Models.Screen.findByIdAndRemove(screenId).exec();
     }));
     it('存在しない', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
-            .get('/screen/xxx/show')
+            .get('/screens/xxx/show')
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
