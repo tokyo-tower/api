@@ -27,7 +27,9 @@ before(() => __awaiter(this, void 0, void 0, function* () {
         scopes: [
             'performances',
             'screens',
-            'reservations'
+            'reservations',
+            'transactions',
+            'transactions.authorizations'
         ]
     })
         .expect(httpStatus.OK)

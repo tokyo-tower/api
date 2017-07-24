@@ -19,7 +19,9 @@ before(async () => {
             scopes: [
                 'performances',
                 'screens',
-                'reservations'
+                'reservations',
+                'transactions',
+                'transactions.authorizations'
             ]
         })
         .expect(httpStatus.OK)
