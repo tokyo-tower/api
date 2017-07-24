@@ -15,7 +15,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const ttts_domain_1 = require("@motionpicture/ttts-domain");
 const ttts_domain_2 = require("@motionpicture/ttts-domain");
-const conf = require("config");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const sendgrid = require("sendgrid");
@@ -46,7 +45,6 @@ function transfer(req, res, next) {
                 reservations: [reservation],
                 to: to,
                 moment: moment,
-                conf: conf,
                 titleJa: titleJa,
                 titleEn: titleEn,
                 ReservationUtil: ttts_domain_2.ReservationUtil
@@ -55,7 +53,7 @@ function transfer(req, res, next) {
                     if (renderErr instanceof Error) {
                         throw renderErr;
                     }
-                    const mail = new sendgrid.mail.Mail(new sendgrid.mail.Email(conf.get('email.from'), conf.get('email.fromname')), `${titleJa} ${titleEn}`, new sendgrid.mail.Email(to), new sendgrid.mail.Content('text/plain', text));
+                    const mail = new sendgrid.mail.Mail(new sendgrid.mail.Email(process.env.EMAIL_FROM_ADDRESS, process.env.EMAIL_FROM_NAME), `${titleJa} ${titleEn}`, new sendgrid.mail.Email(to), new sendgrid.mail.Content('text/plain', text));
                     const sg = sendgrid(process.env.SENDGRID_API_KEY);
                     const request = sg.emptyRequest({
                         host: 'api.sendgrid.com',

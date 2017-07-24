@@ -7,7 +7,6 @@
 import { Models } from '@motionpicture/ttts-domain';
 import { ReservationUtil } from '@motionpicture/ttts-domain';
 
-import * as conf from 'config';
 import { NextFunction, Request, Response } from 'express';
 import { NO_CONTENT, NOT_FOUND } from 'http-status';
 import * as moment from 'moment';
@@ -45,7 +44,6 @@ export async function transfer(req: Request, res: Response, next: NextFunction) 
                 reservations: [reservation],
                 to: to,
                 moment: moment,
-                conf: conf,
                 titleJa: titleJa,
                 titleEn: titleEn,
                 ReservationUtil: ReservationUtil
@@ -57,7 +55,7 @@ export async function transfer(req: Request, res: Response, next: NextFunction) 
                     }
 
                     const mail = new sendgrid.mail.Mail(
-                        new sendgrid.mail.Email(conf.get<string>('email.from'), conf.get<string>('email.fromname')),
+                        new sendgrid.mail.Email(<string>process.env.EMAIL_FROM_ADDRESS, <string>process.env.EMAIL_FROM_NAME),
                         `${titleJa} ${titleEn}`,
                         new sendgrid.mail.Email(to),
                         new sendgrid.mail.Content('text/plain', text)

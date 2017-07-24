@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Deprecated
 
 ### Removed
+- configパッケージを削除。環境依存変数を全てprocess.envへ移行。
 
 ### Fixed
 
