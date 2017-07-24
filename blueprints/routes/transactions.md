@@ -25,7 +25,7 @@
 空席がない場合、ステータスコード404を返却します。
 
 ::: note
-This action requires an `access_token` with `transactions` scope.
+This action requires an `access_token` with `transactions.authorizations` scope.
 :::
 
 + Request (application/json)
@@ -57,7 +57,7 @@ This action requires an `access_token` with `transactions` scope.
 仮予約を解除します。仮予約を解除された座席は、即座に空席として解放されます。
 
 ::: note
-This action requires an `access_token` with `transactions` scope.
+This action requires an `access_token` with `transactions.authorizations` scope.
 :::
 
 + Response 204
@@ -70,7 +70,7 @@ This action requires an `access_token` with `transactions` scope.
 
 
 
-## 座席本予約 [/transactions/settle]
+## 座席本予約 [/transactions/confirm]
 
 ### 座席本予約 [POST]
 仮予約リストから予約を確定します。仮予約IDごとに券種や価格の情報を付与してください。  
@@ -104,6 +104,7 @@ value                     | type                      | description
 
 + Request (application/json)
     + Attributes
+        + performance: `59119065e3157c1884d3c333` (string, required) - パフォーマンスID
         + authorizations: (array[Transactions.AuthorizationsWithTicketTypes], fixed_type) - 仮予約リスト
         + payment_method: `0` (string, required) - 決済方法
         + purchaser_group: `06` (string, required) - 購入者区分
@@ -123,30 +124,5 @@ value                     | type                      | description
                     + seat_code: `A-1` (string, required) - 座席番号
                     + payment_no: `1234567` (string, required) - 購入番号
                     + qr_str: `123456789` (string, required) - 座席入場QRコード
-
-<!-- include(../response/400.md) -->
-
-
-
-## 座席本予約取消 [/transactions/cancel]
-
-### 座席本予約取消 [POST]
-上映日と購入番号から本予約を取り消します。  
-該当予約がない場合、ステータスコード404を返却します。
-
-::: note
-This action requires an `access_token` with `transactions` scope.
-:::
-
-+ Request (application/json)
-    + Attributes
-        + performance_day: `20170511` (string, required) - 上映日
-        + payment_no: `1234567` (string, required) - 購入番号
-
-+ Response 204
-
-+ Response 404 (application/json)
-    + Attributes (object)
-        + data: null (object, nullable)
 
 <!-- include(../response/400.md) -->

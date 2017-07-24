@@ -51,6 +51,8 @@ errors[].detail           | String                    | 詳細なエラー内容
 
 <!-- include(routes/performances.md) -->
 
+<!-- include(routes/reservations.md) -->
+
 <!-- include(routes/transactions.md) -->
 
 <!-- include(routes/404.md) -->

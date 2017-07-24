@@ -14,7 +14,9 @@
 **利用可能なスコープ**
 | scope                              | description
 | :--------------------------------- | :--------------------------------- 
-| transactions                       | 座席予約取引処理
+| transactions                       | 座席予約取引に対する書き込み処理
+| transactions.authorizations        | 座席予約取引中の仮予約に対する書き込み処理
+| reservations                       | 予約に対する書き込み処理
 | performances.readonly              | パフォーマンス読み込み
 
 ::: note
@@ -30,7 +32,9 @@
             クライアントID(api利用時にmotionpictureが発行するのでアプリケーション側で大切に保管してください)
         + `client_secret`: `motionpicture` (string, required)
             クライアントシークレット(api利用時にmotionpictureが発行するのでアプリケーション側で大切に保管してください)
-        + `scope` (array, fixed-type, required) - 必要なスコープは、各APIの説明を参照してください。
+        + `state`: `state123456789` (string, required)
+            クライアント状態(クライアント側で現在のユーザー状態を表す文字列を送信してください。例えばセッションIDなどです)
+        + `scopes` (array, fixed-type, required) - 必要なスコープは、各APIの説明を参照してください。
             + `transactions` (string)
             + `performances.readonly` (string)
 
