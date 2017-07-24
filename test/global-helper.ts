@@ -9,16 +9,14 @@ import * as supertest from 'supertest';
 import * as app from '../app/app';
 
 before(async () => {
-    // todo テスト用のオーナーとクライアントを生成
-
     await supertest(app)
         .post('/oauth/token')
         .send({
-            grant_type: 'password',
-            username: 'motionpicture',
-            password: 'motionpicture',
-            client_id: 'ttts-frontend',
-            scope: ['admin']
+            grant_type: 'client_credentials',
+            client_id: 'motionpicture',
+            client_secret: 'motionpicture',
+            state: 'teststate',
+            scopes: ['admin']
         })
         .expect(httpStatus.OK)
         .then((response) => {

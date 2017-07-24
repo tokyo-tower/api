@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- クライアント認証の仕組みを実装。
 
 ### Changed
 

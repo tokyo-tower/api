@@ -4,7 +4,7 @@
  * @ignore
  */
 
-import * as TTTS from '@motionpicture/ttts-domain';
+import * as ttts from '@motionpicture/ttts-domain';
 import * as assert from 'assert';
 import * as httpStatus from 'http-status';
 import * as mongoose from 'mongoose';
@@ -13,40 +13,18 @@ import * as supertest from 'supertest';
 import * as app from '../app/app';
 
 describe('予約ルーター 入場', () => {
-    let connection: mongoose.Connection;
-    before(async () => {
-        connection = mongoose.createConnection(<string>process.env.MONGOLAB_URI);
-
-        // 予約全削除
-        await TTTS.Models.Reservation.remove({}).exec();
-
-        await supertest(app)
-            .post('/oauth/token')
-            .send({
-                grant_type: 'password',
-                username: 'motionpicture',
-                password: 'motionpicture',
-                client_id: 'ttts-frontend',
-                scope: ['admin']
-            })
-            .then((response) => {
-                process.env.TTTS_API_ACCESS_TOKEN = response.body.access_token;
-            });
-    });
-
     it('ok', async () => {
         // テストデータ作成
-        const reservationModel = connection.model(TTTS.Models.Reservation.modelName, TTTS.Models.Reservation.schema);
-        let reservationDoc = await reservationModel.create({
+        const reservation = {
             performance: 'xxx',
             seat_code: 'xxx',
-            status: TTTS.ReservationUtil.STATUS_RESERVED
-        });
-
-        assert(reservationDoc.get('checked_in') === false);
+            status: ttts.ReservationUtil.STATUS_RESERVED,
+            checkins: []
+        };
+        let reservationDoc = await ttts.Models.Reservation.findOneAndUpdate(reservation, reservation, { new: true, upsert: true });
 
         await supertest(app)
-            .post(`/reservation/${reservationDoc.get('id')}/checkin`)
+            .post(`/reservation/${(<mongoose.Document>reservationDoc).get('id')}/checkin`)
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
@@ -57,7 +35,9 @@ describe('予約ルーター 入場', () => {
             .expect(httpStatus.NO_CONTENT)
             .then(async () => {
                 // 入場履歴が追加されているかどうか確認
-                reservationDoc = <mongoose.Document>await reservationModel.findById(reservationDoc.get('id')).exec();
+                reservationDoc = <mongoose.Document>await ttts.Models.Reservation.findById(
+                    (<mongoose.Document>reservationDoc).get('id')
+                ).exec();
                 assert(reservationDoc.get('checked_in'));
 
                 // テストデータ削除
@@ -76,31 +56,12 @@ describe('予約ルーター 入場', () => {
 });
 
 describe('予約ルーター メール転送', () => {
-    let connection: mongoose.Connection;
-    before(async () => {
-        connection = mongoose.createConnection(<string>process.env.MONGOLAB_URI);
-
-        await supertest(app)
-            .post('/oauth/token')
-            .send({
-                grant_type: 'password',
-                username: 'motionpicture',
-                password: 'motionpicture',
-                client_id: 'ttts-frontend',
-                scope: ['admin']
-            })
-            .then((response) => {
-                process.env.TTTS_API_ACCESS_TOKEN = response.body.access_token;
-            });
-    });
-
     it('ok', async () => {
         // テストデータ作成
-        const reservationModel = connection.model(TTTS.Models.Reservation.modelName, TTTS.Models.Reservation.schema);
-        const reservationDoc = await reservationModel.create({
+        const reservationDoc = await ttts.Models.Reservation.create({
             performance: 'xxx',
             seat_code: 'xxx',
-            status: TTTS.ReservationUtil.STATUS_RESERVED
+            status: ttts.ReservationUtil.STATUS_RESERVED
         });
 
         await supertest(app)

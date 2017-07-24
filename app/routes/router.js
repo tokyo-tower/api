@@ -3,12 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const router = express.Router();
 // import requireScope from '../middlewares/requireScope';
+const authentication_1 = require("../middlewares/authentication");
 const setLocale_1 = require("../middlewares/setLocale");
 const validator_1 = require("../middlewares/validator");
-// import * as AuthController from '../controllers/auth';
 const PerformanceController = require("../controllers/performance");
 const ReservationController = require("../controllers/reservation");
 const ScreenController = require("../controllers/screen");
+router.use(authentication_1.default);
 /**
  * URLルーティング
  */
@@ -27,10 +28,6 @@ router.post('/:locale/reservation/:id/transfer', setLocale_1.default, (req, __, 
 router.get('/screen/:id/show', (__1, __2, next) => {
     next();
 }, validator_1.default, ScreenController.show);
-// router.post('/login', setLocale, AuthController.login);
-// 要認証サービス
-// router.all('/reservations', passport.authenticate('bearer', { session: false }), setLocale, ReservationController.findByMvtkUser);
-// router.all('/reservation/:id', passport.authenticate('bearer', { session: false }), setLocale, ReservationController.findById);
 // 入場
 router.post('/reservation/:id/checkin', setLocale_1.default, (__1, __2, next) => {
     next();

@@ -17,15 +17,14 @@ const httpStatus = require("http-status");
 const supertest = require("supertest");
 const app = require("../app/app");
 before(() => __awaiter(this, void 0, void 0, function* () {
-    // todo テスト用のオーナーとクライアントを生成
     yield supertest(app)
         .post('/oauth/token')
         .send({
-        grant_type: 'password',
-        username: 'motionpicture',
-        password: 'motionpicture',
-        client_id: 'ttts-frontend',
-        scope: ['admin']
+        grant_type: 'client_credentials',
+        client_id: 'motionpicture',
+        client_secret: 'motionpicture',
+        state: 'teststate',
+        scopes: ['admin']
     })
         .expect(httpStatus.OK)
         .then((response) => {

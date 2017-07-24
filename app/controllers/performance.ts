@@ -115,7 +115,7 @@ export async function search(req: Request, res: Response) {
     const performances = <any[]>await query.lean(true).exec();
 
     // 空席情報を追加
-    const performanceStatuses = await PerformanceStatusesModel.find();
+    const performanceStatuses = await PerformanceStatusesModel.find().catch(() => undefined);
     const getStatus = (id: string) => {
         if (performanceStatuses !== undefined && performanceStatuses.hasOwnProperty(id)) {
             return (<any>performanceStatuses)[id];

@@ -106,7 +106,7 @@ function search(req, res) {
         });
         const performances = yield query.lean(true).exec();
         // 空席情報を追加
-        const performanceStatuses = yield ttts_domain_1.PerformanceStatusesModel.find();
+        const performanceStatuses = yield ttts_domain_1.PerformanceStatusesModel.find().catch(() => undefined);
         const getStatus = (id) => {
             if (performanceStatuses !== undefined && performanceStatuses.hasOwnProperty(id)) {
                 return performanceStatuses[id];

@@ -3,13 +3,15 @@ import * as express from 'express';
 const router = express.Router();
 
 // import requireScope from '../middlewares/requireScope';
+import authentication from '../middlewares/authentication';
 import setLocale from '../middlewares/setLocale';
 import validator from '../middlewares/validator';
 
-// import * as AuthController from '../controllers/auth';
 import * as PerformanceController from '../controllers/performance';
 import * as ReservationController from '../controllers/reservation';
 import * as ScreenController from '../controllers/screen';
+
+router.use(authentication);
 
 /**
  * URLルーティング
@@ -47,12 +49,6 @@ router.get(
     validator,
     ScreenController.show
 );
-
-// router.post('/login', setLocale, AuthController.login);
-
-// 要認証サービス
-// router.all('/reservations', passport.authenticate('bearer', { session: false }), setLocale, ReservationController.findByMvtkUser);
-// router.all('/reservation/:id', passport.authenticate('bearer', { session: false }), setLocale, ReservationController.findById);
 
 // 入場
 router.post(
