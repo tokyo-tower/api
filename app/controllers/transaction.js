@@ -53,6 +53,17 @@ exports.createAuthorization = createAuthorization;
 function deleteAuthorization(authorizationId) {
     return __awaiter(this, void 0, void 0, function* () {
         debug('deleting authorization...', authorizationId);
+        // 座席をひとつ解放する
+        const reservationDoc = yield ttts.Models.Reservation.findOneAndUpdate({
+            _id: authorizationId,
+            status: ttts.ReservationUtil.STATUS_TEMPORARY
+        }, {
+            $set: { status: ttts.ReservationUtil.STATUS_AVAILABLE },
+            $unset: { payment_no: 1, ticket_type: 1, expired_at: 1 }
+        }, {
+            new: true
+        }).exec();
+        return (reservationDoc === null) ? monapt.None : monapt.Option(reservationDoc.get('id'));
     });
 }
 exports.deleteAuthorization = deleteAuthorization;

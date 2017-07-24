@@ -55,9 +55,19 @@ transactionRouter.delete('/authorizations/:id', permitScopes_1.default(['transac
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield TransactionController.deleteAuthorization(req.params.id);
-        res.status(httpStatus.OK).json({
-            data: {}
+        yield TransactionController.deleteAuthorization(req.params.id)
+            .then((option) => {
+            option.match({
+                Some: () => {
+                    res.status(httpStatus.NO_CONTENT).end();
+                },
+                None: () => {
+                    // 該当予約がなければ404
+                    res.status(httpStatus.NOT_FOUND).json({
+                        data: null
+                    });
+                }
+            });
         });
     }
     catch (error) {

@@ -54,8 +54,24 @@ export async function createAuthorization(performanceId: string): Promise<monapt
     }
 }
 
-export async function deleteAuthorization(authorizationId: string): Promise<void> {
+export async function deleteAuthorization(authorizationId: string): Promise<monapt.Option<string>> {
     debug('deleting authorization...', authorizationId);
+    // 座席をひとつ解放する
+    const reservationDoc = await ttts.Models.Reservation.findOneAndUpdate(
+        {
+            _id: authorizationId,
+            status: ttts.ReservationUtil.STATUS_TEMPORARY
+        },
+        {
+            $set: { status: ttts.ReservationUtil.STATUS_AVAILABLE },
+            $unset: { payment_no: 1, ticket_type: 1, expired_at: 1 }
+        },
+        {
+            new: true
+        }
+    ).exec();
+
+    return (reservationDoc === null) ? monapt.None : monapt.Option(reservationDoc.get('id'));
 }
 
 export async function confirm(): Promise<void> {

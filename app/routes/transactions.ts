@@ -46,7 +46,6 @@ transactionRouter.post(
                             res.status(httpStatus.NOT_FOUND).json({
                                 data: null
                             });
-
                         }
                     });
                 });
@@ -66,11 +65,20 @@ transactionRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            await TransactionController.deleteAuthorization(req.params.id);
-
-            res.status(httpStatus.OK).json({
-                data: {}
-            });
+            await TransactionController.deleteAuthorization(req.params.id)
+                .then((option) => {
+                    option.match({
+                        Some: () => {
+                            res.status(httpStatus.NO_CONTENT).end();
+                        },
+                        None: () => {
+                            // 該当予約がなければ404
+                            res.status(httpStatus.NOT_FOUND).json({
+                                data: null
+                            });
+                        }
+                    });
+                });
         } catch (error) {
             next(error);
         }
