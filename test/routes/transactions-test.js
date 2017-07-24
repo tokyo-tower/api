@@ -13,7 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// import * as ttts from '@motionpicture/ttts-domain';
+const ttts = require("@motionpicture/ttts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
 // import * as mongoose from 'mongoose';
@@ -21,14 +21,40 @@ const supertest = require("supertest");
 const app = require("../../app/app");
 describe('座席仮予約', () => {
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
+        // テストデータ作成
+        const reservation = {
+            performance: 123,
+            seat_code: 'A-1',
+            status: ttts.ReservationUtil.STATUS_AVAILABLE
+        };
+        const reservationDoc = yield ttts.Models.Reservation.findOneAndUpdate({
+            performance: reservation.performance,
+            seat_code: reservation.seat_code
+        }, reservation, { new: true, upsert: true }).exec();
         yield supertest(app)
             .post('/transactions/authorizations')
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
-            .send({})
+            .send({
+            performance: reservation.performance
+        })
             .expect(httpStatus.OK)
             .then((response) => __awaiter(this, void 0, void 0, function* () {
-            assert.deepEqual(response.body.data, {});
+            assert.equal(response.body.data.id, reservationDoc.get('id'));
+            yield reservationDoc.remove();
+        }));
+    }));
+    it('空席がなければ404', () => __awaiter(this, void 0, void 0, function* () {
+        yield supertest(app)
+            .post('/transactions/authorizations')
+            .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
+            .set('Accept', 'application/json')
+            .send({
+            performance: 'xxx'
+        })
+            .expect(httpStatus.NOT_FOUND)
+            .then((response) => __awaiter(this, void 0, void 0, function* () {
+            assert.equal(response.body.data, null);
         }));
     }));
 });

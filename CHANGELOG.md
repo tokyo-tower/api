@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - クライアント認証の仕組みを実装。
 - 許可スコープチェックの仕組みを実装。
 - 取引ルーターを追加。
+- 座席仮予約エンドポイントを追加。
 
 ### Changed
 - パフォーマンス検索のレスポンスを多言語化。

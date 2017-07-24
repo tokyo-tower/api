@@ -4,57 +4,64 @@
  * @namespace controllers/transaction
  */
 
-// import * as ttts from '@motionpicture/ttts-domain';
+import * as ttts from '@motionpicture/ttts-domain';
 import * as createDebug from 'debug';
-import { NextFunction, Request, Response } from 'express';
-import * as httpStatus from 'http-status';
+import * as moment from 'moment';
+import * as monapt from 'monapt';
 
 const debug = createDebug('ttts-api:controllers:transaction');
+/**
+ * 仮予約有効期間(分)
+ * POSの要件に応じてここを調整してください。
+ */
+const TEMPORARY_RESERVATION_EXPIRES_IN_MINUTES = 15;
 
-export async function createAuthorization(req: Request, res: Response, next: NextFunction) {
-    debug(req.body);
+export interface IAuthorization {
+    // tslint:disable-next-line:no-reserved-keywords
+    type: string;
+    id: string;
+    attributes: {
+        expires_at: string;
+    };
+}
 
-    try {
-        res.status(httpStatus.OK).json({
-            data: {}
+export async function createAuthorization(performanceId: string): Promise<monapt.Option<IAuthorization>> {
+    // 座席をひとつ仮予約
+    const reservationDoc = await ttts.Models.Reservation.findOneAndUpdate(
+        {
+            performance: performanceId,
+            status: ttts.ReservationUtil.STATUS_AVAILABLE
+        },
+        {
+            status: ttts.ReservationUtil.STATUS_TEMPORARY,
+            expired_at: moment().add(TEMPORARY_RESERVATION_EXPIRES_IN_MINUTES, 'minutes').toDate()
+        },
+        {
+            new: true
+        }
+    );
+
+    if (reservationDoc === null) {
+        return monapt.None;
+    } else {
+        return monapt.Option({
+            type: 'authorizations',
+            id: reservationDoc.get('id'),
+            attributes: {
+                expires_at: reservationDoc.get('expired_at')
+            }
         });
-    } catch (error) {
-        next(error);
     }
 }
 
-export async function deleteAuthorization(req: Request, res: Response, next: NextFunction) {
-    debug(req.body);
-
-    try {
-        res.status(httpStatus.OK).json({
-            data: {}
-        });
-    } catch (error) {
-        next(error);
-    }
+export async function deleteAuthorization(authorizationId: string): Promise<void> {
+    debug('deleting authorization...', authorizationId);
 }
 
-export async function confirm(req: Request, res: Response, next: NextFunction) {
-    debug(req.body);
-
-    try {
-        res.status(httpStatus.OK).json({
-            data: {}
-        });
-    } catch (error) {
-        next(error);
-    }
+export async function confirm(): Promise<void> {
+    debug('confirming transaction...');
 }
 
-export async function cancel(req: Request, res: Response, next: NextFunction) {
-    debug(req.body);
-
-    try {
-        res.status(httpStatus.OK).json({
-            data: {}
-        });
-    } catch (error) {
-        next(error);
-    }
+export async function cancel(): Promise<void> {
+    debug('canceling reservations...');
 }

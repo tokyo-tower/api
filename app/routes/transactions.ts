@@ -5,6 +5,7 @@
  */
 
 import * as express from 'express';
+import * as httpStatus from 'http-status';
 
 const transactionRouter = express.Router();
 
@@ -17,15 +18,42 @@ import validator from '../middlewares/validator';
 
 transactionRouter.use(authentication);
 
+/**
+ * 座席仮予約
+ */
 transactionRouter.post(
     '/authorizations',
     permitScopes(['transactions.authorizations']),
     setLocale,
-    (__1, __2, next) => {
+    (req, __2, next) => {
+        req.checkBody('performance').notEmpty().withMessage('performance is required');
+
         next();
     },
     validator,
-    TransactionController.createAuthorization
+    async (req, res, next) => {
+        try {
+            await TransactionController.createAuthorization(req.body.performance)
+                .then((option) => {
+                    option.match({
+                        Some: (authorization) => {
+                            res.status(httpStatus.OK).json({
+                                data: authorization
+                            });
+                        },
+                        None: () => {
+                            // 空席がなければ404
+                            res.status(httpStatus.NOT_FOUND).json({
+                                data: null
+                            });
+
+                        }
+                    });
+                });
+        } catch (error) {
+            next(error);
+        }
+    }
 );
 
 transactionRouter.delete(
@@ -36,7 +64,17 @@ transactionRouter.delete(
         next();
     },
     validator,
-    TransactionController.deleteAuthorization
+    async (req, res, next) => {
+        try {
+            await TransactionController.deleteAuthorization(req.params.id);
+
+            res.status(httpStatus.OK).json({
+                data: {}
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 );
 
 transactionRouter.post(
@@ -47,7 +85,17 @@ transactionRouter.post(
         next();
     },
     validator,
-    TransactionController.confirm
+    async (__, res, next) => {
+        try {
+            await TransactionController.confirm();
+
+            res.status(httpStatus.OK).json({
+                data: {}
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 );
 
 transactionRouter.post(
@@ -58,7 +106,17 @@ transactionRouter.post(
         next();
     },
     validator,
-    TransactionController.cancel
+    async (__, res, next) => {
+        try {
+            await TransactionController.cancel();
+
+            res.status(httpStatus.OK).json({
+                data: {}
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 );
 
 export default transactionRouter;

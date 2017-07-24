@@ -13,63 +13,58 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// import * as ttts from '@motionpicture/ttts-domain';
+const ttts = require("@motionpicture/ttts-domain");
 const createDebug = require("debug");
-const httpStatus = require("http-status");
+const moment = require("moment");
+const monapt = require("monapt");
 const debug = createDebug('ttts-api:controllers:transaction');
-function createAuthorization(req, res, next) {
+/**
+ * 仮予約有効期間(分)
+ * POSの要件に応じてここを調整してください。
+ */
+const TEMPORARY_RESERVATION_EXPIRES_IN_MINUTES = 15;
+function createAuthorization(performanceId) {
     return __awaiter(this, void 0, void 0, function* () {
-        debug(req.body);
-        try {
-            res.status(httpStatus.OK).json({
-                data: {}
-            });
+        // 座席をひとつ仮予約
+        const reservationDoc = yield ttts.Models.Reservation.findOneAndUpdate({
+            performance: performanceId,
+            status: ttts.ReservationUtil.STATUS_AVAILABLE
+        }, {
+            status: ttts.ReservationUtil.STATUS_TEMPORARY,
+            expired_at: moment().add(TEMPORARY_RESERVATION_EXPIRES_IN_MINUTES, 'minutes').toDate()
+        }, {
+            new: true
+        });
+        if (reservationDoc === null) {
+            return monapt.None;
         }
-        catch (error) {
-            next(error);
+        else {
+            return monapt.Option({
+                type: 'authorizations',
+                id: reservationDoc.get('id'),
+                attributes: {
+                    expires_at: reservationDoc.get('expired_at')
+                }
+            });
         }
     });
 }
 exports.createAuthorization = createAuthorization;
-function deleteAuthorization(req, res, next) {
+function deleteAuthorization(authorizationId) {
     return __awaiter(this, void 0, void 0, function* () {
-        debug(req.body);
-        try {
-            res.status(httpStatus.OK).json({
-                data: {}
-            });
-        }
-        catch (error) {
-            next(error);
-        }
+        debug('deleting authorization...', authorizationId);
     });
 }
 exports.deleteAuthorization = deleteAuthorization;
-function confirm(req, res, next) {
+function confirm() {
     return __awaiter(this, void 0, void 0, function* () {
-        debug(req.body);
-        try {
-            res.status(httpStatus.OK).json({
-                data: {}
-            });
-        }
-        catch (error) {
-            next(error);
-        }
+        debug('confirming transaction...');
     });
 }
 exports.confirm = confirm;
-function cancel(req, res, next) {
+function cancel() {
     return __awaiter(this, void 0, void 0, function* () {
-        debug(req.body);
-        try {
-            res.status(httpStatus.OK).json({
-                data: {}
-            });
-        }
-        catch (error) {
-            next(error);
-        }
+        debug('canceling reservations...');
     });
 }
 exports.cancel = cancel;
