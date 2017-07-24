@@ -1,7 +1,7 @@
 /**
  * 座席予約コントローラー
  *
- * @namespace controller/reservation
+ * @namespace controllers/reservation
  */
 
 import { Models } from '@motionpicture/ttts-domain';
@@ -16,7 +16,7 @@ import * as sendgrid from 'sendgrid';
 /**
  * 予約情報メールを送信する
  *
- * @memberOf controller/reservation
+ * @memberof controllers/reservation
  */
 export async function transfer(req: Request, res: Response, next: NextFunction) {
     try {
@@ -89,7 +89,7 @@ export async function transfer(req: Request, res: Response, next: NextFunction) 
 /**
  * 入場履歴を追加する
  *
- * @memberOf controller/reservation
+ * @memberof controllers/reservation
  */
 export async function checkin(req: Request, res: Response, next: NextFunction) {
     try {
@@ -122,7 +122,7 @@ export async function checkin(req: Request, res: Response, next: NextFunction) {
 /**
  * ムビチケユーザーで検索する
  *
- * @memberOf controller/reservation
+ * @memberof controllers/reservation
  */
 export async function findByMvtkUser(_: Request, res: Response) {
     // ひとまずデモ段階では、一般予約を10件返す
@@ -151,7 +151,7 @@ export async function findByMvtkUser(_: Request, res: Response) {
 /**
  * IDで検索する
  *
- * @memberOf controller/reservation
+ * @memberof controllers/reservation
  */
 export async function findById(req: Request, res: Response) {
     const id = req.params.id;

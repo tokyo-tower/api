@@ -25,7 +25,7 @@ describe('スクリーンルーター 座席html取得', () => {
         const screenId = '00101';
         yield ttts.Models.Screen.findByIdAndUpdate(screenId, {}, { upsert: true }).exec();
         yield supertest(app)
-            .get(`/screen/${screenId}/show`)
+            .get(`/screens/${screenId}/show`)
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({})
@@ -37,7 +37,7 @@ describe('スクリーンルーター 座席html取得', () => {
     }));
     it('存在しない', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
-            .get('/screen/xxx/show')
+            .get('/screens/xxx/show')
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)

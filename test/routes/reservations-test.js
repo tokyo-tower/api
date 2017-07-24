@@ -29,7 +29,7 @@ describe('予約ルーター 入場', () => {
         };
         let reservationDoc = yield ttts.Models.Reservation.findOneAndUpdate(reservation, reservation, { new: true, upsert: true }).exec();
         yield supertest(app)
-            .post(`/reservation/${reservationDoc.get('id')}/checkin`)
+            .post(`/reservations/${reservationDoc.get('id')}/checkin`)
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
@@ -48,7 +48,7 @@ describe('予約ルーター 入場', () => {
     }));
     it('予約存在しない', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
-            .post('/reservation/5905b0003431b21604da462a/checkin')
+            .post('/reservations/5905b0003431b21604da462a/checkin')
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
@@ -64,7 +64,7 @@ describe('予約ルーター メール転送', () => {
             status: ttts.ReservationUtil.STATUS_RESERVED
         });
         yield supertest(app)
-            .post(`/ja/reservation/${reservationDoc.get('id')}/transfer`)
+            .post(`/reservations/${reservationDoc.get('id')}/transfer`)
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
@@ -78,7 +78,7 @@ describe('予約ルーター メール転送', () => {
     }));
     it('メールアドレス不適切', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
-            .post('/ja/reservation/5905b0003431b21604da462a/transfer')
+            .post('/reservations/5905b0003431b21604da462a/transfer')
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
@@ -89,7 +89,7 @@ describe('予約ルーター メール転送', () => {
     }));
     it('予約存在しない', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
-            .post('/ja/reservation/5905b0003431b21604da462a/transfer')
+            .post('/reservations/5905b0003431b21604da462a/transfer')
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({

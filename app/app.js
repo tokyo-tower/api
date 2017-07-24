@@ -18,7 +18,11 @@ const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const dev_1 = require("./routes/dev");
 const oAuth_1 = require("./routes/oAuth");
+const performances_1 = require("./routes/performances");
+const reservations_1 = require("./routes/reservations");
 const router_1 = require("./routes/router");
+const screens_1 = require("./routes/screens");
+const transactions_1 = require("./routes/transactions");
 const debug = createDebug('ttts-api:app');
 const app = express();
 app.use(cors_1.default);
@@ -66,6 +70,10 @@ app.use(i18n.init);
 // ルーティング
 app.use('/oauth', oAuth_1.default);
 app.use('/', router_1.default);
+app.use('/performances', performances_1.default);
+app.use('/reservations', reservations_1.default);
+app.use('/screens', screens_1.default);
+app.use('/transactions', transactions_1.default);
 if (process.env.NODE_ENV !== 'production') {
     app.use('/dev', dev_1.default);
 }

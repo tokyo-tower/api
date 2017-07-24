@@ -24,7 +24,7 @@ describe('予約ルーター 入場', () => {
         let reservationDoc = await ttts.Models.Reservation.findOneAndUpdate(reservation, reservation, { new: true, upsert: true }).exec();
 
         await supertest(app)
-            .post(`/reservation/${(<mongoose.Document>reservationDoc).get('id')}/checkin`)
+            .post(`/reservations/${(<mongoose.Document>reservationDoc).get('id')}/checkin`)
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
@@ -47,7 +47,7 @@ describe('予約ルーター 入場', () => {
 
     it('予約存在しない', async () => {
         await supertest(app)
-            .post('/reservation/5905b0003431b21604da462a/checkin')
+            .post('/reservations/5905b0003431b21604da462a/checkin')
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
@@ -65,7 +65,7 @@ describe('予約ルーター メール転送', () => {
         });
 
         await supertest(app)
-            .post(`/ja/reservation/${reservationDoc.get('id')}/transfer`)
+            .post(`/reservations/${reservationDoc.get('id')}/transfer`)
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
@@ -80,7 +80,7 @@ describe('予約ルーター メール転送', () => {
 
     it('メールアドレス不適切', async () => {
         await supertest(app)
-            .post('/ja/reservation/5905b0003431b21604da462a/transfer')
+            .post('/reservations/5905b0003431b21604da462a/transfer')
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
@@ -92,7 +92,7 @@ describe('予約ルーター メール転送', () => {
 
     it('予約存在しない', async () => {
         await supertest(app)
-            .post('/ja/reservation/5905b0003431b21604da462a/transfer')
+            .post('/reservations/5905b0003431b21604da462a/transfer')
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({

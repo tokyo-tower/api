@@ -21,7 +21,11 @@ import notFoundHandler from './middlewares/notFoundHandler';
 
 import devRouter from './routes/dev';
 import oAuthRouter from './routes/oAuth';
+import performanceRouter from './routes/performances';
+import reservationRouter from './routes/reservations';
 import router from './routes/router';
+import screenRouter from './routes/screens';
+import transactionRouter from './routes/transactions';
 
 const debug = createDebug('ttts-api:app');
 
@@ -78,8 +82,11 @@ app.use(i18n.init);
 
 // ルーティング
 app.use('/oauth', oAuthRouter);
-
 app.use('/', router);
+app.use('/performances', performanceRouter);
+app.use('/reservations', reservationRouter);
+app.use('/screens', screenRouter);
+app.use('/transactions', transactionRouter);
 
 if (process.env.NODE_ENV !== 'production') {
     app.use('/dev', devRouter);

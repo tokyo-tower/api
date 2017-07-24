@@ -44,7 +44,7 @@ describe('パフォーマンスルーターテスト 検索', () => {
     // });
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
-            .get('/ja/performance/search')
+            .get('/performances')
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({})

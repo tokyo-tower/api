@@ -2,7 +2,7 @@
 /**
  * 座席予約コントローラー
  *
- * @namespace controller/reservation
+ * @namespace controllers/reservation
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -22,7 +22,7 @@ const sendgrid = require("sendgrid");
 /**
  * 予約情報メールを送信する
  *
- * @memberOf controller/reservation
+ * @memberof controllers/reservation
  */
 function transfer(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -83,7 +83,7 @@ exports.transfer = transfer;
 /**
  * 入場履歴を追加する
  *
- * @memberOf controller/reservation
+ * @memberof controllers/reservation
  */
 function checkin(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -116,7 +116,7 @@ exports.checkin = checkin;
 /**
  * ムビチケユーザーで検索する
  *
- * @memberOf controller/reservation
+ * @memberof controllers/reservation
  */
 function findByMvtkUser(_, res) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -144,7 +144,7 @@ exports.findByMvtkUser = findByMvtkUser;
 /**
  * IDで検索する
  *
- * @memberOf controller/reservation
+ * @memberof controllers/reservation
  */
 function findById(req, res) {
     return __awaiter(this, void 0, void 0, function* () {

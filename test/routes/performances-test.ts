@@ -39,7 +39,7 @@ describe('パフォーマンスルーターテスト 検索', () => {
 
     it('ok', async () => {
         await supertest(app)
-            .get('/ja/performance/search')
+            .get('/performances')
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
