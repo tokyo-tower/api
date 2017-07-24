@@ -10,7 +10,7 @@ import * as httpStatus from 'http-status';
 // import * as mongoose from 'mongoose';
 import * as supertest from 'supertest';
 
-import * as app from '../app/app';
+import * as app from '../../app/app';
 
 describe('スクリーンルーター 座席html取得', () => {
     it('ok', async () => {

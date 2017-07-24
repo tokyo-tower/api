@@ -24,7 +24,11 @@ before(() => __awaiter(this, void 0, void 0, function* () {
         client_id: 'motionpicture',
         client_secret: 'motionpicture',
         state: 'teststate',
-        scopes: ['admin']
+        scopes: [
+            'performances',
+            'screens',
+            'reservations'
+        ]
     })
         .expect(httpStatus.OK)
         .then((response) => {

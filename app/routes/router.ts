@@ -2,8 +2,8 @@ import * as express from 'express';
 
 const router = express.Router();
 
-// import requireScope from '../middlewares/requireScope';
 import authentication from '../middlewares/authentication';
+import permitScopes from '../middlewares/permitScopes';
 import setLocale from '../middlewares/setLocale';
 import validator from '../middlewares/validator';
 
@@ -20,7 +20,7 @@ router.use(authentication);
 // search performances
 router.get(
     '/:locale/performance/search',
-    // requireScope(['performances.readonly']),
+    permitScopes(['performances', 'performances.read-only']),
     setLocale,
     PerformanceController.search
 );
@@ -28,6 +28,7 @@ router.get(
 // 予約メール転送
 router.post(
     '/:locale/reservation/:id/transfer',
+    permitScopes(['reservations', 'reservations.read-only']),
     setLocale,
     (req, __, next) => {
         // メールアドレスの有効性チェック
@@ -43,6 +44,7 @@ router.post(
 // show screen html
 router.get(
     '/screen/:id/show',
+    permitScopes(['screens', 'screens.read-only']),
     (__1, __2, next) => {
         next();
     },
@@ -53,6 +55,7 @@ router.get(
 // 入場
 router.post(
     '/reservation/:id/checkin',
+    permitScopes(['reservations', 'reservations.checkins']),
     setLocale,
     (__1, __2, next) => {
         next();

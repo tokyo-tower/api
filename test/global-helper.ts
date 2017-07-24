@@ -16,7 +16,11 @@ before(async () => {
             client_id: 'motionpicture',
             client_secret: 'motionpicture',
             state: 'teststate',
-            scopes: ['admin']
+            scopes: [
+                'performances',
+                'screens',
+                'reservations'
+            ]
         })
         .expect(httpStatus.OK)
         .then((response) => {

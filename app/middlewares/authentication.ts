@@ -1,15 +1,14 @@
 /**
  * oauthミドルウェア
  *
- * todo 認証失敗時の親切なメッセージ
- * todo scopeを扱う
+ * @module middlewares/authentication
  */
 
 import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
 import * as jwt from 'express-jwt';
 
-const debug = createDebug('ttts-api:middleware:authentication');
+const debug = createDebug('ttts-api:middlewares:authentication');
 
 export default [
     jwt(

@@ -16,7 +16,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const assert = require("assert");
 const httpStatus = require("http-status");
 const supertest = require("supertest");
-const app = require("../app/app");
+const app = require("../../app/app");
 describe('oauthルーターテスト アクセストークン発行', () => {
     it('存在しないクライアント', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)

@@ -17,7 +17,7 @@ const ttts = require("@motionpicture/ttts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
 const supertest = require("supertest");
-const app = require("../app/app");
+const app = require("../../app/app");
 describe('予約ルーター 入場', () => {
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
         // テストデータ作成
@@ -27,7 +27,7 @@ describe('予約ルーター 入場', () => {
             status: ttts.ReservationUtil.STATUS_RESERVED,
             checkins: []
         };
-        let reservationDoc = yield ttts.Models.Reservation.findOneAndUpdate(reservation, reservation, { new: true, upsert: true });
+        let reservationDoc = yield ttts.Models.Reservation.findOneAndUpdate(reservation, reservation, { new: true, upsert: true }).exec();
         yield supertest(app)
             .post(`/reservation/${reservationDoc.get('id')}/checkin`)
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)

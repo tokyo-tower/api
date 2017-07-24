@@ -18,7 +18,7 @@ const assert = require("assert");
 const httpStatus = require("http-status");
 // import * as mongoose from 'mongoose';
 const supertest = require("supertest");
-const app = require("../app/app");
+const app = require("../../app/app");
 describe('スクリーンルーター 座席html取得', () => {
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
         // テストデータ作成

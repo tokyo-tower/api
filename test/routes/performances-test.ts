@@ -8,7 +8,7 @@ import * as assert from 'assert';
 import * as httpStatus from 'http-status';
 import * as supertest from 'supertest';
 
-import * as app from '../app/app';
+import * as app from '../../app/app';
 
 describe('パフォーマンスルーターテスト 検索', () => {
     // it('スコープ不足', async () => {

@@ -16,7 +16,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const assert = require("assert");
 const httpStatus = require("http-status");
 const supertest = require("supertest");
-const app = require("../app/app");
+const app = require("../../app/app");
 describe('パフォーマンスルーターテスト 検索', () => {
     // it('スコープ不足', async () => {
     //     await supertest(app)

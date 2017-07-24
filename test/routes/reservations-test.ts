@@ -10,7 +10,7 @@ import * as httpStatus from 'http-status';
 import * as mongoose from 'mongoose';
 import * as supertest from 'supertest';
 
-import * as app from '../app/app';
+import * as app from '../../app/app';
 
 describe('予約ルーター 入場', () => {
     it('ok', async () => {
@@ -21,7 +21,7 @@ describe('予約ルーター 入場', () => {
             status: ttts.ReservationUtil.STATUS_RESERVED,
             checkins: []
         };
-        let reservationDoc = await ttts.Models.Reservation.findOneAndUpdate(reservation, reservation, { new: true, upsert: true });
+        let reservationDoc = await ttts.Models.Reservation.findOneAndUpdate(reservation, reservation, { new: true, upsert: true }).exec();
 
         await supertest(app)
             .post(`/reservation/${(<mongoose.Document>reservationDoc).get('id')}/checkin`)
