@@ -6,120 +6,69 @@
 
 import * as ttts from '@motionpicture/ttts-domain';
 import * as createDebug from 'debug';
-import { NextFunction, Request, Response } from 'express';
-import { NO_CONTENT, NOT_FOUND } from 'http-status';
-import * as moment from 'moment';
-import * as sendgrid from 'sendgrid';
-// import * as validator from 'validator';
+import * as monapt from 'monapt';
 
 const debug = createDebug('ttts-api:controllers:reservation');
 
 /**
- * 予約情報メールを送信する
+ * 予約情報を取得する
  *
+ * @param {string} reservationId 予約ID
+ * @return {Promise<monapt.Option<ttts.mongoose.Document>>} 予約ドキュメント
  * @memberof controllers/reservation
  */
-export async function transfer(req: Request, res: Response, next: NextFunction) {
-    try {
-        const id = req.params.id;
-        const to = req.body.to;
-
-        const reservation = await ttts.Models.Reservation.findOne({ _id: id, status: ttts.ReservationUtil.STATUS_RESERVED }).exec();
-        if (reservation === null) {
-            res.status(NOT_FOUND);
-            res.json({
-                data: null
-            });
-
-            return;
+export async function findById(reservationId: string): Promise<monapt.Option<ttts.mongoose.Document>> {
+    const reservation = await ttts.Models.Reservation.findOne(
+        {
+            _id: reservationId,
+            status: ttts.ReservationUtil.STATUS_RESERVED
         }
+    ).exec();
 
-        const titleJa = `${reservation.get('purchaser_name').ja}様よりTTTS_EVENT_NAMEのチケットが届いております`;
-        // tslint:disable-next-line:max-line-length
-        const titleEn = `This is a notification that you have been invited to Tokyo International Film Festival by Mr./Ms. ${reservation.get('purchaser_name').en}.`;
+    return (reservation === null) ? monapt.None : monapt.Option(reservation);
+}
 
-        res.render(
-            'email/resevation',
-            {
-                layout: false,
-                reservations: [reservation],
-                to: to,
-                moment: moment,
-                titleJa: titleJa,
-                titleEn: titleEn,
-                ReservationUtil: ttts.ReservationUtil
-            },
-            async (renderErr, text) => {
-                try {
-                    if (renderErr instanceof Error) {
-                        throw renderErr;
-                    }
-
-                    const mail = new sendgrid.mail.Mail(
-                        new sendgrid.mail.Email(<string>process.env.EMAIL_FROM_ADDRESS, <string>process.env.EMAIL_FROM_NAME),
-                        `${titleJa} ${titleEn}`,
-                        new sendgrid.mail.Email(to),
-                        new sendgrid.mail.Content('text/plain', text)
-                    );
-
-                    const sg = sendgrid(<string>process.env.SENDGRID_API_KEY);
-                    const request = sg.emptyRequest({
-                        host: 'api.sendgrid.com',
-                        method: 'POST',
-                        path: '/v3/mail/send',
-                        headers: {},
-                        body: mail.toJSON(),
-                        queryParams: {},
-                        test: false,
-                        port: ''
-                    });
-
-                    await sg.API(request);
-                    res.status(NO_CONTENT).end();
-                } catch (error) {
-                    console.error('an email unsent.', error);
-                    next(error);
-                }
-            }
-        );
-    } catch (error) {
-        next(error);
-    }
+/**
+ * チェックインインターフェース
+ *
+ * @interface ICheckin
+ */
+export interface ICheckin {
+    when: Date;
+    where: string; // どこで
+    why: string; // 何のために
+    how: string; // どうやって
 }
 
 /**
  * 入場履歴を追加する
  *
+ * @param {string} reservationId 予約ID
+ * @param {ICheckin} checkin チェックインオブジェクト
+ * @return {Promise<monapt.Option<string>>} 入場履歴の追加された予約ID
  * @memberof controllers/reservation
  */
-export async function checkin(req: Request, res: Response, next: NextFunction) {
-    try {
-        const reservation = await ttts.Models.Reservation.findByIdAndUpdate(
-            req.params.id,
-            {
-                $push: {
-                    checkins: {
-                        when: moment().toDate(),
-                        where: req.body.where, // どこで
-                        why: req.body.why, // 何のために
-                        how: req.body.how // どうやって
-                    }
-                }
+export async function createCheckin(reservationId: string, checkin: ICheckin): Promise<monapt.Option<string>> {
+    const reservation = await ttts.Models.Reservation.findByIdAndUpdate(
+        reservationId,
+        {
+            $push: {
+                checkins: checkin
             }
-        ).exec();
-
-        if (reservation === null) {
-            res.status(NOT_FOUND).json({
-                data: null
-            });
-        } else {
-            res.status(NO_CONTENT).end();
         }
-    } catch (error) {
-        next(error);
-    }
+    ).exec();
+
+    return (reservation === null) ? monapt.None : monapt.Option(reservation.get('id').toString());
 }
 
+/**
+ * 予約キャンセル
+ *
+ * @param {string} performanceDay 上映日
+ * @param {string} paymentNo 購入番号
+ * @return {Promise<string[]>} キャンセルされた予約ID
+ * @memberof controllers/reservation
+ */
 export async function cancel(performanceDay: string, paymentNo: string): Promise<string[]> {
     // 該当予約を検索
     const reservationIds = await ttts.Models.Reservation.distinct(

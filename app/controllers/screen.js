@@ -13,40 +13,25 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
+const ttts = require("@motionpicture/ttts-domain");
 const fs = require("fs-extra");
-const http_status_1 = require("http-status");
+const monapt = require("monapt");
 /**
  * スクリーンの座席マップを生成する
  *
+ * @param {string} screenId スクリーンID
+ * @return {Promise<monapt.Option<string>>} スクリーンのHTML
  * @memberof controllers/screen
  */
-function show(req, res, next) {
+function getHtml(screenId) {
     return __awaiter(this, void 0, void 0, function* () {
-        try {
-            // スクリーンの存在確認
-            const count = yield ttts_domain_1.Models.Screen.count({ _id: req.params.id }).exec();
-            if (count === 0) {
-                res.status(http_status_1.NOT_FOUND);
-                res.json({
-                    data: null
-                });
-                return;
-            }
-            // スクリーン座席表HTMLを出力
-            fs.readFile(`${__dirname}/../views/_screens/${req.params.id}.ejs`, 'utf8', (readFileErr, data) => {
-                if (readFileErr instanceof Error) {
-                    next(readFileErr);
-                    return;
-                }
-                res.status(http_status_1.OK).json({
-                    data: data
-                });
-            });
+        // スクリーンの存在確認
+        const count = yield ttts.Models.Screen.count({ _id: screenId }).exec();
+        if (count === 0) {
+            return monapt.None;
         }
-        catch (error) {
-            next(error);
-        }
+        // スクリーン座席表HTMLを出力
+        return monapt.Option(yield fs.readFile(`${__dirname}/../views/_screens/${screenId}.ejs`, 'utf8'));
     });
 }
-exports.show = show;
+exports.getHtml = getHtml;

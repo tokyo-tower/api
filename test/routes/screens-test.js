@@ -16,7 +16,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const ttts = require("@motionpicture/ttts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
-// import * as mongoose from 'mongoose';
 const supertest = require("supertest");
 const app = require("../../app/app");
 describe('スクリーンルーター 座席html取得', () => {

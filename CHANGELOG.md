@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 - パフォーマンス検索のレスポンスを多言語化。
+- HTTPステータスコードの振り分けをルーターに記述するように統一。
 
 ### Deprecated
 

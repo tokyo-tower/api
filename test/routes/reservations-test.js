@@ -30,7 +30,7 @@ describe('予約ルーター 入場', () => {
         };
         let reservationDoc = yield ttts.Models.Reservation.findOneAndUpdate(reservation, reservation, { new: true, upsert: true }).exec();
         yield supertest(app)
-            .post(`/reservations/${reservationDoc.get('id')}/checkin`)
+            .post(`/reservations/${reservationDoc.get('id')}/checkins`)
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
@@ -49,7 +49,7 @@ describe('予約ルーター 入場', () => {
     }));
     it('予約存在しない', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
-            .post('/reservations/5905b0003431b21604da462a/checkin')
+            .post('/reservations/5905b0003431b21604da462a/checkins')
             .set('authorization', `Bearer ${process.env.TTTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)

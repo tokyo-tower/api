@@ -7,7 +7,6 @@
 import * as ttts from '@motionpicture/ttts-domain';
 import * as assert from 'assert';
 import * as httpStatus from 'http-status';
-// import * as mongoose from 'mongoose';
 import * as supertest from 'supertest';
 
 import * as app from '../../app/app';
