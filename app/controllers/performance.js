@@ -13,53 +13,37 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ttts_domain_1 = require("@motionpicture/ttts-domain");
+const ttts = require("@motionpicture/ttts-domain");
 const createDebug = require("debug");
 const moment = require("moment");
-const _ = require("underscore");
 const debug = createDebug('ttts-api:controller:performance');
-const DEFAULT_RADIX = 10;
 /**
  * 検索する
  *
+ * @param {ISearchConditions} searchConditions 検索条件
+ * @return {ISearchResult} 検索結果
  * @memberof controllers/performance
  */
 // tslint:disable-next-line:max-func-body-length
-function search(req, res) {
+function search(searchConditions) {
     return __awaiter(this, void 0, void 0, function* () {
-        // tslint:disable-next-line:max-line-length
-        const limit = (!_.isEmpty(req.query.limit)) ? parseInt(req.query.limit, DEFAULT_RADIX) : null;
-        const page = (!_.isEmpty(req.query.page)) ? parseInt(req.query.page, DEFAULT_RADIX) : 1;
-        // 上映日
-        const day = (!_.isEmpty(req.query.day)) ? req.query.day : null;
-        // 部門
-        const section = (!_.isEmpty(req.query.section)) ? req.query.section : null;
-        // フリーワード
-        const words = (!_.isEmpty(req.query.words)) ? req.query.words : null;
-        // この時間以降開始のパフォーマンスに絞る(timestamp milliseconds)
-        // tslint:disable-line:max-line-length
-        const startFrom = (!_.isEmpty(req.query.start_from)) ? parseInt(req.query.start_from, DEFAULT_RADIX) : null;
-        // 劇場
-        const theater = (!_.isEmpty(req.query.theater)) ? req.query.theater : null;
-        // スクリーン
-        const screen = (!_.isEmpty(req.query.screen)) ? req.query.screen : null;
-        // 検索条件を作成
+        // MongoDB検索条件を作成
         const andConditions = [
             { canceled: false }
         ];
-        if (day !== null) {
-            andConditions.push({ day: day });
+        if (searchConditions.day !== undefined) {
+            andConditions.push({ day: searchConditions.day });
         }
-        if (theater !== null) {
-            andConditions.push({ theater: theater });
+        if (searchConditions.theater !== undefined) {
+            andConditions.push({ theater: searchConditions.theater });
         }
-        if (screen !== null) {
-            andConditions.push({ screen: screen });
+        if (searchConditions.screen !== undefined) {
+            andConditions.push({ screen: searchConditions.screen });
         }
-        if (startFrom !== null) {
-            const now = moment(startFrom);
+        if (searchConditions.startFrom !== undefined) {
+            const now = moment(searchConditions.startFrom);
             // tslint:disable-next-line:no-magic-numbers
-            const tomorrow = moment(startFrom).add(+24, 'hours');
+            const tomorrow = moment(searchConditions.startFrom).add(+24, 'hours');
             andConditions.push({
                 $or: [
                     {
@@ -73,20 +57,21 @@ function search(req, res) {
             });
         }
         // 作品条件を追加する
-        yield addFilmConditions(andConditions, section, words);
+        yield addFilmConditions(andConditions, (searchConditions.section !== undefined) ? searchConditions.section : null, (searchConditions.words !== undefined) ? searchConditions.words : null);
         let conditions = null;
         if (andConditions.length > 0) {
             conditions = { $and: andConditions };
         }
         // 作品件数取得
-        const filmIds = yield ttts_domain_1.Models.Performance.distinct('film', conditions).exec();
+        const filmIds = yield ttts.Models.Performance.distinct('film', conditions).exec();
         // 総数検索
-        const performancesCount = yield ttts_domain_1.Models.Performance.count(conditions).exec();
+        const performancesCount = yield ttts.Models.Performance.count(conditions).exec();
         // 必要な項目だけ指定すること(レスポンスタイムに大きく影響するので)
         const fields = 'day open_time start_time end_time film screen screen_name theater theater_name';
-        const query = ttts_domain_1.Models.Performance.find(conditions, fields);
-        if (limit !== null) {
-            query.skip(limit * (page - 1)).limit(limit);
+        const query = ttts.Models.Performance.find(conditions, fields);
+        const page = (searchConditions.page !== undefined) ? searchConditions.page : 1;
+        if (searchConditions.limit !== undefined) {
+            query.skip(searchConditions.limit * (page - 1)).limit(searchConditions.limit);
         }
         query.populate('film', 'name sections.name minutes copyright');
         // 上映日、開始時刻
@@ -98,7 +83,7 @@ function search(req, res) {
         });
         const performances = yield query.lean(true).exec();
         // 空席情報を追加
-        const performanceStatuses = yield ttts_domain_1.PerformanceStatusesModel.find().catch(() => undefined);
+        const performanceStatuses = yield ttts.PerformanceStatusesModel.find().catch(() => undefined);
         const getStatus = (id) => {
             if (performanceStatuses !== undefined && performanceStatuses.hasOwnProperty(id)) {
                 return performanceStatuses[id];
@@ -114,7 +99,6 @@ function search(req, res) {
                     open_time: performance.open_time,
                     start_time: performance.start_time,
                     end_time: performance.end_time,
-                    //seat_status: (performanceStatuses !== undefined) ? performanceStatuses.getStatus(performance._id.toString()) : null,
                     seat_status: getStatus(performance._id.toString()),
                     theater_name: performance.theater_name,
                     screen_name: performance.screen_name,
@@ -127,13 +111,11 @@ function search(req, res) {
                 }
             };
         });
-        res.json({
-            meta: {
-                number_of_performances: performancesCount,
-                number_of_films: filmIds.length
-            },
-            data: data
-        });
+        return {
+            performances: data,
+            numberOfPerformances: performancesCount,
+            filmIds: filmIds
+        };
     });
 }
 exports.search = search;
@@ -164,7 +146,7 @@ function addFilmConditions(andConditions, section, words) {
         }
         // 条件があれば作品検索してID条件として追加
         if (filmAndConditions.length > 0) {
-            const filmIds = yield ttts_domain_1.Models.Film.distinct('_id', { $and: filmAndConditions }).exec();
+            const filmIds = yield ttts.Models.Film.distinct('_id', { $and: filmAndConditions }).exec();
             debug('filmIds:', filmIds);
             // 該当作品がない場合、filmIdsが空配列となりok
             andConditions.push({ film: { $in: filmIds } });

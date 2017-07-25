@@ -4,61 +4,92 @@
  * @namespace controllers/performance
  */
 
-import { Models, PerformanceStatusesModel } from '@motionpicture/ttts-domain';
+import * as ttts from '@motionpicture/ttts-domain';
 import * as createDebug from 'debug';
-import { Request, Response } from 'express';
 import * as moment from 'moment';
-import * as _ from 'underscore';
 
 const debug = createDebug('ttts-api:controller:performance');
-const DEFAULT_RADIX = 10;
+
+export interface ISearchConditions {
+    limit?: number;
+    page?: number;
+    // 上映日
+    day?: string;
+    // 部門
+    section?: string;
+    // フリーワード
+    words?: string;
+    // この時間以降開始のパフォーマンスに絞る(timestamp milliseconds)
+    startFrom?: number;
+    // 劇場
+    theater?: string;
+    // スクリーン
+    screen?: string;
+}
+
+export interface IMultilingualString {
+    en: string;
+    ja: string;
+    kr: string;
+}
+
+export interface IPerformance {
+    // tslint:disable-next-line:no-reserved-keywords
+    type: string;
+    id: string;
+    attributes: {
+        day: string;
+        open_time: string;
+        start_time: string;
+        end_time: string;
+        seat_status: string;
+        theater_name: IMultilingualString;
+        screen_name: IMultilingualString;
+        film: string;
+        film_name: IMultilingualString;
+        film_sections: string[];
+        film_minutes: number;
+        film_copyright: string;
+        film_image: string;
+    };
+}
+
+export interface ISearchResult {
+    performances: IPerformance[];
+    numberOfPerformances: number;
+    filmIds: string[];
+}
 
 /**
  * 検索する
  *
+ * @param {ISearchConditions} searchConditions 検索条件
+ * @return {ISearchResult} 検索結果
  * @memberof controllers/performance
  */
 // tslint:disable-next-line:max-func-body-length
-export async function search(req: Request, res: Response) {
-    // tslint:disable-next-line:max-line-length
-    const limit: number | null = (!_.isEmpty(req.query.limit)) ? parseInt(req.query.limit, DEFAULT_RADIX) : null;
-    const page: number = (!_.isEmpty(req.query.page)) ? parseInt(req.query.page, DEFAULT_RADIX) : 1;
-
-    // 上映日
-    const day: string | null = (!_.isEmpty(req.query.day)) ? req.query.day : null;
-    // 部門
-    const section: string | null = (!_.isEmpty(req.query.section)) ? req.query.section : null;
-    // フリーワード
-    const words: string | null = (!_.isEmpty(req.query.words)) ? req.query.words : null;
-    // この時間以降開始のパフォーマンスに絞る(timestamp milliseconds)
-    // tslint:disable-line:max-line-length
-    const startFrom: number | null = (!_.isEmpty(req.query.start_from)) ? parseInt(req.query.start_from, DEFAULT_RADIX) : null;
-    // 劇場
-    const theater: string | null = (!_.isEmpty(req.query.theater)) ? req.query.theater : null;
-    // スクリーン
-    const screen: string | null = (!_.isEmpty(req.query.screen)) ? req.query.screen : null;
-
-    // 検索条件を作成
+export async function search(searchConditions: ISearchConditions): Promise<ISearchResult> {
+    // MongoDB検索条件を作成
     const andConditions: any[] = [
         { canceled: false }
     ];
 
-    if (day !== null) {
-        andConditions.push({ day: day });
+    if (searchConditions.day !== undefined) {
+        andConditions.push({ day: searchConditions.day });
     }
 
-    if (theater !== null) {
-        andConditions.push({ theater: theater });
+    if (searchConditions.theater !== undefined) {
+        andConditions.push({ theater: searchConditions.theater });
     }
 
-    if (screen !== null) {
-        andConditions.push({ screen: screen });
+    if (searchConditions.screen !== undefined) {
+        andConditions.push({ screen: searchConditions.screen });
     }
 
-    if (startFrom !== null) {
-        const now = moment(startFrom);
+    if (searchConditions.startFrom !== undefined) {
+        const now = moment(searchConditions.startFrom);
         // tslint:disable-next-line:no-magic-numbers
-        const tomorrow = moment(startFrom).add(+24, 'hours');
+        const tomorrow = moment(searchConditions.startFrom).add(+24, 'hours');
 
         andConditions.push({
             $or: [
@@ -74,7 +105,11 @@ export async function search(req: Request, res: Response) {
     }
 
     // 作品条件を追加する
-    await addFilmConditions(andConditions, section, words);
+    await addFilmConditions(
+        andConditions,
+        (searchConditions.section !== undefined) ? searchConditions.section : null,
+        (searchConditions.words !== undefined) ? searchConditions.words : null
+    );
 
     let conditions: any = null;
     if (andConditions.length > 0) {
@@ -82,17 +117,18 @@ export async function search(req: Request, res: Response) {
     }
 
     // 作品件数取得
-    const filmIds = await Models.Performance.distinct('film', conditions).exec();
+    const filmIds = await ttts.Models.Performance.distinct('film', conditions).exec();
 
     // 総数検索
-    const performancesCount = await Models.Performance.count(conditions).exec();
+    const performancesCount = await ttts.Models.Performance.count(conditions).exec();
 
     // 必要な項目だけ指定すること(レスポンスタイムに大きく影響するので)
     const fields = 'day open_time start_time end_time film screen screen_name theater theater_name';
-    const query = Models.Performance.find(conditions, fields);
+    const query = ttts.Models.Performance.find(conditions, fields);
 
-    if (limit !== null) {
-        query.skip(limit * (page - 1)).limit(limit);
+    const page = (searchConditions.page !== undefined) ? searchConditions.page : 1;
+    if (searchConditions.limit !== undefined) {
+        query.skip(searchConditions.limit * (page - 1)).limit(searchConditions.limit);
     }
 
     query.populate('film', 'name sections.name minutes copyright');
@@ -108,7 +144,7 @@ export async function search(req: Request, res: Response) {
     const performances = <any[]>await query.lean(true).exec();
 
     // 空席情報を追加
-    const performanceStatuses = await PerformanceStatusesModel.find().catch(() => undefined);
+    const performanceStatuses = await ttts.PerformanceStatusesModel.find().catch(() => undefined);
     const getStatus = (id: string) => {
         if (performanceStatuses !== undefined && performanceStatuses.hasOwnProperty(id)) {
             return (<any>performanceStatuses)[id];
@@ -125,7 +161,6 @@ export async function search(req: Request, res: Response) {
                 open_time: performance.open_time,
                 start_time: performance.start_time,
                 end_time: performance.end_time,
-                //seat_status: (performanceStatuses !== undefined) ? performanceStatuses.getStatus(performance._id.toString()) : null,
                 seat_status: getStatus(performance._id.toString()),
                 theater_name: performance.theater_name,
                 screen_name: performance.screen_name,
@@ -139,13 +174,11 @@ export async function search(req: Request, res: Response) {
         };
     });
 
-    res.json({
-        meta: {
-            number_of_performances: performancesCount,
-            number_of_films: filmIds.length
-        },
-        data: data
-    });
+    return {
+        performances: data,
+        numberOfPerformances: performancesCount,
+        filmIds: filmIds
+    };
 }
 
 /**
@@ -182,7 +215,7 @@ async function addFilmConditions(andConditions: any[], section: string | null, w
 
     // 条件があれば作品検索してID条件として追加
     if (filmAndConditions.length > 0) {
-        const filmIds = await Models.Film.distinct('_id', { $and: filmAndConditions }).exec();
+        const filmIds = await ttts.Models.Film.distinct('_id', { $and: filmAndConditions }).exec();
         debug('filmIds:', filmIds);
         // 該当作品がない場合、filmIdsが空配列となりok
         andConditions.push({ film: { $in: filmIds } });

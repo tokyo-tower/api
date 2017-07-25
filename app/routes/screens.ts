@@ -5,6 +5,7 @@
  */
 
 import * as express from 'express';
+import * as httpStatus from 'http-status';
 
 const screenRouter = express.Router();
 
@@ -22,11 +23,27 @@ screenRouter.use(authentication);
 screenRouter.get(
     '/:id/show',
     permitScopes(['screens', 'screens.read-only']),
-    (__1, __2, next) => {
-        next();
-    },
     validator,
-    ScreenController.show
+    async (req, res, next) => {
+        try {
+            await ScreenController.getHtml(req.params.id).then((option) => {
+                option.match({
+                    Some: (html) => {
+                        res.status(httpStatus.OK).json({
+                            data: html
+                        });
+                    },
+                    None: () => {
+                        res.status(httpStatus.NOT_FOUND).json({
+                            data: null
+                        });
+                    }
+                });
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 );
 
 export default screenRouter;

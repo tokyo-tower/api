@@ -13,30 +13,107 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const ttts = require("@motionpicture/ttts-domain");
 const express = require("express");
 const httpStatus = require("http-status");
+const moment = require("moment");
+const sendgrid = require("sendgrid");
 const reservationRouter = express.Router();
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
-const setLocale_1 = require("../middlewares/setLocale");
 const validator_1 = require("../middlewares/validator");
 const ReservationController = require("../controllers/reservation");
 reservationRouter.use(authentication_1.default);
 /**
  * 予約メール転送
  */
-reservationRouter.post('/:id/transfer', permitScopes_1.default(['reservations', 'reservations.read-only']), setLocale_1.default, (req, __, next) => {
+reservationRouter.post('/:id/transfer', permitScopes_1.default(['reservations', 'reservations.read-only']), (req, __, next) => {
     // メールアドレスの有効性チェック
     req.checkBody('to', 'invalid to')
         .isEmail().withMessage(req.__('Message.invalid{{fieldName}}', { fieldName: req.__('Form.FieldName.email') }));
     next();
-}, validator_1.default, ReservationController.transfer);
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        yield ReservationController.findById(req.params.id).then((option) => {
+            option.match({
+                Some: (reservationDoc) => {
+                    const titleJa = `${reservationDoc.get('purchaser_name').ja}様よりTTTS_EVENT_NAMEのチケットが届いております`;
+                    // tslint:disable-next-line:max-line-length
+                    const titleEn = `This is a notification that you have been invited to Tokyo International Film Festival by Mr./Ms. ${reservationDoc.get('purchaser_name').en}.`;
+                    res.render('email/resevation', {
+                        layout: false,
+                        reservations: [reservationDoc],
+                        to: req.body.to,
+                        moment: moment,
+                        titleJa: titleJa,
+                        titleEn: titleEn,
+                        ReservationUtil: ttts.ReservationUtil
+                    }, (renderErr, text) => __awaiter(this, void 0, void 0, function* () {
+                        try {
+                            if (renderErr instanceof Error) {
+                                throw renderErr;
+                            }
+                            const mail = new sendgrid.mail.Mail(new sendgrid.mail.Email(process.env.EMAIL_FROM_ADDRESS, process.env.EMAIL_FROM_NAME), `${titleJa} ${titleEn}`, new sendgrid.mail.Email(req.body.to), new sendgrid.mail.Content('text/plain', text));
+                            const sg = sendgrid(process.env.SENDGRID_API_KEY);
+                            const request = sg.emptyRequest({
+                                host: 'api.sendgrid.com',
+                                method: 'POST',
+                                path: '/v3/mail/send',
+                                headers: {},
+                                body: mail.toJSON(),
+                                queryParams: {},
+                                test: false,
+                                port: ''
+                            });
+                            yield sg.API(request);
+                            res.status(httpStatus.NO_CONTENT).end();
+                        }
+                        catch (error) {
+                            next(error);
+                        }
+                    }));
+                },
+                None: () => {
+                    // 予約がなければ404
+                    res.status(httpStatus.NOT_FOUND).json({
+                        data: null
+                    });
+                }
+            });
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 /**
  * 入場
  */
-reservationRouter.post('/:id/checkin', permitScopes_1.default(['reservations', 'reservations.checkins']), setLocale_1.default, (__1, __2, next) => {
-    next();
-}, validator_1.default, ReservationController.checkin);
+reservationRouter.post('/:id/checkins', permitScopes_1.default(['reservations', 'reservations.checkins']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const checkin = {
+            when: moment().toDate(),
+            where: req.body.where,
+            why: req.body.why,
+            how: req.body.how
+        };
+        yield ReservationController.createCheckin(req.params.id, checkin).then((option) => {
+            option.match({
+                Some: () => {
+                    res.status(httpStatus.NO_CONTENT).end();
+                },
+                None: () => {
+                    res.status(httpStatus.NOT_FOUND).json({
+                        data: null
+                    });
+                }
+            });
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 /**
  * 予約取消
  */
