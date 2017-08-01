@@ -37,6 +37,8 @@ export async function search(req: Request, res: Response) {
     const theater: string | null = (!_.isEmpty(req.query.theater)) ? req.query.theater : null;
     // スクリーン
     const screen: string | null = (!_.isEmpty(req.query.screen)) ? req.query.screen : null;
+    // パフォーマンスID
+    const performanceId: string | null = (!_.isEmpty(req.query.performanceId)) ? req.query.performanceId : null;
 
     // 検索条件を作成
     const andConditions: any[] = [
@@ -53,6 +55,10 @@ export async function search(req: Request, res: Response) {
 
     if (screen !== null) {
         andConditions.push({ screen: screen });
+    }
+
+    if (performanceId !== null) {
+        andConditions.push({ _id: performanceId });
     }
 
     if (startFrom !== null) {

@@ -43,6 +43,8 @@ function search(req, res) {
         const theater = (!_.isEmpty(req.query.theater)) ? req.query.theater : null;
         // スクリーン
         const screen = (!_.isEmpty(req.query.screen)) ? req.query.screen : null;
+        // パフォーマンスID
+        const performanceId = (!_.isEmpty(req.query.performanceId)) ? req.query.performanceId : null;
         // 検索条件を作成
         const andConditions = [
             { canceled: false }
@@ -55,6 +57,9 @@ function search(req, res) {
         }
         if (screen !== null) {
             andConditions.push({ screen: screen });
+        }
+        if (performanceId !== null) {
+            andConditions.push({ _id: performanceId });
         }
         if (startFrom !== null) {
             const now = moment(startFrom);
