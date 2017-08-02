@@ -37,11 +37,11 @@ describe('/oauth/token', () => {
     it('ok', (done) => {
         request.post('http://localhost:8080/oauth/token', {
             body: {
-                grant_type: 'client_credintials',
+                grant_type: 'client_credencials',
                 client_id: 'motionpicture',
                 client_secret: 'motionpicture',
                 scope: [
-                    'performances.readonly'
+                    'performances.read-only'
                 ]
             },
             json: true

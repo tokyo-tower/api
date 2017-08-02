@@ -39,7 +39,7 @@
 条件指定でパフォーマンスを検索します。
 
 ::: note
-This action requires an `access_token` with `performances.readonly` scope.
+This action requires an `access_token` with `performances.read-only` scope.
 :::
 
 ::: note

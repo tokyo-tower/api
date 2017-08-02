@@ -17,7 +17,7 @@
 | transactions                       | 座席予約取引に対する書き込み処理
 | transactions.authorizations        | 座席予約取引中の仮予約に対する書き込み処理
 | reservations                       | 予約に対する書き込み処理
-| performances.readonly              | パフォーマンス読み込み
+| performances.read-only              | パフォーマンス読み込み
 
 ::: note
 返却値には、`access_token`と`expires_in`が含まれます。
@@ -27,7 +27,7 @@
 
 + Request クライアント認証 (application/json)
     + Attributes
-        + `grant_type`: `client_credintials` (string, required) - 認証タイプ(固定値)
+        + `grant_type`: `client_credencials` (string, required) - 認証タイプ(固定値)
         + `client_id`: `motionpicture` (string, required)
             クライアントID(api利用時にmotionpictureが発行するのでアプリケーション側で大切に保管してください)
         + `client_secret`: `motionpicture` (string, required)
@@ -36,7 +36,7 @@
             クライアント状態(クライアント側で現在のユーザー状態を表す文字列を送信してください。例えばセッションIDなどです)
         + `scopes` (array, fixed-type, required) - 必要なスコープは、各APIの説明を参照してください。
             + `transactions` (string)
-            + `performances.readonly` (string)
+            + `performances.read-only` (string)
 
 + Response 200 (application/json)
     + Attributes
