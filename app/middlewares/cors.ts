@@ -13,6 +13,6 @@ import * as express from 'express';
 // tslint:disable-next-line:variable-name
 export default (_req: express.Request, res: express.Response, next: express.NextFunction) => {
     res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'X-Requested-With');
+    res.header('Access-Control-Allow-Headers', 'X-Requested-With, Authorization');
     next();
 };
