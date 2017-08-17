@@ -25,7 +25,7 @@ const transactions_1 = require("./routes/transactions");
 const debug = createDebug('ttts-api:app');
 const app = express();
 var cors = require('cors');
-app.use(cors());
+app.options('*', cors());
 app.use(helmet());
 app.use(helmet.contentSecurityPolicy({
     directives: {
