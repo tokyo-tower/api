@@ -13,7 +13,6 @@ const helmet = require("helmet");
 const i18n = require("i18n");
 const mongooseConnectionOptions_1 = require("../mongooseConnectionOptions");
 const benchmarks_1 = require("./middlewares/benchmarks");
-const cors_1 = require("./middlewares/cors");
 const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const dev_1 = require("./routes/dev");
@@ -25,7 +24,8 @@ const screens_1 = require("./routes/screens");
 const transactions_1 = require("./routes/transactions");
 const debug = createDebug('ttts-api:app');
 const app = express();
-app.use(cors_1.default);
+var cors = require('cors');
+app.use(cors());
 app.use(helmet());
 app.use(helmet.contentSecurityPolicy({
     directives: {
