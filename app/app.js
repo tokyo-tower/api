@@ -24,8 +24,15 @@ const screens_1 = require("./routes/screens");
 const transactions_1 = require("./routes/transactions");
 const debug = createDebug('ttts-api:app');
 const app = express();
-var cors = require('cors');
-app.options('*', cors());
+//var cors = require('cors')
+const cors = require("cors");
+const options = {
+    allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "X-Access-Token", "Authorization"],
+    credentials: true,
+    methods: "GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE",
+    preflightContinue: true
+};
+app.use(cors(options));
 app.use(helmet());
 app.use(helmet.contentSecurityPolicy({
     directives: {
