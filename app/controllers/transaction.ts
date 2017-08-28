@@ -90,7 +90,7 @@ export interface IAuthorizationWithTicket {
     };
 }
 
-export type IPaymentMethod = GMO.utils.util.PayType.Cash | GMO.utils.util.PayType.Credit | '-';// TODO:util に「-」追加
+export type IPaymentMethod = GMO.utils.util.PayType.Cash | GMO.utils.util.PayType.Credit | '-'; // TODO:util に「-」追加
 export type IPurchaser = any;
 export interface IReservation {
     // tslint:disable-next-line:no-reserved-keywords
