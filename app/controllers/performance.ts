@@ -98,7 +98,7 @@ export async function search(req: Request, res: Response) {
     const performancesCount = await Models.Performance.count(conditions).exec();
 
     // 必要な項目だけ指定すること(レスポンスタイムに大きく影響するので)
-    const fields = 'day open_time start_time end_time film screen screen_name theater theater_name';
+    const fields = 'day open_time start_time end_time film screen screen_name theater theater_name ttts_extension';
     const query = Models.Performance.find(conditions, fields);
 
     if (limit !== null) {
@@ -146,6 +146,14 @@ export async function search(req: Request, res: Response) {
             wheelchairs.push((<any>reservation).performance);
         });
     }
+    // ツアーナンバー取得(ttts_extensionのない過去データに備えて念のため作成)
+    const getTourNumber = (performance: any) => {
+        if (performance.hasOwnProperty('ttts_extension') ) {
+            return performance.ttts_extension.tour_number;
+        }
+
+        return '';
+    };
     //---
     const data = performances.map((performance) => {
         return {
@@ -166,6 +174,7 @@ export async function search(req: Request, res: Response) {
                 film_minutes: performance.film.minutes,
                 film_copyright: performance.film.copyright,
                 film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.film._id}.jpg`,
+                tour_number: getTourNumber(performance),
                 wheelchair_reserved: wheelchairs.indexOf(performance._id.toString()) >= 0 ? true : false
             }
         };
