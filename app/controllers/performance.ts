@@ -12,6 +12,7 @@ import * as _ from 'underscore';
 
 const debug = createDebug('ttts-api:controller:performance');
 const DEFAULT_RADIX = 10;
+const CATEGORY_WHEELCHAIR: string = '1';
 
 /**
  * 検索する
@@ -19,6 +20,7 @@ const DEFAULT_RADIX = 10;
  * @memberof controllers/performance
  */
 // tslint:disable-next-line:max-func-body-length
+// tslint:disable-next-line:cyclomatic-complexity
 export async function search(req: Request, res: Response) {
     // tslint:disable-next-line:max-line-length
     const limit: number | null = (!_.isEmpty(req.query.limit)) ? parseInt(req.query.limit, DEFAULT_RADIX) : null;
@@ -39,6 +41,8 @@ export async function search(req: Request, res: Response) {
     const screen: string | null = (!_.isEmpty(req.query.screen)) ? req.query.screen : null;
     // パフォーマンスID
     const performanceId: string | null = (!_.isEmpty(req.query.performanceId)) ? req.query.performanceId : null;
+    // 車椅子チェック要求
+    const wheelchair: boolean = (!_.isEmpty(req.query.wheelchair)) ? req.query.wheelchair : false;
 
     // 検索条件を作成
     const andConditions: any[] = [
@@ -122,6 +126,27 @@ export async function search(req: Request, res: Response) {
 
         return null;
     };
+
+    // 車椅子対応 2017/10
+    const performanceIds: string[] = performances.map((performance) => {
+        return performance._id.toString();
+    });
+    const wheelchairs : string[] = [];
+    // 車椅子予約チェック要求ありの時
+    if (wheelchair) {
+        // 検索されたパフォーマンスに紐づく車椅子予約取得
+        const conditionsWheelchair: any = {};
+        conditionsWheelchair.performance = { $in: performanceIds };
+        conditionsWheelchair['ticket_ttts_extension.category'] = CATEGORY_WHEELCHAIR;
+        if (day !== null) {
+            conditionsWheelchair.performance_day = day;
+        }
+        const reservations: any[] = await Models.Reservation.find(conditionsWheelchair, 'performance').exec();
+        reservations.map((reservation) => {
+            wheelchairs.push((<any>reservation).performance);
+        });
+    }
+    //---
     const data = performances.map((performance) => {
         return {
             type: 'performances',
@@ -140,7 +165,8 @@ export async function search(req: Request, res: Response) {
                 film_sections: performance.film.sections.map((filmSection: any) => filmSection.name),
                 film_minutes: performance.film.minutes,
                 film_copyright: performance.film.copyright,
-                film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.film._id}.jpg`
+                film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.film._id}.jpg`,
+                wheelchair_reserved: wheelchairs.indexOf(performance._id.toString()) >= 0 ? true : false
             }
         };
     });

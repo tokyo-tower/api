@@ -19,12 +19,14 @@ const moment = require("moment");
 const _ = require("underscore");
 const debug = createDebug('ttts-api:controller:performance');
 const DEFAULT_RADIX = 10;
+const CATEGORY_WHEELCHAIR = '1';
 /**
  * 検索する
  *
  * @memberof controllers/performance
  */
 // tslint:disable-next-line:max-func-body-length
+// tslint:disable-next-line:cyclomatic-complexity
 function search(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         // tslint:disable-next-line:max-line-length
@@ -45,6 +47,8 @@ function search(req, res) {
         const screen = (!_.isEmpty(req.query.screen)) ? req.query.screen : null;
         // パフォーマンスID
         const performanceId = (!_.isEmpty(req.query.performanceId)) ? req.query.performanceId : null;
+        // 車椅子チェック要求
+        const wheelchair = (!_.isEmpty(req.query.wheelchair)) ? req.query.wheelchair : false;
         // 検索条件を作成
         const andConditions = [
             { canceled: false }
@@ -110,6 +114,26 @@ function search(req, res) {
             }
             return null;
         };
+        // 車椅子対応 2017/10
+        const performanceIds = performances.map((performance) => {
+            return performance._id.toString();
+        });
+        const wheelchairs = [];
+        // 車椅子予約チェック要求ありの時
+        if (wheelchair) {
+            // 検索されたパフォーマンスに紐づく車椅子予約取得
+            const conditionsWheelchair = {};
+            conditionsWheelchair.performance = { $in: performanceIds };
+            conditionsWheelchair['ticket_ttts_extension.category'] = CATEGORY_WHEELCHAIR;
+            if (day !== null) {
+                conditionsWheelchair.performance_day = day;
+            }
+            const reservations = yield ttts_domain_1.Models.Reservation.find(conditionsWheelchair, 'performance').exec();
+            reservations.map((reservation) => {
+                wheelchairs.push(reservation.performance);
+            });
+        }
+        //---
         const data = performances.map((performance) => {
             return {
                 type: 'performances',
@@ -128,7 +152,8 @@ function search(req, res) {
                     film_sections: performance.film.sections.map((filmSection) => filmSection.name),
                     film_minutes: performance.film.minutes,
                     film_copyright: performance.film.copyright,
-                    film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.film._id}.jpg`
+                    film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.film._id}.jpg`,
+                    wheelchair_reserved: wheelchairs.indexOf(performance._id.toString()) >= 0 ? true : false
                 }
             };
         });

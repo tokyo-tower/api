@@ -111,7 +111,7 @@ transactionRouter.post(
             GMO.utils.util.PayType.Credit,
             '-'
         ];
-        // TODO:util系に「-」追加
+        // TO?DO:util系に「-」追加
         req.checkBody('payment_method').notEmpty().withMessage('required')
             .matches(new RegExp(`^(${availablePaymentMethod.join('|')})$`))
             .withMessage(`must be one of '${availablePaymentMethod.join('\', \'')}'`);
