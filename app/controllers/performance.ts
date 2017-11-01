@@ -4,7 +4,7 @@
  * @namespace controllers/performance
  */
 
-import { Models, PerformanceStatusesModel } from '@motionpicture/ttts-domain';
+import { Models, PerformanceStatusesModel, ReservationUtil } from '@motionpicture/ttts-domain';
 import * as createDebug from 'debug';
 import { Request, Response } from 'express';
 import * as moment from 'moment';
@@ -13,6 +13,7 @@ import * as _ from 'underscore';
 const debug = createDebug('ttts-api:controller:performance');
 const DEFAULT_RADIX = 10;
 const CATEGORY_WHEELCHAIR: string = '1';
+const WHEELCHAIR_NUMBER_PER_HOUR: number = 1;
 
 /**
  * 検索する
@@ -131,19 +132,25 @@ export async function search(req: Request, res: Response) {
     const performanceIds: string[] = performances.map((performance) => {
         return performance._id.toString();
     });
-    const wheelchairs : string[] = [];
+    const wheelchairs : any = {};
     // 車椅子予約チェック要求ありの時
     if (wheelchair) {
         // 検索されたパフォーマンスに紐づく車椅子予約取得
         const conditionsWheelchair: any = {};
-        conditionsWheelchair.performance = { $in: performanceIds };
+        conditionsWheelchair.status = {$in: [ReservationUtil.STATUS_RESERVED, ReservationUtil.STATUS_TEMPORARY]};
+        conditionsWheelchair.performance = {$in: performanceIds};
         conditionsWheelchair['ticket_ttts_extension.category'] = CATEGORY_WHEELCHAIR;
         if (day !== null) {
             conditionsWheelchair.performance_day = day;
         }
         const reservations: any[] = await Models.Reservation.find(conditionsWheelchair, 'performance').exec();
         reservations.map((reservation) => {
-            wheelchairs.push((<any>reservation).performance);
+            const performance: string = (<any>reservation).performance;
+            if (!wheelchairs.hasOwnProperty(performance)) {
+                wheelchairs[performance] = 1;
+            } else {
+                wheelchairs[performance] += 1;
+            }
         });
     }
     // ツアーナンバー取得(ttts_extensionのない過去データに備えて念のため作成)
@@ -156,6 +163,15 @@ export async function search(req: Request, res: Response) {
     };
     //---
     const data = performances.map((performance) => {
+        const wheelchairReserved : number = wheelchairs.hasOwnProperty(performance._id.toString()) ?
+                                            wheelchairs[performance._id.toString()] : 0;
+        const wheelchairAvailable: number = WHEELCHAIR_NUMBER_PER_HOUR - wheelchairReserved > 0 ?
+                                            WHEELCHAIR_NUMBER_PER_HOUR - wheelchairReserved : 0;
+        // tslint:disable-next-line:no-console
+        console.log(`{$performance._id.toString()}:wheelchairReserved=${wheelchairReserved}`);
+        // tslint:disable-next-line:no-console
+        console.log(`wheelchairAvailable=${wheelchairAvailable}`);
+
         return {
             type: 'performances',
             id: performance._id,
@@ -164,7 +180,6 @@ export async function search(req: Request, res: Response) {
                 open_time: performance.open_time,
                 start_time: performance.start_time,
                 end_time: performance.end_time,
-                //seat_status: (performanceStatuses !== undefined) ? performanceStatuses.getStatus(performance._id.toString()) : null,
                 seat_status: getStatus(performance._id.toString()),
                 theater_name: performance.theater_name,
                 screen_name: performance.screen_name,
@@ -175,7 +190,7 @@ export async function search(req: Request, res: Response) {
                 film_copyright: performance.film.copyright,
                 film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.film._id}.jpg`,
                 tour_number: getTourNumber(performance),
-                wheelchair_reserved: wheelchairs.indexOf(performance._id.toString()) >= 0 ? true : false
+                wheelchair_available: wheelchairAvailable
             }
         };
     });
