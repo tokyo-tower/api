@@ -120,6 +120,7 @@ function search(req, res) {
             return performance._id.toString();
         });
         const wheelchairs = {};
+        let requiredSeatNum = 1;
         // 車椅子予約チェック要求ありの時
         if (wheelchair) {
             // 検索されたパフォーマンスに紐づく車椅子予約取得
@@ -140,6 +141,11 @@ function search(req, res) {
                     wheelchairs[performance] += 1;
                 }
             });
+            // 券種取得
+            const ticketType = yield ttts_domain_1.Models.TicketType.findOne({ 'ttts_extension.category': CATEGORY_WHEELCHAIR }).exec();
+            if (ticketType !== null) {
+                requiredSeatNum = ticketType.ttts_extension.required_seat_num;
+            }
         }
         // ツアーナンバー取得(ttts_extensionのない過去データに備えて念のため作成)
         const getTourNumber = (performance) => {
@@ -148,17 +154,35 @@ function search(req, res) {
             }
             return '';
         };
-        //---
-        const data = performances.map((performance) => {
-            const wheelchairReserved = wheelchairs.hasOwnProperty(performance._id.toString()) ?
-                wheelchairs[performance._id.toString()] : 0;
+        // 予約可能車椅子席数取得
+        const getWheelchairAvailable = (pId) => __awaiter(this, void 0, void 0, function* () {
+            // 指定パフォーマンスで予約可能な車椅子チケット数取得
+            const wheelchairReserved = wheelchairs.hasOwnProperty(pId) ?
+                wheelchairs[pId] : 0;
             const wheelchairAvailable = WHEELCHAIR_NUMBER_PER_HOUR - wheelchairReserved > 0 ?
                 WHEELCHAIR_NUMBER_PER_HOUR - wheelchairReserved : 0;
+            // 指定パフォーマンスで予約可能なチケット数取得(必要座席数で割る)
+            const conditionsAvailable = {
+                performance: pId,
+                status: ttts_domain_1.ReservationUtil.STATUS_AVAILABLE
+            };
+            let reservationAvailable = yield ttts_domain_1.Models.Reservation.find(conditionsAvailable).count().exec();
+            reservationAvailable = Math.floor(reservationAvailable / requiredSeatNum);
             // tslint:disable-next-line:no-console
-            console.log(`{$performance._id.toString()}:wheelchairReserved=${wheelchairReserved}`);
+            console.log(`${pId}:wheelchairReserved=${wheelchairReserved}`);
             // tslint:disable-next-line:no-console
             console.log(`wheelchairAvailable=${wheelchairAvailable}`);
-            return {
+            // tslint:disable-next-line:no-console
+            console.log(`reservationAvailable=${reservationAvailable}`);
+            // 予約可能な車椅子チケット数か予約可能なチケット数／必要座席数の小さいほうを返す
+            // ※車椅子枠が"1"残っていても、チケットが"3枚"しか残っていなかったら、
+            //   "4座席"必要な車椅子予約可能数は0になる。
+            return Math.min(wheelchairAvailable, reservationAvailable);
+        });
+        //---
+        const data = [];
+        const promises = performances.map((performance) => __awaiter(this, void 0, void 0, function* () {
+            data.push({
                 type: 'performances',
                 id: performance._id,
                 attributes: {
@@ -176,10 +200,11 @@ function search(req, res) {
                     film_copyright: performance.film.copyright,
                     film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.film._id}.jpg`,
                     tour_number: getTourNumber(performance),
-                    wheelchair_available: wheelchairAvailable
+                    wheelchair_available: yield getWheelchairAvailable(performance._id.toString())
                 }
-            };
-        });
+            });
+        }));
+        yield Promise.all(promises);
         res.json({
             meta: {
                 number_of_performances: performancesCount,
