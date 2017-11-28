@@ -180,6 +180,30 @@ function search(req, res) {
             return Math.min(wheelchairAvailable, reservationAvailable);
         });
         //---
+        // 停止単位でgrouping({"2017/11/24 08:37:33": [p1,p2,,,pn]} )
+        const dicSuspended = {};
+        for (const performance of performances) {
+            // 販売停止の時
+            if (performance.ttts_extension.online_sales_status === ttts_domain_1.PerformanceUtil.ONLINE_SALES_STATUS.SUSPENDED) {
+                // dictionnaryに追加する
+                const key = performance.ttts_extension.online_sales_update_at;
+                if (dicSuspended.hasOwnProperty(key) === false) {
+                    dicSuspended[key] = [];
+                }
+                dicSuspended[key].push(performance._id.toString());
+            }
+        }
+        // 停止単位で配列にセット
+        // [{ performance_ids: [p1,p2,,,pn],
+        //    annnouce_locales: { ja:'メッセージ', 'en':'message',･･･} }]
+        const salesSuspended = [];
+        for (const key of Object.keys(dicSuspended)) {
+            salesSuspended.push({
+                date: key,
+                performance_ids: dicSuspended[key],
+                annnouce_locales: { ja: `販売停止(${key})` }
+            });
+        }
         const data = [];
         const promises = performances.map((performance) => __awaiter(this, void 0, void 0, function* () {
             data.push({
@@ -208,7 +232,8 @@ function search(req, res) {
         res.json({
             meta: {
                 number_of_performances: performancesCount,
-                number_of_films: filmIds.length
+                number_of_films: filmIds.length,
+                sales_suspended: salesSuspended
             },
             data: data
         });

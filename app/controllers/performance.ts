@@ -4,7 +4,7 @@
  * @namespace controllers/performance
  */
 
-import { Models, PerformanceStatusesModel, ReservationUtil } from '@motionpicture/ttts-domain';
+import { Models, PerformanceStatusesModel, PerformanceUtil, ReservationUtil } from '@motionpicture/ttts-domain';
 import * as createDebug from 'debug';
 import { Request, Response } from 'express';
 import * as moment from 'moment';
@@ -199,6 +199,32 @@ export async function search(req: Request, res: Response) {
         return Math.min(wheelchairAvailable, reservationAvailable);
     };
     //---
+
+    // 停止単位でgrouping({"2017/11/24 08:37:33": [p1,p2,,,pn]} )
+    const dicSuspended: any = {};
+    for (const performance of performances) {
+        // 販売停止の時
+        if (performance.ttts_extension.online_sales_status === PerformanceUtil.ONLINE_SALES_STATUS.SUSPENDED) {
+            // dictionnaryに追加する
+            const key: string = performance.ttts_extension.online_sales_update_at;
+            if (dicSuspended.hasOwnProperty(key) === false) {
+                dicSuspended[key] = [];
+            }
+            dicSuspended[key].push(performance._id.toString());
+        }
+    }
+    // 停止単位で配列にセット
+    // [{ performance_ids: [p1,p2,,,pn],
+    //    annnouce_locales: { ja:'メッセージ', 'en':'message',･･･} }]
+    const salesSuspended: any[] = [];
+    for (const key of Object.keys(dicSuspended)) {
+        salesSuspended.push({
+            date: key,
+            performance_ids: dicSuspended[key],
+            annnouce_locales: { ja: `販売停止(${key})` }
+        }) ;
+    }
+
     const data: any[] = [];
     const promises = performances.map(async(performance) => {
         data.push({
@@ -228,7 +254,8 @@ export async function search(req: Request, res: Response) {
     res.json({
         meta: {
             number_of_performances: performancesCount,
-            number_of_films: filmIds.length
+            number_of_films: filmIds.length,
+            sales_suspended: salesSuspended
         },
         data: data
     });
