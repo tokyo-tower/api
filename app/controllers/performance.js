@@ -215,16 +215,18 @@ function search(req, res) {
                     start_time: performance.start_time,
                     end_time: performance.end_time,
                     seat_status: getStatus(performance._id.toString()),
-                    theater_name: performance.theater_name,
-                    screen_name: performance.screen_name,
-                    film: performance.film._id,
-                    film_name: performance.film.name,
-                    film_sections: performance.film.sections.map((filmSection) => filmSection.name),
-                    film_minutes: performance.film.minutes,
-                    film_copyright: performance.film.copyright,
-                    film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.film._id}.jpg`,
+                    // theater_name: performance.theater_name,
+                    // screen_name: performance.screen_name,
+                    // film: performance.film._id,
+                    // film_name: performance.film.name,
+                    // film_sections: performance.film.sections.map((filmSection: any) => filmSection.name),
+                    // film_minutes: performance.film.minutes,
+                    // film_copyright: performance.film.copyright,
+                    // film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.film._id}.jpg`,
                     tour_number: getTourNumber(performance),
-                    wheelchair_available: yield getWheelchairAvailable(performance._id.toString())
+                    wheelchair_available: yield getWheelchairAvailable(performance._id.toString()),
+                    online_sales_status: performance.ttts_extension.online_sales_status,
+                    ev_service_status: performance.ttts_extension.ev_service_status
                 }
             });
         }));
