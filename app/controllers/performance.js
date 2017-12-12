@@ -52,7 +52,7 @@ function search(searchConditions) {
         if (searchConditions.screen !== undefined) {
             andConditions.push({ screen: searchConditions.screen });
         }
-        if (searchConditions.performanceId !== null) {
+        if (searchConditions.performanceId !== undefined) {
             andConditions.push({ _id: searchConditions.performanceId });
         }
         if (searchConditions.startFrom !== undefined) {
@@ -77,12 +77,13 @@ function search(searchConditions) {
         if (andConditions.length > 0) {
             conditions = { $and: andConditions };
         }
+        debug('search conditions;', conditions);
         // 作品件数取得
         const filmIds = yield performanceRepo.performanceModel.distinct('film', conditions).exec();
         // 総数検索
         const performancesCount = yield performanceRepo.performanceModel.count(conditions).exec();
         // 必要な項目だけ指定すること(レスポンスタイムに大きく影響するので)
-        const fields = 'day open_time start_time end_time film screen screen_name theater theater_name';
+        const fields = 'day open_time start_time end_time film screen screen_name theater theater_name ttts_extension';
         const query = performanceRepo.performanceModel.find(conditions, fields);
         const page = (searchConditions.page !== undefined) ? searchConditions.page : 1;
         if (searchConditions.limit !== undefined) {
@@ -97,6 +98,7 @@ function search(searchConditions) {
             }
         });
         const performances = yield query.lean(true).exec();
+        debug('performances found.', performances);
         // 空席情報を追加
         const performanceStatuses = yield performanceStatusesRepo.find().catch(() => undefined);
         const getStatus = (id) => {
@@ -106,9 +108,7 @@ function search(searchConditions) {
             return null;
         };
         // 車椅子対応 2017/10
-        const performanceIds = performances.map((performance) => {
-            return performance._id.toString();
-        });
+        const performanceIds = performances.map((performance) => performance._id.toString());
         const wheelchairs = {};
         let requiredSeatNum = 1;
         // 車椅子予約チェック要求ありの時

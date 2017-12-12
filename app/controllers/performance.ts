@@ -109,7 +109,7 @@ export async function search(searchConditions: ISearchConditions): Promise<ISear
         andConditions.push({ screen: searchConditions.screen });
     }
 
-    if (searchConditions.performanceId !== null) {
+    if (searchConditions.performanceId !== undefined) {
         andConditions.push({ _id: searchConditions.performanceId });
     }
 
@@ -142,6 +142,7 @@ export async function search(searchConditions: ISearchConditions): Promise<ISear
     if (andConditions.length > 0) {
         conditions = { $and: andConditions };
     }
+    debug('search conditions;', conditions);
 
     // 作品件数取得
     const filmIds = await performanceRepo.performanceModel.distinct('film', conditions).exec();
@@ -150,7 +151,7 @@ export async function search(searchConditions: ISearchConditions): Promise<ISear
     const performancesCount = await performanceRepo.performanceModel.count(conditions).exec();
 
     // 必要な項目だけ指定すること(レスポンスタイムに大きく影響するので)
-    const fields = 'day open_time start_time end_time film screen screen_name theater theater_name';
+    const fields = 'day open_time start_time end_time film screen screen_name theater theater_name ttts_extension';
     const query = performanceRepo.performanceModel.find(conditions, fields);
 
     const page = (searchConditions.page !== undefined) ? searchConditions.page : 1;
@@ -169,6 +170,7 @@ export async function search(searchConditions: ISearchConditions): Promise<ISear
     });
 
     const performances = <any[]>await query.lean(true).exec();
+    debug('performances found.', performances);
 
     // 空席情報を追加
     const performanceStatuses = await performanceStatusesRepo.find().catch(() => undefined);
@@ -181,11 +183,10 @@ export async function search(searchConditions: ISearchConditions): Promise<ISear
     };
 
     // 車椅子対応 2017/10
-    const performanceIds: string[] = performances.map((performance) => {
-        return performance._id.toString();
-    });
+    const performanceIds = performances.map((performance) => performance._id.toString());
     const wheelchairs: any = {};
     let requiredSeatNum: number = 1;
+
     // 車椅子予約チェック要求ありの時
     if (searchConditions.wheelchair !== undefined) {
         // 検索されたパフォーマンスに紐づく車椅子予約取得

@@ -36,7 +36,9 @@ performanceRouter.get(
                 words: (!_.isEmpty(req.query.words)) ? req.query.words : undefined,
                 startFrom: (!_.isEmpty(req.query.start_from)) ? parseInt(req.query.startFrom, DEFAULT_RADIX) : undefined,
                 theater: (!_.isEmpty(req.query.theater)) ? req.query.theater : undefined,
-                screen: (!_.isEmpty(req.query.screen)) ? req.query.screen : undefined
+                screen: (!_.isEmpty(req.query.screen)) ? req.query.screen : undefined,
+                performanceId: (!_.isEmpty(req.query.performanceId)) ? req.query.performanceId : undefined,
+                wheelchair: (!_.isEmpty(req.query.screen)) ? req.query.wheelchair : undefined
             };
 
             await PerformanceController.search(conditions).then((searchPerformanceResult) => {
