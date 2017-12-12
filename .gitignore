@@ -18,5 +18,7 @@ coverage/
 
 !.elasticbeanstalk/*.global.yml
 
+*.js.map
+
 # GCP
 app.yaml

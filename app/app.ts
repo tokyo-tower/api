@@ -15,7 +15,7 @@ import * as i18n from 'i18n';
 import mongooseConnectionOptions from '../mongooseConnectionOptions';
 
 import benchmarks from './middlewares/benchmarks';
-import cors from './middlewares/cors';
+
 import errorHandler from './middlewares/errorHandler';
 import notFoundHandler from './middlewares/notFoundHandler';
 
@@ -30,8 +30,19 @@ import transactionRouter from './routes/transactions';
 const debug = createDebug('ttts-api:app');
 
 const app = express();
+//var cors = require('cors')
+import * as cors from 'cors';
+const options: cors.CorsOptions = {
+  origin: '*',
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'X-Access-Token', 'Authorization'],
+  credentials: true,
+  methods: 'GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE',
+  preflightContinue: true
+};
+// app.options('*', cors())
 
-app.use(cors);
+app.use(cors(options));
+
 app.use(helmet());
 app.use(helmet.contentSecurityPolicy({
     directives: {

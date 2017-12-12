@@ -43,7 +43,8 @@ performanceRouter.get(
                 res.json({
                     meta: {
                         number_of_performances: searchPerformanceResult.numberOfPerformances,
-                        number_of_films: searchPerformanceResult.filmIds.length
+                        number_of_films: searchPerformanceResult.filmIds.length,
+                        sales_suspended: searchPerformanceResult.salesSuspended
                     },
                     data: searchPerformanceResult.performances
                 });

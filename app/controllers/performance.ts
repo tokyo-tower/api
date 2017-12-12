@@ -16,6 +16,8 @@ const redisClient = ttts.redis.createClient({
 });
 
 const debug = createDebug('ttts-api:controller:performance');
+const CATEGORY_WHEELCHAIR = '1';
+const WHEELCHAIR_NUMBER_PER_HOUR = 1;
 
 export interface ISearchConditions {
     limit?: number;
@@ -32,6 +34,10 @@ export interface ISearchConditions {
     theater?: string;
     // スクリーン
     screen?: string;
+    // パフォーマンスID
+    performanceId?: string;
+    // 車椅子チェック要求
+    wheelchair?: string;
 }
 
 export interface IMultilingualString {
@@ -50,14 +56,18 @@ export interface IPerformance {
         start_time: string;
         end_time: string;
         seat_status: string;
-        theater_name: IMultilingualString;
-        screen_name: IMultilingualString;
-        film: string;
-        film_name: IMultilingualString;
-        film_sections: string[];
-        film_minutes: number;
-        film_copyright: string;
-        film_image: string;
+        // theater_name: IMultilingualString;
+        // screen_name: IMultilingualString;
+        // film: string;
+        // film_name: IMultilingualString;
+        // film_sections: string[];
+        // film_minutes: number;
+        // film_copyright: string;
+        // film_image: string;
+        tour_number: any;
+        wheelchair_available: number;
+        online_sales_status: any;
+        ev_service_status: any;
     };
 }
 
@@ -65,6 +75,7 @@ export interface ISearchResult {
     performances: IPerformance[];
     numberOfPerformances: number;
     filmIds: string[];
+    salesSuspended: any[];
 }
 
 /**
@@ -78,6 +89,8 @@ export interface ISearchResult {
 export async function search(searchConditions: ISearchConditions): Promise<ISearchResult> {
     const performanceRepo = new ttts.repository.Performance(ttts.mongoose.connection);
     const performanceStatusesRepo = new ttts.repository.PerformanceStatuses(redisClient);
+    const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
+    const stockRepo = new ttts.repository.Stock(ttts.mongoose.connection);
 
     // MongoDB検索条件を作成
     const andConditions: any[] = [
@@ -94,6 +107,10 @@ export async function search(searchConditions: ISearchConditions): Promise<ISear
 
     if (searchConditions.screen !== undefined) {
         andConditions.push({ screen: searchConditions.screen });
+    }
+
+    if (searchConditions.performanceId !== null) {
+        andConditions.push({ _id: searchConditions.performanceId });
     }
 
     if (searchConditions.startFrom !== undefined) {
@@ -162,7 +179,105 @@ export async function search(searchConditions: ISearchConditions): Promise<ISear
 
         return null;
     };
-    const data = performances.map((performance) => {
+
+    // 車椅子対応 2017/10
+    const performanceIds: string[] = performances.map((performance) => {
+        return performance._id.toString();
+    });
+    const wheelchairs: any = {};
+    let requiredSeatNum: number = 1;
+    // 車椅子予約チェック要求ありの時
+    if (searchConditions.wheelchair !== undefined) {
+        // 検索されたパフォーマンスに紐づく車椅子予約取得
+        const conditionsWheelchair: any = {};
+        conditionsWheelchair.status = { $in: [ttts.factory.reservationStatusType.ReservationConfirmed] };
+        conditionsWheelchair.performance = { $in: performanceIds };
+        conditionsWheelchair['ticket_ttts_extension.category'] = CATEGORY_WHEELCHAIR;
+        if (searchConditions.day !== null) {
+            conditionsWheelchair.performance_day = searchConditions.day;
+        }
+        const reservations: any[] = await reservationRepo.reservationModel.find(conditionsWheelchair, 'performance').exec();
+        reservations.map((reservation) => {
+            const performance: string = (<any>reservation).performance;
+            if (!wheelchairs.hasOwnProperty(performance)) {
+                wheelchairs[performance] = 1;
+            } else {
+                wheelchairs[performance] += 1;
+            }
+        });
+        // 券種取得
+        const ticketType: any = await ttts.Models.TicketType.findOne(
+            { 'ttts_extension.category': CATEGORY_WHEELCHAIR }
+        ).exec();
+        if (ticketType !== null) {
+            requiredSeatNum = ticketType.ttts_extension.required_seat_num;
+        }
+    }
+    // ツアーナンバー取得(ttts_extensionのない過去データに備えて念のため作成)
+    const getTourNumber = (performance: any) => {
+        if (performance.hasOwnProperty('ttts_extension')) {
+            return performance.ttts_extension.tour_number;
+        }
+
+        return '';
+    };
+
+    // 予約可能車椅子席数取得
+    const getWheelchairAvailable = async (pId: string) => {
+        // 指定パフォーマンスで予約可能な車椅子チケット数取得
+        const wheelchairReserved: number = wheelchairs.hasOwnProperty(pId) ?
+            wheelchairs[pId] : 0;
+        const wheelchairAvailable: number = WHEELCHAIR_NUMBER_PER_HOUR - wheelchairReserved > 0 ?
+            WHEELCHAIR_NUMBER_PER_HOUR - wheelchairReserved : 0;
+
+        // 指定パフォーマンスで予約可能なチケット数取得(必要座席数で割る)
+        const conditionsAvailable: any = {
+            performance: pId,
+            availability: ttts.factory.itemAvailability.InStock
+        };
+        let reservationAvailable: number = await stockRepo.stockModel.find(conditionsAvailable).count().exec();
+        reservationAvailable = Math.floor(reservationAvailable / requiredSeatNum);
+
+        // tslint:disable-next-line:no-console
+        console.log(`${pId}:wheelchairReserved=${wheelchairReserved}`);
+        // tslint:disable-next-line:no-console
+        console.log(`wheelchairAvailable=${wheelchairAvailable}`);
+        // tslint:disable-next-line:no-console
+        console.log(`reservationAvailable=${reservationAvailable}`);
+
+        // 予約可能な車椅子チケット数か予約可能なチケット数／必要座席数の小さいほうを返す
+        // ※車椅子枠が"1"残っていても、チケットが"3枚"しか残っていなかったら、
+        //   "4座席"必要な車椅子予約可能数は0になる。
+        return Math.min(wheelchairAvailable, reservationAvailable);
+    };
+    //---
+
+    // 停止単位でgrouping({"2017/11/24 08:37:33": [p1,p2,,,pn]} )
+    const dicSuspended: any = {};
+    for (const performance of performances) {
+        // 販売停止の時
+        if (performance.ttts_extension.online_sales_status === ttts.PerformanceUtil.ONLINE_SALES_STATUS.SUSPENDED) {
+            // dictionnaryに追加する
+            const key: string = performance.ttts_extension.online_sales_update_at;
+            if (dicSuspended.hasOwnProperty(key) === false) {
+                dicSuspended[key] = [];
+            }
+            dicSuspended[key].push(performance._id.toString());
+        }
+    }
+    // 停止単位で配列にセット
+    // [{ performance_ids: [p1,p2,,,pn],
+    //    annnouce_locales: { ja:'メッセージ', 'en':'message',･･･} }]
+    const salesSuspended: any[] = [];
+    for (const key of Object.keys(dicSuspended)) {
+        salesSuspended.push({
+            date: key,
+            performance_ids: dicSuspended[key],
+            annnouce_locales: { ja: `販売停止(${key})` }
+        });
+    }
+
+    const data: IPerformance[] = await Promise.all(performances.map(async (performance) => {
         return {
             type: 'performances',
             id: performance._id,
@@ -172,22 +287,27 @@ export async function search(searchConditions: ISearchConditions): Promise<ISear
                 start_time: performance.start_time,
                 end_time: performance.end_time,
                 seat_status: getStatus(performance._id.toString()),
-                theater_name: performance.theater_name,
-                screen_name: performance.screen_name,
-                film: performance.film._id,
-                film_name: performance.film.name,
-                film_sections: performance.film.sections.map((filmSection: any) => filmSection.name),
-                film_minutes: performance.film.minutes,
-                film_copyright: performance.film.copyright,
-                film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.film._id}.jpg`
+                // theater_name: performance.theater_name,
+                // screen_name: performance.screen_name,
+                // film: performance.film._id,
+                // film_name: performance.film.name,
+                // film_sections: performance.film.sections.map((filmSection: any) => filmSection.name),
+                // film_minutes: performance.film.minutes,
+                // film_copyright: performance.film.copyright,
+                // film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.film._id}.jpg`,
+                tour_number: getTourNumber(performance),
+                wheelchair_available: await getWheelchairAvailable(performance._id.toString()),
+                online_sales_status: performance.ttts_extension.online_sales_status,
+                ev_service_status: performance.ttts_extension.ev_service_status
             }
         };
-    });
+    }));
 
     return {
         performances: data,
         numberOfPerformances: performancesCount,
-        filmIds: filmIds
+        filmIds: filmIds,
+        salesSuspended: salesSuspended
     };
 }
 
