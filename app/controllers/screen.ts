@@ -6,22 +6,21 @@
 
 import * as ttts from '@motionpicture/ttts-domain';
 import * as fs from 'fs-extra';
-import * as monapt from 'monapt';
 
 /**
  * スクリーンの座席マップを生成する
  *
  * @param {string} screenId スクリーンID
- * @return {Promise<monapt.Option<string>>} スクリーンのHTML
+ * @return {Promise<string | null>} スクリーンのHTML
  * @memberof controllers/screen
  */
-export async function getHtml(screenId: string): Promise<monapt.Option<string>> {
+export async function getHtml(screenId: string): Promise<string | null> {
     // スクリーンの存在確認
     const count = await ttts.Models.Screen.count({ _id: screenId }).exec();
     if (count === 0) {
-        return monapt.None;
+        return null;
     }
 
     // スクリーン座席表HTMLを出力
-    return monapt.Option(await fs.readFile(`${__dirname}/../views/_screens/${screenId}.ejs`, 'utf8'));
+    return fs.readFile(`${__dirname}/../views/_screens/${screenId}.ejs`, 'utf8');
 }

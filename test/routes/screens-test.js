@@ -1,4 +1,5 @@
 "use strict";
+// tslint:disable:no-implicit-dependencies
 /**
  * スクリーンルーターテスト
  *

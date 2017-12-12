@@ -1,7 +1,6 @@
 "use strict";
 /**
  * パフォーマンスコントローラー
- *
  * @namespace controllers/performance
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -16,6 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const ttts = require("@motionpicture/ttts-domain");
 const createDebug = require("debug");
 const moment = require("moment");
+const redisClient = ttts.redis.createClient({
+    host: process.env.TTTS_PERFORMANCE_STATUSES_REDIS_HOST,
+    // tslint:disable-next-line:no-magic-numbers
+    port: parseInt(process.env.TTTS_PERFORMANCE_STATUSES_REDIS_PORT, 10),
+    password: process.env.TTTS_PERFORMANCE_STATUSES_REDIS_KEY,
+    tls: { servername: process.env.TTTS_PERFORMANCE_STATUSES_REDIS_HOST }
+});
 const debug = createDebug('ttts-api:controller:performance');
 /**
  * 検索する
@@ -27,6 +33,8 @@ const debug = createDebug('ttts-api:controller:performance');
 // tslint:disable-next-line:max-func-body-length
 function search(searchConditions) {
     return __awaiter(this, void 0, void 0, function* () {
+        const performanceRepo = new ttts.repository.Performance(ttts.mongoose.connection);
+        const performanceStatusesRepo = new ttts.repository.PerformanceStatuses(redisClient);
         // MongoDB検索条件を作成
         const andConditions = [
             { canceled: false }
@@ -63,12 +71,12 @@ function search(searchConditions) {
             conditions = { $and: andConditions };
         }
         // 作品件数取得
-        const filmIds = yield ttts.Models.Performance.distinct('film', conditions).exec();
+        const filmIds = yield performanceRepo.performanceModel.distinct('film', conditions).exec();
         // 総数検索
-        const performancesCount = yield ttts.Models.Performance.count(conditions).exec();
+        const performancesCount = yield performanceRepo.performanceModel.count(conditions).exec();
         // 必要な項目だけ指定すること(レスポンスタイムに大きく影響するので)
         const fields = 'day open_time start_time end_time film screen screen_name theater theater_name';
-        const query = ttts.Models.Performance.find(conditions, fields);
+        const query = performanceRepo.performanceModel.find(conditions, fields);
         const page = (searchConditions.page !== undefined) ? searchConditions.page : 1;
         if (searchConditions.limit !== undefined) {
             query.skip(searchConditions.limit * (page - 1)).limit(searchConditions.limit);
@@ -83,7 +91,7 @@ function search(searchConditions) {
         });
         const performances = yield query.lean(true).exec();
         // 空席情報を追加
-        const performanceStatuses = yield ttts.PerformanceStatusesModel.find().catch(() => undefined);
+        const performanceStatuses = yield performanceStatusesRepo.find().catch(() => undefined);
         const getStatus = (id) => {
             if (performanceStatuses !== undefined && performanceStatuses.hasOwnProperty(id)) {
                 return performanceStatuses[id];

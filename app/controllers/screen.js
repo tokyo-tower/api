@@ -15,12 +15,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const ttts = require("@motionpicture/ttts-domain");
 const fs = require("fs-extra");
-const monapt = require("monapt");
 /**
  * スクリーンの座席マップを生成する
  *
  * @param {string} screenId スクリーンID
- * @return {Promise<monapt.Option<string>>} スクリーンのHTML
+ * @return {Promise<string | null>} スクリーンのHTML
  * @memberof controllers/screen
  */
 function getHtml(screenId) {
@@ -28,10 +27,10 @@ function getHtml(screenId) {
         // スクリーンの存在確認
         const count = yield ttts.Models.Screen.count({ _id: screenId }).exec();
         if (count === 0) {
-            return monapt.None;
+            return null;
         }
         // スクリーン座席表HTMLを出力
-        return monapt.Option(yield fs.readFile(`${__dirname}/../views/_screens/${screenId}.ejs`, 'utf8'));
+        return fs.readFile(`${__dirname}/../views/_screens/${screenId}.ejs`, 'utf8');
     });
 }
 exports.getHtml = getHtml;

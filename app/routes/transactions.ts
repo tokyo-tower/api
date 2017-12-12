@@ -4,7 +4,6 @@
  * @module routes/transactions
  */
 
-import * as GMO from '@motionpicture/gmo-service';
 import * as ttts from '@motionpicture/ttts-domain';
 import * as express from 'express';
 import * as httpStatus from 'http-status';
@@ -34,20 +33,17 @@ transactionRouter.post(
     async (req, res, next) => {
         try {
             await TransactionController.createAuthorization(req.body.performance)
-                .then((option) => {
-                    option.match({
-                        Some: (authorization) => {
-                            res.status(httpStatus.OK).json({
-                                data: authorization
-                            });
-                        },
-                        None: () => {
-                            // 空席がなければ404
-                            res.status(httpStatus.NOT_FOUND).json({
-                                data: null
-                            });
-                        }
-                    });
+                .then((authorization) => {
+                    if (authorization === null) {
+                        // 空席がなければ404
+                        res.status(httpStatus.NOT_FOUND).json({
+                            data: null
+                        });
+                    } else {
+                        res.status(httpStatus.OK).json({
+                            data: authorization
+                        });
+                    }
                 });
         } catch (error) {
             next(error);
@@ -62,18 +58,15 @@ transactionRouter.delete(
     async (req, res, next) => {
         try {
             await TransactionController.deleteAuthorization(req.params.id)
-                .then((option) => {
-                    option.match({
-                        Some: () => {
-                            res.status(httpStatus.NO_CONTENT).end();
-                        },
-                        None: () => {
-                            // 該当予約がなければ404
-                            res.status(httpStatus.NOT_FOUND).json({
-                                data: null
-                            });
-                        }
-                    });
+                .then((result) => {
+                    if (result === null) {
+                        // 該当予約がなければ404
+                        res.status(httpStatus.NOT_FOUND).json({
+                            data: null
+                        });
+                    } else {
+                        res.status(httpStatus.NO_CONTENT).end();
+                    }
                 });
         } catch (error) {
             next(error);
@@ -107,8 +100,8 @@ transactionRouter.post(
         });
 
         const availablePaymentMethod = [
-            GMO.utils.util.PayType.Cash,
-            GMO.utils.util.PayType.Credit
+            ttts.GMO.utils.util.PayType.Cash,
+            ttts.GMO.utils.util.PayType.Credit
         ];
         req.checkBody('payment_method').notEmpty().withMessage('required')
             .matches(new RegExp(`^(${availablePaymentMethod.join('|')})$`))
@@ -116,8 +109,7 @@ transactionRouter.post(
 
         const availablePurchaserGroups = [
             ttts.ReservationUtil.PURCHASER_GROUP_CUSTOMER,
-            ttts.ReservationUtil.PURCHASER_GROUP_STAFF,
-            ttts.ReservationUtil.PURCHASER_GROUP_WINDOW
+            ttts.ReservationUtil.PURCHASER_GROUP_STAFF
         ];
         req.checkBody('purchaser_group').notEmpty().withMessage('required')
             .matches(new RegExp(`^(${availablePurchaserGroups.join('|')})$`))

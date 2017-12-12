@@ -26,19 +26,17 @@ screenRouter.use(authentication_1.default);
  */
 screenRouter.get('/:id/show', permitScopes_1.default(['screens', 'screens.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield ScreenController.getHtml(req.params.id).then((option) => {
-            option.match({
-                Some: (html) => {
-                    res.status(httpStatus.OK).json({
-                        data: html
-                    });
-                },
-                None: () => {
-                    res.status(httpStatus.NOT_FOUND).json({
-                        data: null
-                    });
-                }
-            });
+        yield ScreenController.getHtml(req.params.id).then((html) => {
+            if (html === null) {
+                res.status(httpStatus.NOT_FOUND).json({
+                    data: null
+                });
+            }
+            else {
+                res.status(httpStatus.OK).json({
+                    data: html
+                });
+            }
         });
     }
     catch (error) {

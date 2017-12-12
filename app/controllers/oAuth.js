@@ -32,7 +32,7 @@ function issueCredentials(req) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (req.body.grant_type) {
             case 'client_credentials':
-                return yield issueCredentialsByClient(req.body.client_id, req.body.client_secret, req.body.state, req.body.scopes);
+                return issueCredentialsByClient(req.body.client_id, req.body.client_secret, req.body.state, req.body.scopes);
             default:
                 // 非対応認可タイプ
                 throw new Error(exports.MESSAGE_UNIMPLEMENTED_GRANT_TYPE);
@@ -59,7 +59,7 @@ function issueCredentialsByClient(clientId, clientSecret, state, scopes) {
         if (!(yield bcrypt.compare(clientSecret, clientDoc.get('secret_hash')))) {
             throw new Error(exports.MESSAGE_INVALID_CLIENT_CREDENTIALS);
         }
-        return yield payload2credentials({
+        return payload2credentials({
             client: clientId,
             state: state,
             scopes: scopes

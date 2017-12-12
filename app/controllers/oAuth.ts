@@ -48,7 +48,7 @@ export interface ICredentials {
 export async function issueCredentials(req: Request): Promise<ICredentials> {
     switch (req.body.grant_type) {
         case 'client_credentials':
-            return await issueCredentialsByClient(req.body.client_id, req.body.client_secret, req.body.state, req.body.scopes);
+            return issueCredentialsByClient(req.body.client_id, req.body.client_secret, req.body.state, req.body.scopes);
 
         default:
             // 非対応認可タイプ
@@ -78,7 +78,7 @@ export async function issueCredentialsByClient(
         throw new Error(MESSAGE_INVALID_CLIENT_CREDENTIALS);
     }
 
-    return await payload2credentials({
+    return payload2credentials({
         client: clientId,
         state: state,
         scopes: scopes

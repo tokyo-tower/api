@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 - パフォーマンス検索のレスポンスを多言語化。
 - HTTPステータスコードの振り分けをルーターに記述するように統一。
+- ttts-domain@12.0.0に対応。
 
 ### Deprecated
 

@@ -15,47 +15,45 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const ttts = require("@motionpicture/ttts-domain");
 const createDebug = require("debug");
-const monapt = require("monapt");
 const debug = createDebug('ttts-api:controllers:reservation');
 /**
  * 予約情報を取得する
- *
  * @param {string} reservationId 予約ID
- * @return {Promise<monapt.Option<ttts.mongoose.Document>>} 予約ドキュメント
+ * @return {Promise<ttts.mongoose.Document | null>} 予約ドキュメント
  * @memberof controllers/reservation
  */
 function findById(reservationId) {
     return __awaiter(this, void 0, void 0, function* () {
-        const reservation = yield ttts.Models.Reservation.findOne({
+        const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
+        const reservation = yield reservationRepo.reservationModel.findOne({
             _id: reservationId,
-            status: ttts.ReservationUtil.STATUS_RESERVED
+            status: ttts.factory.reservationStatusType.ReservationConfirmed
         }).exec();
-        return (reservation === null) ? monapt.None : monapt.Option(reservation);
+        return (reservation === null) ? null : reservation;
     });
 }
 exports.findById = findById;
 /**
  * 入場履歴を追加する
- *
  * @param {string} reservationId 予約ID
  * @param {ICheckin} checkin チェックインオブジェクト
- * @return {Promise<monapt.Option<string>>} 入場履歴の追加された予約ID
+ * @return {Promise<string | null>} 入場履歴の追加された予約ID
  * @memberof controllers/reservation
  */
 function createCheckin(reservationId, checkin) {
     return __awaiter(this, void 0, void 0, function* () {
-        const reservation = yield ttts.Models.Reservation.findByIdAndUpdate(reservationId, {
+        const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
+        const reservation = yield reservationRepo.reservationModel.findByIdAndUpdate(reservationId, {
             $push: {
                 checkins: checkin
             }
         }).exec();
-        return (reservation === null) ? monapt.None : monapt.Option(reservation.get('id').toString());
+        return (reservation === null) ? null : reservation.get('id').toString();
     });
 }
 exports.createCheckin = createCheckin;
 /**
  * 予約キャンセル
- *
  * @param {string} performanceDay 上映日
  * @param {string} paymentNo 購入番号
  * @return {Promise<string[]>} キャンセルされた予約ID
@@ -63,20 +61,20 @@ exports.createCheckin = createCheckin;
  */
 function cancel(performanceDay, paymentNo) {
     return __awaiter(this, void 0, void 0, function* () {
+        const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
         // 該当予約を検索
-        const reservationIds = yield ttts.Models.Reservation.distinct('_id', {
+        const reservationIds = yield reservationRepo.reservationModel.distinct('_id', {
             performance_day: performanceDay,
             payment_no: paymentNo,
-            status: ttts.ReservationUtil.STATUS_RESERVED
+            status: ttts.factory.reservationStatusType.ReservationConfirmed
         }).exec().then((ids) => ids.map((id) => id.toString()));
         debug('canceling reservations...', performanceDay, paymentNo, reservationIds);
-        return yield Promise.all(reservationIds.map((id) => __awaiter(this, void 0, void 0, function* () {
-            const canceledReservation = yield ttts.Models.Reservation.findByIdAndUpdate(id, {
-                $set: { status: ttts.ReservationUtil.STATUS_AVAILABLE },
-                $unset: { payment_no: 1, ticket_type: 1, expired_at: 1 }
-            }).exec();
+        return Promise.all(reservationIds.map((id) => __awaiter(this, void 0, void 0, function* () {
+            const canceledReservation = yield reservationRepo.reservationModel.findByIdAndUpdate(id, { status: ttts.factory.reservationStatusType.ReservationCancelled }).exec();
             return canceledReservation.get('id');
         })));
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO 在庫を空きに変更
     });
 }
 exports.cancel = cancel;

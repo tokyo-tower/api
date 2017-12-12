@@ -26,19 +26,16 @@ screenRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            await ScreenController.getHtml(req.params.id).then((option) => {
-                option.match({
-                    Some: (html) => {
-                        res.status(httpStatus.OK).json({
-                            data: html
-                        });
-                    },
-                    None: () => {
-                        res.status(httpStatus.NOT_FOUND).json({
-                            data: null
-                        });
-                    }
-                });
+            await ScreenController.getHtml(req.params.id).then((html) => {
+                if (html === null) {
+                    res.status(httpStatus.NOT_FOUND).json({
+                        data: null
+                    });
+                } else {
+                    res.status(httpStatus.OK).json({
+                        data: html
+                    });
+                }
             });
         } catch (error) {
             next(error);

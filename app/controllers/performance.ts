@@ -1,12 +1,19 @@
 /**
  * パフォーマンスコントローラー
- *
  * @namespace controllers/performance
  */
 
 import * as ttts from '@motionpicture/ttts-domain';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
+
+const redisClient = ttts.redis.createClient({
+    host: <string>process.env.TTTS_PERFORMANCE_STATUSES_REDIS_HOST,
+    // tslint:disable-next-line:no-magic-numbers
+    port: parseInt(<string>process.env.TTTS_PERFORMANCE_STATUSES_REDIS_PORT, 10),
+    password: <string>process.env.TTTS_PERFORMANCE_STATUSES_REDIS_KEY,
+    tls: { servername: <string>process.env.TTTS_PERFORMANCE_STATUSES_REDIS_HOST }
+});
 
 const debug = createDebug('ttts-api:controller:performance');
 
@@ -69,6 +76,9 @@ export interface ISearchResult {
  */
 // tslint:disable-next-line:max-func-body-length
 export async function search(searchConditions: ISearchConditions): Promise<ISearchResult> {
+    const performanceRepo = new ttts.repository.Performance(ttts.mongoose.connection);
+    const performanceStatusesRepo = new ttts.repository.PerformanceStatuses(redisClient);
+
     // MongoDB検索条件を作成
     const andConditions: any[] = [
         { canceled: false }
@@ -117,14 +127,14 @@ export async function search(searchConditions: ISearchConditions): Promise<ISear
     }
 
     // 作品件数取得
-    const filmIds = await ttts.Models.Performance.distinct('film', conditions).exec();
+    const filmIds = await performanceRepo.performanceModel.distinct('film', conditions).exec();
 
     // 総数検索
-    const performancesCount = await ttts.Models.Performance.count(conditions).exec();
+    const performancesCount = await performanceRepo.performanceModel.count(conditions).exec();
 
     // 必要な項目だけ指定すること(レスポンスタイムに大きく影響するので)
     const fields = 'day open_time start_time end_time film screen screen_name theater theater_name';
-    const query = ttts.Models.Performance.find(conditions, fields);
+    const query = performanceRepo.performanceModel.find(conditions, fields);
 
     const page = (searchConditions.page !== undefined) ? searchConditions.page : 1;
     if (searchConditions.limit !== undefined) {
@@ -144,7 +154,7 @@ export async function search(searchConditions: ISearchConditions): Promise<ISear
     const performances = <any[]>await query.lean(true).exec();
 
     // 空席情報を追加
-    const performanceStatuses = await ttts.PerformanceStatusesModel.find().catch(() => undefined);
+    const performanceStatuses = await performanceStatusesRepo.find().catch(() => undefined);
     const getStatus = (id: string) => {
         if (performanceStatuses !== undefined && performanceStatuses.hasOwnProperty(id)) {
             return (<any>performanceStatuses)[id];

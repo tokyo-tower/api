@@ -13,7 +13,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const GMO = require("@motionpicture/gmo-service");
 const ttts = require("@motionpicture/ttts-domain");
 const express = require("express");
 const httpStatus = require("http-status");
@@ -32,20 +31,18 @@ transactionRouter.post('/authorizations', permitScopes_1.default(['transactions.
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield TransactionController.createAuthorization(req.body.performance)
-            .then((option) => {
-            option.match({
-                Some: (authorization) => {
-                    res.status(httpStatus.OK).json({
-                        data: authorization
-                    });
-                },
-                None: () => {
-                    // 空席がなければ404
-                    res.status(httpStatus.NOT_FOUND).json({
-                        data: null
-                    });
-                }
-            });
+            .then((authorization) => {
+            if (authorization === null) {
+                // 空席がなければ404
+                res.status(httpStatus.NOT_FOUND).json({
+                    data: null
+                });
+            }
+            else {
+                res.status(httpStatus.OK).json({
+                    data: authorization
+                });
+            }
         });
     }
     catch (error) {
@@ -55,18 +52,16 @@ transactionRouter.post('/authorizations', permitScopes_1.default(['transactions.
 transactionRouter.delete('/authorizations/:id', permitScopes_1.default(['transactions.authorizations']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield TransactionController.deleteAuthorization(req.params.id)
-            .then((option) => {
-            option.match({
-                Some: () => {
-                    res.status(httpStatus.NO_CONTENT).end();
-                },
-                None: () => {
-                    // 該当予約がなければ404
-                    res.status(httpStatus.NOT_FOUND).json({
-                        data: null
-                    });
-                }
-            });
+            .then((result) => {
+            if (result === null) {
+                // 該当予約がなければ404
+                res.status(httpStatus.NOT_FOUND).json({
+                    data: null
+                });
+            }
+            else {
+                res.status(httpStatus.NO_CONTENT).end();
+            }
         });
     }
     catch (error) {
@@ -94,16 +89,15 @@ transactionRouter.post('/confirm', permitScopes_1.default(['transactions']), (re
             .isInt().withMessage('authorizations.attributes.charge must be number');
     });
     const availablePaymentMethod = [
-        GMO.utils.util.PayType.Cash,
-        GMO.utils.util.PayType.Credit
+        ttts.GMO.utils.util.PayType.Cash,
+        ttts.GMO.utils.util.PayType.Credit
     ];
     req.checkBody('payment_method').notEmpty().withMessage('required')
         .matches(new RegExp(`^(${availablePaymentMethod.join('|')})$`))
         .withMessage(`must be one of '${availablePaymentMethod.join('\', \'')}'`);
     const availablePurchaserGroups = [
         ttts.ReservationUtil.PURCHASER_GROUP_CUSTOMER,
-        ttts.ReservationUtil.PURCHASER_GROUP_STAFF,
-        ttts.ReservationUtil.PURCHASER_GROUP_WINDOW
+        ttts.ReservationUtil.PURCHASER_GROUP_STAFF
     ];
     req.checkBody('purchaser_group').notEmpty().withMessage('required')
         .matches(new RegExp(`^(${availablePurchaserGroups.join('|')})$`))

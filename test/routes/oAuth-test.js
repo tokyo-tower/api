@@ -1,9 +1,5 @@
 "use strict";
-/**
- * oauthルーターテスト
- *
- * @ignore
- */
+// tslint:disable:no-implicit-dependencies
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -13,6 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * oauthルーターテスト
+ *
+ * @ignore
+ */
 const assert = require("assert");
 const httpStatus = require("http-status");
 const supertest = require("supertest");

@@ -6,9 +6,9 @@
 import * as express from 'express';
 const devRouter = express.Router();
 
+import * as ttts from '@motionpicture/ttts-domain';
 import * as createDebug from 'debug';
 import { NO_CONTENT } from 'http-status';
-import * as mongoose from 'mongoose';
 
 import mongooseConnectionOptions from '../../mongooseConnectionOptions';
 
@@ -35,7 +35,7 @@ devRouter.get(
 devRouter.get(
     '/mongoose/connect',
     (__, res, next) => {
-        mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions, (err) => {
+        ttts.mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions, (err) => {
             if (err instanceof Error) {
                 next(err);
 
@@ -49,7 +49,7 @@ devRouter.get(
 devRouter.get(
     '/mongoose/disconnect',
     (__, res, next) => {
-        mongoose.disconnect((err) => {
+        ttts.mongoose.disconnect((err) => {
             if (err instanceof Error) {
                 next(err);
 
