@@ -66,7 +66,7 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 i18n.configure({
     locales: ['en', 'ja'],
     defaultLocale: 'en',
-    directory: `${__dirname}/../locales`,
+    directory: `${__dirname}/../../locales`,
     objectNotation: true,
     updateFiles: false // ページのビューで自動的に言語ファイルを更新しない
 });

@@ -2,13 +2,12 @@
 
 /**
  * グローバルヘルパー
- *
  * @ignore
  */
 
 import * as httpStatus from 'http-status';
 import * as supertest from 'supertest';
-import * as app from '../app/app';
+import * as app from '../src/app/app';
 
 before(async () => {
     await supertest(app)

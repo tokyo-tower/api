@@ -56,6 +56,7 @@
     "rimraf": "^2.6.2",
     "snyk": "^1.56.0",
     "supertest": "^3.0.0",
+    "ts-node": "^4.0.1",
     "tslint": "^5.8.0",
     "tslint-microsoft-contrib": "^5.0.1",
     "typescript": "^2.6.2"
@@ -68,28 +69,19 @@
   "license": "UNLICENSED",
   "main": "index.js",
   "name": "ttts-api",
-  "nyc": {
-    "check-coverage": true,
-    "include": [
-      "app/**/*.js"
-    ],
-    "reporter": [
-      "lcov",
-      "text-summary"
-    ]
-  },
   "private": true,
   "repository": {},
   "scripts": {
     "build": "tsc",
     "check": "npm run tslint && nsp check",
-    "clean": "rimraf app/**/*.js index.js test/**/*.js npm-debug.log* doc/* ./coverage ./nyc_output",
+    "clean": "rimraf ./dst ./doc ./coverage \"npm-debug.log*\" ./.nyc_output",
     "doc": "jsdoc -c jsdoc.json",
-    "nyc": "nyc mocha",
+    "mocha": "mocha",
+    "coverage": "nyc mocha \"src/**/*.spec.ts\"",
     "snyk": "snyk wizard",
-    "start": "node ./index.js",
-    "test": "npm run check && mocha",
-    "tslint": "tslint --project tsconfig.json -c tslint.json index.ts app/**/*.ts test/**/*.ts",
+    "start": "node dst/server.js",
+    "test": "npm run check && mocha \"test/**/*.ts\"",
+    "tslint": "tslint --project tsconfig.json -c tslint.json --exclude \"**/*.spec.ts\" \"src/**/*.ts\"",
     "preversion": "npm run clean && npm run build && npm test",
     "version": "git add -A",
     "postversion": "git push origin --tags"

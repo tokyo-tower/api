@@ -2,7 +2,6 @@
 
 /**
  * oauthルーターテスト
- *
  * @ignore
  */
 
@@ -10,7 +9,7 @@ import * as assert from 'assert';
 import * as httpStatus from 'http-status';
 import * as supertest from 'supertest';
 
-import * as app from '../../app/app';
+import * as app from '../../src/app/app';
 
 describe('oauthルーターテスト アクセストークン発行', () => {
     it('存在しないクライアント', async () => {
