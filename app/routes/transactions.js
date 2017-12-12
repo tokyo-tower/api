@@ -95,8 +95,10 @@ transactionRouter.post('/confirm', permitScopes_1.default(['transactions']), (re
     });
     const availablePaymentMethod = [
         GMO.utils.util.PayType.Cash,
-        GMO.utils.util.PayType.Credit
+        GMO.utils.util.PayType.Credit,
+        '-'
     ];
+    // TO?DO:util系に「-」追加
     req.checkBody('payment_method').notEmpty().withMessage('required')
         .matches(new RegExp(`^(${availablePaymentMethod.join('|')})$`))
         .withMessage(`must be one of '${availablePaymentMethod.join('\', \'')}'`);

@@ -17,8 +17,6 @@ const ttts = require("@motionpicture/ttts-domain");
 const createDebug = require("debug");
 const moment = require("moment");
 const debug = createDebug('ttts-api:controller:performance');
-const CATEGORY_WHEELCHAIR = '1';
-const WHEELCHAIR_NUMBER_PER_HOUR = 1;
 /**
  * 検索する
  *
@@ -102,16 +100,16 @@ function search(searchConditions) {
         const wheelchairs = {};
         let requiredSeatNum = 1;
         // 車椅子予約チェック要求ありの時
-        if (searchConditions.wheelchair) {
+        if (wheelchair) {
             // 検索されたパフォーマンスに紐づく車椅子予約取得
             const conditionsWheelchair = {};
-            conditionsWheelchair.status = { $in: [ttts.ReservationUtil.STATUS_RESERVED, ttts.ReservationUtil.STATUS_TEMPORARY] };
+            conditionsWheelchair.status = { $in: [ReservationUtil.STATUS_RESERVED, ReservationUtil.STATUS_TEMPORARY] };
             conditionsWheelchair.performance = { $in: performanceIds };
             conditionsWheelchair['ticket_ttts_extension.category'] = CATEGORY_WHEELCHAIR;
-            if (searchConditions.day !== null) {
-                conditionsWheelchair.performance_day = searchConditions.day;
+            if (day !== null) {
+                conditionsWheelchair.performance_day = day;
             }
-            const reservations = yield ttts.Models.Reservation.find(conditionsWheelchair, 'performance').exec();
+            const reservations = yield Models.Reservation.find(conditionsWheelchair, 'performance').exec();
             reservations.map((reservation) => {
                 const performance = reservation.performance;
                 if (!wheelchairs.hasOwnProperty(performance)) {
@@ -122,7 +120,7 @@ function search(searchConditions) {
                 }
             });
             // 券種取得
-            const ticketType = yield ttts.Models.TicketType.findOne({ 'ttts_extension.category': CATEGORY_WHEELCHAIR }).exec();
+            const ticketType = yield Models.TicketType.findOne({ 'ttts_extension.category': CATEGORY_WHEELCHAIR }).exec();
             if (ticketType !== null) {
                 requiredSeatNum = ticketType.ttts_extension.required_seat_num;
             }
@@ -144,9 +142,9 @@ function search(searchConditions) {
             // 指定パフォーマンスで予約可能なチケット数取得(必要座席数で割る)
             const conditionsAvailable = {
                 performance: pId,
-                status: ttts.ReservationUtil.STATUS_AVAILABLE
+                status: ReservationUtil.STATUS_AVAILABLE
             };
-            let reservationAvailable = yield ttts.Models.Reservation.find(conditionsAvailable).count().exec();
+            let reservationAvailable = yield Models.Reservation.find(conditionsAvailable).count().exec();
             reservationAvailable = Math.floor(reservationAvailable / requiredSeatNum);
             // tslint:disable-next-line:no-console
             console.log(`${pId}:wheelchairReserved=${wheelchairReserved}`);
@@ -164,7 +162,7 @@ function search(searchConditions) {
         const dicSuspended = {};
         for (const performance of performances) {
             // 販売停止の時
-            if (performance.ttts_extension.online_sales_status === ttts.PerformanceUtil.ONLINE_SALES_STATUS.SUSPENDED) {
+            if (performance.ttts_extension.online_sales_status === PerformanceUtil.ONLINE_SALES_STATUS.SUSPENDED) {
                 // dictionnaryに追加する
                 const key = performance.ttts_extension.online_sales_update_at;
                 if (dicSuspended.hasOwnProperty(key) === false) {
@@ -184,7 +182,7 @@ function search(searchConditions) {
                 annnouce_locales: { ja: `販売停止(${key})` }
             });
         }
-        const data = yield Promise.all(performances.map((performance) => __awaiter(this, void 0, void 0, function* () {
+        const data = performances.map((performance) => __awaiter(this, void 0, void 0, function* () {
             return {
                 type: 'performances',
                 id: performance._id,
@@ -208,7 +206,7 @@ function search(searchConditions) {
                     ev_service_status: performance.ttts_extension.ev_service_status
                 }
             };
-        })));
+        }));
         return {
             performances: data,
             numberOfPerformances: performancesCount,
