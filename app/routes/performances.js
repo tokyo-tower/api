@@ -1,7 +1,6 @@
 "use strict";
 /**
  * パフォーマンスルーター
- *
  * @module routes/performances
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {

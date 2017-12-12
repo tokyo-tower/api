@@ -15,7 +15,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const createDebug = require("debug");
 const express = require("express");
-const OAuthController = require("../controllers/oAuth");
+const OAuthController = require("../controllers/oauth");
 const validator_1 = require("../middlewares/validator");
 const oAuthRouter = express.Router();
 const debug = createDebug('ttts-api:routes:oauth');

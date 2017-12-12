@@ -1,6 +1,5 @@
 /**
  * パフォーマンスルーター
- *
  * @module routes/performances
  */
 

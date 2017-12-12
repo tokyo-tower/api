@@ -7,7 +7,7 @@
 import * as createDebug from 'debug';
 import * as express from 'express';
 
-import * as OAuthController from '../controllers/oAuth';
+import * as OAuthController from '../controllers/oauth';
 import validator from '../middlewares/validator';
 
 const oAuthRouter = express.Router();

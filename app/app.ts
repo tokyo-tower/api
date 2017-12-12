@@ -1,6 +1,5 @@
 /**
  * expressアプリケーション
- *
  * @module app
  */
 
@@ -8,23 +7,20 @@ import * as ttts from '@motionpicture/ttts-domain';
 import * as bodyParser from 'body-parser';
 import * as createDebug from 'debug';
 import * as express from 'express';
-import expressValidator = require('express-validator'); // tslint:disable-line:no-require-imports
+import * as expressValidator from 'express-validator';
 import * as helmet from 'helmet';
 import * as i18n from 'i18n';
 
 import mongooseConnectionOptions from '../mongooseConnectionOptions';
 
-import benchmarks from './middlewares/benchmarks';
-
 import errorHandler from './middlewares/errorHandler';
 import notFoundHandler from './middlewares/notFoundHandler';
 
 import devRouter from './routes/dev';
-import oAuthRouter from './routes/oAuth';
+import oAuthRouter from './routes/oauth';
 import performanceRouter from './routes/performances';
 import reservationRouter from './routes/reservations';
 import router from './routes/router';
-import screenRouter from './routes/screens';
 import transactionRouter from './routes/transactions';
 
 const debug = createDebug('ttts-api:app');
@@ -33,11 +29,11 @@ const app = express();
 //var cors = require('cors')
 import * as cors from 'cors';
 const options: cors.CorsOptions = {
-  origin: '*',
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'X-Access-Token', 'Authorization'],
-  credentials: true,
-  methods: 'GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE',
-  preflightContinue: true
+    origin: '*',
+    allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'X-Access-Token', 'Authorization'],
+    credentials: true,
+    methods: 'GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE',
+    preflightContinue: true
 };
 // app.options('*', cors())
 
@@ -70,11 +66,9 @@ if (process.env.NODE_ENV !== 'production') {
     });
 }
 
-app.use(benchmarks); // ベンチマーク的な
-
 // view engine setup
-app.set('views', `${__dirname}/views`);
-app.set('view engine', 'ejs');
+// app.set('views', `${__dirname}/views`);
+// app.set('view engine', 'ejs');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -96,7 +90,6 @@ app.use('/oauth', oAuthRouter);
 app.use('/', router);
 app.use('/performances', performanceRouter);
 app.use('/reservations', reservationRouter);
-app.use('/screens', screenRouter);
 app.use('/transactions', transactionRouter);
 
 if (process.env.NODE_ENV !== 'production') {
@@ -109,8 +102,6 @@ app.use(notFoundHandler);
 // error handlers
 app.use(errorHandler);
 
-// @types/mongooseが古くて、新しいMongoDBクライアントの接続オプションに適合していない
-// 型定義の更新待ち
-ttts.mongoose.connect(<string>process.env.MONGOLAB_URI, <any>mongooseConnectionOptions);
+ttts.mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions);
 
 export = app;

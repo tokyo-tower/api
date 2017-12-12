@@ -1,7 +1,6 @@
 /**
- * oAuthコントローラー
- *
- * @namespace controllers/oAuth
+ * OAuthコントローラー
+ * @namespace controllers/oauth
  */
 
 import * as ttts from '@motionpicture/ttts-domain';
