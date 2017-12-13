@@ -27,9 +27,10 @@ const options = {
     allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'X-Access-Token', 'Authorization'],
     credentials: true,
     methods: 'GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE',
-    preflightContinue: true
+    preflightContinue: false,
+    optionsSuccessStatus: 204
 };
-app.options('*', cors());
+// app.options('*', cors());
 app.use(cors(options));
 app.use(helmet());
 app.use(helmet.contentSecurityPolicy({
