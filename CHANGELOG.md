@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - パフォーマンス検索のレスポンスを多言語化。
 - HTTPステータスコードの振り分けをルーターに記述するように統一。
 - ttts-domain@12.0.0に対応。
+- APIの認証情報をCognitoから取得するように変更。
 
 ### Deprecated
 
