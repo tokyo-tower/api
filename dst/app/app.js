@@ -5,6 +5,7 @@
  */
 const ttts = require("@motionpicture/ttts-domain");
 const bodyParser = require("body-parser");
+const cors = require("cors");
 const createDebug = require("debug");
 const express = require("express");
 const expressValidator = require("express-validator");
@@ -21,8 +22,6 @@ const router_1 = require("./routes/router");
 const transactions_1 = require("./routes/transactions");
 const debug = createDebug('ttts-api:app');
 const app = express();
-//var cors = require('cors')
-const cors = require("cors");
 const options = {
     origin: '*',
     allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'X-Access-Token', 'Authorization'],
@@ -30,7 +29,7 @@ const options = {
     methods: 'GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE',
     preflightContinue: true
 };
-// app.options('*', cors())
+app.options('*', cors());
 app.use(cors(options));
 app.use(helmet());
 app.use(helmet.contentSecurityPolicy({
