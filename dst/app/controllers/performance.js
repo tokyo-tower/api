@@ -174,7 +174,7 @@ function search(searchConditions) {
         const dicSuspended = {};
         for (const performance of performances) {
             // 販売停止の時
-            if (performance.ttts_extension.online_sales_status === ttts.PerformanceUtil.ONLINE_SALES_STATUS.SUSPENDED) {
+            if (performance.ttts_extension.online_sales_status === ttts.factory.performance.OnlineSalesStatus.Suspended) {
                 // dictionnaryに追加する
                 const key = performance.ttts_extension.online_sales_update_at;
                 if (dicSuspended.hasOwnProperty(key) === false) {
