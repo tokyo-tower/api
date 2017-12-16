@@ -1,0 +1,23 @@
+{
+    "check-coverage": true,
+    "lines": 0,
+    "statements": 0,
+    "functions": 0,
+    "branches": 0,
+    "extension": [
+        ".ts"
+    ],
+    "exclude": [
+        "**/*.spec.ts",
+        "src/app/controllers/**/*.ts",
+        "src/app/routes/**/*.ts"
+    ],
+    "include": [
+        "src/**/*.ts"
+    ],
+    "reporter": [
+        "lcov",
+        "text-summary"
+    ],
+    "all": true
+}

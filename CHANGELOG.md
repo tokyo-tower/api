@@ -16,17 +16,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 - パフォーマンス検索のレスポンスを多言語化。
 - HTTPステータスコードの振り分けをルーターに記述するように統一。
+- ttts-domain@12.0.0に対応。
+- APIの認証情報をCognitoから取得するように変更。
 
 ### Deprecated
 
 ### Removed
 - configパッケージを削除。環境依存変数を全てprocess.envへ移行。
+- 不要なルーターを削除。
 
 ### Fixed
 
 ### Security
 - update package [tslint@5.5.0](https://www.npmjs.com/package/tslint)
 - update package [typescript@2.4.2](https://www.npmjs.com/package/typescript)
+
 
 ## v4.0.0 - 2017-05-05
 ### Added

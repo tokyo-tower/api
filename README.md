@@ -2,40 +2,43 @@
 
 # Getting Started
 
-## Required environment variables
-```shell
-set NODE_ENV=**********環境名(development,test,productionなど)**********
-set SENDGRID_API_KEY=**********sendgrid api key**********
-set TTTS_PERFORMANCE_STATUSES_REDIS_HOST=**********パフォーマンス空席状況保管先redis host**********
-set TTTS_PERFORMANCE_STATUSES_REDIS_PORT=**********パフォーマンス空席状況保管先redis port**********
-set TTTS_PERFORMANCE_STATUSES_REDIS_KEY=**********パフォーマンス空席状況保管先redis key**********
-set FRONTEND_ENDPOINT=**********frontendのエンドポイント**********
-set MONGOLAB_URI=**********mongodb接続URI**********
-set GMO_SITE_ID=**********gmo サイトID**********
-set GMO_SHOP_ID=**********gmo ショップID**********
-set GMO_SHOP_PASS=**********gmo ショップパスワード**********
-set TTTS_API_SECRET=**********JWTに使用する鍵文字列**********
-set OFFICIAL_WEBSITE_URL=**********オフィシャルウェブサイトURL**********
-set EMAIL_FROM_ADDRESS=**********メール送信fromアドレス**********
-set EMAIL_FROM_NAME=**********メール送信from名前**********
-```
+### Environment variables
 
-only on Aure WebApps
+| Name                                             | Required              | Value               | Purpose                         |
+| ------------------------------------------------ | --------------------- | ------------------- | ------------------------------- |
+| `DEBUG`                                          | false                 | ttts-api:*          | Debug                           |
+| `NPM_TOKEN`                                      | true                  |                     | NPM auth token                  |
+| `NODE_ENV`                                       | true                  |                     | environment name                |
+| `MONGOLAB_URI`                                   | true                  |                     | MongoDB connection URI          |
+| `TTTS_PERFORMANCE_STATUSES_REDIS_HOST`           | true                  |                     | パフォーマンス空席状況保管先redis host |
+| `REDITTTS_PERFORMANCE_STATUSES_REDIS_PORTS_PORT` | true                  |                     | パフォーマンス空席状況保管先redis port |
+| `TTTS_PERFORMANCE_STATUSES_REDIS_KEY`            | true                  |                     | パフォーマンス空席状況保管先redis key  |
+| `FRONTEND_ENDPOINT`                              | false                 |                     | frontendのエンドポイント                |
+| `TTTS_API_SECRET`                                | false                 |                     | JWTに使用する鍵文字列              |
+| `WEBSITE_NODE_DEFAULT_VERSION`                   | only on Azure WebApps |                     | Node.js version                 |
+| `WEBSITE_TIME_ZONE`                              | only on Azure WebApps | Tokyo Standard Time |
 
-```shell
-set WEBSITE_NODE_DEFAULT_VERSION=**********node.jsバージョン**********
-set WEBSITE_TIME_ZONE=Tokyo Standard Time
-```
+## tslint
 
-
-# tslint
-
-コード品質チェックをtslintで行っています。lintパッケージとして以下を仕様。
+コード品質チェックをtslintで行う。
 * [tslint](https://github.com/palantir/tslint)
 * [tslint-microsoft-contrib](https://github.com/Microsoft/tslint-microsoft-contrib)
-`npm run check`でチェック実行。改修の際には、必ずチェックすること。
 
-# test
-mochaフレームワークでテスト実行。
-* [mocha](https://www.npmjs.com/package/mocha)
+`npm run check`でチェック実行。
+
+
+## パッケージ脆弱性のチェック
+
+* [nsp](https://www.npmjs.com/package/nsp)
+
+
+## clean
+`npm run clean`で不要なソース削除。
+
+
+## テスト
 `npm test`でテスト実行。
+
+
+## ドキュメント
+`npm run doc`でjsdocが作成されます。

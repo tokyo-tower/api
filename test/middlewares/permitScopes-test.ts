@@ -1,12 +1,11 @@
 /**
  * スコープ許可ミドルウェアテスト
- *
  * @ignore
  */
 
 import * as assert from 'assert';
 
-import * as permitScopes from '../../app/middlewares/permitScopes';
+import * as permitScopes from '../../src/app/middlewares/permitScopes';
 
 describe('所有スコープが許可されたスコープかどうか', () => {
     it('許可される', async () => {
