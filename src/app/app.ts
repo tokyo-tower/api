@@ -18,10 +18,8 @@ import errorHandler from './middlewares/errorHandler';
 import notFoundHandler from './middlewares/notFoundHandler';
 
 import devRouter from './routes/dev';
-import oAuthRouter from './routes/oauth';
 import performanceRouter from './routes/performances';
 import reservationRouter from './routes/reservations';
-import router from './routes/router';
 import transactionRouter from './routes/transactions';
 
 const debug = createDebug('ttts-api:app');
@@ -86,8 +84,6 @@ i18n.configure({
 app.use(i18n.init);
 
 // ルーティング
-app.use('/oauth', oAuthRouter);
-app.use('/', router);
 app.use('/performances', performanceRouter);
 app.use('/reservations', reservationRouter);
 app.use('/transactions', transactionRouter);

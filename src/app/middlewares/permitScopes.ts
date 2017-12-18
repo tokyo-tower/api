@@ -4,9 +4,9 @@
  * @module middlewares/permitScopes
  */
 
+import * as ttts from '@motionpicture/ttts-domain';
 import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
-import { FORBIDDEN } from 'http-status';
 
 const debug = createDebug('ttts-api:middlewares:permitScopes');
 
@@ -16,7 +16,7 @@ const debug = createDebug('ttts-api:middlewares:permitScopes');
 type IScope = string;
 
 export default (permittedScopes: IScope[]) => {
-    return (req: Request, res: Response, next: NextFunction) => {
+    return (req: Request, __: Response, next: NextFunction) => {
         if (process.env.RESOURECE_SERVER_IDENTIFIER === undefined) {
             next(new Error('RESOURECE_SERVER_IDENTIFIER undefined'));
 
@@ -36,7 +36,7 @@ export default (permittedScopes: IScope[]) => {
         try {
             debug('checking scope requirements...', permittedScopesWithResourceServerIdentifier);
             if (!isScopesPermitted(req.user.scopes, permittedScopesWithResourceServerIdentifier)) {
-                res.status(FORBIDDEN).end('Forbidden');
+                next(new ttts.factory.errors.Forbidden('scope requirements not satisfied'));
             } else {
                 next();
             }
