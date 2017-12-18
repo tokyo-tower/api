@@ -22,6 +22,14 @@ const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
 const debug = createDebug('ttts-api:placeOrderTransactionsRouter');
+// 車椅子レート制限のためのRedis接続クライアント
+const redisClient = ttts.redis.createClient({
+    host: process.env.REDIS_HOST,
+    // tslint:disable-next-line:no-magic-numbers
+    port: parseInt(process.env.REDIS_PORT, 10),
+    password: process.env.REDIS_KEY,
+    tls: { servername: process.env.REDIS_HOST }
+});
 placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), (req, _, next) => {
     req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
@@ -80,26 +88,10 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
     try {
         const action = yield ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(req.user.sub, req.params.transactionId, req.body.perfomance_id, req.body.offers.map((offer) => {
             return {
-                extra: offer.extra.map((extra) => {
-                    return {
-                        ticket_type: extra.ticket_type,
-                        ticketCount: extra.ticket_count,
-                        updated: true
-                    };
-                }),
                 ticket_type: offer.ticket_type,
-                ticket_type_name: offer.ticket_type_name,
-                ticket_type_charge: offer.ticket_type_charge,
-                watcher_name: '',
-                ticket_cancel_charge: [],
-                ticket_ttts_extension: {
-                    category: '',
-                    required_seat_num: 1,
-                    csv_code: ''
-                },
-                performance_ttts_extension: {}
+                watcher_name: ''
             };
-        }));
+        }))(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.Performance(ttts.mongoose.connection), new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection), new ttts.repository.PaymentNo(ttts.mongoose.connection), new ttts.repository.WheelchairReservationCount(redisClient));
         res.status(http_status_1.CREATED).json(action);
     }
     catch (error) {
@@ -111,7 +103,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
  */
 placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.cancel(req.user.sub, req.params.transactionId, req.params.actionId);
+        yield ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.cancel(req.user.sub, req.params.transactionId, req.params.actionId)(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection), new ttts.repository.WheelchairReservationCount(redisClient));
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {

@@ -109,8 +109,8 @@ transactionRouter.post(
             .withMessage(`must be one of '${availablePaymentMethod.join('\', \'')}'`);
 
         const availablePurchaserGroups = [
-            ttts.ReservationUtil.PURCHASER_GROUP_CUSTOMER,
-            ttts.ReservationUtil.PURCHASER_GROUP_STAFF
+            ttts.factory.person.Group.Customer,
+            ttts.factory.person.Group.Staff
         ];
         req.checkBody('purchaser_group').notEmpty().withMessage('required')
             .matches(new RegExp(`^(${availablePurchaserGroups.join('|')})$`))

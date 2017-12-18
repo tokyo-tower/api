@@ -17,6 +17,15 @@ import validator from '../../middlewares/validator';
 
 const debug = createDebug('ttts-api:placeOrderTransactionsRouter');
 
+// 車椅子レート制限のためのRedis接続クライアント
+const redisClient = ttts.redis.createClient({
+    host: <string>process.env.REDIS_HOST,
+    // tslint:disable-next-line:no-magic-numbers
+    port: parseInt(<string>process.env.REDIS_PORT, 10),
+    password: <string>process.env.REDIS_KEY,
+    tls: { servername: <string>process.env.REDIS_HOST }
+});
+
 placeOrderTransactionsRouter.use(authentication);
 
 placeOrderTransactionsRouter.post(
@@ -105,27 +114,17 @@ placeOrderTransactionsRouter.post(
                 req.body.perfomance_id,
                 (<any[]>req.body.offers).map((offer) => {
                     return {
-                        extra: (<any[]>offer.extra).map((extra) => {
-                            return {
-                                ticket_type: extra.ticket_type,
-                                ticketCount: extra.ticket_count,
-                                updated: true
-                            };
-                        }),
                         ticket_type: offer.ticket_type,
-                        ticket_type_name: offer.ticket_type_name,
-                        ticket_type_charge: offer.ticket_type_charge,
-                        watcher_name: '',
-                        ticket_cancel_charge: [],
-                        ticket_ttts_extension: {
-                            category: '',
-                            required_seat_num: 1,
-                            csv_code: ''
-                        },
-                        performance_ttts_extension: {}
+                        watcher_name: ''
                     };
                 })
-            );
+            )(
+                new ttts.repository.Transaction(ttts.mongoose.connection),
+                new ttts.repository.Performance(ttts.mongoose.connection),
+                new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection),
+                new ttts.repository.PaymentNo(ttts.mongoose.connection),
+                new ttts.repository.WheelchairReservationCount(redisClient)
+                );
 
             res.status(CREATED).json(action);
         } catch (error) {
@@ -147,7 +146,11 @@ placeOrderTransactionsRouter.delete(
                 req.user.sub,
                 req.params.transactionId,
                 req.params.actionId
-            );
+            )(
+                new ttts.repository.Transaction(ttts.mongoose.connection),
+                new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection),
+                new ttts.repository.WheelchairReservationCount(redisClient)
+                );
 
             res.status(NO_CONTENT).end();
         } catch (error) {
