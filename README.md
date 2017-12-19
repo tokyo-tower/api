@@ -4,18 +4,18 @@
 
 ### Environment variables
 
-| Name                                         | Required              | Value               | Purpose                         |
-| -------------------------------------------- | --------------------- | ------------------- | ------------------------------- |
-| `DEBUG`                                      | false                 | ttts-api:*          | Debug                           |
-| `NPM_TOKEN`                                  | true                  |                     | NPM auth token                  |
-| `NODE_ENV`                                   | true                  |                     | environment name                |
-| `MONGOLAB_URI`                               | true                  |                     | MongoDB connection URI          |
-| `TTTS_PERFORMANCE_STATUSES_REDIS_HOST`       | true                  |                     | パフォーマンス空席状況保管先redis host |
-| `TTTS_PERFORMANCE_STATUSES_REDIS_PORTS_PORT` | true                  |                     | パフォーマンス空席状況保管先redis port |
-| `TTTS_PERFORMANCE_STATUSES_REDIS_KEY`        | true                  |                     | パフォーマンス空席状況保管先redis key  |
-| `FRONTEND_ENDPOINT`                          | false                 |                     | frontendのエンドポイント                |
-| `WEBSITE_NODE_DEFAULT_VERSION`               | only on Azure WebApps |                     | Node.js version                 |
-| `WEBSITE_TIME_ZONE`                          | only on Azure WebApps | Tokyo Standard Time |
+| Name                           | Required              | Value               | Purpose                |
+| ------------------------------ | --------------------- | ------------------- | ---------------------- |
+| `DEBUG`                        | false                 | ttts-api:*          | Debug                  |
+| `NPM_TOKEN`                    | true                  |                     | NPM auth token         |
+| `NODE_ENV`                     | true                  |                     | environment name       |
+| `MONGOLAB_URI`                 | true                  |                     | MongoDB connection URI |
+| `REDIS_HOST`                   | true                  |                     | redis host             |
+| `REDIS_PORT`                   | true                  |                     | redis port             |
+| `REDIS_KEY`                    | true                  |                     | redis key              |
+| `FRONTEND_ENDPOINT`            | false                 |                     | frontendのエンドポイント       |
+| `WEBSITE_NODE_DEFAULT_VERSION` | only on Azure WebApps |                     | Node.js version        |
+| `WEBSITE_TIME_ZONE`            | only on Azure WebApps | Tokyo Standard Time |
 
 ## tslint
 

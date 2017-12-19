@@ -16,15 +16,13 @@ const ttts = require("@motionpicture/ttts-domain");
 const createDebug = require("debug");
 const moment = require("moment");
 const redisClient = ttts.redis.createClient({
-    host: process.env.TTTS_PERFORMANCE_STATUSES_REDIS_HOST,
+    host: process.env.REDIS_HOST,
     // tslint:disable-next-line:no-magic-numbers
-    port: parseInt(process.env.TTTS_PERFORMANCE_STATUSES_REDIS_PORT, 10),
-    password: process.env.TTTS_PERFORMANCE_STATUSES_REDIS_KEY,
-    tls: { servername: process.env.TTTS_PERFORMANCE_STATUSES_REDIS_HOST }
+    port: parseInt(process.env.REDIS_PORT, 10),
+    password: process.env.REDIS_KEY,
+    tls: { servername: process.env.REDIS_HOST }
 });
 const debug = createDebug('ttts-api:controller:performance');
-const CATEGORY_WHEELCHAIR = '1';
-const WHEELCHAIR_NUMBER_PER_HOUR = 1;
 /**
  * 検索する
  *
@@ -37,8 +35,7 @@ function search(searchConditions) {
     return __awaiter(this, void 0, void 0, function* () {
         const performanceRepo = new ttts.repository.Performance(ttts.mongoose.connection);
         const performanceStatusesRepo = new ttts.repository.PerformanceStatuses(redisClient);
-        const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
-        const stockRepo = new ttts.repository.Stock(ttts.mongoose.connection);
+        const seatReservationOfferAvailabilityRepo = new ttts.repository.itemAvailability.SeatReservationOffer(redisClient);
         // MongoDB検索条件を作成
         const andConditions = [
             { canceled: false }
@@ -84,126 +81,70 @@ function search(searchConditions) {
         const performancesCount = yield performanceRepo.performanceModel.count(conditions).exec();
         // 必要な項目だけ指定すること(レスポンスタイムに大きく影響するので)
         const fields = 'day open_time start_time end_time film screen screen_name theater theater_name ttts_extension';
-        const query = performanceRepo.performanceModel.find(conditions, fields);
         const page = (searchConditions.page !== undefined) ? searchConditions.page : 1;
-        if (searchConditions.limit !== undefined) {
-            query.skip(searchConditions.limit * (page - 1)).limit(searchConditions.limit);
-        }
-        query.populate('film', 'name sections.name minutes copyright');
-        // 上映日、開始時刻
-        query.setOptions({
+        // tslint:disable-next-line:no-magic-numbers
+        const limit = (searchConditions.limit !== undefined) ? searchConditions.limit : 1000;
+        const performances = yield performanceRepo.performanceModel.find(conditions, fields)
+            .populate('film screen theater')
+            .populate({ path: 'ticket_type_group', populate: { path: 'ticket_types' } })
+            .skip(limit * (page - 1)).limit(limit)
+            .setOptions({
             sort: {
                 day: 1,
                 start_time: 1
             }
-        });
-        const performances = yield query.lean(true).exec();
+        })
+            .exec().then((docs) => docs.map((doc) => doc.toObject()));
         debug('performances found.', performances);
         // 空席情報を追加
-        const performanceStatuses = yield performanceStatusesRepo.find().catch(() => undefined);
-        const getStatus = (id) => {
-            if (performanceStatuses !== undefined && performanceStatuses.hasOwnProperty(id)) {
-                return performanceStatuses[id];
-            }
-            return null;
-        };
-        // 車椅子対応 2017/10
-        const performanceIds = performances.map((performance) => performance._id.toString());
-        const wheelchairs = {};
-        let requiredSeatNum = 1;
-        // 車椅子予約チェック要求ありの時
-        if (searchConditions.wheelchair !== undefined) {
-            // 検索されたパフォーマンスに紐づく車椅子予約取得
-            const conditionsWheelchair = {};
-            conditionsWheelchair.status = { $in: [ttts.factory.reservationStatusType.ReservationConfirmed] };
-            conditionsWheelchair.performance = { $in: performanceIds };
-            conditionsWheelchair['ticket_ttts_extension.category'] = CATEGORY_WHEELCHAIR;
-            if (searchConditions.day !== null) {
-                conditionsWheelchair.performance_day = searchConditions.day;
-            }
-            const reservations = yield reservationRepo.reservationModel.find(conditionsWheelchair, 'performance').exec();
-            reservations.map((reservation) => {
-                const performance = reservation.performance;
-                if (!wheelchairs.hasOwnProperty(performance)) {
-                    wheelchairs[performance] = 1;
-                }
-                else {
-                    wheelchairs[performance] += 1;
-                }
-            });
-            // 券種取得
-            const ticketType = yield ttts.Models.TicketType.findOne({ 'ttts_extension.category': CATEGORY_WHEELCHAIR }).exec();
-            if (ticketType !== null) {
-                requiredSeatNum = ticketType.ttts_extension.required_seat_num;
-            }
-        }
-        // ツアーナンバー取得(ttts_extensionのない過去データに備えて念のため作成)
-        const getTourNumber = (performance) => {
-            if (performance.hasOwnProperty('ttts_extension')) {
-                return performance.ttts_extension.tour_number;
-            }
-            return '';
-        };
-        // 予約可能車椅子席数取得
-        const getWheelchairAvailable = (pId) => __awaiter(this, void 0, void 0, function* () {
-            // 指定パフォーマンスで予約可能な車椅子チケット数取得
-            const wheelchairReserved = wheelchairs.hasOwnProperty(pId) ?
-                wheelchairs[pId] : 0;
-            const wheelchairAvailable = WHEELCHAIR_NUMBER_PER_HOUR - wheelchairReserved > 0 ?
-                WHEELCHAIR_NUMBER_PER_HOUR - wheelchairReserved : 0;
-            // 指定パフォーマンスで予約可能なチケット数取得(必要座席数で割る)
-            const conditionsAvailable = {
-                performance: pId,
-                availability: ttts.factory.itemAvailability.InStock
-            };
-            let reservationAvailable = yield stockRepo.stockModel.find(conditionsAvailable).count().exec();
-            reservationAvailable = Math.floor(reservationAvailable / requiredSeatNum);
-            // tslint:disable-next-line:no-console
-            console.log(`${pId}:wheelchairReserved=${wheelchairReserved}`);
-            // tslint:disable-next-line:no-console
-            console.log(`wheelchairAvailable=${wheelchairAvailable}`);
-            // tslint:disable-next-line:no-console
-            console.log(`reservationAvailable=${reservationAvailable}`);
-            // 予約可能な車椅子チケット数か予約可能なチケット数／必要座席数の小さいほうを返す
-            // ※車椅子枠が"1"残っていても、チケットが"3枚"しか残っていなかったら、
-            //   "4座席"必要な車椅子予約可能数は0になる。
-            return Math.min(wheelchairAvailable, reservationAvailable);
-        });
-        //---
-        // 停止単位でgrouping({"2017/11/24 08:37:33": [p1,p2,,,pn]} )
-        const dicSuspended = {};
-        for (const performance of performances) {
-            // 販売停止の時
-            if (performance.ttts_extension.online_sales_status === ttts.factory.performance.OnlineSalesStatus.Suspended) {
-                // dictionnaryに追加する
-                const key = performance.ttts_extension.online_sales_update_at;
-                if (dicSuspended.hasOwnProperty(key) === false) {
-                    dicSuspended[key] = [];
-                }
-                dicSuspended[key].push(performance._id.toString());
-            }
-        }
+        const performanceStatuses = yield performanceStatusesRepo.find();
+        debug('performanceStatuses found.', performanceStatuses);
+        // const dicSuspended: any = {};
+        // for (const performance of performances) {
+        //     // 販売停止の時
+        //     if (performance.ttts_extension.online_sales_status === ttts.factory.performance.OnlineSalesStatus.Suspended) {
+        //         // dictionnaryに追加する
+        //         const key = (<Date>performance.ttts_extension.online_sales_update_at).toISOString();
+        //         if (dicSuspended.hasOwnProperty(key) === false) {
+        //             dicSuspended[key] = [];
+        //         }
+        //         dicSuspended[key].push(performance.id);
+        //     }
+        // }
         // 停止単位で配列にセット
         // [{ performance_ids: [p1,p2,,,pn],
         //    annnouce_locales: { ja:'メッセージ', 'en':'message',･･･} }]
-        const salesSuspended = [];
-        for (const key of Object.keys(dicSuspended)) {
-            salesSuspended.push({
-                date: key,
-                performance_ids: dicSuspended[key],
-                annnouce_locales: { ja: `販売停止(${key})` }
-            });
-        }
+        // const salesSuspended: any[] = [];
+        // for (const key of Object.keys(dicSuspended)) {
+        //     salesSuspended.push({
+        //         date: key,
+        //         performance_ids: dicSuspended[key],
+        //         annnouce_locales: { ja: `販売停止(${key})` }
+        //     });
+        // }
         const data = yield Promise.all(performances.map((performance) => __awaiter(this, void 0, void 0, function* () {
+            const seatReservationOfferAvailabilities = yield seatReservationOfferAvailabilityRepo.findByPerformance(performance.id);
+            const ticketTypes = performance.ticket_type_group.ticket_types;
+            const wheelchairTicketTypeIds = ticketTypes
+                .filter((t) => t.ttts_extension.category === ttts.factory.ticketTypeCategory.Wheelchair)
+                .map((t) => t.id);
+            debug('wheelchairTicketTypeIds:', wheelchairTicketTypeIds);
+            debug('seatReservationOfferAvailabilities:', seatReservationOfferAvailabilities);
+            let wheelchairAvailable = 0;
+            wheelchairTicketTypeIds.forEach((ticketTypeId) => {
+                if (seatReservationOfferAvailabilities[ticketTypeId] !== undefined
+                    && seatReservationOfferAvailabilities[ticketTypeId] > 0) {
+                    wheelchairAvailable = seatReservationOfferAvailabilities[ticketTypeId];
+                }
+            });
             return {
-                type: 'performances',
-                id: performance._id,
+                id: performance.id,
                 attributes: {
                     day: performance.day,
                     open_time: performance.open_time,
                     start_time: performance.start_time,
                     end_time: performance.end_time,
-                    seat_status: getStatus(performance._id.toString()),
+                    seat_status: performanceStatuses.getStatus(performance.id),
                     // theater_name: performance.theater_name,
                     // screen_name: performance.screen_name,
                     // film: performance.film._id,
@@ -212,9 +153,16 @@ function search(searchConditions) {
                     // film_minutes: performance.film.minutes,
                     // film_copyright: performance.film.copyright,
                     // film_image: `${process.env.FRONTEND_ENDPOINT}/images/film/${performance.film._id}.jpg`,
-                    tour_number: getTourNumber(performance),
-                    wheelchair_available: yield getWheelchairAvailable(performance._id.toString()),
+                    wheelchair_available: wheelchairAvailable,
+                    ticket_types: ticketTypes.map((ticketType) => {
+                        return Object.assign({}, ticketType, {
+                            available_num: seatReservationOfferAvailabilities[ticketType.id]
+                        });
+                    }),
+                    tour_number: performance.ttts_extension.tour_number,
                     online_sales_status: performance.ttts_extension.online_sales_status,
+                    refunded_count: performance.ttts_extension.refunded_count,
+                    refund_status: performance.ttts_extension.refund_status,
                     ev_service_status: performance.ttts_extension.ev_service_status
                 }
             };
@@ -222,8 +170,8 @@ function search(searchConditions) {
         return {
             performances: data,
             numberOfPerformances: performancesCount,
-            filmIds: filmIds,
-            salesSuspended: salesSuspended
+            filmIds: filmIds
+            // salesSuspended: salesSuspended
         };
     });
 }

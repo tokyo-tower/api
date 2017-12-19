@@ -1,17 +1,11 @@
 /**
  * 404ハンドラーミドルウェア
+ * @module middlewares.notFoundHandler
  */
-import { Request, Response } from 'express';
-import { NOT_FOUND } from 'http-status';
 
-export default (req: Request, res: Response) => {
-    res.status(NOT_FOUND);
-    res.json({
-        errors: [
-            {
-                title: 'not found',
-                detail: `router for [${req.originalUrl}] not found.`
-            }
-        ]
-    });
+import * as ttts from '@motionpicture/ttts-domain';
+import { NextFunction, Request, Response } from 'express';
+
+export default (req: Request, __: Response, next: NextFunction) => {
+    next(new ttts.factory.errors.NotFound(`router for [${req.originalUrl}]`));
 };

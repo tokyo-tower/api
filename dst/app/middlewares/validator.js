@@ -1,4 +1,9 @@
 "use strict";
+/**
+ * バリデーターミドルウェア
+ * リクエストのパラメータ(query strings or body parameters)に対するバリデーション
+ * @module middlewares.validator
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8,21 +13,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const ttts = require("@motionpicture/ttts-domain");
+const createDebug = require("debug");
 const http_status_1 = require("http-status");
-exports.default = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+const api_1 = require("../error/api");
+const debug = createDebug('ttts-api:middlewares:validator');
+exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* () {
     const validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty()) {
-        res.status(http_status_1.BAD_REQUEST);
-        res.json({
-            errors: validatorResult.array().map((mappedRrror) => {
-                return {
-                    source: { parameter: mappedRrror.param },
-                    title: 'invalid parameter',
-                    detail: mappedRrror.msg
-                };
-            })
+        const errors = validatorResult.array().map((mappedRrror) => {
+            return new ttts.factory.errors.Argument(mappedRrror.param, mappedRrror.msg);
         });
-        return;
+        debug('validation result not empty...', errors);
+        next(new api_1.APIError(http_status_1.BAD_REQUEST, errors));
     }
-    next();
+    else {
+        next();
+    }
 });
