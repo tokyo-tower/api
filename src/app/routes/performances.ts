@@ -10,7 +10,6 @@ const performanceRouter = express.Router();
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
-import setLocale from '../middlewares/setLocale';
 
 import * as PerformanceController from '../controllers/performance';
 
@@ -24,7 +23,6 @@ performanceRouter.use(authentication);
 performanceRouter.get(
     '',
     permitScopes(['performances', 'performances.read-only']),
-    setLocale,
     async (req, res, next) => {
         try {
             const conditions = {

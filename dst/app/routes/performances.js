@@ -17,14 +17,13 @@ const _ = require("underscore");
 const performanceRouter = express.Router();
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
-const setLocale_1 = require("../middlewares/setLocale");
 const PerformanceController = require("../controllers/performance");
 const DEFAULT_RADIX = 10;
 performanceRouter.use(authentication_1.default);
 /**
  * パフォーマンス検索
  */
-performanceRouter.get('', permitScopes_1.default(['performances', 'performances.read-only']), setLocale_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+performanceRouter.get('', permitScopes_1.default(['performances', 'performances.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const conditions = {
             limit: (!_.isEmpty(req.query.limit)) ? parseInt(req.query.limit, DEFAULT_RADIX) : undefined,

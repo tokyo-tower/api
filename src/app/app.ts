@@ -6,11 +6,9 @@
 import * as ttts from '@motionpicture/ttts-domain';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
-import * as createDebug from 'debug';
 import * as express from 'express';
 import * as expressValidator from 'express-validator';
 import * as helmet from 'helmet';
-import * as i18n from 'i18n';
 
 import mongooseConnectionOptions from '../mongooseConnectionOptions';
 
@@ -21,8 +19,6 @@ import devRouter from './routes/dev';
 import performanceRouter from './routes/performances';
 import reservationRouter from './routes/reservations';
 import transactionRouter from './routes/transactions';
-
-const debug = createDebug('ttts-api:app');
 
 const app = express();
 
@@ -51,19 +47,6 @@ app.use(helmet.hsts({
     includeSubdomains: false
 }));
 
-if (process.env.NODE_ENV !== 'production') {
-    // サーバーエラーテスト
-    app.get('/dev/uncaughtexception', (req) => {
-        req.on('data', (chunk) => {
-            debug(chunk);
-        });
-
-        req.on('end', () => {
-            throw new Error('uncaughtexception manually');
-        });
-    });
-}
-
 // view engine setup
 // app.set('views', `${__dirname}/views`);
 // app.set('view engine', 'ejs');
@@ -71,17 +54,6 @@ if (process.env.NODE_ENV !== 'production') {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
-
-// i18n を利用する設定
-i18n.configure({
-    locales: ['en', 'ja'],
-    defaultLocale: 'en',
-    directory: `${__dirname}/../../locales`,
-    objectNotation: true,
-    updateFiles: false // ページのビューで自動的に言語ファイルを更新しない
-});
-// i18n の設定を有効化
-app.use(i18n.init);
 
 // ルーティング
 app.use('/performances', performanceRouter);
