@@ -137,7 +137,7 @@ async function main() {
     let customerContact = {
         last_name: 'せい',
         first_name: 'めい',
-        email: 'ilovegadd@gmail.com',
+        email: 'hello@motionpicture.jp',
         tel: '09012345678',
         gender: '0'
     };
