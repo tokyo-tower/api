@@ -33,7 +33,7 @@ const redisClient = ttts.redis.createClient({
 placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), (req, _, next) => {
     req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
-    req.checkBody('seller_id', 'invalid sellerId').notEmpty().withMessage('seller_id is required');
+    req.checkBody('seller_id', 'invalid seller_id').notEmpty().withMessage('seller_id is required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -42,11 +42,11 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
             agentId: req.user.sub,
             sellerId: req.body.seller_id,
             purchaserGroup: req.body.purchaser_group
-        });
+        })(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.Owner(ttts.mongoose.connection));
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
         // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
-        res.json(transaction);
+        res.status(http_status_1.CREATED).json(transaction);
     }
     catch (error) {
         next(error);
@@ -72,7 +72,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
             age: '',
             address: '',
             gender: req.body.gender
-        });
+        })(new ttts.repository.Transaction(ttts.mongoose.connection));
         res.status(http_status_1.CREATED).json(contact);
     }
     catch (error) {
@@ -86,10 +86,13 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        if (!Array.isArray(req.body.offers)) {
+            req.body.offers = [];
+        }
         const action = yield ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(req.user.sub, req.params.transactionId, req.body.perfomance_id, req.body.offers.map((offer) => {
             return {
                 ticket_type: offer.ticket_type,
-                watcher_name: ''
+                watcher_name: offer.watcher_name
             };
         }))(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.Performance(ttts.mongoose.connection), new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection), new ttts.repository.PaymentNo(ttts.mongoose.connection), new ttts.repository.rateLimit.TicketTypeCategory(redisClient));
         res.status(http_status_1.CREATED).json(action);
@@ -112,13 +115,13 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
 }));
 placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const order = yield ttts.service.transaction.placeOrderInProgress.confirm({
+        const transactionResult = yield ttts.service.transaction.placeOrderInProgress.confirm({
             agentId: req.user.sub,
             transactionId: req.params.transactionId,
             paymentMethod: req.body.payment_method
-        });
-        debug('transaction confirmed', order);
-        res.status(http_status_1.CREATED).json(order);
+        })(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection), new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection));
+        debug('transaction confirmed.', transactionResult);
+        res.status(http_status_1.CREATED).json(transactionResult);
     }
     catch (error) {
         next(error);

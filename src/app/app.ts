@@ -18,7 +18,7 @@ import notFoundHandler from './middlewares/notFoundHandler';
 import devRouter from './routes/dev';
 import performanceRouter from './routes/performances';
 import reservationRouter from './routes/reservations';
-import transactionRouter from './routes/transactions';
+import placeOrderTransactionRouter from './routes/transactions/placeOrder';
 
 const app = express();
 
@@ -58,7 +58,7 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 // ルーティング
 app.use('/performances', performanceRouter);
 app.use('/reservations', reservationRouter);
-app.use('/transactions', transactionRouter);
+app.use('/transactions/placeOrder', placeOrderTransactionRouter);
 
 if (process.env.NODE_ENV !== 'production') {
     app.use('/dev', devRouter);

@@ -33,7 +33,7 @@ placeOrderTransactionsRouter.post(
     permitScopes(['transactions']),
     (req, _, next) => {
         req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
-        req.checkBody('seller_id', 'invalid sellerId').notEmpty().withMessage('seller_id is required');
+        req.checkBody('seller_id', 'invalid seller_id').notEmpty().withMessage('seller_id is required');
 
         next();
     },
@@ -45,12 +45,15 @@ placeOrderTransactionsRouter.post(
                 agentId: req.user.sub,
                 sellerId: req.body.seller_id,
                 purchaserGroup: req.body.purchaser_group
-            });
+            })(
+                new ttts.repository.Transaction(ttts.mongoose.connection),
+                new ttts.repository.Owner(ttts.mongoose.connection)
+                );
 
             // tslint:disable-next-line:no-string-literal
             // const host = req.headers['host'];
             // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
-            res.json(transaction);
+            res.status(CREATED).json(transaction);
         } catch (error) {
             next(error);
         }
@@ -87,7 +90,7 @@ placeOrderTransactionsRouter.put(
                     address: '',
                     gender: req.body.gender
                 }
-            );
+            )(new ttts.repository.Transaction(ttts.mongoose.connection));
 
             res.status(CREATED).json(contact);
         } catch (error) {
@@ -108,6 +111,10 @@ placeOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
+            if (!Array.isArray(req.body.offers)) {
+                req.body.offers = [];
+            }
+
             const action = await ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
                 req.user.sub,
                 req.params.transactionId,
@@ -115,7 +122,7 @@ placeOrderTransactionsRouter.post(
                 (<any[]>req.body.offers).map((offer) => {
                     return {
                         ticket_type: offer.ticket_type,
-                        watcher_name: ''
+                        watcher_name: offer.watcher_name
                     };
                 })
             )(
@@ -165,14 +172,18 @@ placeOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const order = await ttts.service.transaction.placeOrderInProgress.confirm({
+            const transactionResult = await ttts.service.transaction.placeOrderInProgress.confirm({
                 agentId: req.user.sub,
                 transactionId: req.params.transactionId,
                 paymentMethod: req.body.payment_method
-            });
-            debug('transaction confirmed', order);
+            })(
+                new ttts.repository.Transaction(ttts.mongoose.connection),
+                new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection),
+                new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection)
+                );
+            debug('transaction confirmed.', transactionResult);
 
-            res.status(CREATED).json(order);
+            res.status(CREATED).json(transactionResult);
         } catch (error) {
             next(error);
         }

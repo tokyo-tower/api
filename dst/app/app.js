@@ -15,7 +15,7 @@ const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const dev_1 = require("./routes/dev");
 const performances_1 = require("./routes/performances");
 const reservations_1 = require("./routes/reservations");
-const transactions_1 = require("./routes/transactions");
+const placeOrder_1 = require("./routes/transactions/placeOrder");
 const app = express();
 const options = {
     origin: '*',
@@ -49,7 +49,7 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 // ルーティング
 app.use('/performances', performances_1.default);
 app.use('/reservations', reservations_1.default);
-app.use('/transactions', transactions_1.default);
+app.use('/transactions/placeOrder', placeOrder_1.default);
 if (process.env.NODE_ENV !== 'production') {
     app.use('/dev', dev_1.default);
 }
