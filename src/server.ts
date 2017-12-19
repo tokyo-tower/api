@@ -14,7 +14,7 @@ const debug = createDebug('ttts-api:index');
  * Get port from environment and store in Express.
  */
 
-const port = normalizePort((process.env.PORT === undefined) ? '3000' : process.env.PORT);
+const port = normalizePort((process.env.PORT === undefined) ? '8080' : process.env.PORT);
 app.set('port', port);
 
 /**

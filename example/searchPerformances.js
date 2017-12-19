@@ -1,3 +1,4 @@
+const moment = require('moment');
 const request = require('request-promise-native');
 
 async function main() {
@@ -23,15 +24,21 @@ async function main() {
     console.log('credentials published.', credentials);
 
     const performances = await request.get(
-        'http://localhost:3000/performances',
+        'http://localhost:8080/performances',
         {
             auth: {
                 bearer: credentials.access_token
             },
-            json: true
+            json: true,
+            qs: {
+                day: moment().add(1, 'day').format('YYYYMMDD')
+            }
         }
-    );
-    console.log(performances);
+    ).then((body) => body.data);
+    performances.forEach((performance) => {
+        console.log('performance found.', performance);
+        console.log('performance found.', performance.attributes.ticket_types);
+    });
 }
 
 main().then(() => {
