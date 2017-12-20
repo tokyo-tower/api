@@ -7,8 +7,8 @@ async function main() {
         `https://ttts-development.auth.ap-northeast-1.amazoncognito.com/token`,
         {
             auth: {
-                user: '',
-                password: '',
+                user: process.env.TEST_API_CLIENT_ID,
+                password: process.env.TEST_API_CLIENT_SECRET,
             },
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
@@ -32,6 +32,7 @@ async function main() {
             json: true,
             qs: {
                 day: moment().add(1, 'day').format('YYYYMMDD')
+                // day: '20171221'
             }
         }
     ).then((body) => body.data);

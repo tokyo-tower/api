@@ -175,43 +175,21 @@ export async function search(searchConditions: ISearchConditions): Promise<ISear
     const performanceStatuses = await performanceStatusesRepo.find();
     debug('performanceStatuses found.', performanceStatuses);
 
-    // const dicSuspended: any = {};
-    // for (const performance of performances) {
-    //     // 販売停止の時
-    //     if (performance.ttts_extension.online_sales_status === ttts.factory.performance.OnlineSalesStatus.Suspended) {
-    //         // dictionnaryに追加する
-    //         const key = (<Date>performance.ttts_extension.online_sales_update_at).toISOString();
-    //         if (dicSuspended.hasOwnProperty(key) === false) {
-    //             dicSuspended[key] = [];
-    //         }
-    //         dicSuspended[key].push(performance.id);
-    //     }
-    // }
-    // 停止単位で配列にセット
-    // [{ performance_ids: [p1,p2,,,pn],
-    //    annnouce_locales: { ja:'メッセージ', 'en':'message',･･･} }]
-    // const salesSuspended: any[] = [];
-    // for (const key of Object.keys(dicSuspended)) {
-    //     salesSuspended.push({
-    //         date: key,
-    //         performance_ids: dicSuspended[key],
-    //         annnouce_locales: { ja: `販売停止(${key})` }
-    //     });
-    // }
-
     const data: IPerformance[] = await Promise.all(performances.map(async (performance) => {
-        const seatReservationOfferAvailabilities = await seatReservationOfferAvailabilityRepo.findByPerformance(performance.id);
+        const offerAvailabilities = await seatReservationOfferAvailabilityRepo.findByPerformance(performance.id);
+        debug('offerAvailabilities:', offerAvailabilities);
         const ticketTypes = performance.ticket_type_group.ticket_types;
-        const wheelchairTicketTypeIds = ticketTypes
-            .filter((t) => t.ttts_extension.category === ttts.factory.ticketTypeCategory.Wheelchair)
+
+        // 本来、この時点で券種ごとに在庫を取得しているので情報としては十分だが、
+        // 以前の仕様との互換性を保つために、車椅子の在庫フィールドだけ特別に作成する
+        debug('check wheelchair availability...');
+        const wheelchairTicketTypeIds = ticketTypes.filter((t) => t.ttts_extension.category === ttts.factory.ticketTypeCategory.Wheelchair)
             .map((t) => t.id);
-        debug('wheelchairTicketTypeIds:', wheelchairTicketTypeIds);
-        debug('seatReservationOfferAvailabilities:', seatReservationOfferAvailabilities);
         let wheelchairAvailable = 0;
         wheelchairTicketTypeIds.forEach((ticketTypeId) => {
-            if (seatReservationOfferAvailabilities[ticketTypeId] !== undefined
-                && seatReservationOfferAvailabilities[ticketTypeId] > 0) {
-                wheelchairAvailable = seatReservationOfferAvailabilities[ticketTypeId];
+            // 車椅子カテゴリーの券種に在庫がひとつでもあれば、wheelchairAvailableは在庫あり。
+            if (offerAvailabilities[ticketTypeId] !== undefined && offerAvailabilities[ticketTypeId] > 0) {
+                wheelchairAvailable = offerAvailabilities[ticketTypeId];
             }
         });
 
@@ -236,7 +214,7 @@ export async function search(searchConditions: ISearchConditions): Promise<ISear
                     return {
                         ...ticketType,
                         ...{
-                            available_num: seatReservationOfferAvailabilities[ticketType.id]
+                            available_num: offerAvailabilities[ticketType.id]
                         }
                     };
                 }),
@@ -253,13 +231,11 @@ export async function search(searchConditions: ISearchConditions): Promise<ISear
         performances: data,
         numberOfPerformances: performancesCount,
         filmIds: filmIds
-        // salesSuspended: salesSuspended
     };
 }
 
 /**
  * 作品に関する検索条件を追加する
- *
  * @param andConditions パフォーマンス検索条件
  * @param section 作品部門
  * @param words フリーワード
