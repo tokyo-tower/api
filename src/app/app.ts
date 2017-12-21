@@ -19,6 +19,7 @@ import devRouter from './routes/dev';
 import performanceRouter from './routes/performances';
 import reservationRouter from './routes/reservations';
 import placeOrderTransactionsRouter from './routes/transactions/placeOrder';
+import returnOrderTransactionsRouter from './routes/transactions/returnOrder';
 
 const app = express();
 
@@ -59,6 +60,7 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 app.use('/performances', performanceRouter);
 app.use('/reservations', reservationRouter);
 app.use('/transactions/placeOrder', placeOrderTransactionsRouter);
+app.use('/transactions/returnOrder', returnOrderTransactionsRouter);
 
 if (process.env.NODE_ENV !== 'production') {
     app.use('/dev', devRouter);

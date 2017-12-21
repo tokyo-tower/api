@@ -33,16 +33,16 @@ const redisClient = ttts.redis.createClient({
 placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), (req, _, next) => {
     req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
-    req.checkBody('seller_id', 'invalid seller_id').notEmpty().withMessage('seller_id is required');
+    req.checkBody('seller_identifier', 'invalid seller_identifier').notEmpty().withMessage('seller_identifier is required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const transaction = yield ttts.service.transaction.placeOrderInProgress.start({
             expires: moment(req.body.expires).toDate(),
             agentId: req.user.sub,
-            sellerId: req.body.seller_id,
+            sellerIdentifier: req.body.seller_identifier,
             purchaserGroup: req.body.purchaser_group
-        })(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.Owner(ttts.mongoose.connection));
+        })(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.Organization(ttts.mongoose.connection), new ttts.repository.Owner(ttts.mongoose.connection));
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
         // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);

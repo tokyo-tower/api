@@ -33,7 +33,7 @@ placeOrderTransactionsRouter.post(
     permitScopes(['transactions']),
     (req, _, next) => {
         req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
-        req.checkBody('seller_id', 'invalid seller_id').notEmpty().withMessage('seller_id is required');
+        req.checkBody('seller_identifier', 'invalid seller_identifier').notEmpty().withMessage('seller_identifier is required');
 
         next();
     },
@@ -43,10 +43,11 @@ placeOrderTransactionsRouter.post(
             const transaction = await ttts.service.transaction.placeOrderInProgress.start({
                 expires: moment(req.body.expires).toDate(),
                 agentId: req.user.sub,
-                sellerId: req.body.seller_id,
+                sellerIdentifier: req.body.seller_identifier,
                 purchaserGroup: req.body.purchaser_group
             })(
                 new ttts.repository.Transaction(ttts.mongoose.connection),
+                new ttts.repository.Organization(ttts.mongoose.connection),
                 new ttts.repository.Owner(ttts.mongoose.connection)
                 );
 

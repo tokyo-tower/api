@@ -1,7 +1,7 @@
 "use strict";
 /**
  * 予約ルーター
- * @module routes/reservations
+ * @namespace routes.reservations
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -42,29 +42,6 @@ reservationRouter.post('/:id/checkins', permitScopes_1.default(['reservations', 
                 res.status(httpStatus.NO_CONTENT).end();
             }
         });
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * 予約取消
- */
-reservationRouter.post('/cancel', permitScopes_1.default(['reservations']), (req, __, next) => {
-    req.checkBody('performance_day').notEmpty().withMessage('performance_day is required');
-    req.checkBody('payment_no').notEmpty().withMessage('payment_no is required');
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    try {
-        const canceledReservationIds = yield ReservationController.cancel(req.body.performance_day, req.body.payment_no);
-        if (canceledReservationIds.length > 0) {
-            res.status(httpStatus.NO_CONTENT).end();
-        }
-        else {
-            res.status(httpStatus.NOT_FOUND).json({
-                data: null
-            });
-        }
     }
     catch (error) {
         next(error);

@@ -68,7 +68,7 @@ async function main() {
             json: true,
             body: {
                 expires: moment().add(10, 'minutes').toISOString(),
-                seller_id: 'TokyoTower',
+                seller_identifier: 'TokyoTower',
                 purchaser_group: 'Customer'
             }
         }

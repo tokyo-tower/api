@@ -1,6 +1,6 @@
 /**
  * 予約ルーター
- * @module routes/reservations
+ * @namespace routes.reservations
  */
 
 import * as express from 'express';
@@ -42,36 +42,6 @@ reservationRouter.post(
                     res.status(httpStatus.NO_CONTENT).end();
                 }
             });
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-/**
- * 予約取消
- */
-reservationRouter.post(
-    '/cancel',
-    permitScopes(['reservations']),
-    (req, __, next) => {
-        req.checkBody('performance_day').notEmpty().withMessage('performance_day is required');
-        req.checkBody('payment_no').notEmpty().withMessage('payment_no is required');
-
-        next();
-    },
-    validator,
-    async (req, res, next) => {
-        try {
-            const canceledReservationIds = await ReservationController.cancel(req.body.performance_day, req.body.payment_no);
-
-            if (canceledReservationIds.length > 0) {
-                res.status(httpStatus.NO_CONTENT).end();
-            } else {
-                res.status(httpStatus.NOT_FOUND).json({
-                    data: null
-                });
-            }
         } catch (error) {
             next(error);
         }
