@@ -31,11 +31,11 @@
   },
   "devDependencies": {
     "aglio": "^2.3.0",
-    "concurrently": "^3.5.0",
+    "concurrently": "^3.5.1",
     "gulp": "^3.9.1",
     "gulp-aglio": "0.0.10",
-    "mocha": "^3.4.2",
-    "request": "^2.81.0",
-    "rimraf": "^2.6.1"
+    "mocha": "^3.5.3",
+    "request": "^2.83.0",
+    "rimraf": "^2.6.2"
   }
 }
