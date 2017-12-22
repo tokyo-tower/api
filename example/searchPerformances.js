@@ -24,15 +24,15 @@ async function main() {
     console.log('credentials published.', credentials);
 
     const performances = await request.get(
-        'http://localhost:8080/performances',
+        'http://localhost:8082/performances',
         {
             auth: {
                 bearer: credentials.access_token
             },
             json: true,
             qs: {
-                day: moment().add(1, 'day').format('YYYYMMDD')
-                // day: '20171221'
+                start_from: moment().toISOString(),
+                start_through: moment().add(1, 'day').toISOString(),
             }
         }
     ).then((body) => body.data);
@@ -40,6 +40,7 @@ async function main() {
         console.log('performance found.', performance);
         console.log('performance found.', performance.attributes.ticket_types);
     });
+    console.log(performances.length)
 }
 
 main().then(() => {

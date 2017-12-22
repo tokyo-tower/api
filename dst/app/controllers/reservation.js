@@ -14,23 +14,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const ttts = require("@motionpicture/ttts-domain");
 /**
- * 予約情報を取得する
- * @param {string} reservationId 予約ID
- * @return {Promise<ttts.mongoose.Document | null>} 予約ドキュメント
- * @memberof controllers/reservation
- */
-function findById(reservationId) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
-        const reservation = yield reservationRepo.reservationModel.findOne({
-            _id: reservationId,
-            status: ttts.factory.reservationStatusType.ReservationConfirmed
-        }).exec();
-        return (reservation === null) ? null : reservation;
-    });
-}
-exports.findById = findById;
-/**
  * 入場履歴を追加する
  * @param {string} reservationId 予約ID
  * @param {ICheckin} checkin チェックインオブジェクト

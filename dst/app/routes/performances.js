@@ -12,13 +12,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const ttts = require("@motionpicture/ttts-domain");
 const express = require("express");
+const moment = require("moment");
 const _ = require("underscore");
-const performanceRouter = express.Router();
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
-const PerformanceController = require("../controllers/performance");
-const DEFAULT_RADIX = 10;
+const performanceRouter = express.Router();
+const redisClient = ttts.redis.createClient({
+    host: process.env.REDIS_HOST,
+    // tslint:disable-next-line:no-magic-numbers
+    port: parseInt(process.env.REDIS_PORT, 10),
+    password: process.env.REDIS_KEY,
+    tls: { servername: process.env.REDIS_HOST }
+});
 performanceRouter.use(authentication_1.default);
 /**
  * パフォーマンス検索
@@ -26,18 +33,21 @@ performanceRouter.use(authentication_1.default);
 performanceRouter.get('', permitScopes_1.default(['performances', 'performances.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const conditions = {
-            limit: (!_.isEmpty(req.query.limit)) ? parseInt(req.query.limit, DEFAULT_RADIX) : undefined,
-            page: (!_.isEmpty(req.query.page)) ? parseInt(req.query.page, DEFAULT_RADIX) : undefined,
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (!_.isEmpty(req.query.limit)) ? parseInt(req.query.limit, 10) : undefined,
+            // tslint:disable-next-line:no-magic-numbers
+            page: (!_.isEmpty(req.query.page)) ? parseInt(req.query.page, 10) : undefined,
             day: (!_.isEmpty(req.query.day)) ? req.query.day : undefined,
             section: (!_.isEmpty(req.query.section)) ? req.query.section : undefined,
             words: (!_.isEmpty(req.query.words)) ? req.query.words : undefined,
-            startFrom: (!_.isEmpty(req.query.start_from)) ? parseInt(req.query.startFrom, DEFAULT_RADIX) : undefined,
+            startFrom: (!_.isEmpty(req.query.start_from)) ? moment(req.query.start_from).toDate() : undefined,
+            startThrough: (!_.isEmpty(req.query.start_through)) ? moment(req.query.start_through).toDate() : undefined,
             theater: (!_.isEmpty(req.query.theater)) ? req.query.theater : undefined,
             screen: (!_.isEmpty(req.query.screen)) ? req.query.screen : undefined,
             performanceId: (!_.isEmpty(req.query.performanceId)) ? req.query.performanceId : undefined,
             wheelchair: (!_.isEmpty(req.query.screen)) ? req.query.wheelchair : undefined
         };
-        yield PerformanceController.search(conditions).then((searchPerformanceResult) => {
+        yield ttts.service.performance.search(conditions)(new ttts.repository.Performance(ttts.mongoose.connection), new ttts.repository.PerformanceStatuses(redisClient), new ttts.repository.itemAvailability.SeatReservationOffer(redisClient)).then((searchPerformanceResult) => {
             res.json({
                 meta: {
                     number_of_performances: searchPerformanceResult.numberOfPerformances,
