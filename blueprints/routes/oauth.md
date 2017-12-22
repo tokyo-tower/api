@@ -31,7 +31,7 @@
 アプリケーション側でアクセストークンの有効期間を管理し、適宜再取得してください。
 :::
 
-+ Request クライアント認証 (application/json)
++ Request クライアント認証 (application/x-www-form-urlencoded)
     +  Headers
         Authorization: Basic ABC123
     + Attributes
