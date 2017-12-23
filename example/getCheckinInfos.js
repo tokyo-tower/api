@@ -12,9 +12,6 @@ async function main() {
         }
     ).then((body) => body);
     console.log('result:', result);
-    result.schedules.forEach((schedule) => {
-        console.log(schedule.concernedReservedArray);
-    });
 }
 
 main().then(() => {
