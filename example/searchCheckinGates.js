@@ -3,12 +3,9 @@ const request = require('request-promise-native');
 
 async function main() {
     const result = await request.get(
-        'http://localhost:8082/utils/pass/list',
+        'http://localhost:8082/preview/places/checkinGate',
         {
-            json: true,
-            qs: {
-                day: '20171224'
-            }
+            json: true
         }
     ).then((body) => body);
     console.log('result:', result);

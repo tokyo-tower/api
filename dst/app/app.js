@@ -14,10 +14,10 @@ const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const dev_1 = require("./routes/dev");
 const performances_1 = require("./routes/performances");
+const preview_1 = require("./routes/preview");
 const reservations_1 = require("./routes/reservations");
 const placeOrder_1 = require("./routes/transactions/placeOrder");
 const returnOrder_1 = require("./routes/transactions/returnOrder");
-const utils_1 = require("./routes/utils");
 const app = express();
 const options = {
     origin: '*',
@@ -49,7 +49,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
 // ルーティング
-app.use('/utils', utils_1.default);
+app.use('/preview', preview_1.default);
 app.use('/performances', performances_1.default);
 app.use('/reservations', reservations_1.default);
 app.use('/transactions/placeOrder', placeOrder_1.default);
