@@ -87,7 +87,7 @@ async function main() {
             },
             json: true,
             body: {
-                perfomance_id: performance.id,
+                performance_id: performance.id,
                 offers: [{
                     ticket_type: ticketType.id,
                     watcher_name: ''
@@ -121,7 +121,7 @@ async function main() {
             },
             json: true,
             body: {
-                perfomance_id: performance.id,
+                performance_id: performance.id,
                 offers: [{
                     ticket_type: ticketType.id,
                     watcher_name: ''

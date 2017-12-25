@@ -89,7 +89,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
         if (!Array.isArray(req.body.offers)) {
             req.body.offers = [];
         }
-        const action = yield ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(req.user.sub, req.params.transactionId, req.body.perfomance_id, req.body.offers.map((offer) => {
+        const action = yield ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(req.user.sub, req.params.transactionId, req.body.performance_id, req.body.offers.map((offer) => {
             return {
                 ticket_type: offer.ticket_type,
                 watcher_name: offer.watcher_name

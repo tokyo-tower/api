@@ -119,7 +119,7 @@ placeOrderTransactionsRouter.post(
             const action = await ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
                 req.user.sub,
                 req.params.transactionId,
-                req.body.perfomance_id,
+                req.body.performance_id,
                 (<any[]>req.body.offers).map((offer) => {
                     return {
                         ticket_type: offer.ticket_type,
