@@ -47,7 +47,7 @@ performanceRouter.get('', permitScopes_1.default(['performances', 'performances.
             performanceId: (!_.isEmpty(req.query.performanceId)) ? req.query.performanceId : undefined,
             wheelchair: (!_.isEmpty(req.query.screen)) ? req.query.wheelchair : undefined
         };
-        yield ttts.service.performance.search(conditions)(new ttts.repository.Performance(ttts.mongoose.connection), new ttts.repository.PerformanceStatuses(redisClient), new ttts.repository.itemAvailability.SeatReservationOffer(redisClient)).then((searchPerformanceResult) => {
+        yield ttts.service.performance.search(conditions)(new ttts.repository.Performance(ttts.mongoose.connection), new ttts.repository.itemAvailability.Performance(redisClient), new ttts.repository.itemAvailability.SeatReservationOffer(redisClient)).then((searchPerformanceResult) => {
             res.json({
                 meta: {
                     number_of_performances: searchPerformanceResult.numberOfPerformances,
