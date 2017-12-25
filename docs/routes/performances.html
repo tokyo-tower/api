@@ -257,10 +257,271 @@
     ]</span>,
     "<span class="hljs-attribute">startDate</span>": <span class="hljs-value"><span class="hljs-string">"2017-12-25T04:30:00.000Z"</span></span>,
     "<span class="hljs-attribute">tourNumber</span>": <span class="hljs-value"><span class="hljs-string">"133"</span>
+  </span>},
+  {
+    "<span class="hljs-attribute">checkinCount</span>": <span class="hljs-value"><span class="hljs-number">0</span></span>,
+    "<span class="hljs-attribute">checkinCountsByWhere</span>": <span class="hljs-value">[
+      {
+        "<span class="hljs-attribute">checkinCountsByTicketType</span>": <span class="hljs-value">[
+          {
+            "<span class="hljs-attribute">count</span>": <span class="hljs-value"><span class="hljs-number">0</span></span>,
+            "<span class="hljs-attribute">ticketCategory</span>": <span class="hljs-value"><span class="hljs-string">"Normal"</span></span>,
+            "<span class="hljs-attribute">ticketType</span>": <span class="hljs-value"><span class="hljs-string">"001"</span>
+          </span>}
+        ]</span>,
+        "<span class="hljs-attribute">where</span>": <span class="hljs-value"><span class="hljs-string">"Staff"</span>
+      </span>}
+    ]</span>,
+    "<span class="hljs-attribute">duration</span>": <span class="hljs-value"><span class="hljs-string">"PT15M"</span></span>,
+    "<span class="hljs-attribute">endDate</span>": <span class="hljs-value"><span class="hljs-string">"2017-12-25T04:45:00.000Z"</span></span>,
+    "<span class="hljs-attribute">evServiceStatus</span>": <span class="hljs-value"><span class="hljs-string">"Normal"</span></span>,
+    "<span class="hljs-attribute">id</span>": <span class="hljs-value"><span class="hljs-string">"171225001001011330"</span></span>,
+    "<span class="hljs-attribute">onlineSalesStatus</span>": <span class="hljs-value"><span class="hljs-string">"Normal"</span></span>,
+    "<span class="hljs-attribute">reservationCount</span>": <span class="hljs-value"><span class="hljs-number">5</span></span>,
+    "<span class="hljs-attribute">reservationCountsByTicketType</span>": <span class="hljs-value">[
+      {
+        "<span class="hljs-attribute">count</span>": <span class="hljs-value"><span class="hljs-number">5</span></span>,
+        "<span class="hljs-attribute">ticketType</span>": <span class="hljs-value"><span class="hljs-string">"001"</span>
+      </span>}
+    ]</span>,
+    "<span class="hljs-attribute">startDate</span>": <span class="hljs-value"><span class="hljs-string">"2017-12-25T04:30:00.000Z"</span></span>,
+    "<span class="hljs-attribute">tourNumber</span>": <span class="hljs-value"><span class="hljs-string">"133"</span>
   </span>}
 ]</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">$schema</span>": <span class="hljs-value"><span class="hljs-string">"http://json-schema.org/draft-04/schema#"</span></span>,
-  "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span>
+  "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
+  "<span class="hljs-attribute">items</span>": <span class="hljs-value">[
+    {
+      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+      "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">checkinCount</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"入場済数"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">checkinCountsByWhere</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
+          "<span class="hljs-attribute">items</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+            "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">checkinCountsByTicketType</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
+                "<span class="hljs-attribute">items</span>": <span class="hljs-value">{
+                  "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                  "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">count</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span></span>,
+                      "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"入場数"</span>
+                    </span>}</span>,
+                    "<span class="hljs-attribute">ticketCategory</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+                      "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"券種カテゴリー"</span>
+                    </span>}</span>,
+                    "<span class="hljs-attribute">ticketType</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+                      "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"券種ID"</span>
+                    </span>}
+                  </span>}</span>,
+                  "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                    <span class="hljs-string">"count"</span>,
+                    <span class="hljs-string">"ticketCategory"</span>,
+                    <span class="hljs-string">"ticketType"</span>
+                  ]
+                </span>}</span>,
+                "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"券種ごとの入場数"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">where</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+                "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"入場ゲート識別子"</span>
+              </span>}
+            </span>}</span>,
+            "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+              <span class="hljs-string">"where"</span>
+            ]
+          </span>}</span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"入場ゲートごとの入場数"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">duration</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"ツアー時間"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">endDate</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"ツアー終了日時"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">evServiceStatus</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"エレベーター運転ステータス"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">id</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"パフォーマンスID"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">onlineSalesStatus</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"オンライン販売ステータス"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">reservationCount</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"予約数"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">reservationCountsByTicketType</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
+          "<span class="hljs-attribute">items</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+            "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">count</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span></span>,
+                "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"予約数"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">ticketType</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+                "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"券種ID"</span>
+              </span>}
+            </span>}</span>,
+            "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+              <span class="hljs-string">"count"</span>,
+              <span class="hljs-string">"ticketType"</span>
+            ]
+          </span>}</span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"券種ごとの予約数"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">startDate</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"ツアー開始日時"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">tourNumber</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"ツアーナンバー"</span>
+        </span>}
+      </span>}</span>,
+      "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+        <span class="hljs-string">"checkinCount"</span>,
+        <span class="hljs-string">"duration"</span>,
+        <span class="hljs-string">"endDate"</span>,
+        <span class="hljs-string">"evServiceStatus"</span>,
+        <span class="hljs-string">"id"</span>,
+        <span class="hljs-string">"onlineSalesStatus"</span>,
+        <span class="hljs-string">"reservationCount"</span>,
+        <span class="hljs-string">"startDate"</span>,
+        <span class="hljs-string">"tourNumber"</span>
+      ]
+    </span>},
+    {
+      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+      "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">checkinCount</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"入場済数"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">checkinCountsByWhere</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
+          "<span class="hljs-attribute">items</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+            "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">checkinCountsByTicketType</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
+                "<span class="hljs-attribute">items</span>": <span class="hljs-value">{
+                  "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                  "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">count</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span></span>,
+                      "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"入場数"</span>
+                    </span>}</span>,
+                    "<span class="hljs-attribute">ticketCategory</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+                      "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"券種カテゴリー"</span>
+                    </span>}</span>,
+                    "<span class="hljs-attribute">ticketType</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+                      "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"券種ID"</span>
+                    </span>}
+                  </span>}</span>,
+                  "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                    <span class="hljs-string">"count"</span>,
+                    <span class="hljs-string">"ticketCategory"</span>,
+                    <span class="hljs-string">"ticketType"</span>
+                  ]
+                </span>}</span>,
+                "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"券種ごとの入場数"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">where</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+                "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"入場ゲート識別子"</span>
+              </span>}
+            </span>}</span>,
+            "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+              <span class="hljs-string">"where"</span>
+            ]
+          </span>}</span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"入場ゲートごとの入場数"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">duration</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"ツアー時間"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">endDate</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"ツアー終了日時"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">evServiceStatus</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"エレベーター運転ステータス"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">id</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"パフォーマンスID"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">onlineSalesStatus</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"オンライン販売ステータス"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">reservationCount</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"予約数"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">reservationCountsByTicketType</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
+          "<span class="hljs-attribute">items</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+            "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">count</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span></span>,
+                "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"予約数"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">ticketType</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+                "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"券種ID"</span>
+              </span>}
+            </span>}</span>,
+            "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+              <span class="hljs-string">"count"</span>,
+              <span class="hljs-string">"ticketType"</span>
+            ]
+          </span>}</span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"券種ごとの予約数"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">startDate</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"ツアー開始日時"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">tourNumber</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"ツアーナンバー"</span>
+        </span>}
+      </span>}</span>,
+      "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+        <span class="hljs-string">"checkinCount"</span>,
+        <span class="hljs-string">"duration"</span>,
+        <span class="hljs-string">"endDate"</span>,
+        <span class="hljs-string">"evServiceStatus"</span>,
+        <span class="hljs-string">"id"</span>,
+        <span class="hljs-string">"onlineSalesStatus"</span>,
+        <span class="hljs-string">"reservationCount"</span>,
+        <span class="hljs-string">"startDate"</span>,
+        <span class="hljs-string">"tourNumber"</span>
+      ]
+    </span>}
+  ]
 </span>}</code></pre><div style="height: 1px;"></div></div></div></div><div class="tab"><div><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">error</span>": <span class="hljs-value">{
     "<span class="hljs-attribute">code</span>": <span class="hljs-value"><span class="hljs-number">400</span></span>,

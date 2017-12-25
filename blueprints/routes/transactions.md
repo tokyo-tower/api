@@ -58,7 +58,7 @@ This action requires an `access_token` with `transactions` scope.
 
 
 
-## 座席仮予約 [/transactions/{transactionId}/actions/authorize/seatReservation]
+## 座席仮予約 [/transactions/placeOrder/{transactionId}/actions/authorize/seatReservation]
 
 + Parameters
     + transactionId: `59119065e3157c1884d3c333` (string, required) - 取引ID
@@ -90,7 +90,7 @@ This action requires an `access_token` with `transactions.authorizations` scope.
 
 
 
-## 座席仮予約 [/transactions/{transactionId}/actions/authorize/seatReservation/{actionId}]
+## 座席仮予約 [/transactions/placeOrder/{transactionId}/actions/authorize/seatReservation/{actionId}]
 
 + Parameters
     + transactionId: `59119065e3157c1884d3c333` (string, required) - 取引ID
@@ -114,7 +114,7 @@ This action requires an `access_token` with `transactions` scope.
 
 
 
-## 購入者情報登録 [/transactions/{transactionId}/customerContact]
+## 購入者情報登録 [/transactions/placeOrder/{transactionId}/customerContact]
 
 + Parameters
     + transactionId: `59119065e3157c1884d3c333` (string, required) - 取引ID
@@ -163,7 +163,7 @@ This action requires an `access_token` with `transactions` scope.
 
 
 
-## 注文取引確定 [/transactions/{transactionId}/confirm]
+## 注文取引確定 [/transactions/placeOrder/{transactionId}/confirm]
 
 + Parameters
     + transactionId: `59119065e3157c1884d3c333` (string, required) - 取引ID

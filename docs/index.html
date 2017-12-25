@@ -514,10 +514,271 @@
     ]</span>,
     "<span class="hljs-attribute">startDate</span>": <span class="hljs-value"><span class="hljs-string">"2017-12-25T04:30:00.000Z"</span></span>,
     "<span class="hljs-attribute">tourNumber</span>": <span class="hljs-value"><span class="hljs-string">"133"</span>
+  </span>},
+  {
+    "<span class="hljs-attribute">checkinCount</span>": <span class="hljs-value"><span class="hljs-number">0</span></span>,
+    "<span class="hljs-attribute">checkinCountsByWhere</span>": <span class="hljs-value">[
+      {
+        "<span class="hljs-attribute">checkinCountsByTicketType</span>": <span class="hljs-value">[
+          {
+            "<span class="hljs-attribute">count</span>": <span class="hljs-value"><span class="hljs-number">0</span></span>,
+            "<span class="hljs-attribute">ticketCategory</span>": <span class="hljs-value"><span class="hljs-string">"Normal"</span></span>,
+            "<span class="hljs-attribute">ticketType</span>": <span class="hljs-value"><span class="hljs-string">"001"</span>
+          </span>}
+        ]</span>,
+        "<span class="hljs-attribute">where</span>": <span class="hljs-value"><span class="hljs-string">"Staff"</span>
+      </span>}
+    ]</span>,
+    "<span class="hljs-attribute">duration</span>": <span class="hljs-value"><span class="hljs-string">"PT15M"</span></span>,
+    "<span class="hljs-attribute">endDate</span>": <span class="hljs-value"><span class="hljs-string">"2017-12-25T04:45:00.000Z"</span></span>,
+    "<span class="hljs-attribute">evServiceStatus</span>": <span class="hljs-value"><span class="hljs-string">"Normal"</span></span>,
+    "<span class="hljs-attribute">id</span>": <span class="hljs-value"><span class="hljs-string">"171225001001011330"</span></span>,
+    "<span class="hljs-attribute">onlineSalesStatus</span>": <span class="hljs-value"><span class="hljs-string">"Normal"</span></span>,
+    "<span class="hljs-attribute">reservationCount</span>": <span class="hljs-value"><span class="hljs-number">5</span></span>,
+    "<span class="hljs-attribute">reservationCountsByTicketType</span>": <span class="hljs-value">[
+      {
+        "<span class="hljs-attribute">count</span>": <span class="hljs-value"><span class="hljs-number">5</span></span>,
+        "<span class="hljs-attribute">ticketType</span>": <span class="hljs-value"><span class="hljs-string">"001"</span>
+      </span>}
+    ]</span>,
+    "<span class="hljs-attribute">startDate</span>": <span class="hljs-value"><span class="hljs-string">"2017-12-25T04:30:00.000Z"</span></span>,
+    "<span class="hljs-attribute">tourNumber</span>": <span class="hljs-value"><span class="hljs-string">"133"</span>
   </span>}
 ]</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">$schema</span>": <span class="hljs-value"><span class="hljs-string">"http://json-schema.org/draft-04/schema#"</span></span>,
-  "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span>
+  "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
+  "<span class="hljs-attribute">items</span>": <span class="hljs-value">[
+    {
+      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+      "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">checkinCount</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"入場済数"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">checkinCountsByWhere</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
+          "<span class="hljs-attribute">items</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+            "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">checkinCountsByTicketType</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
+                "<span class="hljs-attribute">items</span>": <span class="hljs-value">{
+                  "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                  "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">count</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span></span>,
+                      "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"入場数"</span>
+                    </span>}</span>,
+                    "<span class="hljs-attribute">ticketCategory</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+                      "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"券種カテゴリー"</span>
+                    </span>}</span>,
+                    "<span class="hljs-attribute">ticketType</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+                      "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"券種ID"</span>
+                    </span>}
+                  </span>}</span>,
+                  "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                    <span class="hljs-string">"count"</span>,
+                    <span class="hljs-string">"ticketCategory"</span>,
+                    <span class="hljs-string">"ticketType"</span>
+                  ]
+                </span>}</span>,
+                "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"券種ごとの入場数"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">where</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+                "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"入場ゲート識別子"</span>
+              </span>}
+            </span>}</span>,
+            "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+              <span class="hljs-string">"where"</span>
+            ]
+          </span>}</span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"入場ゲートごとの入場数"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">duration</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"ツアー時間"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">endDate</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"ツアー終了日時"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">evServiceStatus</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"エレベーター運転ステータス"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">id</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"パフォーマンスID"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">onlineSalesStatus</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"オンライン販売ステータス"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">reservationCount</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"予約数"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">reservationCountsByTicketType</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
+          "<span class="hljs-attribute">items</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+            "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">count</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span></span>,
+                "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"予約数"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">ticketType</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+                "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"券種ID"</span>
+              </span>}
+            </span>}</span>,
+            "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+              <span class="hljs-string">"count"</span>,
+              <span class="hljs-string">"ticketType"</span>
+            ]
+          </span>}</span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"券種ごとの予約数"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">startDate</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"ツアー開始日時"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">tourNumber</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"ツアーナンバー"</span>
+        </span>}
+      </span>}</span>,
+      "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+        <span class="hljs-string">"checkinCount"</span>,
+        <span class="hljs-string">"duration"</span>,
+        <span class="hljs-string">"endDate"</span>,
+        <span class="hljs-string">"evServiceStatus"</span>,
+        <span class="hljs-string">"id"</span>,
+        <span class="hljs-string">"onlineSalesStatus"</span>,
+        <span class="hljs-string">"reservationCount"</span>,
+        <span class="hljs-string">"startDate"</span>,
+        <span class="hljs-string">"tourNumber"</span>
+      ]
+    </span>},
+    {
+      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+      "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">checkinCount</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"入場済数"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">checkinCountsByWhere</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
+          "<span class="hljs-attribute">items</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+            "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">checkinCountsByTicketType</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
+                "<span class="hljs-attribute">items</span>": <span class="hljs-value">{
+                  "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+                  "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+                    "<span class="hljs-attribute">count</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span></span>,
+                      "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"入場数"</span>
+                    </span>}</span>,
+                    "<span class="hljs-attribute">ticketCategory</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+                      "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"券種カテゴリー"</span>
+                    </span>}</span>,
+                    "<span class="hljs-attribute">ticketType</span>": <span class="hljs-value">{
+                      "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+                      "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"券種ID"</span>
+                    </span>}
+                  </span>}</span>,
+                  "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+                    <span class="hljs-string">"count"</span>,
+                    <span class="hljs-string">"ticketCategory"</span>,
+                    <span class="hljs-string">"ticketType"</span>
+                  ]
+                </span>}</span>,
+                "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"券種ごとの入場数"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">where</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+                "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"入場ゲート識別子"</span>
+              </span>}
+            </span>}</span>,
+            "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+              <span class="hljs-string">"where"</span>
+            ]
+          </span>}</span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"入場ゲートごとの入場数"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">duration</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"ツアー時間"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">endDate</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"ツアー終了日時"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">evServiceStatus</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"エレベーター運転ステータス"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">id</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"パフォーマンスID"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">onlineSalesStatus</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"オンライン販売ステータス"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">reservationCount</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"予約数"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">reservationCountsByTicketType</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"array"</span></span>,
+          "<span class="hljs-attribute">items</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
+            "<span class="hljs-attribute">properties</span>": <span class="hljs-value">{
+              "<span class="hljs-attribute">count</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"number"</span></span>,
+                "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"予約数"</span>
+              </span>}</span>,
+              "<span class="hljs-attribute">ticketType</span>": <span class="hljs-value">{
+                "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+                "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"券種ID"</span>
+              </span>}
+            </span>}</span>,
+            "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+              <span class="hljs-string">"count"</span>,
+              <span class="hljs-string">"ticketType"</span>
+            ]
+          </span>}</span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"券種ごとの予約数"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">startDate</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"ツアー開始日時"</span>
+        </span>}</span>,
+        "<span class="hljs-attribute">tourNumber</span>": <span class="hljs-value">{
+          "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
+          "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"ツアーナンバー"</span>
+        </span>}
+      </span>}</span>,
+      "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
+        <span class="hljs-string">"checkinCount"</span>,
+        <span class="hljs-string">"duration"</span>,
+        <span class="hljs-string">"endDate"</span>,
+        <span class="hljs-string">"evServiceStatus"</span>,
+        <span class="hljs-string">"id"</span>,
+        <span class="hljs-string">"onlineSalesStatus"</span>,
+        <span class="hljs-string">"reservationCount"</span>,
+        <span class="hljs-string">"startDate"</span>,
+        <span class="hljs-string">"tourNumber"</span>
+      ]
+    </span>}
+  ]
 </span>}</code></pre><div style="height: 1px;"></div></div></div></div><div class="tab"><div><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">error</span>": <span class="hljs-value">{
     "<span class="hljs-attribute">code</span>": <span class="hljs-value"><span class="hljs-number">400</span></span>,
@@ -792,7 +1053,7 @@
 <div class="note">
 <p>販売者識別子は、固定で<code>TokyoTower</code>を入力してください。</p>
 </div>
-</div></div><hr class="split"><div class="middle"><div id="transactions-座席仮予約" class="resource"><h3 class="resource-heading">座席仮予約 <a href="#transactions-座席仮予約" class="permalink">&para;</a></h3></div></div><div class="right"><div class="definition"><span class="method post">POST</span>&nbsp;<span class="uri"><span class="hostname">https://ttts-api-development.azurewebsites.net</span>/transactions/<span class="hljs-attribute" title="transactionId">59119065e3157c1884d3c333</span>/actions/authorize/seatReservation</span></div><div class="tabs"><div class="example-names"><span>Requests</span><span class="tab-button">example 1</span></div><div class="tab"><div><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span><br><span class="hljs-attribute">Authentication</span>: <span class="hljs-string">Bearer JWT</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
+</div></div><hr class="split"><div class="middle"><div id="transactions-座席仮予約" class="resource"><h3 class="resource-heading">座席仮予約 <a href="#transactions-座席仮予約" class="permalink">&para;</a></h3></div></div><div class="right"><div class="definition"><span class="method post">POST</span>&nbsp;<span class="uri"><span class="hostname">https://ttts-api-development.azurewebsites.net</span>/transactions/placeOrder/<span class="hljs-attribute" title="transactionId">59119065e3157c1884d3c333</span>/actions/authorize/seatReservation</span></div><div class="tabs"><div class="example-names"><span>Requests</span><span class="tab-button">example 1</span></div><div class="tab"><div><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span><br><span class="hljs-attribute">Authentication</span>: <span class="hljs-string">Bearer JWT</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">performance_id</span>": <span class="hljs-value"><span class="hljs-string">"59119065e3157c1884d3c333"</span></span>,
   "<span class="hljs-attribute">offers</span>": <span class="hljs-value">[
     {
@@ -1027,14 +1288,14 @@
       ]
     </span>}
   </span>}
-</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></div></div></div><div class="middle"><div id="transactions-座席仮予約-post" class="action post"><h4 class="action-heading"><div class="name">座席仮予約</div><a href="#transactions-座席仮予約-post" class="method post">POST</a><code class="uri">/transactions/{transactionId}/actions/authorize/seatReservation</code></h4><p>パフォーマンス指定で座席を仮予約します。複数座席予約の場合は、座席分のofferを投げてください。
+</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></div></div></div><div class="middle"><div id="transactions-座席仮予約-post" class="action post"><h4 class="action-heading"><div class="name">座席仮予約</div><a href="#transactions-座席仮予約-post" class="method post">POST</a><code class="uri">/transactions/placeOrder/{transactionId}/actions/authorize/seatReservation</code></h4><p>パフォーマンス指定で座席を仮予約します。複数座席予約の場合は、座席分のofferを投げてください。
 本リクエストのレスポンスに含まれる仮予約IDは、仮予約削除の際に必要になります。アプリケーション側で大切に管理してください。<br>
 空席がない場合、ステータスコード409を返却します。</p>
 <div class="note">
 <p>This action requires an <code>access_token</code> with <code>transactions.authorizations</code> scope.</p>
 </div>
 <div class="title"><strong>URI Parameters</strong><div class="collapse-button show"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><dl class="inner"><dt>transactionId</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>59119065e3157c1884d3c333</span></span><p>取引ID</p>
-</dd></dl></div></div></div><hr class="split"><div class="middle"><div id="transactions-座席仮予約-1" class="resource"><h3 class="resource-heading">座席仮予約 <a href="#transactions-座席仮予約-1" class="permalink">&para;</a></h3></div></div><div class="right"><div class="definition"><span class="method delete">DELETE</span>&nbsp;<span class="uri"><span class="hostname">https://ttts-api-development.azurewebsites.net</span>/transactions/<span class="hljs-attribute" title="transactionId">59119065e3157c1884d3c333</span>/actions/authorize/seatReservation/<span class="hljs-attribute" title="actionId">59119065e3157c1884d3c333</span></span></div><div class="tabs"><div class="example-names"><span>Requests</span><span class="tab-button">example 1</span></div><div class="tab"><div><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span><br><span class="hljs-attribute">Authentication</span>: <span class="hljs-string">Bearer JWT</span></code></pre><div style="height: 1px;"></div></div></div><div class="tabs"><div class="example-names"><span>Responses</span><span class="tab-button">204</span><span class="tab-button">400</span><span class="tab-button">404</span></div><div class="tab"><div><div class="inner"><div class="description text-muted">This response has no content.</div><div style="height: 1px;"></div></div></div></div><div class="tab"><div><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
+</dd></dl></div></div></div><hr class="split"><div class="middle"><div id="transactions-座席仮予約-1" class="resource"><h3 class="resource-heading">座席仮予約 <a href="#transactions-座席仮予約-1" class="permalink">&para;</a></h3></div></div><div class="right"><div class="definition"><span class="method delete">DELETE</span>&nbsp;<span class="uri"><span class="hostname">https://ttts-api-development.azurewebsites.net</span>/transactions/placeOrder/<span class="hljs-attribute" title="transactionId">59119065e3157c1884d3c333</span>/actions/authorize/seatReservation/<span class="hljs-attribute" title="actionId">59119065e3157c1884d3c333</span></span></div><div class="tabs"><div class="example-names"><span>Requests</span><span class="tab-button">example 1</span></div><div class="tab"><div><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span><br><span class="hljs-attribute">Authentication</span>: <span class="hljs-string">Bearer JWT</span></code></pre><div style="height: 1px;"></div></div></div><div class="tabs"><div class="example-names"><span>Responses</span><span class="tab-button">204</span><span class="tab-button">400</span><span class="tab-button">404</span></div><div class="tab"><div><div class="inner"><div class="description text-muted">This response has no content.</div><div style="height: 1px;"></div></div></div></div><div class="tab"><div><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">error</span>": <span class="hljs-value">{
     "<span class="hljs-attribute">code</span>": <span class="hljs-value"><span class="hljs-number">400</span></span>,
     "<span class="hljs-attribute">errors</span>": <span class="hljs-value">[
@@ -1154,13 +1415,13 @@
       ]
     </span>}
   </span>}
-</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></div></div></div><div class="middle"><div id="transactions-座席仮予約-delete" class="action delete"><h4 class="action-heading"><div class="name">座席仮予約解除</div><a href="#transactions-座席仮予約-delete" class="method delete">DELETE</a><code class="uri">/transactions/{transactionId}/actions/authorize/seatReservation/{actionId}</code></h4><p>仮予約を解除します。仮予約を解除された座席は、即座に空席として解放されます。</p>
+</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></div></div></div><div class="middle"><div id="transactions-座席仮予約-delete" class="action delete"><h4 class="action-heading"><div class="name">座席仮予約解除</div><a href="#transactions-座席仮予約-delete" class="method delete">DELETE</a><code class="uri">/transactions/placeOrder/{transactionId}/actions/authorize/seatReservation/{actionId}</code></h4><p>仮予約を解除します。仮予約を解除された座席は、即座に空席として解放されます。</p>
 <div class="note">
 <p>This action requires an <code>access_token</code> with <code>transactions</code> scope.</p>
 </div>
 <div class="title"><strong>URI Parameters</strong><div class="collapse-button show"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><dl class="inner"><dt>transactionId</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>59119065e3157c1884d3c333</span></span><p>取引ID</p>
 </dd><dt>actionId</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>59119065e3157c1884d3c333</span></span><p>仮予約アクションID</p>
-</dd></dl></div></div></div><hr class="split"><div class="middle"><div id="transactions-購入者情報登録" class="resource"><h3 class="resource-heading">購入者情報登録 <a href="#transactions-購入者情報登録" class="permalink">&para;</a></h3></div></div><div class="right"><div class="definition"><span class="method put">PUT</span>&nbsp;<span class="uri"><span class="hostname">https://ttts-api-development.azurewebsites.net</span>/transactions/<span class="hljs-attribute" title="transactionId">59119065e3157c1884d3c333</span>/customerContact</span></div><div class="tabs"><div class="example-names"><span>Requests</span><span class="tab-button">example 1</span></div><div class="tab"><div><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span><br><span class="hljs-attribute">Authentication</span>: <span class="hljs-string">Bearer JWT</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
+</dd></dl></div></div></div><hr class="split"><div class="middle"><div id="transactions-購入者情報登録" class="resource"><h3 class="resource-heading">購入者情報登録 <a href="#transactions-購入者情報登録" class="permalink">&para;</a></h3></div></div><div class="right"><div class="definition"><span class="method put">PUT</span>&nbsp;<span class="uri"><span class="hostname">https://ttts-api-development.azurewebsites.net</span>/transactions/placeOrder/<span class="hljs-attribute" title="transactionId">59119065e3157c1884d3c333</span>/customerContact</span></div><div class="tabs"><div class="example-names"><span>Requests</span><span class="tab-button">example 1</span></div><div class="tab"><div><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span><br><span class="hljs-attribute">Authentication</span>: <span class="hljs-string">Bearer JWT</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">last_name</span>": <span class="hljs-value"><span class="hljs-string">"せい"</span></span>,
   "<span class="hljs-attribute">first_name</span>": <span class="hljs-value"><span class="hljs-string">"めい"</span></span>,
   "<span class="hljs-attribute">email</span>": <span class="hljs-value"><span class="hljs-string">"hello@example.com"</span></span>,
@@ -1374,7 +1635,7 @@
       ]
     </span>}
   </span>}
-</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></div></div></div><div class="middle"><div id="transactions-購入者情報登録-put" class="action put"><h4 class="action-heading"><div class="name">購入者情報登録</div><a href="#transactions-購入者情報登録-put" class="method put">PUT</a><code class="uri">/transactions/{transactionId}/customerContact</code></h4><p>取引の購入者情報を登録します。</p>
+</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></div></div></div><div class="middle"><div id="transactions-購入者情報登録-put" class="action put"><h4 class="action-heading"><div class="name">購入者情報登録</div><a href="#transactions-購入者情報登録-put" class="method put">PUT</a><code class="uri">/transactions/placeOrder/{transactionId}/customerContact</code></h4><p>取引の購入者情報を登録します。</p>
 <div class="note">
 <p>This action requires an <code>access_token</code> with <code>transactions</code> scope.</p>
 </div>
@@ -1404,7 +1665,7 @@
 <p>窓口購入等で購入者情報が不要の場合、適宜固定値を渡してください。</p>
 </div>
 <div class="title"><strong>URI Parameters</strong><div class="collapse-button show"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><dl class="inner"><dt>transactionId</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>59119065e3157c1884d3c333</span></span><p>取引ID</p>
-</dd></dl></div></div></div><hr class="split"><div class="middle"><div id="transactions-注文取引確定" class="resource"><h3 class="resource-heading">注文取引確定 <a href="#transactions-注文取引確定" class="permalink">&para;</a></h3></div></div><div class="right"><div class="definition"><span class="method post">POST</span>&nbsp;<span class="uri"><span class="hostname">https://ttts-api-development.azurewebsites.net</span>/transactions/<span class="hljs-attribute" title="transactionId">59119065e3157c1884d3c333</span>/confirm</span></div><div class="tabs"><div class="example-names"><span>Requests</span><span class="tab-button">example 1</span></div><div class="tab"><div><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span><br><span class="hljs-attribute">Authentication</span>: <span class="hljs-string">Bearer JWT</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
+</dd></dl></div></div></div><hr class="split"><div class="middle"><div id="transactions-注文取引確定" class="resource"><h3 class="resource-heading">注文取引確定 <a href="#transactions-注文取引確定" class="permalink">&para;</a></h3></div></div><div class="right"><div class="definition"><span class="method post">POST</span>&nbsp;<span class="uri"><span class="hostname">https://ttts-api-development.azurewebsites.net</span>/transactions/placeOrder/<span class="hljs-attribute" title="transactionId">59119065e3157c1884d3c333</span>/confirm</span></div><div class="tabs"><div class="example-names"><span>Requests</span><span class="tab-button">example 1</span></div><div class="tab"><div><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span><br><span class="hljs-attribute">Authentication</span>: <span class="hljs-string">Bearer JWT</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">payment_method</span>": <span class="hljs-value"><span class="hljs-string">"Cash"</span>
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">$schema</span>": <span class="hljs-value"><span class="hljs-string">"http://json-schema.org/draft-04/schema#"</span></span>,
@@ -1577,7 +1838,7 @@
       ]
     </span>}
   </span>}
-</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></div></div></div><div class="middle"><div id="transactions-注文取引確定-post" class="action post"><h4 class="action-heading"><div class="name">注文取引確定</div><a href="#transactions-注文取引確定-post" class="method post">POST</a><code class="uri">/transactions/{transactionId}/confirm</code></h4><p>注文取引を確定します。
+</span>}</code></pre><div style="height: 1px;"></div></div></div></div></div></div></div></div><div class="middle"><div id="transactions-注文取引確定-post" class="action post"><h4 class="action-heading"><div class="name">注文取引確定</div><a href="#transactions-注文取引確定-post" class="method post">POST</a><code class="uri">/transactions/placeOrder/{transactionId}/confirm</code></h4><p>注文取引を確定します。
 有効期限を超過していた場合、ステータスコード404を返却します。</p>
 <div class="note">
 <p>This action requires an <code>access_token</code> with <code>transactions</code> scope.</p>

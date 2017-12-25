@@ -95,7 +95,7 @@ example:
 パフォーマンスを検索します。レスポンスには、パフォーマンスごとの、予約と入場の集計データが含まれます。
 
 + Response 200 (application/json)
-    + Attributes (array)
-        + (Performances.PerformanceWithAggregation) - パフォーマンスリスト
+    + Attributes (array[Performances.PerformanceWithAggregation], fixed-type)
+        + (Performances.PerformanceWithAggregation) - パフォーマンス情報
 
 <!-- include(../response/400.md) -->
