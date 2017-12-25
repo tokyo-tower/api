@@ -51,4 +51,6 @@ HOST: https://ttts-api-development.azurewebsites.net
 
 <!-- include(routes/transactions.md) -->
 
+<!-- include(routes/places.md) -->
+
 <!-- include(routes/404.md) -->
