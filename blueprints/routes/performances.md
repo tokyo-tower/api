@@ -27,6 +27,31 @@
     + refund_status: `None` (string, required) - 返金ステータス
     + ev_service_status: `Normal` (string, required) - 停止ステータス
 
+## Performances.ICheckinCountByTicketType
++ count: 0 (number, required) - 入場数
++ ticketCategory: `Normal` (string, required) - 券種カテゴリー
++ ticketType: `001` (string, required) - 券種ID
+
+## Performances.ICheckinCountByWhere
++ checkinCountsByTicketType (array[Performances.ICheckinCountByTicketType], fixed-type) - 券種ごとの入場数
++ where: `Staff` (string, required) - 入場ゲート識別子
+
+## Performances.IReservationCountByTicketType
++ count: 5 (number, required) - 予約数
++ ticketType: `001` (string, required) - 券種ID
+
+## Performances.PerformanceWithAggregation
++ checkinCount: 0 (number, required) - 入場済数
++ checkinCountsByWhere (array[Performances.ICheckinCountByWhere], fixed-type) - 入場ゲートごとの入場数
++ duration: `PT15M` (string, required) - ツアー時間
++ endDate: `2017-12-25T04:45:00.000Z` (string, required) - ツアー終了日時
++ evServiceStatus: `Normal` (string, required) - エレベーター運転ステータス
++ id: `171225001001011330` (string, required) - パフォーマンスID
++ onlineSalesStatus: `Normal` (string, required) - オンライン販売ステータス
++ reservationCount: 5 (number, required) - 予約数
++ reservationCountsByTicketType (array[Performances.IReservationCountByTicketType], fixed-type) - 券種ごとの予約数
++ startDate: `2017-12-25T04:30:00.000Z` (string, required) - ツアー開始日時
++ tourNumber: `133` (string, required) - ツアーナンバー
 
 
 # Group Performances
@@ -56,5 +81,21 @@ example:
 + Response 200 (application/json)
     + Attributes
         + data: (array[Performances.Performance], fixed-type) - パフォーマンスリスト
+
+<!-- include(../response/400.md) -->
+
+
+## 集計データつきパフォーマンス検索 [/preview/performancesWithAggregation{?startFrom,startThrough}]
+
++ Parameters
+    + startFrom: `2017-11-14T04:00:00.000Z` (string, optional) - いつ以降に開始のツアーか
+    + startThrough: `2017-11-14T05:00:00.000Z` (string, optional) - いつ以前に開始のツアーか
+
+### 集計データつきパフォーマンス検索 [GET]
+パフォーマンスを検索します。レスポンスには、パフォーマンスごとの、予約と入場の集計データが含まれます。
+
++ Response 200 (application/json)
+    + Attributes (array)
+        + (Performances.PerformanceWithAggregation) - パフォーマンスリスト
 
 <!-- include(../response/400.md) -->
