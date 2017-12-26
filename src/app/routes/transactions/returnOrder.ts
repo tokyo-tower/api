@@ -51,7 +51,8 @@ returnOrderTransactionsRouter.post(
                 agentId: req.user.sub,
                 transactionId: placeOrderTransaction.id,
                 cancellationFee: req.body.cancellation_fee,
-                forcibly: false
+                forcibly: false,
+                reason: ttts.factory.transaction.returnOrder.Reason.Customer
             })(transactionRepo);
             debug('returnOrder　transaction confirmed.');
 

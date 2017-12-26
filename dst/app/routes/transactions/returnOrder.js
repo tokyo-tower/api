@@ -48,7 +48,8 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
             agentId: req.user.sub,
             transactionId: placeOrderTransaction.id,
             cancellationFee: req.body.cancellation_fee,
-            forcibly: false
+            forcibly: false,
+            reason: ttts.factory.transaction.returnOrder.Reason.Customer
         })(transactionRepo);
         debug('returnOrder　transaction confirmed.');
         res.status(http_status_1.ACCEPTED).end();
