@@ -14,7 +14,7 @@
     "source": {
         "include": [
             "README.md",
-            "app"
+            "dst/app"
         ],
         "exclude": []
     },
@@ -24,7 +24,7 @@
         "dateFormat": "ddd MMM Do YYYY",
         "outputSourceFiles": true,
         "outputSourcePath": true,
-        "systemName": "元祖興行パッケージチケット予約システムAPIアプリケーション",
+        "systemName": "東京タワーチケット予約システムAPIアプリケーション",
         "footer": "",
         "navType": "vertical",
         "theme": "cosmo",

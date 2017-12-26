@@ -2,7 +2,7 @@ node_modules/
 npm-debug.log*
 iisnode/
 .env*
-docs/
+doc/
 .vscode/
 coverage/
 .nyc_output/
