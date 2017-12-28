@@ -24,6 +24,14 @@ returnOrderTransactionsRouter.use(authentication);
 returnOrderTransactionsRouter.post(
     '/confirm',
     permitScopes(['transactions']),
+    (req, __, next) => {
+        req.checkBody('performance_day', 'invalid performance_day').notEmpty().withMessage('performance_day is required');
+        req.checkBody('payment_no', 'invalid payment_no').notEmpty().withMessage('payment_no is required');
+        req.checkBody('cancellation_fee', 'invalid cancellation_fee').notEmpty().withMessage('cancellation_fee is required').isInt();
+        req.checkBody('forcibly', 'invalid forcibly').notEmpty().withMessage('forcibly is required').isBoolean();
+
+        next();
+    },
     validator,
     async (req, res, next) => {
         try {
@@ -51,7 +59,7 @@ returnOrderTransactionsRouter.post(
                 agentId: req.user.sub,
                 transactionId: placeOrderTransaction.id,
                 cancellationFee: req.body.cancellation_fee,
-                forcibly: false,
+                forcibly: req.body.forcibly,
                 reason: ttts.factory.transaction.returnOrder.Reason.Customer
             })(transactionRepo);
             debug('returnOrder　transaction confirmed.');

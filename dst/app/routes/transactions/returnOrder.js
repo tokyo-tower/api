@@ -25,7 +25,13 @@ returnOrderTransactionsRouter.use(authentication_1.default);
 /**
  * 上映日と購入番号で返品
  */
-returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transactions']), (req, __, next) => {
+    req.checkBody('performance_day', 'invalid performance_day').notEmpty().withMessage('performance_day is required');
+    req.checkBody('payment_no', 'invalid payment_no').notEmpty().withMessage('payment_no is required');
+    req.checkBody('cancellation_fee', 'invalid cancellation_fee').notEmpty().withMessage('cancellation_fee is required').isInt();
+    req.checkBody('forcibly', 'invalid forcibly').notEmpty().withMessage('forcibly is required').isBoolean();
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const transactionRepo = new ttts.repository.Transaction(ttts.mongoose.connection);
         // POS購入の取引を検索する
@@ -48,7 +54,7 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
             agentId: req.user.sub,
             transactionId: placeOrderTransaction.id,
             cancellationFee: req.body.cancellation_fee,
-            forcibly: false,
+            forcibly: req.body.forcibly,
             reason: ttts.factory.transaction.returnOrder.Reason.Customer
         })(transactionRepo);
         debug('returnOrder　transaction confirmed.');

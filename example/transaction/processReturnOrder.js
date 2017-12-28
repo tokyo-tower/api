@@ -45,7 +45,8 @@ async function main() {
             body: {
                 performance_day: '20171222',
                 payment_no: '000406',
-                cancellation_fee: 1000
+                cancellation_fee: 1000,
+                forcibly: true
             }
         }
     ).then((body) => body).catch(handleError);
