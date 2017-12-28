@@ -50,7 +50,7 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
         });
         debug('placeOrder transaction found.');
         // 取引があれば、返品取引確定
-        yield ttts.service.transaction.returnOrder.confirm({
+        const returnOrderTransaction = yield ttts.service.transaction.returnOrder.confirm({
             agentId: req.user.sub,
             transactionId: placeOrderTransaction.id,
             cancellationFee: req.body.cancellation_fee,
@@ -58,7 +58,9 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
             reason: ttts.factory.transaction.returnOrder.Reason.Customer
         })(transactionRepo);
         debug('returnOrder　transaction confirmed.');
-        res.status(http_status_1.ACCEPTED).end();
+        res.status(http_status_1.CREATED).json({
+            id: returnOrderTransaction.id
+        });
     }
     catch (error) {
         next(error);

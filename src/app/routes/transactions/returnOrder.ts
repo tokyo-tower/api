@@ -6,7 +6,7 @@
 import * as ttts from '@motionpicture/ttts-domain';
 import * as createDebug from 'debug';
 import { Router } from 'express';
-import { ACCEPTED } from 'http-status';
+import { CREATED } from 'http-status';
 
 const returnOrderTransactionsRouter = Router();
 
@@ -55,7 +55,7 @@ returnOrderTransactionsRouter.post(
             debug('placeOrder transaction found.');
 
             // 取引があれば、返品取引確定
-            await ttts.service.transaction.returnOrder.confirm({
+            const returnOrderTransaction = await ttts.service.transaction.returnOrder.confirm({
                 agentId: req.user.sub,
                 transactionId: placeOrderTransaction.id,
                 cancellationFee: req.body.cancellation_fee,
@@ -64,7 +64,9 @@ returnOrderTransactionsRouter.post(
             })(transactionRepo);
             debug('returnOrder　transaction confirmed.');
 
-            res.status(ACCEPTED).end();
+            res.status(CREATED).json({
+                id: returnOrderTransaction.id
+            });
         } catch (error) {
             next(error);
         }
