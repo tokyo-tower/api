@@ -197,15 +197,19 @@ This action requires an `access_token` with `transactions` scope.
 
 
 
-## 返品取引開始 [/transactions/returnOrder/confirm]
+## 返品取引 [/transactions/returnOrder/confirm]
 
-### 返品取引開始 [POST]
+### 返品取引確定 [POST]
 上映日と購入番号から本予約を取り消します。  
 該当予約がない場合、ステータスコード404を返却します。
 また、すでに返品済の場合、ステータスコード409を返却します。
 
 ::: note
 This action requires an `access_token` with `reservations` scope.
+:::
+
+::: note
+ツアー開演日までの残日数等、キャンセル対象条件を満たしているかどうかチェックしない場合、forciblyをtrueとしてリクエストしてください。
 :::
 
 + Request (application/json)
@@ -216,8 +220,11 @@ This action requires an `access_token` with `reservations` scope.
         + performance_day: `20170511` (string, required) - 上映日
         + payment_no: `123456` (string, required) - 購入番号
         + cancellation_fee: 1000 (number, required) - キャンセル手数料
+        + forcibly: 1000 (boolean, required) - キャンセル対象に対するバリデーションを無効にするかどうか(trueの場合、無効)
 
-+ Response 202
++ Response 201 (application/json)
+    + Attributes
+        + id: `59119065e3157c1884d3c333` (string, required) - 返品取引ID
 
 <!-- include(../response/400.md) -->
 <!-- include(../response/404.md) -->
