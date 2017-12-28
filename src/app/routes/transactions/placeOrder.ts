@@ -168,6 +168,77 @@ placeOrderTransactionsRouter.delete(
 );
 
 placeOrderTransactionsRouter.post(
+    '/:transactionId/actions/authorize/creditCard',
+    permitScopes(['transactions']),
+    (req, __2, next) => {
+        req.checkBody('orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
+        req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required');
+        req.checkBody('method', 'invalid method').notEmpty().withMessage('gmo_order_id is required');
+        req.checkBody('creditCard', 'invalid creditCard').notEmpty().withMessage('gmo_amount is required');
+
+        next();
+    },
+    validator,
+    async (req, res, next) => {
+        try {
+            // 会員IDを強制的にログイン中の人物IDに変更
+            const creditCard: ttts.service.transaction.placeOrderInProgress.action.authorize.creditCard.ICreditCard4authorizeAction = {
+                ...req.body.creditCard,
+                ...{
+                    memberId: (req.user.username !== undefined) ? req.user.sub : undefined
+                }
+            };
+            debug('authorizing credit card...', creditCard);
+
+            debug('authorizing credit card...', req.body.creditCard);
+            const action = await ttts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(
+                req.user.sub,
+                req.params.transactionId,
+                req.body.orderId,
+                req.body.amount,
+                req.body.method,
+                creditCard
+            )(
+                new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection),
+                new ttts.repository.Organization(ttts.mongoose.connection),
+                new ttts.repository.Transaction(ttts.mongoose.connection)
+                );
+
+            res.status(CREATED).json({
+                id: action.id
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * クレジットカードオーソリ取消
+ */
+placeOrderTransactionsRouter.delete(
+    '/:transactionId/actions/authorize/creditCard/:actionId',
+    permitScopes(['transactions']),
+    validator,
+    async (req, res, next) => {
+        try {
+            await ttts.service.transaction.placeOrderInProgress.action.authorize.creditCard.cancel(
+                req.user.sub,
+                req.params.transactionId,
+                req.params.actionId
+            )(
+                new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection),
+                new ttts.repository.Transaction(ttts.mongoose.connection)
+                );
+
+            res.status(NO_CONTENT).end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+placeOrderTransactionsRouter.post(
     '/:transactionId/confirm',
     permitScopes(['transactions']),
     validator,
@@ -182,7 +253,7 @@ placeOrderTransactionsRouter.post(
                 new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection),
                 new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection)
                 );
-            debug('transaction confirmed.', transactionResult);
+            debug('transaction confirmed.');
 
             res.status(CREATED).json(transactionResult);
         } catch (error) {
