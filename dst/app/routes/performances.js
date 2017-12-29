@@ -52,7 +52,6 @@ performanceRouter.get('', permitScopes_1.default(['performances', 'performances.
                 meta: {
                     number_of_performances: searchPerformanceResult.numberOfPerformances,
                     number_of_films: searchPerformanceResult.filmIds.length
-                    // sales_suspended: searchPerformanceResult.salesSuspended
                 },
                 data: searchPerformanceResult.performances
             });

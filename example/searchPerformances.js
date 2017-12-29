@@ -38,7 +38,6 @@ async function main() {
     ).then((body) => body.data);
     performances.forEach((performance) => {
         console.log('performance found.', performance);
-        console.log('performance found.', performance.attributes.ticket_types);
     });
     console.log(performances.length)
 }
