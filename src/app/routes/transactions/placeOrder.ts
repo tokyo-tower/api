@@ -262,4 +262,46 @@ placeOrderTransactionsRouter.post(
     }
 );
 
+placeOrderTransactionsRouter.post(
+    '/:transactionId/tasks/sendEmailNotification',
+    permitScopes(['transactions']),
+    (req, __2, next) => {
+        req.checkBody('sender.name', 'invalid sender').notEmpty().withMessage('sender.name is required');
+        req.checkBody('sender.email', 'invalid sender').notEmpty().withMessage('sender.email is required');
+        req.checkBody('toRecipient.name', 'invalid toRecipient').notEmpty().withMessage('toRecipient.name is required');
+        req.checkBody('toRecipient.email', 'invalid toRecipient').notEmpty().withMessage('toRecipient.email is required').isEmail();
+        req.checkBody('about', 'invalid about').notEmpty().withMessage('about is required');
+        req.checkBody('text', 'invalid text').notEmpty().withMessage('text is required');
+
+        next();
+    },
+    validator,
+    async (req, res, next) => {
+        try {
+            const task = await ttts.service.transaction.placeOrder.sendEmail(
+                req.params.transactionId,
+                {
+                    sender: {
+                        name: req.body.sender.name,
+                        email: req.body.sender.email
+                    },
+                    toRecipient: {
+                        name: req.body.toRecipient.name,
+                        email: req.body.toRecipient.email
+                    },
+                    about: req.body.about,
+                    text: req.body.text
+                }
+            )(
+                new ttts.repository.Task(ttts.mongoose.connection),
+                new ttts.repository.Transaction(ttts.mongoose.connection)
+                );
+
+            res.status(CREATED).json(task);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 export default placeOrderTransactionsRouter;
