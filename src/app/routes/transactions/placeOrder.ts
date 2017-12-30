@@ -72,7 +72,6 @@ placeOrderTransactionsRouter.put(
         req.checkBody('first_name').notEmpty().withMessage('required');
         req.checkBody('tel').notEmpty().withMessage('required');
         req.checkBody('email').notEmpty().withMessage('required');
-        req.checkBody('gender').notEmpty().withMessage('required');
 
         next();
     },
@@ -87,9 +86,9 @@ placeOrderTransactionsRouter.put(
                     first_name: req.body.first_name,
                     email: req.body.email,
                     tel: req.body.tel,
-                    age: '',
-                    address: '',
-                    gender: req.body.gender
+                    age: (req.body.age !== undefined) ? req.body.age : '',
+                    address: (req.body.address !== undefined) ? req.body.address : '',
+                    gender: (req.body.gender !== undefined) ? req.body.gender : ''
                 }
             )(new ttts.repository.Transaction(ttts.mongoose.connection));
 

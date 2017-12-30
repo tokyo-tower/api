@@ -60,7 +60,6 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
     req.checkBody('first_name').notEmpty().withMessage('required');
     req.checkBody('tel').notEmpty().withMessage('required');
     req.checkBody('email').notEmpty().withMessage('required');
-    req.checkBody('gender').notEmpty().withMessage('required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -69,9 +68,9 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
             first_name: req.body.first_name,
             email: req.body.email,
             tel: req.body.tel,
-            age: '',
-            address: '',
-            gender: req.body.gender
+            age: (req.body.age !== undefined) ? req.body.age : '',
+            address: (req.body.address !== undefined) ? req.body.address : '',
+            gender: (req.body.gender !== undefined) ? req.body.gender : ''
         })(new ttts.repository.Transaction(ttts.mongoose.connection));
         res.status(http_status_1.CREATED).json(contact);
     }
