@@ -93,7 +93,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
                 ticket_type: offer.ticket_type,
                 watcher_name: offer.watcher_name
             };
-        }))(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.Performance(ttts.mongoose.connection), new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection), new ttts.repository.PaymentNo(ttts.mongoose.connection), new ttts.repository.rateLimit.TicketTypeCategory(redisClient));
+        }))(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.Performance(ttts.mongoose.connection), new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection), new ttts.repository.PaymentNo(redisClient), new ttts.repository.rateLimit.TicketTypeCategory(redisClient));
         res.status(http_status_1.CREATED).json(action);
     }
     catch (error) {

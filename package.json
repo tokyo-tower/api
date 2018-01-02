@@ -13,7 +13,7 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/ttts-domain": "^12.0.0-alpha.58",
+    "@motionpicture/ttts-domain": "^12.0.0-alpha.59",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
     "debug": "^3.1.0",
@@ -50,7 +50,7 @@
     "nsp": "^2.8.1",
     "nyc": "^11.4.1",
     "rimraf": "^2.6.2",
-    "snyk": "^1.63.0",
+    "snyk": "^1.64.0",
     "supertest": "^3.0.0",
     "ts-node": "^4.1.0",
     "tslint": "^5.8.0",

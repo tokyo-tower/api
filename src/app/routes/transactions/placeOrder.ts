@@ -129,7 +129,7 @@ placeOrderTransactionsRouter.post(
                 new ttts.repository.Transaction(ttts.mongoose.connection),
                 new ttts.repository.Performance(ttts.mongoose.connection),
                 new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection),
-                new ttts.repository.PaymentNo(ttts.mongoose.connection),
+                new ttts.repository.PaymentNo(redisClient),
                 new ttts.repository.rateLimit.TicketTypeCategory(redisClient)
                 );
 
