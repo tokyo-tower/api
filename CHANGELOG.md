@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - APIの認証情報をCognitoから取得するように変更。
 - パフォーマンス検索結果の券種情報を強化。在庫状況情報も強化。
 - multi issuer対応。
+- 取引にAPIクライアント情報を結合。
 
 ### Deprecated
 

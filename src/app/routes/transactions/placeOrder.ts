@@ -44,6 +44,7 @@ placeOrderTransactionsRouter.post(
                 expires: moment(req.body.expires).toDate(),
                 agentId: req.user.sub,
                 sellerIdentifier: req.body.seller_identifier,
+                clientUser: req.user,
                 purchaserGroup: req.body.purchaser_group
             })(
                 new ttts.repository.Transaction(ttts.mongoose.connection),

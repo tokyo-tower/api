@@ -56,6 +56,7 @@ returnOrderTransactionsRouter.post(
 
             // 取引があれば、返品取引確定
             const returnOrderTransaction = await ttts.service.transaction.returnOrder.confirm({
+                clientUser: req.user,
                 agentId: req.user.sub,
                 transactionId: placeOrderTransaction.id,
                 cancellationFee: req.body.cancellation_fee,

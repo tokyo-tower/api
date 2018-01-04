@@ -51,6 +51,7 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
         debug('placeOrder transaction found.');
         // 取引があれば、返品取引確定
         const returnOrderTransaction = yield ttts.service.transaction.returnOrder.confirm({
+            clientUser: req.user,
             agentId: req.user.sub,
             transactionId: placeOrderTransaction.id,
             cancellationFee: req.body.cancellation_fee,
