@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - ttts-domain@12.0.0に対応。
 - APIの認証情報をCognitoから取得するように変更。
 - パフォーマンス検索結果の券種情報を強化。在庫状況情報も強化。
+- multi issuer対応。
 
 ### Deprecated
 

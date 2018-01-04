@@ -58,12 +58,16 @@ export interface IPems {
     [key: string]: string;
 }
 
-const ISSUER = <string>process.env.TOKEN_ISSUER;
-let pems: IPems;
+// 許可発行者リスト
+const ISSUERS = (<string>process.env.TOKEN_ISSUERS).split(',');
 // const permittedAudiences = [
 //     '4flh35hcir4jl73s3puf7prljq',
 //     '6figun12gcdtlj9e53p2u3oqvl'
 // ];
+
+let pemsByIssuer: {
+    [issuer: string]: IPems;
+};
 
 export default async (req: Request, __: Response, next: NextFunction) => {
     try {
@@ -78,7 +82,7 @@ export default async (req: Request, __: Response, next: NextFunction) => {
         }
 
         const payload = await validateToken(token, {
-            issuer: ISSUER,
+            issuers: ISSUERS,
             tokenUse: 'access' // access tokenのみ受け付ける
         });
         debug('verified! payload:', payload);
@@ -122,7 +126,7 @@ async function createPems(issuer: string) {
  * トークンを検証する
  */
 async function validateToken(token: string, verifyOptions: {
-    issuer: string;
+    issuers: string[];
     tokenUse?: string;
 }): Promise<IPayload> {
     debug('validating token...', token);
@@ -147,11 +151,18 @@ async function validateToken(token: string, verifyOptions: {
     }
 
     // 公開鍵未取得であればcognitoから取得
-    if (pems === undefined) {
-        pems = await createPems(verifyOptions.issuer);
+    if (pemsByIssuer === undefined) {
+        pemsByIssuer = {};
+        await Promise.all(verifyOptions.issuers.map(async (issuer) => {
+            pemsByIssuer[issuer] = await createPems(issuer);
+        }));
     }
 
     // トークンからkidを取り出して、対応するPEMを検索
+    const pems = pemsByIssuer[decodedJwt.payload.iss];
+    if (pems === undefined) {
+        throw new Error('Invalid access token.');
+    }
     const pem = pems[decodedJwt.header.kid];
     if (pem === undefined) {
         throw new Error('Invalid access token.');
@@ -163,7 +174,7 @@ async function validateToken(token: string, verifyOptions: {
             token,
             pem,
             {
-                issuer: ISSUER // 期待しているユーザープールで発行されたJWTトークンかどうか確認
+                issuer: ISSUERS // 期待しているユーザープールで発行されたJWTトークンかどうか確認
                 // audience: pemittedAudiences
             },
             (err, payload) => {

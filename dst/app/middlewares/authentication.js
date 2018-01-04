@@ -20,12 +20,13 @@ const jwt = require("jsonwebtoken");
 const jwkToPem = require('jwk-to-pem');
 const request = require("request-promise-native");
 const debug = createDebug('ttts-api:middlewares:authentication');
-const ISSUER = process.env.TOKEN_ISSUER;
-let pems;
+// 許可発行者リスト
+const ISSUERS = process.env.TOKEN_ISSUERS.split(',');
 // const permittedAudiences = [
 //     '4flh35hcir4jl73s3puf7prljq',
 //     '6figun12gcdtlj9e53p2u3oqvl'
 // ];
+let pemsByIssuer;
 exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // ヘッダーからBearerトークンを取り出す
@@ -37,7 +38,7 @@ exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* (
             throw new Error('authorization required');
         }
         const payload = yield validateToken(token, {
-            issuer: ISSUER,
+            issuers: ISSUERS,
             tokenUse: 'access' // access tokenのみ受け付ける
         });
         debug('verified! payload:', payload);
@@ -96,10 +97,17 @@ function validateToken(token, verifyOptions) {
             }
         }
         // 公開鍵未取得であればcognitoから取得
-        if (pems === undefined) {
-            pems = yield createPems(verifyOptions.issuer);
+        if (pemsByIssuer === undefined) {
+            pemsByIssuer = {};
+            yield Promise.all(verifyOptions.issuers.map((issuer) => __awaiter(this, void 0, void 0, function* () {
+                pemsByIssuer[issuer] = yield createPems(issuer);
+            })));
         }
         // トークンからkidを取り出して、対応するPEMを検索
+        const pems = pemsByIssuer[decodedJwt.payload.iss];
+        if (pems === undefined) {
+            throw new Error('Invalid access token.');
+        }
         const pem = pems[decodedJwt.header.kid];
         if (pem === undefined) {
             throw new Error('Invalid access token.');
@@ -107,7 +115,7 @@ function validateToken(token, verifyOptions) {
         // 対応PEMがあればトークンを検証
         return new Promise((resolve, reject) => {
             jwt.verify(token, pem, {
-                issuer: ISSUER // 期待しているユーザープールで発行されたJWTトークンかどうか確認
+                issuer: ISSUERS // 期待しているユーザープールで発行されたJWTトークンかどうか確認
                 // audience: pemittedAudiences
             }, (err, payload) => {
                 if (err !== null) {
