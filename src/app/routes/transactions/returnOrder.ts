@@ -37,10 +37,9 @@ returnOrderTransactionsRouter.post(
         try {
             const transactionRepo = new ttts.repository.Transaction(ttts.mongoose.connection);
 
-            // POS購入の取引を検索する
+            // 取引を検索する
             const conditions = {
                 typeOf: ttts.factory.transactionType.PlaceOrder,
-                'agent.id': req.user.sub, // POSで購入された場合、販売者IDが同一のはず
                 'result.eventReservations.performance_day': req.body.performance_day,
                 'result.eventReservations.payment_no': req.body.payment_no
             };
