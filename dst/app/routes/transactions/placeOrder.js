@@ -43,7 +43,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
             sellerIdentifier: req.body.seller_identifier,
             clientUser: req.user,
             purchaserGroup: req.body.purchaser_group
-        })(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.Organization(ttts.mongoose.connection), new ttts.repository.Owner(ttts.mongoose.connection));
+        })(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.Organization(ttts.mongoose.connection));
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
         // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
