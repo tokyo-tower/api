@@ -154,7 +154,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             agentId: req.user.sub,
             transactionId: req.params.transactionId,
             paymentMethod: req.body.payment_method
-        })(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection), new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection));
+        })(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection), new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection), new ttts.repository.Token(redisClient));
         debug('transaction confirmed.');
         res.status(http_status_1.CREATED).json(transactionResult);
     }

@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - multi issuer対応。
 - 取引にAPIクライアント情報を結合。
 - 返品確定サービスを購入者区分に関わらず汎用化。
+- 注文取引確定のレスポンスに属性追加。
 
 ### Deprecated
 
