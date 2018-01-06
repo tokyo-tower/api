@@ -48,8 +48,7 @@ placeOrderTransactionsRouter.post(
                 purchaserGroup: req.body.purchaser_group
             })(
                 new ttts.repository.Transaction(ttts.mongoose.connection),
-                new ttts.repository.Organization(ttts.mongoose.connection),
-                new ttts.repository.Owner(ttts.mongoose.connection)
+                new ttts.repository.Organization(ttts.mongoose.connection)
                 );
 
             // tslint:disable-next-line:no-string-literal
@@ -251,7 +250,8 @@ placeOrderTransactionsRouter.post(
             })(
                 new ttts.repository.Transaction(ttts.mongoose.connection),
                 new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection),
-                new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection)
+                new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection),
+                new ttts.repository.Token(redisClient)
                 );
             debug('transaction confirmed.');
 
