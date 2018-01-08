@@ -4,17 +4,19 @@
 
 ### Environment variables
 
-| Name                          | Required | Value      | Purpose                |
-| ----------------------------- | -------- | ---------- | ---------------------- |
-| `DEBUG`                       | false    | ttts-api:* | Debug                  |
-| `NPM_TOKEN`                   | true     |            | NPM auth token         |
-| `NODE_ENV`                    | true     |            | environment name       |
-| `MONGOLAB_URI`                | true     |            | MongoDB connection URI |
-| `REDIS_HOST`                  | true     |            | redis host             |
-| `REDIS_PORT`                  | true     |            | redis port             |
-| `REDIS_KEY`                   | true     |            | redis key              |
-| `RESOURECE_SERVER_IDENTIFIER` | true     |            | リソースサーバー識別子         |
-| `TOKEN_ISSUERS`               | true     |            | トークン発行者リスト(コンマつなぎ)  |
+| Name                          | Required | Value      | Purpose                         |
+| ----------------------------- | -------- | ---------- | ------------------------------- |
+| `DEBUG`                       | false    | ttts-api:* | Debug                           |
+| `NPM_TOKEN`                   | true     |            | NPM auth token                  |
+| `NODE_ENV`                    | true     |            | environment name                |
+| `MONGOLAB_URI`                | true     |            | MongoDB connection URI          |
+| `REDIS_HOST`                  | true     |            | redis host                      |
+| `REDIS_PORT`                  | true     |            | redis port                      |
+| `REDIS_KEY`                   | true     |            | redis key                       |
+| `RESOURECE_SERVER_IDENTIFIER` | true     |            | リソースサーバー識別子                  |
+| `TOKEN_ISSUERS`               | true     |            | トークン発行者リスト(コンマつなぎ)           |
+| `TTTS_TOKEN_SECRET`           | true     |            | 一時的なトークンを発行する際の検証シークレット |
+
 
 ## tslint
 
