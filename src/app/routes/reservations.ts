@@ -22,6 +22,33 @@ const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection
 reservationsRouter.use(authentication);
 
 /**
+ * IDで予約取得
+ */
+reservationsRouter.get(
+    '/:id',
+    permitScopes(['reservations.read-only']),
+    validator,
+    async (req, res, next) => {
+        try {
+            // 予約を検索
+            debug('searching reservation by id...', req.params.id);
+            const reservation = await reservationRepo.reservationModel.findById(req.params.id)
+                .exec().then((doc) => {
+                    if (doc === null) {
+                        throw new ttts.factory.errors.NotFound('reservations');
+                    }
+
+                    return <ttts.factory.reservation.event.IReservation>doc.toObject();
+                });
+
+            res.json(reservation);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
  * 予約検索
  */
 reservationsRouter.get(
