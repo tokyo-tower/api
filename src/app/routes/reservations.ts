@@ -3,49 +3,87 @@
  * @namespace routes.reservations
  */
 
+import * as ttts from '@motionpicture/ttts-domain';
 import * as express from 'express';
-import * as httpStatus from 'http-status';
+import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 
-const reservationRouter = express.Router();
+const reservationsRouter = express.Router();
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
-import * as ReservationController from '../controllers/reservation';
+const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
 
-reservationRouter.use(authentication);
+reservationsRouter.use(authentication);
 
 /**
  * 入場
  */
-reservationRouter.post(
+reservationsRouter.post(
     '/:id/checkins',
-    permitScopes(['reservations', 'reservations.checkins']),
+    permitScopes(['reservations.checkins']),
+    (req, _, next) => {
+        req.checkBody('when', 'invalid when').notEmpty().withMessage('when is required').isISO8601();
+
+        next();
+    },
     validator,
     async (req, res, next) => {
         try {
-            const checkin = {
-                when: moment().toDate(),
+            const checkin: ttts.factory.reservation.event.ICheckin = {
+                when: moment(req.body.when).toDate(),
                 where: req.body.where,
                 why: req.body.why,
                 how: req.body.how
             };
 
-            await ReservationController.createCheckin(req.params.id, checkin).then((result) => {
-                if (result === null) {
-                    res.status(httpStatus.NOT_FOUND).json({
-                        data: null
-                    });
-                } else {
-                    res.status(httpStatus.NO_CONTENT).end();
+            const reservation = await reservationRepo.reservationModel.findByIdAndUpdate(
+                req.params.id,
+                {
+                    $push: { checkins: checkin }
                 }
-            });
+            ).exec();
+
+            if (reservation === null) {
+                throw new ttts.factory.errors.NotFound('reservations');
+            }
+
+            res.status(NO_CONTENT).end();
         } catch (error) {
             next(error);
         }
     }
 );
 
-export default reservationRouter;
+/**
+ * 入場取消
+ * 入場日時がid
+ */
+reservationsRouter.delete(
+    '/:id/checkins/:when',
+    permitScopes(['reservations.checkins']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const reservation = await reservationRepo.reservationModel.findByIdAndUpdate(
+                req.params.id,
+                {
+                    $pull: { checkins: { when: req.params.when } }
+                },
+                { new: true }
+            ).exec();
+
+            if (reservation === null) {
+                throw new ttts.factory.errors.NotFound('reservations');
+            }
+
+            res.status(NO_CONTENT).end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+export default reservationsRouter;

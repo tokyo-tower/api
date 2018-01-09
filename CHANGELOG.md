@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - IDでパフォーマンス検索のエンドポイントを追加。
 - 識別子で企業組織検索のエンドポイントを追加。
 - 注文照会エンドポイントを追加。
+- 入場(取消)エンドポイントを追加。
 
 ### Changed
 - パフォーマンス検索のレスポンスを多言語化。

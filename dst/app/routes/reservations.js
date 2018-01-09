@@ -12,39 +12,58 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const ttts = require("@motionpicture/ttts-domain");
 const express = require("express");
-const httpStatus = require("http-status");
+const http_status_1 = require("http-status");
 const moment = require("moment");
-const reservationRouter = express.Router();
+const reservationsRouter = express.Router();
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
-const ReservationController = require("../controllers/reservation");
-reservationRouter.use(authentication_1.default);
+const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
+reservationsRouter.use(authentication_1.default);
 /**
  * 入場
  */
-reservationRouter.post('/:id/checkins', permitScopes_1.default(['reservations', 'reservations.checkins']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.checkins']), (req, _, next) => {
+    req.checkBody('when', 'invalid when').notEmpty().withMessage('when is required').isISO8601();
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const checkin = {
-            when: moment().toDate(),
+            when: moment(req.body.when).toDate(),
             where: req.body.where,
             why: req.body.why,
             how: req.body.how
         };
-        yield ReservationController.createCheckin(req.params.id, checkin).then((result) => {
-            if (result === null) {
-                res.status(httpStatus.NOT_FOUND).json({
-                    data: null
-                });
-            }
-            else {
-                res.status(httpStatus.NO_CONTENT).end();
-            }
-        });
+        const reservation = yield reservationRepo.reservationModel.findByIdAndUpdate(req.params.id, {
+            $push: { checkins: checkin }
+        }).exec();
+        if (reservation === null) {
+            throw new ttts.factory.errors.NotFound('reservations');
+        }
+        res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
         next(error);
     }
 }));
-exports.default = reservationRouter;
+/**
+ * 入場取消
+ * 入場日時がid
+ */
+reservationsRouter.delete('/:id/checkins/:when', permitScopes_1.default(['reservations.checkins']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const reservation = yield reservationRepo.reservationModel.findByIdAndUpdate(req.params.id, {
+            $pull: { checkins: { when: req.params.when } }
+        }, { new: true }).exec();
+        if (reservation === null) {
+            throw new ttts.factory.errors.NotFound('reservations');
+        }
+        res.status(http_status_1.NO_CONTENT).end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+exports.default = reservationsRouter;
