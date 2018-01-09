@@ -26,7 +26,7 @@ reservationsRouter.use(authentication);
  */
 reservationsRouter.get(
     '',
-    permitScopes(['transactions', 'reservations.read-only']),
+    permitScopes(['reservations.read-only']),
     validator,
     async (req, res, next) => {
         try {

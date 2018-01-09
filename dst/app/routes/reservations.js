@@ -28,7 +28,7 @@ reservationsRouter.use(authentication_1.default);
 /**
  * 予約検索
  */
-reservationsRouter.get('', permitScopes_1.default(['transactions', 'reservations.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // 予約検索条件
         const conditions = [];
