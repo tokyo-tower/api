@@ -28,6 +28,19 @@ const redisClient = ttts.redis.createClient({
 });
 performanceRouter.use(authentication_1.default);
 /**
+ * IDでパフォーマンス検索
+ */
+performanceRouter.get('/:id', permitScopes_1.default(['performances', 'performances.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const repo = new ttts.repository.Performance(ttts.mongoose.connection);
+        const performance = yield repo.findById(req.params.id);
+        res.json(performance);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
  * パフォーマンス検索
  */
 performanceRouter.get('', permitScopes_1.default(['performances', 'performances.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {

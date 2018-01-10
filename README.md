@@ -1,42 +1,42 @@
+<img src="https://motionpicture.jp/images/common/logo_01.svg" alt="motionpicture" title="motionpicture" align="right" height="56" width="98"/>
+
 # 東京タワーチケット予約システムAPIアプリケーション
 
-# Getting Started
+[![CircleCI](https://circleci.com/gh/motionpicture/ttts-api.svg?style=svg&circle-token=86631838a9e32607779c65e3507c1618a563f5f4)](https://circleci.com/gh/motionpicture/ttts-api)
+
+
+## Table of contents
+
+* [Usage](#usage)
+* [Code Samples](#code-samples)
+* [Jsdoc](#jsdoc)
+* [License](#license)
+
+## Usage
 
 ### Environment variables
 
-| Name                          | Required | Value      | Purpose                |
-| ----------------------------- | -------- | ---------- | ---------------------- |
-| `DEBUG`                       | false    | ttts-api:* | Debug                  |
-| `NPM_TOKEN`                   | true     |            | NPM auth token         |
-| `NODE_ENV`                    | true     |            | environment name       |
-| `MONGOLAB_URI`                | true     |            | MongoDB connection URI |
-| `REDIS_HOST`                  | true     |            | redis host             |
-| `REDIS_PORT`                  | true     |            | redis port             |
-| `REDIS_KEY`                   | true     |            | redis key              |
-| `RESOURECE_SERVER_IDENTIFIER` | true     |            | リソースサーバー識別子         |
-| `TOKEN_ISSUERS`               | true     |            | トークン発行者リスト(コンマつなぎ)  |
+| Name                          | Required | Value      | Purpose                         |
+| ----------------------------- | -------- | ---------- | ------------------------------- |
+| `DEBUG`                       | false    | ttts-api:* | Debug                           |
+| `NPM_TOKEN`                   | true     |            | NPM auth token                  |
+| `NODE_ENV`                    | true     |            | environment name                |
+| `MONGOLAB_URI`                | true     |            | MongoDB connection URI          |
+| `REDIS_HOST`                  | true     |            | redis host                      |
+| `REDIS_PORT`                  | true     |            | redis port                      |
+| `REDIS_KEY`                   | true     |            | redis key                       |
+| `RESOURECE_SERVER_IDENTIFIER` | true     |            | リソースサーバー識別子                  |
+| `TOKEN_ISSUERS`               | true     |            | トークン発行者リスト(コンマつなぎ)           |
+| `TTTS_TOKEN_SECRET`           | true     |            | 一時的なトークンを発行する際の検証シークレット |
 
-## tslint
+## Code Samples
 
-コード品質チェックをtslintで行う。
-* [tslint](https://github.com/palantir/tslint)
-* [tslint-microsoft-contrib](https://github.com/Microsoft/tslint-microsoft-contrib)
+Code sample are [here](https://github.com/motionpicture/ttts-api/tree/master/example).
 
-`npm run check`でチェック実行。
+## Jsdoc
 
+`npm run doc` emits jsdoc to ./doc.
 
-## パッケージ脆弱性のチェック
+## License
 
-* [nsp](https://www.npmjs.com/package/nsp)
-
-
-## clean
-`npm run clean`で不要なソース削除。
-
-
-## テスト
-`npm test`でテスト実行。
-
-
-## ドキュメント
-`npm run doc`でjsdocが作成されます。
+UNLICENSED

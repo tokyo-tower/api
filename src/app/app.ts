@@ -16,9 +16,11 @@ import errorHandler from './middlewares/errorHandler';
 import notFoundHandler from './middlewares/notFoundHandler';
 
 import devRouter from './routes/dev';
+import ordersRouter from './routes/orders';
+import organizationsRouter from './routes/organizations';
 import performanceRouter from './routes/performances';
 import previewRouter from './routes/preview';
-import reservationRouter from './routes/reservations';
+import reservationsRouter from './routes/reservations';
 import placeOrderTransactionsRouter from './routes/transactions/placeOrder';
 import returnOrderTransactionsRouter from './routes/transactions/returnOrder';
 
@@ -58,9 +60,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
 
 // ルーティング
+app.use('/orders', ordersRouter);
+app.use('/organizations', organizationsRouter);
 app.use('/preview', previewRouter);
 app.use('/performances', performanceRouter);
-app.use('/reservations', reservationRouter);
+app.use('/reservations', reservationsRouter);
 app.use('/transactions/placeOrder', placeOrderTransactionsRouter);
 app.use('/transactions/returnOrder', returnOrderTransactionsRouter);
 

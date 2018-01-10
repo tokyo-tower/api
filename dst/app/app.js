@@ -13,6 +13,8 @@ const mongooseConnectionOptions_1 = require("../mongooseConnectionOptions");
 const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const dev_1 = require("./routes/dev");
+const orders_1 = require("./routes/orders");
+const organizations_1 = require("./routes/organizations");
 const performances_1 = require("./routes/performances");
 const preview_1 = require("./routes/preview");
 const reservations_1 = require("./routes/reservations");
@@ -49,6 +51,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
 // ルーティング
+app.use('/orders', orders_1.default);
+app.use('/organizations', organizations_1.default);
 app.use('/preview', preview_1.default);
 app.use('/performances', performances_1.default);
 app.use('/reservations', reservations_1.default);

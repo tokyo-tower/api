@@ -34,10 +34,9 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const transactionRepo = new ttts.repository.Transaction(ttts.mongoose.connection);
-        // POS購入の取引を検索する
+        // 取引を検索する
         const conditions = {
             typeOf: ttts.factory.transactionType.PlaceOrder,
-            'agent.id': req.user.sub,
             'result.eventReservations.performance_day': req.body.performance_day,
             'result.eventReservations.payment_no': req.body.payment_no
         };
@@ -62,6 +61,37 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
         res.status(http_status_1.CREATED).json({
             id: returnOrderTransaction.id
         });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 返品メール送信
+ */
+returnOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification', permitScopes_1.default(['transactions']), (req, __2, next) => {
+    req.checkBody('sender.name', 'invalid sender').notEmpty().withMessage('sender.name is required');
+    req.checkBody('sender.email', 'invalid sender').notEmpty().withMessage('sender.email is required');
+    req.checkBody('toRecipient.name', 'invalid toRecipient').notEmpty().withMessage('toRecipient.name is required');
+    req.checkBody('toRecipient.email', 'invalid toRecipient').notEmpty().withMessage('toRecipient.email is required').isEmail();
+    req.checkBody('about', 'invalid about').notEmpty().withMessage('about is required');
+    req.checkBody('text', 'invalid text').notEmpty().withMessage('text is required');
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const task = yield ttts.service.transaction.returnOrder.sendEmail(req.params.transactionId, {
+            sender: {
+                name: req.body.sender.name,
+                email: req.body.sender.email
+            },
+            toRecipient: {
+                name: req.body.toRecipient.name,
+                email: req.body.toRecipient.email
+            },
+            about: req.body.about,
+            text: req.body.text
+        })(new ttts.repository.Task(ttts.mongoose.connection), new ttts.repository.Transaction(ttts.mongoose.connection));
+        res.status(http_status_1.CREATED).json(task);
     }
     catch (error) {
         next(error);
