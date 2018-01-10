@@ -1,6 +1,18 @@
+<img src="https://motionpicture.jp/images/common/logo_01.svg" alt="motionpicture" title="motionpicture" align="right" height="56" width="98"/>
+
 # 東京タワーチケット予約システムAPIアプリケーション
 
-# Getting Started
+[![CircleCI](https://circleci.com/gh/motionpicture/ttts-api.svg?style=svg&circle-token=86631838a9e32607779c65e3507c1618a563f5f4)](https://circleci.com/gh/motionpicture/ttts-api)
+
+
+## Table of contents
+
+* [Usage](#usage)
+* [Code Samples](#code-samples)
+* [Jsdoc](#jsdoc)
+* [License](#license)
+
+## Usage
 
 ### Environment variables
 
@@ -17,28 +29,14 @@
 | `TOKEN_ISSUERS`               | true     |            | トークン発行者リスト(コンマつなぎ)           |
 | `TTTS_TOKEN_SECRET`           | true     |            | 一時的なトークンを発行する際の検証シークレット |
 
+## Code Samples
 
-## tslint
+Code sample are [here](https://github.com/motionpicture/ttts-api/tree/master/example).
 
-コード品質チェックをtslintで行う。
-* [tslint](https://github.com/palantir/tslint)
-* [tslint-microsoft-contrib](https://github.com/Microsoft/tslint-microsoft-contrib)
+## Jsdoc
 
-`npm run check`でチェック実行。
+`npm run doc` emits jsdoc to ./doc.
 
+## License
 
-## パッケージ脆弱性のチェック
-
-* [nsp](https://www.npmjs.com/package/nsp)
-
-
-## clean
-`npm run clean`で不要なソース削除。
-
-
-## テスト
-`npm test`でテスト実行。
-
-
-## ドキュメント
-`npm run doc`でjsdocが作成されます。
+UNLICENSED
