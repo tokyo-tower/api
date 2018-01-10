@@ -10,13 +10,21 @@ async function main() {
     const result = await request.post(
         'http://localhost:8082/oauth/token',
         {
+            auth: {
+                user: process.env.TEST_ADMINS_USER_POOL_CLIENT_ID,
+                pass: process.env.TEST_ADMINS_USER_POOL_CLIENT_SECRET
+            },
             json: true,
             body: {
                 username: 'motionpicture',
                 password: 'Iop@-098'
             }
         }
-    ).then((body) => body);
+    )
+        .catch((err) => {
+            console.error(err.message);
+        })
+        .then((body) => body);
     console.log('result:', result)
 
     const admin = await request.get(

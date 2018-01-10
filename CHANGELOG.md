@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- 管理者トークンエンドポイントにクライアントによるベーシック認証を追加。
 
 ### Deprecated
 
