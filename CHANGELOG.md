@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- 管理者トークン発行エンドポイントを追加。
+- 管理者エンドポイントを追加。
 
 ### Changed
 

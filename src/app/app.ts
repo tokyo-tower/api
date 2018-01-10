@@ -15,7 +15,9 @@ import mongooseConnectionOptions from '../mongooseConnectionOptions';
 import errorHandler from './middlewares/errorHandler';
 import notFoundHandler from './middlewares/notFoundHandler';
 
+import adminsRouter from './routes/admins';
 import devRouter from './routes/dev';
+import oauthRouter from './routes/oauth';
 import ordersRouter from './routes/orders';
 import organizationsRouter from './routes/organizations';
 import performanceRouter from './routes/performances';
@@ -60,6 +62,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
 
 // ルーティング
+app.use('/admins', adminsRouter);
+app.use('/oauth', oauthRouter);
 app.use('/orders', ordersRouter);
 app.use('/organizations', organizationsRouter);
 app.use('/preview', previewRouter);
