@@ -17,6 +17,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v5.2.0 - 2018-01-11
+### Changed
+- 管理者トークンエンドポイントにクライアントによるベーシック認証を追加。
+- イベント検索のパフォーマンス向上。
+
 ## v5.1.0 - 2018-01-10
 ### Added
 - 管理者トークン発行エンドポイントを追加。

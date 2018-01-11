@@ -13,7 +13,9 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/ttts-domain": "^12.0.0-alpha.69",
+    "@motionpicture/ttts-domain": "^12.0.0-alpha.70",
+    "@types/basic-auth": "^1.1.2",
+    "basic-auth": "^2.0.0",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
     "debug": "^3.1.0",
@@ -50,10 +52,10 @@
     "nsp": "^2.8.1",
     "nyc": "^11.4.1",
     "rimraf": "^2.6.2",
-    "snyk": "^1.65.3",
+    "snyk": "^1.67.0",
     "supertest": "^3.0.0",
     "ts-node": "^4.1.0",
-    "tslint": "^5.8.0",
+    "tslint": "^5.9.1",
     "tslint-microsoft-contrib": "^5.0.1",
     "typescript": "^2.6.2"
   },
@@ -82,5 +84,5 @@
     "version": "git add -A",
     "postversion": "git push origin --tags"
   },
-  "version": "5.1.0"
+  "version": "5.2.0"
 }

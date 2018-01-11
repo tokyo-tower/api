@@ -4,10 +4,13 @@
  */
 
 import * as ttts from '@motionpicture/ttts-domain';
+import * as basicAuth from 'basic-auth';
+import * as createDebug from 'debug';
 import { Router } from 'express';
 
 import validator from '../middlewares/validator';
 
+const debug = createDebug('ttts-api:routes:oauth');
 const oauthRouter = Router();
 
 oauthRouter.post(
@@ -21,11 +24,18 @@ oauthRouter.post(
     validator,
     async (req, res, next) => {
         try {
+            // ベーシック認証ユーザーがクライアント情報
+            const user = basicAuth(req);
+            debug('basic auth user:', user);
+            if (user === undefined) {
+                throw new ttts.factory.errors.Unauthorized();
+            }
+
             const credentials = await ttts.service.admin.login(
                 <string>process.env.AWS_ACCESS_KEY_ID,
                 <string>process.env.AWS_SECRET_ACCESS_KEY,
-                <string>process.env.ADMINS_USER_POOL_CLIENT_ID,
-                <string>process.env.ADMINS_USER_POOL_CLIENT_SECRET,
+                user.name,
+                user.pass,
                 <string>process.env.ADMINS_USER_POOL_ID,
                 req.body.username,
                 req.body.password

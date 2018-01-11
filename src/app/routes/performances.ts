@@ -66,7 +66,8 @@ performanceRouter.get(
             await ttts.service.performance.search(conditions)(
                 new ttts.repository.Performance(ttts.mongoose.connection),
                 new ttts.repository.itemAvailability.Performance(redisClient),
-                new ttts.repository.itemAvailability.SeatReservationOffer(redisClient)
+                new ttts.repository.itemAvailability.SeatReservationOffer(redisClient),
+                new ttts.repository.offer.ExhibitionEvent(redisClient)
             ).then((searchPerformanceResult) => {
                 res.json({
                     meta: {
