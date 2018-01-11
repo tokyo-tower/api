@@ -32,14 +32,12 @@ async function main() {
             json: true,
             qs: {
                 start_from: moment().toISOString(),
-                start_through: moment().add(1, 'day').toISOString(),
+                start_through: moment().add(1, 'month').toISOString(),
             }
         }
     ).then((body) => body.data);
-    performances.forEach((performance) => {
-        console.log('performance found.', performance);
-    });
-    console.log(performances.length)
+    console.log('performances[0]:', performances[0])
+    console.log(performances.length, 'performances found.')
 }
 
 main().then(() => {

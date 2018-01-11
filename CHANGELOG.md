@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 - 管理者トークンエンドポイントにクライアントによるベーシック認証を追加。
+- イベント検索のパフォーマンス向上。
 
 ### Deprecated
 
