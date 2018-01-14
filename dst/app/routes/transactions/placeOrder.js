@@ -16,6 +16,7 @@ const ttts = require("@motionpicture/ttts-domain");
 const createDebug = require("debug");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
+const https = require("https");
 const moment = require("moment");
 const placeOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
@@ -30,20 +31,26 @@ const redisClient = ttts.redis.createClient({
     password: process.env.REDIS_KEY,
     tls: { servername: process.env.REDIS_HOST }
 });
-const creditService = new ttts.GMO.service.Credit({ endpoint: process.env.GMO_ENDPOINT }
+const creditService = new ttts.GMO.service.Credit({ endpoint: process.env.GMO_ENDPOINT }, 
 // クレジットカードオーソリ実行&取消のリクエストは、混雑時接続数が増加するので、プーリング
-// {
-//     pool: {
-//         maxSockets: 160
-//     },
-//     agentOptions: {
-//         maxSockets: 160,
-//         // maxFreeSockets: 10,
-//         timeout: 30000,
-//         keepAliveTimeout: 300000
-//     }
-// }
-);
+{
+    agent: new https.Agent({
+        keepAlive: true,
+        maxSockets: 40,
+        maxFreeSockets: 10
+        // timeout: 60000,
+        // keepAliveTimeout: 300000
+    })
+    // pool: {
+    //     maxSockets: 160
+    // },
+    // agentOptions: {
+    //     maxSockets: 160,
+    //     // maxFreeSockets: 10,
+    //     timeout: 30000,
+    //     keepAliveTimeout: 300000
+    // }
+});
 placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), (req, _, next) => {
     req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();

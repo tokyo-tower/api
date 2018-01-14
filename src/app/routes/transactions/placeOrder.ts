@@ -7,6 +7,7 @@ import * as ttts from '@motionpicture/ttts-domain';
 import * as createDebug from 'debug';
 import { Router } from 'express';
 import { CREATED, NO_CONTENT } from 'http-status';
+import * as https from 'https';
 import * as moment from 'moment';
 
 const placeOrderTransactionsRouter = Router();
@@ -27,19 +28,26 @@ const redisClient = ttts.redis.createClient({
 });
 
 const creditService = new ttts.GMO.service.Credit(
-    { endpoint: <string>process.env.GMO_ENDPOINT }
+    { endpoint: <string>process.env.GMO_ENDPOINT },
     // クレジットカードオーソリ実行&取消のリクエストは、混雑時接続数が増加するので、プーリング
-    // {
-    //     pool: {
-    //         maxSockets: 160
-    //     },
-    //     agentOptions: {
-    //         maxSockets: 160,
-    //         // maxFreeSockets: 10,
-    //         timeout: 30000,
-    //         keepAliveTimeout: 300000
-    //     }
-    // }
+    {
+        agent: new https.Agent({
+            keepAlive: true,
+            maxSockets: 40,
+            maxFreeSockets: 10
+            // timeout: 60000,
+            // keepAliveTimeout: 300000
+        })
+        // pool: {
+        //     maxSockets: 160
+        // },
+        // agentOptions: {
+        //     maxSockets: 160,
+        //     // maxFreeSockets: 10,
+        //     timeout: 30000,
+        //     keepAliveTimeout: 300000
+        // }
+    }
 );
 
 placeOrderTransactionsRouter.use(authentication);
