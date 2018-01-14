@@ -40,10 +40,8 @@ const creditService = new ttts.GMO.service.Credit({ endpoint: process.env.GMO_EN
         maxFreeSockets: 10
         // timeout: 60000,
         // keepAliveTimeout: 300000
-    })
-    // pool: {
-    //     maxSockets: 160
-    // },
+    }),
+    pool: {}
     // agentOptions: {
     //     maxSockets: 160,
     //     // maxFreeSockets: 10,
