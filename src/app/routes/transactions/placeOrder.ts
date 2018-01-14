@@ -29,7 +29,17 @@ const redisClient = ttts.redis.createClient({
 const creditService = new ttts.GMO.service.Credit(
     { endpoint: <string>process.env.GMO_ENDPOINT },
     // クレジットカードオーソリ実行&取消のリクエストは、混雑時接続数が増加するので、プーリング
-    { pool: { maxSockets: 40 } }
+    {
+        pool: {
+            maxSockets: 160
+        },
+        agentOptions: {
+            maxSockets: 160,
+            // maxFreeSockets: 10,
+            timeout: 30000,
+            keepAliveTimeout: 300000
+        }
+    }
 );
 
 placeOrderTransactionsRouter.use(authentication);
