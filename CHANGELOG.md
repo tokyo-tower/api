@@ -7,7 +7,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
-- GMOオーソリタイムアウトハンドリングを追加。
 
 ### Deprecated
 
@@ -17,6 +16,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+
+## v5.2.1 - 2018-01-15
+### Changed
+- GMOオーソリタイムアウトハンドリングを調整。
 
 ## v5.2.0 - 2018-01-11
 ### Changed
