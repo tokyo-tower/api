@@ -98,7 +98,6 @@ function tttsError2httpStatusCode(err: ttts.factory.errors.TTTS) {
         // 400
         default:
             statusCode = BAD_REQUEST;
-            break;
     }
 
     return statusCode;

@@ -90,7 +90,7 @@ export default async (req: Request, __: Response, next: NextFunction) => {
             ...payload,
             ...{
                 // アクセストークンにはscopeとして定義されているので、scopesに変換
-                scopes: (typeof payload.scope === 'string') ? (<string>payload.scope).split((' ')) : []
+                scopes: (typeof payload.scope === 'string') ? payload.scope.split((' ')) : []
             }
         };
         req.accessToken = token;

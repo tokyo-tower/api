@@ -76,7 +76,6 @@ function tttsError2httpStatusCode(err) {
         // 400
         default:
             statusCode = http_status_1.BAD_REQUEST;
-            break;
     }
     return statusCode;
 }
