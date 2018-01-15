@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- 予約の属性に在庫情報リストを追加。
 
 ### Deprecated
 
