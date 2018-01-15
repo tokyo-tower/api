@@ -40,8 +40,8 @@ const creditService = new ttts.GMO.service.Credit(
         //     timeout: 60000,
         //     freeSocketKeepAliveTimeout: 30000 // free socket keepalive for 30 seconds
         // }),
-        forever: true,
-        pool: { maxSockets: Infinity }
+        // forever: true,
+        // pool: { maxSockets: Infinity }
         // agentOptions: {
         //     keepalive: true
         //     maxSockets: 160,

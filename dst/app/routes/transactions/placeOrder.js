@@ -36,23 +36,7 @@ const redisClient = ttts.redis.createClient({
 });
 const creditService = new ttts.GMO.service.Credit({ endpoint: process.env.GMO_ENDPOINT }, 
 // クレジットカードオーソリ実行&取消のリクエストは、混雑時接続数が増加するので、プーリング
-{
-    // agent: new httpsAgent({
-    //     maxSockets: 40,
-    //     maxFreeSockets: 10,
-    //     timeout: 60000,
-    //     freeSocketKeepAliveTimeout: 30000 // free socket keepalive for 30 seconds
-    // }),
-    forever: true,
-    pool: { maxSockets: Infinity }
-    // agentOptions: {
-    //     keepalive: true
-    //     maxSockets: 160,
-    //     maxFreeSockets: 10,
-    //     timeout: 30000,
-    //     keepAliveTimeout: 300000
-    // }
-});
+{});
 placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), (req, _, next) => {
     req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
