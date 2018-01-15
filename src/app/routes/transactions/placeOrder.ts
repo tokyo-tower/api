@@ -10,7 +10,7 @@ import { CREATED, NO_CONTENT } from 'http-status';
 // import * as https from 'https';
 import * as moment from 'moment';
 // tslint:disable-next-line:no-require-imports no-var-requires
-const httpsAgent = require('agentkeepalive').HttpsAgent;
+// const httpsAgent = require('agentkeepalive').HttpsAgent;
 // const agent = require('agentkeepalive');
 
 const placeOrderTransactionsRouter = Router();
@@ -34,18 +34,18 @@ const creditService = new ttts.GMO.service.Credit(
     { endpoint: <string>process.env.GMO_ENDPOINT },
     // クレジットカードオーソリ実行&取消のリクエストは、混雑時接続数が増加するので、プーリング
     {
-        agent: new httpsAgent({
-            maxSockets: 40,
-            maxFreeSockets: 10,
-            timeout: 60000,
-            freeSocketKeepAliveTimeout: 30000 // free socket keepalive for 30 seconds
-        }),
-        pool: {
-            // maxSockets: 160
-        }
+        // agent: new httpsAgent({
+        //     maxSockets: 40,
+        //     maxFreeSockets: 10,
+        //     timeout: 60000,
+        //     freeSocketKeepAliveTimeout: 30000 // free socket keepalive for 30 seconds
+        // }),
+        forever: true,
+        pool: { maxSockets: Infinity }
         // agentOptions: {
+        //     keepalive: true
         //     maxSockets: 160,
-        //     // maxFreeSockets: 10,
+        //     maxFreeSockets: 10,
         //     timeout: 30000,
         //     keepAliveTimeout: 300000
         // }

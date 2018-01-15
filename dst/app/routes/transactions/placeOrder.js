@@ -19,7 +19,7 @@ const http_status_1 = require("http-status");
 // import * as https from 'https';
 const moment = require("moment");
 // tslint:disable-next-line:no-require-imports no-var-requires
-const httpsAgent = require('agentkeepalive').HttpsAgent;
+// const httpsAgent = require('agentkeepalive').HttpsAgent;
 // const agent = require('agentkeepalive');
 const placeOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
@@ -37,16 +37,18 @@ const redisClient = ttts.redis.createClient({
 const creditService = new ttts.GMO.service.Credit({ endpoint: process.env.GMO_ENDPOINT }, 
 // クレジットカードオーソリ実行&取消のリクエストは、混雑時接続数が増加するので、プーリング
 {
-    agent: new httpsAgent({
-        maxSockets: 40,
-        maxFreeSockets: 10,
-        timeout: 60000,
-        freeSocketKeepAliveTimeout: 30000 // free socket keepalive for 30 seconds
-    }),
-    pool: {}
+    // agent: new httpsAgent({
+    //     maxSockets: 40,
+    //     maxFreeSockets: 10,
+    //     timeout: 60000,
+    //     freeSocketKeepAliveTimeout: 30000 // free socket keepalive for 30 seconds
+    // }),
+    forever: true,
+    pool: { maxSockets: Infinity }
     // agentOptions: {
+    //     keepalive: true
     //     maxSockets: 160,
-    //     // maxFreeSockets: 10,
+    //     maxFreeSockets: 10,
     //     timeout: 30000,
     //     keepAliveTimeout: 300000
     // }
