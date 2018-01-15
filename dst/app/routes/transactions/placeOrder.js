@@ -34,9 +34,7 @@ const redisClient = ttts.redis.createClient({
     password: process.env.REDIS_KEY,
     tls: { servername: process.env.REDIS_HOST }
 });
-const creditService = new ttts.GMO.service.Credit({ endpoint: process.env.GMO_ENDPOINT }, 
-// クレジットカードオーソリ実行&取消のリクエストは、混雑時接続数が増加するので、プーリング
-{});
+const creditService = new ttts.GMO.service.Credit({ endpoint: process.env.GMO_ENDPOINT });
 placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), (req, _, next) => {
     req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
