@@ -26,7 +26,7 @@ const ISSUERS = process.env.TOKEN_ISSUERS.split(',');
 //     '4flh35hcir4jl73s3puf7prljq',
 //     '6figun12gcdtlj9e53p2u3oqvl'
 // ];
-let pemsByIssuer;
+const pemsByIssuer = {};
 exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // ヘッダーからBearerトークンを取り出す
@@ -96,18 +96,16 @@ function validateToken(token, verifyOptions) {
                 throw new Error(`Not a ${verifyOptions.tokenUse}.`);
             }
         }
+        // 許可発行者リストになければinvalid
+        if (verifyOptions.issuers.indexOf(decodedJwt.payload.iss) < 0) {
+            throw new Error('Unknown issuer.');
+        }
         // 公開鍵未取得であればcognitoから取得
-        if (pemsByIssuer === undefined) {
-            pemsByIssuer = {};
-            yield Promise.all(verifyOptions.issuers.map((issuer) => __awaiter(this, void 0, void 0, function* () {
-                pemsByIssuer[issuer] = yield createPems(issuer);
-            })));
+        if (pemsByIssuer[decodedJwt.payload.iss] === undefined) {
+            pemsByIssuer[decodedJwt.payload.iss] = yield createPems(decodedJwt.payload.iss);
         }
         // トークンからkidを取り出して、対応するPEMを検索
         const pems = pemsByIssuer[decodedJwt.payload.iss];
-        if (pems === undefined) {
-            throw new Error('Invalid access token.');
-        }
         const pem = pems[decodedJwt.header.kid];
         if (pem === undefined) {
             throw new Error('Invalid access token.');
