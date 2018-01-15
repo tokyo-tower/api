@@ -7,7 +7,11 @@ import * as ttts from '@motionpicture/ttts-domain';
 import * as createDebug from 'debug';
 import { Router } from 'express';
 import { CREATED, NO_CONTENT } from 'http-status';
+// import * as https from 'https';
 import * as moment from 'moment';
+// tslint:disable-next-line:no-require-imports no-var-requires
+// const httpsAgent = require('agentkeepalive').HttpsAgent;
+// const agent = require('agentkeepalive');
 
 const placeOrderTransactionsRouter = Router();
 
@@ -25,6 +29,10 @@ const redisClient = ttts.redis.createClient({
     password: <string>process.env.REDIS_KEY,
     tls: { servername: <string>process.env.REDIS_HOST }
 });
+
+const creditService = new ttts.GMO.service.Credit(
+    { endpoint: <string>process.env.GMO_ENDPOINT }
+);
 
 placeOrderTransactionsRouter.use(authentication);
 
@@ -200,7 +208,8 @@ placeOrderTransactionsRouter.post(
             )(
                 new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection),
                 new ttts.repository.Organization(ttts.mongoose.connection),
-                new ttts.repository.Transaction(ttts.mongoose.connection)
+                new ttts.repository.Transaction(ttts.mongoose.connection),
+                creditService
                 );
 
             res.status(CREATED).json({
@@ -227,7 +236,8 @@ placeOrderTransactionsRouter.delete(
                 req.params.actionId
             )(
                 new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection),
-                new ttts.repository.Transaction(ttts.mongoose.connection)
+                new ttts.repository.Transaction(ttts.mongoose.connection),
+                creditService
                 );
 
             res.status(NO_CONTENT).end();

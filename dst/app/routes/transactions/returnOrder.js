@@ -57,7 +57,7 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
             forcibly: req.body.forcibly,
             reason: ttts.factory.transaction.returnOrder.Reason.Customer
         })(transactionRepo);
-        debug('returnOrder　transaction confirmed.');
+        debug('returnOrder transaction confirmed.');
         res.status(http_status_1.CREATED).json({
             id: returnOrderTransaction.id
         });

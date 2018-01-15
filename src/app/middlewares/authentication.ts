@@ -65,9 +65,7 @@ const ISSUERS = (<string>process.env.TOKEN_ISSUERS).split(',');
 //     '6figun12gcdtlj9e53p2u3oqvl'
 // ];
 
-let pemsByIssuer: {
-    [issuer: string]: IPems;
-};
+const pemsByIssuer: { [issuer: string]: IPems } = {};
 
 export default async (req: Request, __: Response, next: NextFunction) => {
     try {
@@ -90,7 +88,7 @@ export default async (req: Request, __: Response, next: NextFunction) => {
             ...payload,
             ...{
                 // アクセストークンにはscopeとして定義されているので、scopesに変換
-                scopes: (typeof payload.scope === 'string') ? (<string>payload.scope).split((' ')) : []
+                scopes: (typeof payload.scope === 'string') ? payload.scope.split((' ')) : []
             }
         };
         req.accessToken = token;
@@ -150,19 +148,18 @@ async function validateToken(token: string, verifyOptions: {
         }
     }
 
+    // 許可発行者リストになければinvalid
+    if (verifyOptions.issuers.indexOf(decodedJwt.payload.iss) < 0) {
+        throw new Error('Unknown issuer.');
+    }
+
     // 公開鍵未取得であればcognitoから取得
-    if (pemsByIssuer === undefined) {
-        pemsByIssuer = {};
-        await Promise.all(verifyOptions.issuers.map(async (issuer) => {
-            pemsByIssuer[issuer] = await createPems(issuer);
-        }));
+    if (pemsByIssuer[decodedJwt.payload.iss] === undefined) {
+        pemsByIssuer[decodedJwt.payload.iss] = await createPems(decodedJwt.payload.iss);
     }
 
     // トークンからkidを取り出して、対応するPEMを検索
     const pems = pemsByIssuer[decodedJwt.payload.iss];
-    if (pems === undefined) {
-        throw new Error('Invalid access token.');
-    }
     const pem = pems[decodedJwt.header.kid];
     if (pem === undefined) {
         throw new Error('Invalid access token.');

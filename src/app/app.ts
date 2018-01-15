@@ -53,6 +53,14 @@ app.use(helmet.hsts({
     includeSubdomains: false
 }));
 
+// api version
+// tslint:disable-next-line:no-require-imports no-var-requires
+const packageInfo = require('../../package.json');
+app.use((__, res, next) => {
+    res.setHeader('x-api-verion', <string>packageInfo.version);
+    next();
+});
+
 // view engine setup
 // app.set('views', `${__dirname}/views`);
 // app.set('view engine', 'ejs');

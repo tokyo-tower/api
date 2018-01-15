@@ -62,7 +62,7 @@ returnOrderTransactionsRouter.post(
                 forcibly: req.body.forcibly,
                 reason: ttts.factory.transaction.returnOrder.Reason.Customer
             })(transactionRepo);
-            debug('returnOrder　transaction confirmed.');
+            debug('returnOrder transaction confirmed.');
 
             res.status(CREATED).json({
                 id: returnOrderTransaction.id

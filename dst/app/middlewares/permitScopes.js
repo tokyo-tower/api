@@ -42,7 +42,6 @@ exports.default = (permittedScopes) => {
  *
  * @param {string[]} ownedScopes 所有スコープリスト
  * @param {string[]} permittedScopes 許可スコープリスト
- * @returns {boolean}
  */
 function isScopesPermitted(ownedScopes, permittedScopes) {
     debug('checking scope requirements...', permittedScopes);
