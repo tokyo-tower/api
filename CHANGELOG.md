@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v5.3.0 - 2018-01-17
+### Changed
+- 予約の属性に在庫情報リストを追加。
+
 ## v5.2.1 - 2018-01-15
 ### Changed
 - GMOオーソリタイムアウトハンドリングを調整。
