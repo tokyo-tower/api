@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- 注文取引開始時のWAITER許可証を必須化。
 
 ### Deprecated
 

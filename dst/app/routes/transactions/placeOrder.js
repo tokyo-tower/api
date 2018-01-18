@@ -39,6 +39,10 @@ placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), (req, _, next) => {
     req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
     req.checkBody('seller_identifier', 'invalid seller_identifier').notEmpty().withMessage('seller_identifier is required');
+    // POSからの流入制限を一時的に回避するため、許可証不要なクライアント設定ができるようにする
+    if (req.user.sub !== process.env.POS_CLIENT_ID) {
+        req.checkBody('passportToken', 'invalid passportToken').notEmpty().withMessage('passportToken is required');
+    }
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -47,7 +51,8 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
             agentId: req.user.sub,
             sellerIdentifier: req.body.seller_identifier,
             clientUser: req.user,
-            purchaserGroup: req.body.purchaser_group
+            purchaserGroup: req.body.purchaser_group,
+            passportToken: req.body.passportToken
         })(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.Organization(ttts.mongoose.connection));
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
