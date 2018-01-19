@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v5.4.0 - 2018-01-19
+### Changed
+- 注文取引開始時のWAITER許可証を必須化。
+
 ## v5.3.0 - 2018-01-17
 ### Changed
 - 予約の属性に在庫情報リストを追加。
