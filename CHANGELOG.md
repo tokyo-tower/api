@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v5.4.1 - 2018-01-19
+### Changed
+- 注文取引開始時にstaffアプリケーションに関しては特別に許可証を非必須化(一時的な対応)
+
 ## v5.4.0 - 2018-01-19
 ### Changed
 - 注文取引開始時のWAITER許可証を必須化。
