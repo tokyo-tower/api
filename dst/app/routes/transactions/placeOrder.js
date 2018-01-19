@@ -40,7 +40,8 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
     req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
     req.checkBody('seller_identifier', 'invalid seller_identifier').notEmpty().withMessage('seller_identifier is required');
     // POSからの流入制限を一時的に回避するため、許可証不要なクライアント設定ができるようにする
-    if (req.user.sub !== process.env.POS_CLIENT_ID) {
+    if (req.user.sub !== process.env.POS_CLIENT_ID ||
+        req.user.sub !== process.env.STAFF_CLIENT_ID) {
         req.checkBody('passportToken', 'invalid passportToken').notEmpty().withMessage('passportToken is required');
     }
     next();

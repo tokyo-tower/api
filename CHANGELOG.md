@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- 注文取引開始時にstaffアプリケーションに関しては特別に許可証を非必須化(一時的な対応)
 
 ### Deprecated
 

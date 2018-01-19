@@ -32,6 +32,7 @@
 | `AWS_ACCESS_KEY_ID`           | true     |            | AWSリソースアクセスキー                   |
 | `AWS_SECRET_ACCESS_KEY`       | true     |            | AWSリソースアクセスシークレット               |
 | `POS_CLIENT_ID`               | true     |            | POSのクライアントID                    |
+| `STAFF_CLIENT_ID`             | true     |            | 内部関係者のクライアントID             |
 | `WAITER_SECRET`               | true     |            | WAITER秘密鍵                    |
 | `WAITER_PASSPORT_ISSUER`      | true     |            | WAITER許可証発行者              |
 
