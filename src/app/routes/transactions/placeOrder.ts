@@ -45,8 +45,8 @@ placeOrderTransactionsRouter.post(
 
         // POSからの流入制限を一時的に回避するため、許可証不要なクライアント設定ができるようにする
         // staffアプリケーションに関しても同様に
-        if (req.user.sub !== <string>process.env.POS_CLIENT_ID &&
-            req.user.sub !== <string>process.env.STAFF_CLIENT_ID) {
+        if (req.user.client_id !== <string>process.env.POS_CLIENT_ID &&
+            req.user.client_id !== <string>process.env.STAFF_CLIENT_ID) {
             req.checkBody('passportToken', 'invalid passportToken').notEmpty().withMessage('passportToken is required');
         }
 
