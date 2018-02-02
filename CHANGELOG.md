@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 - 購入者情報として日本以外の国の電話番号が登録できないバグを修正。
+- 同じ上演日で購入番号が重複するバグを修正。
 
 ### Security
 
