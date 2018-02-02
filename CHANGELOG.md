@@ -17,6 +17,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v5.4.2 - 2018-02-02
+### Fixed
+- 購入者情報として日本以外の国の電話番号が登録できないバグを修正。
+- 同じ上演日で購入番号が重複するバグを修正。
+
 ## v5.4.1 - 2018-01-19
 ### Changed
 - 注文取引開始時にstaffアプリケーションに関しては特別に許可証を非必須化(一時的な対応)
