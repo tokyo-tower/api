@@ -17,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v5.4.3 - 2018-02-14
+### Changed
+- 予約スキーマに注文取引主体属性を追加。
+
+### Fixed
+- 注文取引確定時の注文番号重複エラーをAlreadyInUseエラーとしてハンドリング。
+
 ## v5.4.2 - 2018-02-02
 ### Fixed
 - 購入者情報として日本以外の国の電話番号が登録できないバグを修正。
