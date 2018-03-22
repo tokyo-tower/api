@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- 決済方法に手売りを追加。
-
 ### Changed
 
 ### Deprecated
@@ -20,6 +18,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.4.4 - 2018-03-22
+
+### Added
+
+- 決済方法に手売りを追加。
 
 ## v5.4.3 - 2018-02-14
 ### Changed
