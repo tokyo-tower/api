@@ -4,7 +4,6 @@
  */
 
 import * as ttts from '@motionpicture/ttts-domain';
-import * as conf from 'config';
 import * as createDebug from 'debug';
 import * as express from 'express';
 import { INTERNAL_SERVER_ERROR, NO_CONTENT } from 'http-status';
@@ -19,8 +18,6 @@ const debug = createDebug('ttts-api:routes:reservations');
 const reservationsRouter = express.Router();
 
 const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
-const paymentMethodsForCustomer = conf.get('paymentMethodsForCustomer');
-const paymentMethodsForStaff = conf.get('paymentMethodsForStaff');
 
 reservationsRouter.use(authentication);
 
@@ -190,30 +187,11 @@ reservationsRouter.get(
                     .exec()
                     .then((docs) => docs.map((doc) => <ttts.factory.reservation.event.IReservation>doc.toObject()));
 
-                // 0件メッセージセット
-                const message: string = (reservations.length === 0) ?
-                    '検索結果がありません。予約データが存在しないか、検索条件を見直してください' : '';
-
-                const getPaymentMethodName = (method: string) => {
-                    if (paymentMethodsForCustomer.hasOwnProperty(method)) {
-                        return (<any>paymentMethodsForCustomer)[method];
-                    }
-                    if (paymentMethodsForStaff.hasOwnProperty(method)) {
-                        return (<any>paymentMethodsForStaff)[method];
-                    }
-
-                    return method;
-                };
-                // 決済手段名称追加
-                for (const reservation of reservations) {
-                    (<any>reservation).payment_method_name = getPaymentMethodName(reservation.payment_method);
-                }
-
                 res.json({
                     results: reservations,
                     count: count,
                     errors: null,
-                    message: message
+                    message: ''
                 });
             } catch (error) {
                 res.status(INTERNAL_SERVER_ERROR).json({

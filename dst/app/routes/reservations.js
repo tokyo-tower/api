@@ -13,7 +13,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const ttts = require("@motionpicture/ttts-domain");
-const conf = require("config");
 const createDebug = require("debug");
 const express = require("express");
 const http_status_1 = require("http-status");
@@ -25,8 +24,6 @@ const validator_1 = require("../middlewares/validator");
 const debug = createDebug('ttts-api:routes:reservations');
 const reservationsRouter = express.Router();
 const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
-const paymentMethodsForCustomer = conf.get('paymentMethodsForCustomer');
-const paymentMethodsForStaff = conf.get('paymentMethodsForStaff');
 reservationsRouter.use(authentication_1.default);
 /**
  * 予約を検索
@@ -174,27 +171,11 @@ reservationsRouter.get('/pagination', permitScopes_1.default(['reservations.read
                 .limit(limit)
                 .exec()
                 .then((docs) => docs.map((doc) => doc.toObject()));
-            // 0件メッセージセット
-            const message = (reservations.length === 0) ?
-                '検索結果がありません。予約データが存在しないか、検索条件を見直してください' : '';
-            const getPaymentMethodName = (method) => {
-                if (paymentMethodsForCustomer.hasOwnProperty(method)) {
-                    return paymentMethodsForCustomer[method];
-                }
-                if (paymentMethodsForStaff.hasOwnProperty(method)) {
-                    return paymentMethodsForStaff[method];
-                }
-                return method;
-            };
-            // 決済手段名称追加
-            for (const reservation of reservations) {
-                reservation.payment_method_name = getPaymentMethodName(reservation.payment_method);
-            }
             res.json({
                 results: reservations,
                 count: count,
                 errors: null,
-                message: message
+                message: ''
             });
         }
         catch (error) {
