@@ -26,7 +26,7 @@
     "jsonwebtoken": "^7.4.3",
     "jwk-to-pem": "^1.2.6",
     "moment": "^2.20.1",
-    "request": "^2.83.0",
+    "request": "^2.87.0",
     "request-promise-native": "^1.0.5",
     "underscore": "^1.8.3",
     "winston": "^2.4.3"

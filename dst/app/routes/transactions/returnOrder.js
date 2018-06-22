@@ -39,7 +39,7 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
             result: { $exists: true },
             typeOf: ttts.factory.transactionType.PlaceOrder,
             'result.eventReservations.performance_day': req.body.performance_day,
-            'result.eventReservations.payment_no': req.body.payment_no,
+            'result.eventReservations.payment_no': req.body.payment_no
         };
         debug('searching a transaction...', conditions);
         const placeOrderTransaction = yield transactionRepo.transactionModel.findOne(conditions).exec().then((doc) => {
