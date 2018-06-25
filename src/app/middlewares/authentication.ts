@@ -71,8 +71,8 @@ export default async (req: Request, __: Response, next: NextFunction) => {
     try {
         // ヘッダーからBearerトークンを取り出す
         let token: string | null = null;
-        if (typeof req.headers.authorization === 'string' && (<string>req.headers.authorization).split(' ')[0] === 'Bearer') {
-            token = (<string>req.headers.authorization).split(' ')[1];
+        if (typeof req.headers.authorization === 'string' && (req.headers.authorization).split(' ')[0] === 'Bearer') {
+            token = (req.headers.authorization).split(' ')[1];
         }
 
         if (token === null) {

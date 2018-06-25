@@ -36,6 +36,7 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
         const transactionRepo = new ttts.repository.Transaction(ttts.mongoose.connection);
         // 取引を検索する
         const conditions = {
+            result: { $exists: true },
             typeOf: ttts.factory.transactionType.PlaceOrder,
             'result.eventReservations.performance_day': req.body.performance_day,
             'result.eventReservations.payment_no': req.body.payment_no

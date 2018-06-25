@@ -31,8 +31,8 @@ exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* (
     try {
         // ヘッダーからBearerトークンを取り出す
         let token = null;
-        if (typeof req.headers.authorization === 'string' && req.headers.authorization.split(' ')[0] === 'Bearer') {
-            token = req.headers.authorization.split(' ')[1];
+        if (typeof req.headers.authorization === 'string' && (req.headers.authorization).split(' ')[0] === 'Bearer') {
+            token = (req.headers.authorization).split(' ')[1];
         }
         if (token === null) {
             throw new Error('authorization required');
