@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.4.5 - 2018-06-25
+
+### Fixed
+
+- 返品処理のクエリを調整
+
 ## v5.4.4 - 2018-03-22
 
 ### Added
