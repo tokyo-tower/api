@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.4.6 - 2018-11-28
+
+### Changed
+
+- 入場イベントを注文レポートへ連動
+
 ## v5.4.5 - 2018-06-25
 
 ### Fixed

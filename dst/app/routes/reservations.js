@@ -23,7 +23,6 @@ const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const debug = createDebug('ttts-api:routes:reservations');
 const reservationsRouter = express.Router();
-const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
 reservationsRouter.use(authentication_1.default);
 /**
  * IDで予約取得
@@ -32,10 +31,11 @@ reservationsRouter.get('/:id', permitScopes_1.default(['reservations.read-only']
     try {
         // 予約を検索
         debug('searching reservation by id...', req.params.id);
+        const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
         const reservation = yield reservationRepo.reservationModel.findById(req.params.id)
             .exec().then((doc) => {
             if (doc === null) {
-                throw new ttts.factory.errors.NotFound('reservations');
+                throw new ttts.factory.errors.NotFound('Reservation');
             }
             return doc.toObject();
         });
@@ -72,6 +72,7 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), v
         }
         // 予約を検索
         debug('searching reservations...', conditions);
+        const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
         const reservations = yield reservationRepo.reservationModel.find({ $and: conditions })
             .exec().then((docs) => docs.map((doc) => doc.toObject()));
         res.json(reservations);
@@ -88,18 +89,29 @@ reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.c
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
+        const taskRepo = new ttts.repository.Task(ttts.mongoose.connection);
         const checkin = {
             when: moment(req.body.when).toDate(),
             where: req.body.where,
             why: req.body.why,
             how: req.body.how
         };
-        const reservation = yield reservationRepo.reservationModel.findByIdAndUpdate(req.params.id, {
-            $push: { checkins: checkin }
-        }).exec();
-        if (reservation === null) {
-            throw new ttts.factory.errors.NotFound('reservations');
+        const doc = yield reservationRepo.reservationModel.findByIdAndUpdate(req.params.id, { $push: { checkins: checkin } }, { new: true }).exec();
+        if (doc === null) {
+            throw new ttts.factory.errors.NotFound('Reservation');
         }
+        // レポート更新タスク作成
+        const taskAttributes = ttts.factory.task.updateOrderReportByReservation.createAttributes({
+            status: ttts.factory.taskStatus.Ready,
+            runsAt: new Date(),
+            remainingNumberOfTries: 3,
+            lastTriedAt: null,
+            numberOfTried: 0,
+            executionResults: [],
+            data: { reservation: doc.toObject() }
+        });
+        yield taskRepo.save(taskAttributes);
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -112,12 +124,23 @@ reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.c
  */
 reservationsRouter.delete('/:id/checkins/:when', permitScopes_1.default(['reservations.checkins']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const reservation = yield reservationRepo.reservationModel.findByIdAndUpdate(req.params.id, {
-            $pull: { checkins: { when: req.params.when } }
-        }, { new: true }).exec();
-        if (reservation === null) {
-            throw new ttts.factory.errors.NotFound('reservations');
+        const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
+        const taskRepo = new ttts.repository.Task(ttts.mongoose.connection);
+        const doc = yield reservationRepo.reservationModel.findByIdAndUpdate(req.params.id, { $pull: { checkins: { when: req.params.when } } }, { new: true }).exec();
+        if (doc === null) {
+            throw new ttts.factory.errors.NotFound('Reservation');
         }
+        // レポート更新タスク作成
+        const taskAttributes = ttts.factory.task.updateOrderReportByReservation.createAttributes({
+            status: ttts.factory.taskStatus.Ready,
+            runsAt: new Date(),
+            remainingNumberOfTries: 3,
+            lastTriedAt: null,
+            numberOfTried: 0,
+            executionResults: [],
+            data: { reservation: doc.toObject() }
+        });
+        yield taskRepo.save(taskAttributes);
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {

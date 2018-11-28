@@ -13,7 +13,7 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/ttts-domain": "^13.1.1",
+    "@motionpicture/ttts-domain": "^13.2.2",
     "agentkeepalive": "^3.3.0",
     "basic-auth": "^2.0.0",
     "body-parser": "^1.18.2",
@@ -61,8 +61,8 @@
     "typescript": "^2.9.2"
   },
   "engines": {
-    "node": ">=8.0.0",
-    "npm": ">=5.3.0"
+    "node": "8.9.0",
+    "npm": "5.3.0"
   },
   "keywords": [],
   "license": "UNLICENSED",
@@ -85,5 +85,5 @@
     "version": "git add -A",
     "postversion": "git push origin --tags"
   },
-  "version": "5.4.5"
+  "version": "5.4.6"
 }
