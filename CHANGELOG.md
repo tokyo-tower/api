@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 複数のWAITER許可証発行者に対応
+
 ### Deprecated
 
 ### Removed
