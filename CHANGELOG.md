@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
+- moment-timezoneを適切にrequireできていないコードを修正
+
 ### Security
 
 ## v5.4.7 - 2018-12-10
