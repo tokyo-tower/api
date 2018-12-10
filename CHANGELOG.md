@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.4.7 - 2018-12-10
+
+### Changed
+
+- 複数のWAITER許可証発行者に対応
+
 ## v5.4.6 - 2018-11-28
 
 ### Changed
