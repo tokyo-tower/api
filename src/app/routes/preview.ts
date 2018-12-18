@@ -24,16 +24,20 @@ previewRouter.get('/performancesWithAggregation', async (req, res, next) => {
         let performancesWithAggregation = await performanceWithAggregationRepo.findAll();
 
         if (req.query.startFrom !== undefined) {
-            const startFrom = moment(req.query.startFrom).unix();
+            const startFrom = moment(req.query.startFrom)
+                .unix();
             performancesWithAggregation = performancesWithAggregation.filter(
-                (p) => moment(p.startDate).unix() >= startFrom
+                (p) => moment(p.startDate)
+                    .unix() >= startFrom
             );
         }
 
         if (req.query.startThrough !== undefined) {
-            const startThrough = moment(req.query.startThrough).unix();
+            const startThrough = moment(req.query.startThrough)
+                .unix();
             performancesWithAggregation = performancesWithAggregation.filter(
-                (p) => moment(p.startDate).unix() <= startThrough
+                (p) => moment(p.startDate)
+                    .unix() <= startThrough
             );
         }
 

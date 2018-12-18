@@ -31,9 +31,15 @@ ordersRouter.use(authentication_1.default);
  * make inquiry of an order
  */
 ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders', 'orders.read-only']), (req, _, next) => {
-    req.checkBody('performanceDay', 'invalid performanceDay').notEmpty().withMessage('performanceDay is required');
-    req.checkBody('paymentNo', 'invalid paymentNo').notEmpty().withMessage('paymentNo is required');
-    req.checkBody('telephone', 'invalid telephone').notEmpty().withMessage('telephone is required');
+    req.checkBody('performanceDay', 'invalid performanceDay')
+        .notEmpty()
+        .withMessage('performanceDay is required');
+    req.checkBody('paymentNo', 'invalid paymentNo')
+        .notEmpty()
+        .withMessage('paymentNo is required');
+    req.checkBody('telephone', 'invalid telephone')
+        .notEmpty()
+        .withMessage('telephone is required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -51,6 +57,56 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders', 'o
             .map((o) => o.itemOffered.id);
         const printToken = yield tokenRepo.createPrintToken(reservationIds);
         res.json(Object.assign({}, order, { printToken: printToken }));
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 注文検索
+ */
+ordersRouter.get('', permitScopes_1.default(['admin']), (req, __2, next) => {
+    req.checkQuery('orderDateFrom')
+        .optional()
+        .isISO8601()
+        .withMessage('must be ISO8601')
+        .toDate();
+    req.checkQuery('orderDateThrough')
+        .optional()
+        .isISO8601()
+        .withMessage('must be ISO8601')
+        .toDate();
+    req.checkQuery('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
+        .optional()
+        .isISO8601()
+        .withMessage('must be ISO8601')
+        .toDate();
+    req.checkQuery('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
+        .optional()
+        .isISO8601()
+        .withMessage('must be ISO8601')
+        .toDate();
+    req.checkQuery('acceptedOffers.itemOffered.reservationFor.startFrom')
+        .optional()
+        .isISO8601()
+        .withMessage('must be ISO8601')
+        .toDate();
+    req.checkQuery('acceptedOffers.itemOffered.reservationFor.startThrough')
+        .optional()
+        .isISO8601()
+        .withMessage('must be ISO8601')
+        .toDate();
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const orderRepo = new ttts.repository.Order(ttts.mongoose.connection);
+        const searchConditions = Object.assign({}, req.query, { 
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: ttts.factory.sortType.Descending } });
+        const orders = yield orderRepo.search(searchConditions);
+        const totalCount = yield orderRepo.count(searchConditions);
+        res.set('X-Total-Count', totalCount.toString());
+        res.json(orders);
     }
     catch (error) {
         next(error);

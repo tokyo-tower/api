@@ -31,4 +31,28 @@ organizationsRouter.get(
         }
     });
 
+organizationsRouter.get(
+    '/movieTheater',
+    permitScopes(['organizations', 'organizations.read-only']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const organizationRepo = new ttts.repository.Organization(ttts.mongoose.connection);
+            const searchCoinditions: any = {
+                // tslint:disable-next-line:no-magic-numbers
+                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
+                sort: req.query.sort,
+                name: req.query.name
+            };
+            const organizations = await organizationRepo.searchCorporations(searchCoinditions);
+            const totalCount = await organizationRepo.countCorporations(searchCoinditions);
+            res.set('X-Total-Count', totalCount.toString());
+            res.json(organizations);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 export default organizationsRouter;

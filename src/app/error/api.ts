@@ -1,17 +1,15 @@
 import { factory } from '@motionpicture/ttts-domain';
 
 /**
- * APIError
- *
- * @class APIError
- * @extends {Error}
+ * APIエラー
  */
 export class APIError extends Error {
     public readonly code: number;
     public readonly errors: factory.errors.TTTS[];
 
     constructor(code: number, errors: factory.errors.TTTS[]) {
-        const message = errors.map((error) => error.message).join('\n');
+        const message = errors.map((error) => error.message)
+            .join('\n');
         super(message);
 
         this.name = 'APIError';

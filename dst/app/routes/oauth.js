@@ -20,8 +20,12 @@ const validator_1 = require("../middlewares/validator");
 const debug = createDebug('ttts-api:routes:oauth');
 const oauthRouter = express_1.Router();
 oauthRouter.post('/token', (req, __, next) => {
-    req.checkBody('username', 'invalid username').notEmpty().withMessage('username is required');
-    req.checkBody('password', 'invalid password').notEmpty().withMessage('password is required');
+    req.checkBody('username', 'invalid username')
+        .notEmpty()
+        .withMessage('username is required');
+    req.checkBody('password', 'invalid password')
+        .notEmpty()
+        .withMessage('password is required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {

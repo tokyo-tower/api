@@ -30,6 +30,7 @@ const pemsByIssuer = {};
 exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // ヘッダーからBearerトークンを取り出す
+        // tslint:disable-next-line:no-null-keyword
         let token = null;
         if (typeof req.headers.authorization === 'string' && (req.headers.authorization).split(' ')[0] === 'Bearer') {
             token = (req.headers.authorization).split(' ')[1];
@@ -59,11 +60,13 @@ function createPems(issuer) {
         const openidConfiguration = yield request({
             url: `${issuer}${exports.URI_OPENID_CONFIGURATION}`,
             json: true
-        }).then((body) => body);
+        })
+            .then((body) => body);
         return request({
             url: openidConfiguration.jwks_uri,
             json: true
-        }).then((body) => {
+        })
+            .then((body) => {
             debug('got jwks_uri', body);
             const pemsByKid = {};
             body.keys.forEach((key) => {

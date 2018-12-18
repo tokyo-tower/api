@@ -30,7 +30,8 @@ devRouter.get('/mongoose/connect', (__, res, next) => {
             next(err);
             return;
         }
-        res.status(http_status_1.NO_CONTENT).end();
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     });
 });
 devRouter.get('/mongoose/disconnect', (__, res, next) => {
@@ -39,7 +40,8 @@ devRouter.get('/mongoose/disconnect', (__, res, next) => {
             next(err);
             return;
         }
-        res.status(http_status_1.NO_CONTENT).end();
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     });
 });
 exports.default = devRouter;

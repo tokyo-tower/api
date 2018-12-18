@@ -1,14 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * APIError
- *
- * @class APIError
- * @extends {Error}
+ * APIエラー
  */
 class APIError extends Error {
     constructor(code, errors) {
-        const message = errors.map((error) => error.message).join('\n');
+        const message = errors.map((error) => error.message)
+            .join('\n');
         super(message);
         this.name = 'APIError';
         this.code = code;

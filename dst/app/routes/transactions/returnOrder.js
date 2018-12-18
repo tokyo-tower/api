@@ -26,10 +26,20 @@ returnOrderTransactionsRouter.use(authentication_1.default);
  * 上映日と購入番号で返品
  */
 returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transactions']), (req, __, next) => {
-    req.checkBody('performance_day', 'invalid performance_day').notEmpty().withMessage('performance_day is required');
-    req.checkBody('payment_no', 'invalid payment_no').notEmpty().withMessage('payment_no is required');
-    req.checkBody('cancellation_fee', 'invalid cancellation_fee').notEmpty().withMessage('cancellation_fee is required').isInt();
-    req.checkBody('forcibly', 'invalid forcibly').notEmpty().withMessage('forcibly is required').isBoolean();
+    req.checkBody('performance_day', 'invalid performance_day')
+        .notEmpty()
+        .withMessage('performance_day is required');
+    req.checkBody('payment_no', 'invalid payment_no')
+        .notEmpty()
+        .withMessage('payment_no is required');
+    req.checkBody('cancellation_fee', 'invalid cancellation_fee')
+        .notEmpty()
+        .withMessage('cancellation_fee is required')
+        .isInt();
+    req.checkBody('forcibly', 'invalid forcibly')
+        .notEmpty()
+        .withMessage('forcibly is required')
+        .isBoolean();
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -42,7 +52,9 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
             'result.eventReservations.payment_no': req.body.payment_no
         };
         debug('searching a transaction...', conditions);
-        const placeOrderTransaction = yield transactionRepo.transactionModel.findOne(conditions).exec().then((doc) => {
+        const placeOrderTransaction = yield transactionRepo.transactionModel.findOne(conditions)
+            .exec()
+            .then((doc) => {
             if (doc === null) {
                 throw new ttts.factory.errors.NotFound('transaction');
             }
@@ -59,7 +71,8 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
             reason: ttts.factory.transaction.returnOrder.Reason.Customer
         })(transactionRepo);
         debug('returnOrder transaction confirmed.');
-        res.status(http_status_1.CREATED).json({
+        res.status(http_status_1.CREATED)
+            .json({
             id: returnOrderTransaction.id
         });
     }
@@ -71,12 +84,25 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
  * 返品メール送信
  */
 returnOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification', permitScopes_1.default(['transactions']), (req, __2, next) => {
-    req.checkBody('sender.name', 'invalid sender').notEmpty().withMessage('sender.name is required');
-    req.checkBody('sender.email', 'invalid sender').notEmpty().withMessage('sender.email is required');
-    req.checkBody('toRecipient.name', 'invalid toRecipient').notEmpty().withMessage('toRecipient.name is required');
-    req.checkBody('toRecipient.email', 'invalid toRecipient').notEmpty().withMessage('toRecipient.email is required').isEmail();
-    req.checkBody('about', 'invalid about').notEmpty().withMessage('about is required');
-    req.checkBody('text', 'invalid text').notEmpty().withMessage('text is required');
+    req.checkBody('sender.name', 'invalid sender')
+        .notEmpty()
+        .withMessage('sender.name is required');
+    req.checkBody('sender.email', 'invalid sender')
+        .notEmpty()
+        .withMessage('sender.email is required');
+    req.checkBody('toRecipient.name', 'invalid toRecipient')
+        .notEmpty()
+        .withMessage('toRecipient.name is required');
+    req.checkBody('toRecipient.email', 'invalid toRecipient')
+        .notEmpty()
+        .withMessage('toRecipient.email is required')
+        .isEmail();
+    req.checkBody('about', 'invalid about')
+        .notEmpty()
+        .withMessage('about is required');
+    req.checkBody('text', 'invalid text')
+        .notEmpty()
+        .withMessage('text is required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -92,7 +118,8 @@ returnOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification'
             about: req.body.about,
             text: req.body.text
         })(new ttts.repository.Task(ttts.mongoose.connection), new ttts.repository.Transaction(ttts.mongoose.connection));
-        res.status(http_status_1.CREATED).json(task);
+        res.status(http_status_1.CREATED)
+            .json(task);
     }
     catch (error) {
         next(error);

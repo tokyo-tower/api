@@ -42,7 +42,8 @@ devRouter.get(
                 return;
             }
 
-            res.status(NO_CONTENT).end();
+            res.status(NO_CONTENT)
+                .end();
         });
     });
 
@@ -56,7 +57,8 @@ devRouter.get(
                 return;
             }
 
-            res.status(NO_CONTENT).end();
+            res.status(NO_CONTENT)
+                .end();
         });
     });
 

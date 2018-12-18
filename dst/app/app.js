@@ -20,8 +20,10 @@ const organizations_1 = require("./routes/organizations");
 const performances_1 = require("./routes/performances");
 const preview_1 = require("./routes/preview");
 const reservations_1 = require("./routes/reservations");
+const tasks_1 = require("./routes/tasks");
 const placeOrder_1 = require("./routes/transactions/placeOrder");
 const returnOrder_1 = require("./routes/transactions/returnOrder");
+const userPools_1 = require("./routes/userPools");
 const app = express();
 const options = {
     origin: '*',
@@ -67,8 +69,10 @@ app.use('/organizations', organizations_1.default);
 app.use('/preview', preview_1.default);
 app.use('/performances', performances_1.default);
 app.use('/reservations', reservations_1.default);
+app.use('/tasks', tasks_1.default);
 app.use('/transactions/placeOrder', placeOrder_1.default);
 app.use('/transactions/returnOrder', returnOrder_1.default);
+app.use('/userPools', userPools_1.default);
 if (process.env.NODE_ENV !== 'production') {
     app.use('/dev', dev_1.default);
 }

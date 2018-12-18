@@ -23,8 +23,10 @@ import organizationsRouter from './routes/organizations';
 import performanceRouter from './routes/performances';
 import previewRouter from './routes/preview';
 import reservationsRouter from './routes/reservations';
+import tasksRouter from './routes/tasks';
 import placeOrderTransactionsRouter from './routes/transactions/placeOrder';
 import returnOrderTransactionsRouter from './routes/transactions/returnOrder';
+import userPoolsRouter from './routes/userPools';
 
 const app = express();
 
@@ -77,8 +79,10 @@ app.use('/organizations', organizationsRouter);
 app.use('/preview', previewRouter);
 app.use('/performances', performanceRouter);
 app.use('/reservations', reservationsRouter);
+app.use('/tasks', tasksRouter);
 app.use('/transactions/placeOrder', placeOrderTransactionsRouter);
 app.use('/transactions/returnOrder', returnOrderTransactionsRouter);
+app.use('/userPools', userPoolsRouter);
 
 if (process.env.NODE_ENV !== 'production') {
     app.use('/dev', devRouter);

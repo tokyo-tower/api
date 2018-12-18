@@ -53,14 +53,17 @@ performanceRouter.get('', permitScopes_1.default(['performances', 'performances.
             day: (!_.isEmpty(req.query.day)) ? req.query.day : undefined,
             section: (!_.isEmpty(req.query.section)) ? req.query.section : undefined,
             words: (!_.isEmpty(req.query.words)) ? req.query.words : undefined,
-            startFrom: (!_.isEmpty(req.query.start_from)) ? moment(req.query.start_from).toDate() : undefined,
-            startThrough: (!_.isEmpty(req.query.start_through)) ? moment(req.query.start_through).toDate() : undefined,
+            startFrom: (!_.isEmpty(req.query.start_from)) ? moment(req.query.start_from)
+                .toDate() : undefined,
+            startThrough: (!_.isEmpty(req.query.start_through)) ? moment(req.query.start_through)
+                .toDate() : undefined,
             theater: (!_.isEmpty(req.query.theater)) ? req.query.theater : undefined,
             screen: (!_.isEmpty(req.query.screen)) ? req.query.screen : undefined,
             performanceId: (!_.isEmpty(req.query.performanceId)) ? req.query.performanceId : undefined,
             wheelchair: (!_.isEmpty(req.query.screen)) ? req.query.wheelchair : undefined
         };
-        yield ttts.service.performance.search(conditions)(new ttts.repository.Performance(ttts.mongoose.connection), new ttts.repository.itemAvailability.Performance(redisClient), new ttts.repository.itemAvailability.SeatReservationOffer(redisClient), new ttts.repository.offer.ExhibitionEvent(redisClient)).then((searchPerformanceResult) => {
+        yield ttts.service.performance.search(conditions)(new ttts.repository.Performance(ttts.mongoose.connection), new ttts.repository.itemAvailability.Performance(redisClient), new ttts.repository.itemAvailability.SeatReservationOffer(redisClient), new ttts.repository.offer.ExhibitionEvent(redisClient))
+            .then((searchPerformanceResult) => {
             res.json({
                 meta: {
                     number_of_performances: searchPerformanceResult.numberOfPerformances,
