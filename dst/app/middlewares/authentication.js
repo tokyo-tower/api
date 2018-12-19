@@ -43,11 +43,42 @@ exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* (
             tokenUse: 'access' // access tokenのみ受け付ける
         });
         debug('verified! payload:', payload);
+        const identifier = [
+            {
+                name: 'tokenIssuer',
+                value: payload.iss
+            },
+            {
+                name: 'clientId',
+                value: payload.client_id
+            }
+        ];
+        let programMembership;
+        if (payload.username !== undefined) {
+            identifier.push({
+                name: 'username',
+                value: payload.username
+            });
+            programMembership = {
+                typeOf: 'ProgramMembership',
+                membershipNumber: payload.username,
+                username: payload.username,
+                programName: 'Amazon Cognito',
+                award: [],
+                url: payload.iss
+            };
+        }
         req.user = Object.assign({}, payload, {
             // アクセストークンにはscopeとして定義されているので、scopesに変換
             scopes: (typeof payload.scope === 'string') ? payload.scope.split((' ')) : []
         });
         req.accessToken = token;
+        req.agent = {
+            typeOf: ttts.factory.personType.Person,
+            id: payload.sub,
+            memberOf: programMembership,
+            identifier: identifier
+        };
         next();
     }
     catch (error) {

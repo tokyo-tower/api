@@ -1,8 +1,7 @@
 /**
- * middlewares/authenticationにて、expressのrequestオブジェクトにAPIユーザー情報を追加している。
- * ユーザーの型をここで定義しています。
- * @ignore
+ * アプリケーション固有の型
  */
+import * as ttts from '@motionpicture/ttts-domain';
 import * as express from 'express';
 
 declare global {
@@ -23,6 +22,7 @@ declare global {
 
         // tslint:disable-next-line:interface-name
         export interface Request {
+            agent: ttts.factory.person.IPerson;
             user: IUser;
             accessToken: string;
         }

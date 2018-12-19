@@ -56,7 +56,10 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         const transaction = yield ttts.service.transaction.placeOrderInProgress.start({
             expires: moment(req.body.expires)
                 .toDate(),
-            agentId: req.user.sub,
+            agent: Object.assign({}, req.agent, { identifier: [
+                    ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
+                    ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
+                ] }),
             sellerIdentifier: req.body.seller_identifier,
             clientUser: req.user,
             purchaserGroup: req.body.purchaser_group,
@@ -91,15 +94,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const contact = yield ttts.service.transaction.placeOrderInProgress.setCustomerContact(req.user.sub, req.params.transactionId, {
-            last_name: req.body.last_name,
-            first_name: req.body.first_name,
-            email: req.body.email,
-            tel: req.body.tel,
-            age: (req.body.age !== undefined) ? req.body.age : '',
-            address: (req.body.address !== undefined) ? req.body.address : '',
-            gender: (req.body.gender !== undefined) ? req.body.gender : ''
-        })(new ttts.repository.Transaction(ttts.mongoose.connection));
+        const contact = yield ttts.service.transaction.placeOrderInProgress.setCustomerContact(req.user.sub, req.params.transactionId, Object.assign({}, req.body, { age: (req.body.age !== undefined) ? req.body.age : '', address: (req.body.address !== undefined) ? req.body.address : '', gender: (req.body.gender !== undefined) ? req.body.gender : '' }))(new ttts.repository.Transaction(ttts.mongoose.connection));
         res.status(http_status_1.CREATED)
             .json(contact);
     }

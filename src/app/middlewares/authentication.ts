@@ -85,6 +85,33 @@ export default async (req: Request, __: Response, next: NextFunction) => {
             tokenUse: 'access' // access tokenのみ受け付ける
         });
         debug('verified! payload:', payload);
+
+        const identifier: ttts.factory.person.IIdentifier = [
+            {
+                name: 'tokenIssuer',
+                value: payload.iss
+            },
+            {
+                name: 'clientId',
+                value: payload.client_id
+            }
+        ];
+        let programMembership: any;
+        if (payload.username !== undefined) {
+            identifier.push({
+                name: 'username',
+                value: payload.username
+            });
+            programMembership = {
+                typeOf: 'ProgramMembership',
+                membershipNumber: payload.username,
+                username: payload.username,
+                programName: 'Amazon Cognito',
+                award: [],
+                url: payload.iss
+            };
+        }
+
         req.user = {
             ...payload,
             ...{
@@ -93,6 +120,12 @@ export default async (req: Request, __: Response, next: NextFunction) => {
             }
         };
         req.accessToken = token;
+        req.agent = {
+            typeOf: ttts.factory.personType.Person,
+            id: payload.sub,
+            memberOf: programMembership,
+            identifier: identifier
+        };
 
         next();
     } catch (error) {

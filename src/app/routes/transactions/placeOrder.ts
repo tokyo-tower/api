@@ -63,7 +63,13 @@ placeOrderTransactionsRouter.post(
             const transaction = await ttts.service.transaction.placeOrderInProgress.start({
                 expires: moment(req.body.expires)
                     .toDate(),
-                agentId: req.user.sub,
+                agent: {
+                    ...req.agent,
+                    identifier: [
+                        ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
+                        ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
+                    ]
+                },
                 sellerIdentifier: req.body.seller_identifier,
                 clientUser: req.user,
                 purchaserGroup: req.body.purchaser_group,
@@ -113,10 +119,7 @@ placeOrderTransactionsRouter.put(
                 req.user.sub,
                 req.params.transactionId,
                 {
-                    last_name: req.body.last_name,
-                    first_name: req.body.first_name,
-                    email: req.body.email,
-                    tel: req.body.tel,
+                    ...req.body,
                     age: (req.body.age !== undefined) ? req.body.age : '',
                     address: (req.body.address !== undefined) ? req.body.address : '',
                     gender: (req.body.gender !== undefined) ? req.body.gender : ''
