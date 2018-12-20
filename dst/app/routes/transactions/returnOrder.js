@@ -1,8 +1,4 @@
 "use strict";
-/**
- * 注文取引ルーター
- * @ignore
- */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -12,9 +8,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * 注文取引ルーター
+ */
 const ttts = require("@motionpicture/ttts-domain");
 const createDebug = require("debug");
 const express_1 = require("express");
+// tslint:disable-next-line:no-submodule-imports
+const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const returnOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
@@ -120,6 +121,41 @@ returnOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification'
         })(new ttts.repository.Task(ttts.mongoose.connection), new ttts.repository.Transaction(ttts.mongoose.connection));
         res.status(http_status_1.CREATED)
             .json(task);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 取引検索
+ */
+returnOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
+    check_1.query('startFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('startThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('endFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('endThrough')
+        .optional()
+        .isISO8601()
+        .toDate()
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const transactionRepo = new ttts.repository.Transaction(ttts.mongoose.connection);
+        const searchConditions = Object.assign({}, req.query, { 
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: ttts.factory.sortType.Descending }, typeOf: ttts.factory.transactionType.ReturnOrder });
+        const transactions = yield transactionRepo.search(searchConditions);
+        const totalCount = yield transactionRepo.count(searchConditions);
+        res.set('X-Total-Count', totalCount.toString());
+        res.json(transactions);
     }
     catch (error) {
         next(error);
