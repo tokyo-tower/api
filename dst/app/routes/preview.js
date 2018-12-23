@@ -29,12 +29,16 @@ previewRouter.get('/performancesWithAggregation', (req, res, next) => __awaiter(
         const performanceWithAggregationRepo = new ttts.repository.PerformanceWithAggregation(redisClient);
         let performancesWithAggregation = yield performanceWithAggregationRepo.findAll();
         if (req.query.startFrom !== undefined) {
-            const startFrom = moment(req.query.startFrom).unix();
-            performancesWithAggregation = performancesWithAggregation.filter((p) => moment(p.startDate).unix() >= startFrom);
+            const startFrom = moment(req.query.startFrom)
+                .unix();
+            performancesWithAggregation = performancesWithAggregation.filter((p) => moment(p.startDate)
+                .unix() >= startFrom);
         }
         if (req.query.startThrough !== undefined) {
-            const startThrough = moment(req.query.startThrough).unix();
-            performancesWithAggregation = performancesWithAggregation.filter((p) => moment(p.startDate).unix() <= startThrough);
+            const startThrough = moment(req.query.startThrough)
+                .unix();
+            performancesWithAggregation = performancesWithAggregation.filter((p) => moment(p.startDate)
+                .unix() <= startThrough);
         }
         res.json(performancesWithAggregation);
     }

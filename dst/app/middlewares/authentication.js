@@ -30,6 +30,7 @@ const pemsByIssuer = {};
 exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // ヘッダーからBearerトークンを取り出す
+        // tslint:disable-next-line:no-null-keyword
         let token = null;
         if (typeof req.headers.authorization === 'string' && (req.headers.authorization).split(' ')[0] === 'Bearer') {
             token = (req.headers.authorization).split(' ')[1];
@@ -42,11 +43,42 @@ exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* (
             tokenUse: 'access' // access tokenのみ受け付ける
         });
         debug('verified! payload:', payload);
+        const identifier = [
+            {
+                name: 'tokenIssuer',
+                value: payload.iss
+            },
+            {
+                name: 'clientId',
+                value: payload.client_id
+            }
+        ];
+        let programMembership;
+        if (payload.username !== undefined) {
+            identifier.push({
+                name: 'username',
+                value: payload.username
+            });
+            programMembership = {
+                typeOf: 'ProgramMembership',
+                membershipNumber: payload.username,
+                username: payload.username,
+                programName: 'Amazon Cognito',
+                award: [],
+                url: payload.iss
+            };
+        }
         req.user = Object.assign({}, payload, {
             // アクセストークンにはscopeとして定義されているので、scopesに変換
             scopes: (typeof payload.scope === 'string') ? payload.scope.split((' ')) : []
         });
         req.accessToken = token;
+        req.agent = {
+            typeOf: ttts.factory.personType.Person,
+            id: payload.sub,
+            memberOf: programMembership,
+            identifier: identifier
+        };
         next();
     }
     catch (error) {
@@ -59,11 +91,13 @@ function createPems(issuer) {
         const openidConfiguration = yield request({
             url: `${issuer}${exports.URI_OPENID_CONFIGURATION}`,
             json: true
-        }).then((body) => body);
+        })
+            .then((body) => body);
         return request({
             url: openidConfiguration.jwks_uri,
             json: true
-        }).then((body) => {
+        })
+            .then((body) => {
             debug('got jwks_uri', body);
             const pemsByKid = {};
             body.keys.forEach((key) => {

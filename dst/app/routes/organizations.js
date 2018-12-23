@@ -32,4 +32,23 @@ organizationsRouter.get('/corporation/:identifier', permitScopes_1.default(['org
         next(error);
     }
 }));
+organizationsRouter.get('/movieTheater', permitScopes_1.default(['organizations', 'organizations.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const organizationRepo = new ttts.repository.Organization(ttts.mongoose.connection);
+        const searchCoinditions = {
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+            page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
+            sort: req.query.sort,
+            name: req.query.name
+        };
+        const organizations = yield organizationRepo.searchCorporations(searchCoinditions);
+        const totalCount = yield organizationRepo.countCorporations(searchCoinditions);
+        res.set('X-Total-Count', totalCount.toString());
+        res.json(organizations);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 exports.default = organizationsRouter;

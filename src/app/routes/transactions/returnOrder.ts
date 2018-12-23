@@ -1,11 +1,11 @@
 /**
  * 注文取引ルーター
- * @ignore
  */
-
 import * as ttts from '@motionpicture/ttts-domain';
 import * as createDebug from 'debug';
 import { Router } from 'express';
+// tslint:disable-next-line:no-submodule-imports
+import { query } from 'express-validator/check';
 import { CREATED } from 'http-status';
 
 const returnOrderTransactionsRouter = Router();
@@ -25,10 +25,20 @@ returnOrderTransactionsRouter.post(
     '/confirm',
     permitScopes(['transactions']),
     (req, __, next) => {
-        req.checkBody('performance_day', 'invalid performance_day').notEmpty().withMessage('performance_day is required');
-        req.checkBody('payment_no', 'invalid payment_no').notEmpty().withMessage('payment_no is required');
-        req.checkBody('cancellation_fee', 'invalid cancellation_fee').notEmpty().withMessage('cancellation_fee is required').isInt();
-        req.checkBody('forcibly', 'invalid forcibly').notEmpty().withMessage('forcibly is required').isBoolean();
+        req.checkBody('performance_day', 'invalid performance_day')
+            .notEmpty()
+            .withMessage('performance_day is required');
+        req.checkBody('payment_no', 'invalid payment_no')
+            .notEmpty()
+            .withMessage('payment_no is required');
+        req.checkBody('cancellation_fee', 'invalid cancellation_fee')
+            .notEmpty()
+            .withMessage('cancellation_fee is required')
+            .isInt();
+        req.checkBody('forcibly', 'invalid forcibly')
+            .notEmpty()
+            .withMessage('forcibly is required')
+            .isBoolean();
 
         next();
     },
@@ -45,13 +55,15 @@ returnOrderTransactionsRouter.post(
                 'result.eventReservations.payment_no': req.body.payment_no
             };
             debug('searching a transaction...', conditions);
-            const placeOrderTransaction = await transactionRepo.transactionModel.findOne(conditions).exec().then((doc) => {
-                if (doc === null) {
-                    throw new ttts.factory.errors.NotFound('transaction');
-                }
+            const placeOrderTransaction = await transactionRepo.transactionModel.findOne(conditions)
+                .exec()
+                .then((doc) => {
+                    if (doc === null) {
+                        throw new ttts.factory.errors.NotFound('transaction');
+                    }
 
-                return <ttts.factory.transaction.placeOrder.ITransaction>doc.toObject();
-            });
+                    return <ttts.factory.transaction.placeOrder.ITransaction>doc.toObject();
+                });
             debug('placeOrder transaction found.');
 
             // 取引があれば、返品取引確定
@@ -65,9 +77,10 @@ returnOrderTransactionsRouter.post(
             })(transactionRepo);
             debug('returnOrder transaction confirmed.');
 
-            res.status(CREATED).json({
-                id: returnOrderTransaction.id
-            });
+            res.status(CREATED)
+                .json({
+                    id: returnOrderTransaction.id
+                });
         } catch (error) {
             next(error);
         }
@@ -81,12 +94,25 @@ returnOrderTransactionsRouter.post(
     '/:transactionId/tasks/sendEmailNotification',
     permitScopes(['transactions']),
     (req, __2, next) => {
-        req.checkBody('sender.name', 'invalid sender').notEmpty().withMessage('sender.name is required');
-        req.checkBody('sender.email', 'invalid sender').notEmpty().withMessage('sender.email is required');
-        req.checkBody('toRecipient.name', 'invalid toRecipient').notEmpty().withMessage('toRecipient.name is required');
-        req.checkBody('toRecipient.email', 'invalid toRecipient').notEmpty().withMessage('toRecipient.email is required').isEmail();
-        req.checkBody('about', 'invalid about').notEmpty().withMessage('about is required');
-        req.checkBody('text', 'invalid text').notEmpty().withMessage('text is required');
+        req.checkBody('sender.name', 'invalid sender')
+            .notEmpty()
+            .withMessage('sender.name is required');
+        req.checkBody('sender.email', 'invalid sender')
+            .notEmpty()
+            .withMessage('sender.email is required');
+        req.checkBody('toRecipient.name', 'invalid toRecipient')
+            .notEmpty()
+            .withMessage('toRecipient.name is required');
+        req.checkBody('toRecipient.email', 'invalid toRecipient')
+            .notEmpty()
+            .withMessage('toRecipient.email is required')
+            .isEmail();
+        req.checkBody('about', 'invalid about')
+            .notEmpty()
+            .withMessage('about is required');
+        req.checkBody('text', 'invalid text')
+            .notEmpty()
+            .withMessage('text is required');
 
         next();
     },
@@ -110,9 +136,56 @@ returnOrderTransactionsRouter.post(
             )(
                 new ttts.repository.Task(ttts.mongoose.connection),
                 new ttts.repository.Transaction(ttts.mongoose.connection)
-                );
+            );
 
-            res.status(CREATED).json(task);
+            res.status(CREATED)
+                .json(task);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 取引検索
+ */
+returnOrderTransactionsRouter.get(
+    '',
+    permitScopes(['admin']),
+    ...[
+        query('startFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('startThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('endFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('endThrough')
+            .optional()
+            .isISO8601()
+            .toDate()
+    ],
+    validator,
+    async (req, res, next) => {
+        try {
+            const transactionRepo = new ttts.repository.Transaction(ttts.mongoose.connection);
+            const searchConditions: ttts.factory.transaction.returnOrder.ISearchConditions = {
+                ...req.query,
+                // tslint:disable-next-line:no-magic-numbers
+                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
+                sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: ttts.factory.sortType.Descending },
+                typeOf: ttts.factory.transactionType.ReturnOrder
+            };
+            const transactions = await transactionRepo.search(searchConditions);
+            const totalCount = await transactionRepo.count(searchConditions);
+            res.set('X-Total-Count', totalCount.toString());
+            res.json(transactions);
         } catch (error) {
             next(error);
         }

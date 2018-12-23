@@ -70,6 +70,7 @@ const pemsByIssuer: { [issuer: string]: IPems } = {};
 export default async (req: Request, __: Response, next: NextFunction) => {
     try {
         // ヘッダーからBearerトークンを取り出す
+        // tslint:disable-next-line:no-null-keyword
         let token: string | null = null;
         if (typeof req.headers.authorization === 'string' && (req.headers.authorization).split(' ')[0] === 'Bearer') {
             token = (req.headers.authorization).split(' ')[1];
@@ -84,6 +85,33 @@ export default async (req: Request, __: Response, next: NextFunction) => {
             tokenUse: 'access' // access tokenのみ受け付ける
         });
         debug('verified! payload:', payload);
+
+        const identifier: ttts.factory.person.IIdentifier = [
+            {
+                name: 'tokenIssuer',
+                value: payload.iss
+            },
+            {
+                name: 'clientId',
+                value: payload.client_id
+            }
+        ];
+        let programMembership: any;
+        if (payload.username !== undefined) {
+            identifier.push({
+                name: 'username',
+                value: payload.username
+            });
+            programMembership = {
+                typeOf: 'ProgramMembership',
+                membershipNumber: payload.username,
+                username: payload.username,
+                programName: 'Amazon Cognito',
+                award: [],
+                url: payload.iss
+            };
+        }
+
         req.user = {
             ...payload,
             ...{
@@ -92,6 +120,12 @@ export default async (req: Request, __: Response, next: NextFunction) => {
             }
         };
         req.accessToken = token;
+        req.agent = {
+            typeOf: ttts.factory.personType.Person,
+            id: payload.sub,
+            memberOf: programMembership,
+            identifier: identifier
+        };
 
         next();
     } catch (error) {
@@ -104,20 +138,22 @@ async function createPems(issuer: string) {
     const openidConfiguration: IOpenIdConfiguration = await request({
         url: `${issuer}${URI_OPENID_CONFIGURATION}`,
         json: true
-    }).then((body) => body);
+    })
+        .then((body) => body);
 
     return request({
         url: openidConfiguration.jwks_uri,
         json: true
-    }).then((body) => {
-        debug('got jwks_uri', body);
-        const pemsByKid: IPems = {};
-        (<any[]>body.keys).forEach((key) => {
-            pemsByKid[key.kid] = jwkToPem(key);
-        });
+    })
+        .then((body) => {
+            debug('got jwks_uri', body);
+            const pemsByKid: IPems = {};
+            (<any[]>body.keys).forEach((key) => {
+                pemsByKid[key.kid] = jwkToPem(key);
+            });
 
-        return pemsByKid;
-    });
+            return pemsByKid;
+        });
 }
 
 /**

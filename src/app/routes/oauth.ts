@@ -16,8 +16,12 @@ const oauthRouter = Router();
 oauthRouter.post(
     '/token',
     (req, __, next) => {
-        req.checkBody('username', 'invalid username').notEmpty().withMessage('username is required');
-        req.checkBody('password', 'invalid password').notEmpty().withMessage('password is required');
+        req.checkBody('username', 'invalid username')
+            .notEmpty()
+            .withMessage('username is required');
+        req.checkBody('password', 'invalid password')
+            .notEmpty()
+            .withMessage('password is required');
 
         next();
     },
