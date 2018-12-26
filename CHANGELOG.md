@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
+- アプリケーションによるWAITER必須設定を再追加
+
 ### Security
 
 ## v5.5.0 - 2018-12-23
