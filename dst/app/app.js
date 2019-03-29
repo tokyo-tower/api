@@ -1,7 +1,6 @@
 "use strict";
 /**
  * expressアプリケーション
- * @module app
  */
 const ttts = require("@motionpicture/ttts-domain");
 const bodyParser = require("body-parser");
@@ -20,6 +19,7 @@ const organizations_1 = require("./routes/organizations");
 const performances_1 = require("./routes/performances");
 const preview_1 = require("./routes/preview");
 const reservations_1 = require("./routes/reservations");
+const sellers_1 = require("./routes/sellers");
 const tasks_1 = require("./routes/tasks");
 const placeOrder_1 = require("./routes/transactions/placeOrder");
 const returnOrder_1 = require("./routes/transactions/returnOrder");
@@ -69,6 +69,7 @@ app.use('/organizations', organizations_1.default);
 app.use('/preview', preview_1.default);
 app.use('/performances', performances_1.default);
 app.use('/reservations', reservations_1.default);
+app.use('/sellers', sellers_1.default);
 app.use('/tasks', tasks_1.default);
 app.use('/transactions/placeOrder', placeOrder_1.default);
 app.use('/transactions/returnOrder', returnOrder_1.default);
