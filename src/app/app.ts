@@ -1,8 +1,6 @@
 /**
  * expressアプリケーション
- * @module app
  */
-
 import * as ttts from '@motionpicture/ttts-domain';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
@@ -23,6 +21,7 @@ import organizationsRouter from './routes/organizations';
 import performanceRouter from './routes/performances';
 import previewRouter from './routes/preview';
 import reservationsRouter from './routes/reservations';
+import sellersRouter from './routes/sellers';
 import tasksRouter from './routes/tasks';
 import placeOrderTransactionsRouter from './routes/transactions/placeOrder';
 import returnOrderTransactionsRouter from './routes/transactions/returnOrder';
@@ -59,7 +58,7 @@ app.use(helmet.hsts({
 // tslint:disable-next-line:no-require-imports no-var-requires
 const packageInfo = require('../../package.json');
 app.use((__, res, next) => {
-    res.setHeader('x-api-verion', <string>packageInfo.version);
+    res.setHeader('x-api-version', <string>packageInfo.version);
     next();
 });
 
@@ -79,6 +78,7 @@ app.use('/organizations', organizationsRouter);
 app.use('/preview', previewRouter);
 app.use('/performances', performanceRouter);
 app.use('/reservations', reservationsRouter);
+app.use('/sellers', sellersRouter);
 app.use('/tasks', tasksRouter);
 app.use('/transactions/placeOrder', placeOrderTransactionsRouter);
 app.use('/transactions/returnOrder', returnOrderTransactionsRouter);
