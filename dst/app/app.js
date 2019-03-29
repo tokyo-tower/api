@@ -52,7 +52,7 @@ app.use(helmet.hsts({
 // tslint:disable-next-line:no-require-imports no-var-requires
 const packageInfo = require('../../package.json');
 app.use((__, res, next) => {
-    res.setHeader('x-api-verion', packageInfo.version);
+    res.setHeader('x-api-version', packageInfo.version);
     next();
 });
 // view engine setup
