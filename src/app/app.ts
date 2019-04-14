@@ -15,6 +15,7 @@ import notFoundHandler from './middlewares/notFoundHandler';
 
 import adminsRouter from './routes/admins';
 import devRouter from './routes/dev';
+import eventsRouter from './routes/events';
 import healthRouter from './routes/health';
 import oauthRouter from './routes/oauth';
 import ordersRouter from './routes/orders';
@@ -74,6 +75,7 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 
 // ルーティング
 app.use('/admins', adminsRouter);
+app.use('/events', eventsRouter);
 app.use('/health', healthRouter);
 app.use('/oauth', oauthRouter);
 app.use('/orders', ordersRouter);

@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - ヘルスルーターを追加
 - 統計ルーターを追加
+- イベントルーターを追加
 
 ### Changed
 

@@ -13,6 +13,7 @@ const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const admins_1 = require("./routes/admins");
 const dev_1 = require("./routes/dev");
+const events_1 = require("./routes/events");
 const health_1 = require("./routes/health");
 const oauth_1 = require("./routes/oauth");
 const orders_1 = require("./routes/orders");
@@ -65,6 +66,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
 // ルーティング
 app.use('/admins', admins_1.default);
+app.use('/events', events_1.default);
 app.use('/health', health_1.default);
 app.use('/oauth', oauth_1.default);
 app.use('/orders', orders_1.default);
