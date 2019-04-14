@@ -8,10 +8,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- ヘルスルーターを追加
-- 統計ルーターを追加
-- イベントルーターを追加
-
 ### Changed
 
 ### Deprecated
@@ -21,6 +17,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v5.7.0 - 2019-04-15
+
+### Added
+
+- ヘルスルーターを追加
+- 統計ルーターを追加
+- イベントルーターを追加
 
 ## v5.6.0 - 2019-03-29
 
