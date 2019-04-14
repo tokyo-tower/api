@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- ヘルスルーターを追加
+- 統計ルーターを追加
+
 ### Changed
 
 ### Deprecated
