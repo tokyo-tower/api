@@ -9,6 +9,14 @@ import { query } from 'express-validator/check';
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
 
+const redisClient = ttts.redis.createClient({
+    host: <string>process.env.REDIS_HOST,
+    // tslint:disable-next-line:no-magic-numbers
+    port: parseInt(<string>process.env.REDIS_PORT, 10),
+    password: <string>process.env.REDIS_KEY,
+    tls: { servername: <string>process.env.REDIS_HOST }
+});
+
 const screeningEventRouter = Router();
 
 /**
@@ -60,10 +68,24 @@ screeningEventRouter.get(
             .toDate()
     ],
     validator,
-    async (_, res, next) => {
+    async (req, res, next) => {
         try {
-            res.set('X-Total-Count', '0')
-                .json([]);
+            const conditions = {
+                ...req.query,
+                // tslint:disable-next-line:no-magic-numbers
+                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
+            };
+
+            const searchResult = await ttts.service.performance.search(conditions)(
+                new ttts.repository.Performance(ttts.mongoose.connection),
+                new ttts.repository.itemAvailability.Performance(redisClient),
+                new ttts.repository.itemAvailability.SeatReservationOffer(redisClient),
+                new ttts.repository.offer.ExhibitionEvent(redisClient)
+            );
+
+            res.set('X-Total-Count', searchResult.numberOfPerformances.toString())
+                .json(searchResult.performances.map(performanceWithAvailability2event));
         } catch (error) {
             next(error);
         }
@@ -156,6 +178,71 @@ function performance2event(performance: ttts.factory.performance.IPerformanceWit
     };
 }
 
+function performanceWithAvailability2event(performance: ttts.factory.performance.IPerformanceWithAvailability): any {
+    return {
+        ...performance,
+        typeOf: 'ScreeningEvent',
+        additionalProperty: [],
+        attendeeCount: 0,
+        checkInCount: 0,
+        eventStatus: (performance.onlineSalesStatus === ttts.factory.performance.OnlineSalesStatus.Suspended)
+            ? 'EventCancelled'
+            : 'EventScheduled',
+        name: {},
+        offers: {
+            id: '',
+            name: {},
+            typeOf: 'Offer',
+            priceCurrency: 'JPY',
+            eligibleQuantity: {
+                unitCode: 'C62',
+                typeOf: 'QuantitativeValue'
+            },
+            itemOffered: {
+                serviceType: {
+                    typeOf: 'ServiceType',
+                    name: ''
+                }
+            }
+        },
+        location: {
+            typeOf: 'ScreeningRoom',
+            branchCode: '',
+            name: {}
+        },
+        superEvent: {
+            id: '',
+            name: {},
+            alternativeHeadline: {},
+            location: {
+                id: '',
+                branchCode: '',
+                name: {},
+                typeOf: 'MovieTheater'
+            },
+            videoFormat: [],
+            soundFormat: [],
+            workPerformed: {
+                identifier: '',
+                name: '',
+                typeOf: 'Movie'
+            },
+            offers: {
+                typeOf: 'Offer',
+                priceCurrency: 'JPY'
+            },
+            additionalProperty: [],
+            eventStatus: 'EventScheduled',
+            typeOf: 'ScreeningEventSeries'
+        },
+        workPerformed: {
+            identifier: '',
+            name: {},
+            typeOf: 'Movie'
+        }
+    };
+}
+
 /**
  * イベントに対するオファー検索
  */
@@ -163,7 +250,7 @@ screeningEventRouter.get(
     '/:id/offers',
     permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
     validator,
-    async (_, res, next) => {
+    async (__, res, next) => {
         try {
             res.json([]);
         } catch (error) {
@@ -182,14 +269,14 @@ screeningEventRouter.get(
         query('seller')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required'),
+            .withMessage(() => 'required'),
         query('store')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required')
+            .withMessage(() => 'required')
     ],
     validator,
-    async (_, res, next) => {
+    async (__, res, next) => {
         try {
             res.json([]);
         } catch (error) {

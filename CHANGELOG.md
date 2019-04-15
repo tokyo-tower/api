@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.7.1 - 2019-04-15
+
+### Changed
+
+- イベント検索を最低限の検索条件対応で実装
+
 ## v5.7.0 - 2019-04-15
 
 ### Added

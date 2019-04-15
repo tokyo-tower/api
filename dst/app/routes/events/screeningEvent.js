@@ -17,6 +17,13 @@ const express_1 = require("express");
 const check_1 = require("express-validator/check");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
+const redisClient = ttts.redis.createClient({
+    host: process.env.REDIS_HOST,
+    // tslint:disable-next-line:no-magic-numbers
+    port: parseInt(process.env.REDIS_PORT, 10),
+    password: process.env.REDIS_KEY,
+    tls: { servername: process.env.REDIS_HOST }
+});
 const screeningEventRouter = express_1.Router();
 /**
  * イベント検索
@@ -62,10 +69,14 @@ screeningEventRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
         .optional()
         .isISO8601()
         .toDate()
-], validator_1.default, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        res.set('X-Total-Count', '0')
-            .json([]);
+        const conditions = Object.assign({}, req.query, { 
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
+        const searchResult = yield ttts.service.performance.search(conditions)(new ttts.repository.Performance(ttts.mongoose.connection), new ttts.repository.itemAvailability.Performance(redisClient), new ttts.repository.itemAvailability.SeatReservationOffer(redisClient), new ttts.repository.offer.ExhibitionEvent(redisClient));
+        res.set('X-Total-Count', searchResult.numberOfPerformances.toString())
+            .json(searchResult.performances.map(performanceWithAvailability2event));
     }
     catch (error) {
         next(error);
@@ -135,10 +146,62 @@ function performance2event(performance) {
             typeOf: 'Movie'
         } });
 }
+function performanceWithAvailability2event(performance) {
+    return Object.assign({}, performance, { typeOf: 'ScreeningEvent', additionalProperty: [], attendeeCount: 0, checkInCount: 0, eventStatus: (performance.onlineSalesStatus === ttts.factory.performance.OnlineSalesStatus.Suspended)
+            ? 'EventCancelled'
+            : 'EventScheduled', name: {}, offers: {
+            id: '',
+            name: {},
+            typeOf: 'Offer',
+            priceCurrency: 'JPY',
+            eligibleQuantity: {
+                unitCode: 'C62',
+                typeOf: 'QuantitativeValue'
+            },
+            itemOffered: {
+                serviceType: {
+                    typeOf: 'ServiceType',
+                    name: ''
+                }
+            }
+        }, location: {
+            typeOf: 'ScreeningRoom',
+            branchCode: '',
+            name: {}
+        }, superEvent: {
+            id: '',
+            name: {},
+            alternativeHeadline: {},
+            location: {
+                id: '',
+                branchCode: '',
+                name: {},
+                typeOf: 'MovieTheater'
+            },
+            videoFormat: [],
+            soundFormat: [],
+            workPerformed: {
+                identifier: '',
+                name: '',
+                typeOf: 'Movie'
+            },
+            offers: {
+                typeOf: 'Offer',
+                priceCurrency: 'JPY'
+            },
+            additionalProperty: [],
+            eventStatus: 'EventScheduled',
+            typeOf: 'ScreeningEventSeries'
+        }, workPerformed: {
+            identifier: '',
+            name: {},
+            typeOf: 'Movie'
+        } });
+}
 /**
  * イベントに対するオファー検索
  */
-screeningEventRouter.get('/:id/offers', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
+screeningEventRouter.get('/:id/offers', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (__, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         res.json([]);
     }
@@ -153,12 +216,12 @@ screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default(['aws.cogn
     check_1.query('seller')
         .not()
         .isEmpty()
-        .withMessage((_, __) => 'required'),
+        .withMessage(() => 'required'),
     check_1.query('store')
         .not()
         .isEmpty()
-        .withMessage((_, __) => 'required')
-], validator_1.default, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
+        .withMessage(() => 'required')
+], validator_1.default, (__, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         res.json([]);
     }
