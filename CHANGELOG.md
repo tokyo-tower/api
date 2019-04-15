@@ -8,7 +8,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- WAITER無効化フラグを追加
+
 ### Changed
+
+- 取引コレクションのインデックス調整
+- 予約インターフェースをChevreを継承するように拡張
 
 ### Deprecated
 
