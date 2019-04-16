@@ -69,7 +69,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
             clientUser: req.user,
             purchaserGroup: req.body.purchaser_group,
             passportToken: req.body.passportToken
-        })(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.Organization(ttts.mongoose.connection));
+        })(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.Seller(ttts.mongoose.connection));
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
         // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
@@ -165,7 +165,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard'
         });
         debug('authorizing credit card...', creditCard);
         debug('authorizing credit card...', req.body.creditCard);
-        const action = yield ttts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(req.user.sub, req.params.transactionId, req.body.orderId, req.body.amount, req.body.method, creditCard)(new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection), new ttts.repository.Organization(ttts.mongoose.connection), new ttts.repository.Transaction(ttts.mongoose.connection), creditService);
+        const action = yield ttts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(req.user.sub, req.params.transactionId, req.body.orderId, req.body.amount, req.body.method, creditCard)(new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection), new ttts.repository.Seller(ttts.mongoose.connection), new ttts.repository.Transaction(ttts.mongoose.connection), creditService);
         res.status(http_status_1.CREATED)
             .json({
             id: action.id

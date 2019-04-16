@@ -1,10 +1,7 @@
 /**
  * 組織ルーター
- * @namespace rouets.organizations
  */
-
 import { Router } from 'express';
-const organizationsRouter = Router();
 
 import * as ttts from '@motionpicture/ttts-domain';
 
@@ -12,10 +9,13 @@ import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
+const organizationsRouter = Router();
+
 organizationsRouter.use(authentication);
 
 /**
  * 識別子で企業組織を検索
+ * @deprecated Use /sellers/:id
  */
 organizationsRouter.get(
     '/corporation/:identifier',
@@ -23,36 +23,29 @@ organizationsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const organizationRepo = new ttts.repository.Organization(ttts.mongoose.connection);
-            const organization = await organizationRepo.findCorporationByIdentifier(req.params.identifier);
-            res.json(organization);
+            const sellerRepo = new ttts.repository.Seller(ttts.mongoose.connection);
+            const doc = await sellerRepo.organizationModel.findOne(
+                {
+                    identifier: req.params.identifier
+                },
+                {
+                    __v: 0,
+                    createdAt: 0,
+                    updatedAt: 0,
+                    // GMOのセキュアな情報を公開しないように注意
+                    'gmoInfo.shopPass': 0,
+                    'paymentAccepted.gmoInfo.shopPass': 0
+                }
+            )
+                .exec();
+            if (doc === null) {
+                throw new ttts.factory.errors.NotFound('Seller');
+            }
+
+            res.json(doc.toObject());
         } catch (error) {
             next(error);
         }
     });
-
-organizationsRouter.get(
-    '/movieTheater',
-    permitScopes(['organizations', 'organizations.read-only']),
-    validator,
-    async (req, res, next) => {
-        try {
-            const organizationRepo = new ttts.repository.Organization(ttts.mongoose.connection);
-            const searchCoinditions: any = {
-                // tslint:disable-next-line:no-magic-numbers
-                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
-                sort: req.query.sort,
-                name: req.query.name
-            };
-            const organizations = await organizationRepo.searchCorporations(searchCoinditions);
-            const totalCount = await organizationRepo.countCorporations(searchCoinditions);
-            res.set('X-Total-Count', totalCount.toString());
-            res.json(organizations);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
 
 export default organizationsRouter;

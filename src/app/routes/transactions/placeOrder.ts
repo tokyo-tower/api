@@ -81,7 +81,7 @@ placeOrderTransactionsRouter.post(
                 passportToken: req.body.passportToken
             })(
                 new ttts.repository.Transaction(ttts.mongoose.connection),
-                new ttts.repository.Organization(ttts.mongoose.connection)
+                new ttts.repository.Seller(ttts.mongoose.connection)
             );
 
             // tslint:disable-next-line:no-string-literal
@@ -249,7 +249,7 @@ placeOrderTransactionsRouter.post(
                 creditCard
             )(
                 new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection),
-                new ttts.repository.Organization(ttts.mongoose.connection),
+                new ttts.repository.Seller(ttts.mongoose.connection),
                 new ttts.repository.Transaction(ttts.mongoose.connection),
                 creditService
             );
