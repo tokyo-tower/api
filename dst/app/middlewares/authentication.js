@@ -59,14 +59,7 @@ exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* (
                 name: 'username',
                 value: payload.username
             });
-            programMembership = {
-                typeOf: 'ProgramMembership',
-                membershipNumber: payload.username,
-                username: payload.username,
-                programName: 'Amazon Cognito',
-                award: [],
-                url: payload.iss
-            };
+            programMembership = Object.assign({ typeOf: 'ProgramMembership', membershipNumber: payload.username }, { username: payload.username }, { programName: 'Amazon Cognito', award: [], url: payload.iss });
         }
         req.user = Object.assign({}, payload, {
             // アクセストークンにはscopeとして定義されているので、scopesに変換

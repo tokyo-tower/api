@@ -17,6 +17,7 @@ import adminsRouter from './routes/admins';
 import devRouter from './routes/dev';
 import eventsRouter from './routes/events';
 import healthRouter from './routes/health';
+import iamRouter from './routes/iam';
 import oauthRouter from './routes/oauth';
 import ordersRouter from './routes/orders';
 import organizationsRouter from './routes/organizations';
@@ -77,6 +78,7 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 app.use('/admins', adminsRouter);
 app.use('/events', eventsRouter);
 app.use('/health', healthRouter);
+app.use('/iam', iamRouter);
 app.use('/oauth', oauthRouter);
 app.use('/orders', ordersRouter);
 app.use('/organizations', organizationsRouter);

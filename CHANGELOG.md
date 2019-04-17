@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - WAITER無効化フラグを追加
+- IAMルーターを追加
 
 ### Changed
 
