@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v5.8.0 - 2019-04-19
+
+### Added
+
 - WAITER無効化フラグを追加
 - IAMルーターを追加
 
@@ -19,14 +33,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文取引の購入者プロフィール情報の持ち方をCinerinoに統一
 - install mongoose@5.5.1
 - install @motionpicture/ttts-domain@13.5.0
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## v5.7.1 - 2019-04-15
 
