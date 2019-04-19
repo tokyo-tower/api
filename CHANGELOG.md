@@ -18,6 +18,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.8.0 - 2019-04-19
+
+### Added
+
+- WAITER無効化フラグを追加
+- IAMルーターを追加
+
+### Changed
+
+- 取引コレクションのインデックス調整
+- 予約インターフェースをChevreを継承するように拡張
+- 組織コレクションのインデックス調整
+- 注文取引の購入者プロフィール情報の持ち方をCinerinoに統一
+- install mongoose@5.5.1
+- install @motionpicture/ttts-domain@13.5.0
+
 ## v5.7.1 - 2019-04-15
 
 ### Changed

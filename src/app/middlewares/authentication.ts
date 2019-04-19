@@ -96,7 +96,7 @@ export default async (req: Request, __: Response, next: NextFunction) => {
                 value: payload.client_id
             }
         ];
-        let programMembership: any;
+        let programMembership: ttts.factory.cinerino.programMembership.IProgramMembership | undefined;
         if (payload.username !== undefined) {
             identifier.push({
                 name: 'username',
@@ -105,7 +105,7 @@ export default async (req: Request, __: Response, next: NextFunction) => {
             programMembership = {
                 typeOf: 'ProgramMembership',
                 membershipNumber: payload.username,
-                username: payload.username,
+                ...{ username: payload.username },
                 programName: 'Amazon Cognito',
                 award: [],
                 url: payload.iss

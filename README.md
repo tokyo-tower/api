@@ -31,6 +31,7 @@
 | `STAFF_CLIENT_ID`             | true     |            | 内部関係者のクライアントID                     |
 | `WAITER_SECRET`               | true     |            | WAITER秘密鍵                                   |
 | `WAITER_PASSPORT_ISSUER`      | true     |            | WAITER許可証発行者                             |
+| `WAITER_DISABLED`             | true     | 1 or 0     | WAITER無効化フラグ                             |
 
 
 ## Code Samples

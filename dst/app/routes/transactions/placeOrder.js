@@ -22,6 +22,7 @@ const moment = require("moment");
 // tslint:disable-next-line:no-require-imports no-var-requires
 // const httpsAgent = require('agentkeepalive').HttpsAgent;
 // const agent = require('agentkeepalive');
+const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const placeOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
@@ -47,8 +48,9 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         .withMessage('seller_identifier is required');
     // POSからの流入制限を一時的に回避するため、許可証不要なクライアント設定ができるようにする
     // staffアプリケーションに関しても同様に
-    if (req.user.client_id !== process.env.POS_CLIENT_ID &&
-        req.user.client_id !== process.env.STAFF_CLIENT_ID) {
+    if (!WAITER_DISABLED
+        && req.user.client_id !== process.env.POS_CLIENT_ID
+        && req.user.client_id !== process.env.STAFF_CLIENT_ID) {
         req.checkBody('passportToken', 'invalid passportToken')
             .notEmpty()
             .withMessage('passportToken is required');
@@ -67,7 +69,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
             clientUser: req.user,
             purchaserGroup: req.body.purchaser_group,
             passportToken: req.body.passportToken
-        })(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.Organization(ttts.mongoose.connection));
+        })(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.Seller(ttts.mongoose.connection));
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
         // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
@@ -163,7 +165,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard'
         });
         debug('authorizing credit card...', creditCard);
         debug('authorizing credit card...', req.body.creditCard);
-        const action = yield ttts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(req.user.sub, req.params.transactionId, req.body.orderId, req.body.amount, req.body.method, creditCard)(new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection), new ttts.repository.Organization(ttts.mongoose.connection), new ttts.repository.Transaction(ttts.mongoose.connection), creditService);
+        const action = yield ttts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(req.user.sub, req.params.transactionId, req.body.orderId, req.body.amount, req.body.method, creditCard)(new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection), new ttts.repository.Seller(ttts.mongoose.connection), new ttts.repository.Transaction(ttts.mongoose.connection), creditService);
         res.status(http_status_1.CREATED)
             .json({
             id: action.id
