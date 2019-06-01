@@ -170,7 +170,8 @@ placeOrderTransactionsRouter.post(
                 new ttts.repository.Performance(ttts.mongoose.connection),
                 new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection),
                 new ttts.repository.PaymentNo(redisClient),
-                new ttts.repository.rateLimit.TicketTypeCategory(redisClient)
+                new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
+                new ttts.repository.Stock(redisClient)
             );
 
             res.status(CREATED)
@@ -197,7 +198,8 @@ placeOrderTransactionsRouter.delete(
             )(
                 new ttts.repository.Transaction(ttts.mongoose.connection),
                 new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection),
-                new ttts.repository.rateLimit.TicketTypeCategory(redisClient)
+                new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
+                new ttts.repository.Stock(redisClient)
             );
 
             res.status(NO_CONTENT)

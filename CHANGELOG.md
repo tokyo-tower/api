@@ -13,6 +13,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - パフォーマンス検索条件から作品関係を削除
 - パフォーマンスコレクションからリレーションを削除
 - 予約リポジトリのmongooseモデルをprivate化
+- パフォーマンスリポジトリのmongooseモデルをprivate化
+- 新しいRedis在庫リポジトリで再構築
 
 ### Deprecated
 
