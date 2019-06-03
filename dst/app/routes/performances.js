@@ -1,8 +1,4 @@
 "use strict";
-/**
- * パフォーマンスルーター
- * @module routes/performances
- */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -12,8 +8,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * パフォーマンスルーター
+ */
 const ttts = require("@motionpicture/ttts-domain");
 const express = require("express");
+const http_status_1 = require("http-status");
 const moment = require("moment");
 const _ = require("underscore");
 const authentication_1 = require("../middlewares/authentication");
@@ -58,9 +58,11 @@ performanceRouter.get('', permitScopes_1.default(['performances', 'performances.
             performanceId: (!_.isEmpty(req.query.performanceId)) ? req.query.performanceId : undefined,
             wheelchair: (!_.isEmpty(req.query.screen)) ? req.query.wheelchair : undefined
         };
-        yield ttts.service.performance.search(conditions)(new ttts.repository.Performance(ttts.mongoose.connection), new ttts.repository.itemAvailability.Performance(redisClient), new ttts.repository.itemAvailability.SeatReservationOffer(redisClient), new ttts.repository.offer.ExhibitionEvent(redisClient))
+        const performanceRepo = new ttts.repository.Performance(ttts.mongoose.connection);
+        yield ttts.service.performance.search(conditions)(performanceRepo, new ttts.repository.itemAvailability.Performance(redisClient), new ttts.repository.itemAvailability.SeatReservationOffer(redisClient), new ttts.repository.offer.ExhibitionEvent(redisClient))
             .then((searchPerformanceResult) => {
-            res.json({
+            res.set('X-Total-Count', searchPerformanceResult.numberOfPerformances.toString())
+                .json({
                 meta: {
                     number_of_performances: searchPerformanceResult.numberOfPerformances,
                     number_of_films: searchPerformanceResult.filmIds.length
@@ -68,6 +70,49 @@ performanceRouter.get('', permitScopes_1.default(['performances', 'performances.
                 data: searchPerformanceResult.performances
             });
         });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 拡張属性更新
+ */
+performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const performanceRepo = new ttts.repository.Performance(ttts.mongoose.connection);
+        yield performanceRepo.updateOne({ _id: req.params.id }, Object.assign({}, (req.body.reservationsAtLastUpdateDate !== undefined)
+            ? { 'ttts_extension.reservationsAtLastUpdateDate': req.body.reservationsAtLastUpdateDate }
+            : undefined, (req.body.onlineSalesStatus !== undefined)
+            ? { 'ttts_extension.online_sales_status': req.body.onlineSalesStatus }
+            : undefined, (req.body.onlineSalesStatusUpdateUser !== undefined)
+            ? { 'ttts_extension.online_sales_update_user': req.body.onlineSalesStatusUpdateUser }
+            : undefined, (req.body.onlineSalesStatusUpdateAt !== undefined && req.body.onlineSalesStatusUpdateAt !== '')
+            ? {
+                'ttts_extension.online_sales_update_at': moment(req.body.onlineSalesStatusUpdateAt)
+                    .toDate()
+            }
+            : undefined, (req.body.evServiceStatus !== undefined)
+            ? { 'ttts_extension.ev_service_status': req.body.evServiceStatus }
+            : undefined, (req.body.evServiceStatusUpdateUser !== undefined)
+            ? { 'ttts_extension.ev_service_update_user': req.body.evServiceStatusUpdateUser }
+            : undefined, (req.body.evServiceStatusUpdateAt !== undefined && req.body.evServiceStatusUpdateAt !== '')
+            ? {
+                'ttts_extension.ev_service_update_at': moment(req.body.evServiceStatusUpdateAt)
+                    .toDate()
+            }
+            : undefined, (req.body.refundStatus !== undefined)
+            ? { 'ttts_extension.refund_status': req.body.refundStatus }
+            : undefined, (req.body.refundStatusUpdateUser !== undefined)
+            ? { 'ttts_extension.refund_update_user': req.body.refundStatusUpdateUser }
+            : undefined, (req.body.refundStatusUpdateAt !== undefined && req.body.refundStatusUpdateAt !== '')
+            ? {
+                'ttts_extension.refund_update_at': moment(req.body.refundStatusUpdateAt)
+                    .toDate()
+            }
+            : undefined));
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     }
     catch (error) {
         next(error);

@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 予約distinct検索追加
+- 予約キャンセル追加
+- パフォーマンス拡張属性更新を追加
+
 ### Changed
 
 - パフォーマンス検索条件から作品関係を削除
@@ -15,6 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 予約リポジトリのmongooseモデルをprivate化
 - パフォーマンスリポジトリのmongooseモデルをprivate化
 - 新しいRedis在庫リポジトリで再構築
+- 予約検索条件調整
 
 ### Deprecated
 
