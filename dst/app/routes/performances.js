@@ -57,7 +57,7 @@ performanceRouter.get('', permitScopes_1.default(['performances', 'performances.
                 .toDate() : undefined,
             startThrough: (!_.isEmpty(req.query.start_through)) ? moment(req.query.start_through)
                 .toDate() : undefined,
-            theater: (!_.isEmpty(req.query.theater)) ? req.query.theater : undefined,
+            // theater: (!_.isEmpty(req.query.theater)) ? req.query.theater : undefined,
             screen: (!_.isEmpty(req.query.screen)) ? req.query.screen : undefined,
             performanceId: (!_.isEmpty(req.query.performanceId)) ? req.query.performanceId : undefined,
             wheelchair: (!_.isEmpty(req.query.screen)) ? req.query.wheelchair : undefined
