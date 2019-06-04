@@ -4,7 +4,7 @@
 import * as ttts from '@motionpicture/ttts-domain';
 import * as createDebug from 'debug';
 import * as express from 'express';
-import { NO_CONTENT } from 'http-status';
+import { CREATED, NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 import * as _ from 'underscore';
 
@@ -25,6 +25,27 @@ const redisClient = ttts.redis.createClient({
 const reservationsRouter = express.Router();
 
 reservationsRouter.use(authentication);
+
+/**
+ * 印刷トークン発行
+ */
+reservationsRouter.post(
+    '/print/token',
+    permitScopes(['admin']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const tokenRepo = new ttts.repository.Token(redisClient);
+            const token = await tokenRepo.createPrintToken(req.body.ids);
+            debug('printToken created.');
+
+            res.status(CREATED)
+                .json({ token });
+        } catch (error) {
+            next(error);
+        }
+    }
+);
 
 /**
  * distinct検索

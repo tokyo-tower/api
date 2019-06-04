@@ -47,16 +47,14 @@ performanceRouter.get('', permitScopes_1.default(['performances', 'performances.
     try {
         const conditions = Object.assign({}, req.query, { limit: (!_.isEmpty(req.query.limit)) ? Number(req.query.limit) : undefined, page: (!_.isEmpty(req.query.page)) ? Number(req.query.page) : undefined, startFrom: (!_.isEmpty(req.query.start_from)) ? moment(req.query.start_from)
                 .toDate() : undefined, startThrough: (!_.isEmpty(req.query.start_through)) ? moment(req.query.start_through)
-                .toDate() : undefined, ttts_extension: Object.assign({}, req.query.ttts_extension, { online_sales_update_at: {
-                    $gte: (req.query.ttts_extension !== undefined && req.query.ttts_extension.online_sales_update_at !== undefined)
-                        ? moment(req.query.ttts_extension.online_sales_update_at.$gte)
+                .toDate() : undefined, ttts_extension: Object.assign({}, req.query.ttts_extension, { online_sales_update_at: (req.query.ttts_extension !== undefined && req.query.ttts_extension.online_sales_update_at !== undefined)
+                    ? {
+                        $gte: moment(req.query.ttts_extension.online_sales_update_at.$gte)
+                            .toDate(),
+                        $lt: moment(req.query.ttts_extension.online_sales_update_at.$lt)
                             .toDate()
-                        : undefined,
-                    $lt: (req.query.ttts_extension !== undefined && req.query.ttts_extension.online_sales_update_at !== undefined)
-                        ? moment(req.query.ttts_extension.online_sales_update_at.$lt)
-                            .toDate()
-                        : undefined
-                } }) });
+                    }
+                    : undefined }) });
         const performanceRepo = new ttts.repository.Performance(ttts.mongoose.connection);
         yield ttts.service.performance.search(conditions)(performanceRepo, new ttts.repository.itemAvailability.Performance(redisClient), new ttts.repository.itemAvailability.SeatReservationOffer(redisClient), new ttts.repository.offer.ExhibitionEvent(redisClient))
             .then((searchPerformanceResult) => {

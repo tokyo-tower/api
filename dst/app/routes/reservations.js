@@ -31,6 +31,21 @@ const redisClient = ttts.redis.createClient({
 const reservationsRouter = express.Router();
 reservationsRouter.use(authentication_1.default);
 /**
+ * 印刷トークン発行
+ */
+reservationsRouter.post('/print/token', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const tokenRepo = new ttts.repository.Token(redisClient);
+        const token = yield tokenRepo.createPrintToken(req.body.ids);
+        debug('printToken created.');
+        res.status(http_status_1.CREATED)
+            .json({ token });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
  * distinct検索
  */
 reservationsRouter.get('/distinct/:field', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
