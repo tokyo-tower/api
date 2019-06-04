@@ -47,17 +47,13 @@ performanceRouter.get(
     async (req, res, next) => {
         try {
             const conditions: ttts.factory.performance.ISearchConditions = {
-                // tslint:disable-next-line:no-magic-numbers
-                limit: (!_.isEmpty(req.query.limit)) ? parseInt(req.query.limit, 10) : undefined,
-                // tslint:disable-next-line:no-magic-numbers
-                page: (!_.isEmpty(req.query.page)) ? parseInt(req.query.page, 10) : undefined,
-                day: (!_.isEmpty(req.query.day)) ? req.query.day : undefined,
+                ...req.query,
+                limit: (!_.isEmpty(req.query.limit)) ? Number(req.query.limit) : undefined,
+                page: (!_.isEmpty(req.query.page)) ? Number(req.query.page) : undefined,
                 startFrom: (!_.isEmpty(req.query.start_from)) ? moment(req.query.start_from)
                     .toDate() : undefined,
                 startThrough: (!_.isEmpty(req.query.start_through)) ? moment(req.query.start_through)
-                    .toDate() : undefined,
-                performanceId: (!_.isEmpty(req.query.performanceId)) ? req.query.performanceId : undefined,
-                wheelchair: (!_.isEmpty(req.query.screen)) ? req.query.wheelchair : undefined
+                    .toDate() : undefined
             };
 
             const performanceRepo = new ttts.repository.Performance(ttts.mongoose.connection);
