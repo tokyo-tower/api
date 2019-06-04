@@ -45,19 +45,9 @@ performanceRouter.get('/:id', permitScopes_1.default(['performances', 'performan
  */
 performanceRouter.get('', permitScopes_1.default(['performances', 'performances.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const conditions = {
-            // tslint:disable-next-line:no-magic-numbers
-            limit: (!_.isEmpty(req.query.limit)) ? parseInt(req.query.limit, 10) : undefined,
-            // tslint:disable-next-line:no-magic-numbers
-            page: (!_.isEmpty(req.query.page)) ? parseInt(req.query.page, 10) : undefined,
-            day: (!_.isEmpty(req.query.day)) ? req.query.day : undefined,
-            startFrom: (!_.isEmpty(req.query.start_from)) ? moment(req.query.start_from)
-                .toDate() : undefined,
-            startThrough: (!_.isEmpty(req.query.start_through)) ? moment(req.query.start_through)
-                .toDate() : undefined,
-            performanceId: (!_.isEmpty(req.query.performanceId)) ? req.query.performanceId : undefined,
-            wheelchair: (!_.isEmpty(req.query.screen)) ? req.query.wheelchair : undefined
-        };
+        const conditions = Object.assign({}, req.query, { limit: (!_.isEmpty(req.query.limit)) ? Number(req.query.limit) : undefined, page: (!_.isEmpty(req.query.page)) ? Number(req.query.page) : undefined, startFrom: (!_.isEmpty(req.query.start_from)) ? moment(req.query.start_from)
+                .toDate() : undefined, startThrough: (!_.isEmpty(req.query.start_through)) ? moment(req.query.start_through)
+                .toDate() : undefined });
         const performanceRepo = new ttts.repository.Performance(ttts.mongoose.connection);
         yield ttts.service.performance.search(conditions)(performanceRepo, new ttts.repository.itemAvailability.Performance(redisClient), new ttts.repository.itemAvailability.SeatReservationOffer(redisClient), new ttts.repository.offer.ExhibitionEvent(redisClient))
             .then((searchPerformanceResult) => {
