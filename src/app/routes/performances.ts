@@ -53,7 +53,20 @@ performanceRouter.get(
                 startFrom: (!_.isEmpty(req.query.start_from)) ? moment(req.query.start_from)
                     .toDate() : undefined,
                 startThrough: (!_.isEmpty(req.query.start_through)) ? moment(req.query.start_through)
-                    .toDate() : undefined
+                    .toDate() : undefined,
+                ttts_extension: {
+                    ...req.query.ttts_extension,
+                    online_sales_update_at: {
+                        $gte: (req.query.ttts_extension !== undefined && req.query.ttts_extension.online_sales_update_at !== undefined)
+                            ? moment(req.query.ttts_extension.online_sales_update_at.$gte)
+                                .toDate()
+                            : undefined,
+                        $lt: (req.query.ttts_extension !== undefined && req.query.ttts_extension.online_sales_update_at !== undefined)
+                            ? moment(req.query.ttts_extension.online_sales_update_at.$lt)
+                                .toDate()
+                            : undefined
+                    }
+                }
             };
 
             const performanceRepo = new ttts.repository.Performance(ttts.mongoose.connection);
