@@ -212,6 +212,20 @@ reservationsRouter.post(
             });
             await taskRepo.save(taskAttributes);
 
+            // 集計タスク作成
+            const aggregateTask: ttts.factory.task.aggregateEventReservations.IAttributes = {
+                name: ttts.factory.taskName.AggregateEventReservations,
+                status: ttts.factory.taskStatus.Ready,
+                runsAt: new Date(),
+                remainingNumberOfTries: 3,
+                // tslint:disable-next-line:no-null-keyword
+                lastTriedAt: null,
+                numberOfTried: 0,
+                executionResults: [],
+                data: { id: reservation.performance }
+            };
+            await taskRepo.save(aggregateTask);
+
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {
@@ -257,6 +271,20 @@ reservationsRouter.delete(
             });
             await taskRepo.save(taskAttributes);
 
+            // 集計タスク作成
+            const aggregateTask: ttts.factory.task.aggregateEventReservations.IAttributes = {
+                name: ttts.factory.taskName.AggregateEventReservations,
+                status: ttts.factory.taskStatus.Ready,
+                runsAt: new Date(),
+                remainingNumberOfTries: 3,
+                // tslint:disable-next-line:no-null-keyword
+                lastTriedAt: null,
+                numberOfTried: 0,
+                executionResults: [],
+                data: { id: reservation.performance }
+            };
+            await taskRepo.save(aggregateTask);
+
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {
@@ -277,6 +305,7 @@ reservationsRouter.put(
             await ttts.service.reserve.cancelReservation({ id: req.params.id })({
                 reservation: new ttts.repository.Reservation(ttts.mongoose.connection),
                 stock: new ttts.repository.Stock(redisClient),
+                task: new ttts.repository.Task(ttts.mongoose.connection),
                 ticketTypeCategoryRateLimit: new ttts.repository.rateLimit.TicketTypeCategory(redisClient)
             });
 

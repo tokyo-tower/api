@@ -167,6 +167,19 @@ reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.c
             data: { reservation: reservation }
         });
         yield taskRepo.save(taskAttributes);
+        // 集計タスク作成
+        const aggregateTask = {
+            name: ttts.factory.taskName.AggregateEventReservations,
+            status: ttts.factory.taskStatus.Ready,
+            runsAt: new Date(),
+            remainingNumberOfTries: 3,
+            // tslint:disable-next-line:no-null-keyword
+            lastTriedAt: null,
+            numberOfTried: 0,
+            executionResults: [],
+            data: { id: reservation.performance }
+        };
+        yield taskRepo.save(aggregateTask);
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
@@ -204,6 +217,19 @@ reservationsRouter.delete('/:id/checkins/:when', permitScopes_1.default(['reserv
             data: { reservation: reservation }
         });
         yield taskRepo.save(taskAttributes);
+        // 集計タスク作成
+        const aggregateTask = {
+            name: ttts.factory.taskName.AggregateEventReservations,
+            status: ttts.factory.taskStatus.Ready,
+            runsAt: new Date(),
+            remainingNumberOfTries: 3,
+            // tslint:disable-next-line:no-null-keyword
+            lastTriedAt: null,
+            numberOfTried: 0,
+            executionResults: [],
+            data: { id: reservation.performance }
+        };
+        yield taskRepo.save(aggregateTask);
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
@@ -219,6 +245,7 @@ reservationsRouter.put('/:id/cancel', permitScopes_1.default(['admin']), validat
         yield ttts.service.reserve.cancelReservation({ id: req.params.id })({
             reservation: new ttts.repository.Reservation(ttts.mongoose.connection),
             stock: new ttts.repository.Stock(redisClient),
+            task: new ttts.repository.Task(ttts.mongoose.connection),
             ticketTypeCategoryRateLimit: new ttts.repository.rateLimit.TicketTypeCategory(redisClient)
         });
         res.status(http_status_1.NO_CONTENT)

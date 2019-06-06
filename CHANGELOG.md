@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 予約distinct検索追加
 - 予約キャンセル追加
 - パフォーマンス拡張属性更新を追加
+- イベント予約集計タスクを追加
 
 ### Changed
 
