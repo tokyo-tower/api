@@ -74,7 +74,7 @@ screeningEventRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
         const conditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-        const searchResult = yield ttts.service.performance.search(conditions)(new ttts.repository.Performance(ttts.mongoose.connection), new ttts.repository.itemAvailability.Performance(redisClient), new ttts.repository.itemAvailability.SeatReservationOffer(redisClient));
+        const searchResult = yield ttts.service.performance.search(conditions)(new ttts.repository.Performance(ttts.mongoose.connection), new ttts.repository.EventWithAggregation(redisClient));
         res.set('X-Total-Count', searchResult.numberOfPerformances.toString())
             .json(searchResult.performances.map(performanceWithAvailability2event));
     }

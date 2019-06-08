@@ -79,8 +79,7 @@ screeningEventRouter.get(
 
             const searchResult = await ttts.service.performance.search(conditions)(
                 new ttts.repository.Performance(ttts.mongoose.connection),
-                new ttts.repository.itemAvailability.Performance(redisClient),
-                new ttts.repository.itemAvailability.SeatReservationOffer(redisClient)
+                new ttts.repository.EventWithAggregation(redisClient)
             );
 
             res.set('X-Total-Count', searchResult.numberOfPerformances.toString())

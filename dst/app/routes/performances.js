@@ -56,7 +56,7 @@ performanceRouter.get('', permitScopes_1.default(['performances', 'performances.
                     }
                     : undefined }) });
         const performanceRepo = new ttts.repository.Performance(ttts.mongoose.connection);
-        yield ttts.service.performance.search(conditions)(performanceRepo, new ttts.repository.itemAvailability.Performance(redisClient), new ttts.repository.itemAvailability.SeatReservationOffer(redisClient))
+        yield ttts.service.performance.search(conditions)(performanceRepo, new ttts.repository.EventWithAggregation(redisClient))
             .then((searchPerformanceResult) => {
             res.set('X-Total-Count', searchPerformanceResult.numberOfPerformances.toString())
                 .json({

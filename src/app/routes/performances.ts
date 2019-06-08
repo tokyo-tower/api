@@ -72,8 +72,7 @@ performanceRouter.get(
 
             await ttts.service.performance.search(conditions)(
                 performanceRepo,
-                new ttts.repository.itemAvailability.Performance(redisClient),
-                new ttts.repository.itemAvailability.SeatReservationOffer(redisClient)
+                new ttts.repository.EventWithAggregation(redisClient)
             )
                 .then((searchPerformanceResult) => {
                     res.set('X-Total-Count', searchPerformanceResult.numberOfPerformances.toString())

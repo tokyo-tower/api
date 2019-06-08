@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 新しいRedis在庫リポジトリで再構築
 - 予約検索条件調整
 - パフォーマンスインターフェースをChevre化に向けて補強
+- 新しい一時イベントリポジトリで再構築
 
 ### Deprecated
 
