@@ -74,7 +74,7 @@ screeningEventRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
         const conditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-        const searchResult = yield ttts.service.performance.search(conditions)(new ttts.repository.Performance(ttts.mongoose.connection), new ttts.repository.itemAvailability.Performance(redisClient), new ttts.repository.itemAvailability.SeatReservationOffer(redisClient), new ttts.repository.offer.ExhibitionEvent(redisClient));
+        const searchResult = yield ttts.service.performance.search(conditions)(new ttts.repository.Performance(ttts.mongoose.connection), new ttts.repository.EventWithAggregation(redisClient));
         res.set('X-Total-Count', searchResult.numberOfPerformances.toString())
             .json(searchResult.performances.map(performanceWithAvailability2event));
     }
@@ -97,11 +97,11 @@ screeningEventRouter.get('/:id', permitScopes_1.default(['aws.cognito.signin.use
     }
 }));
 function performance2event(performance) {
-    return Object.assign({}, performance, { typeOf: 'ScreeningEvent', additionalProperty: [], attendeeCount: 0, checkInCount: 0, doorTime: performance.door_time, endDate: performance.end_date, startDate: performance.start_date, eventStatus: (performance.canceled) ? 'EventCancelled' : 'EventScheduled', name: performance.film.name, offers: {
+    return Object.assign({}, performance, { typeOf: ttts.factory.chevre.eventType.ScreeningEvent, additionalProperty: [], attendeeCount: 0, checkInCount: 0, doorTime: performance.door_time, endDate: performance.end_date, startDate: performance.start_date, eventStatus: ttts.factory.chevre.eventStatusType.EventScheduled, name: performance.film.name, offers: {
             id: performance.ticket_type_group.id,
             name: performance.ticket_type_group.name,
             typeOf: 'Offer',
-            priceCurrency: 'JPY',
+            priceCurrency: ttts.factory.chevre.priceCurrency.JPY,
             eligibleQuantity: {
                 unitCode: 'C62',
                 typeOf: 'QuantitativeValue'
@@ -113,7 +113,7 @@ function performance2event(performance) {
                 }
             }
         }, location: {
-            typeOf: 'ScreeningRoom',
+            typeOf: ttts.factory.chevre.placeType.ScreeningRoom,
             branchCode: performance.screen.id,
             name: performance.screen.name
         }, superEvent: {
@@ -124,36 +124,36 @@ function performance2event(performance) {
                 id: performance.theater.id,
                 branchCode: performance.theater.id,
                 name: performance.theater.name,
-                typeOf: 'MovieTheater'
+                typeOf: ttts.factory.chevre.placeType.MovieTheater
             },
             videoFormat: [],
             soundFormat: [],
             workPerformed: {
                 identifier: performance.film.id,
                 name: performance.film.name.ja,
-                typeOf: 'Movie'
+                typeOf: ttts.factory.chevre.creativeWorkType.Movie
             },
             offers: {
                 typeOf: 'Offer',
-                priceCurrency: 'JPY'
+                priceCurrency: ttts.factory.chevre.priceCurrency.JPY
             },
             additionalProperty: [],
-            eventStatus: 'EventScheduled',
-            typeOf: 'ScreeningEventSeries'
+            eventStatus: ttts.factory.chevre.eventStatusType.EventScheduled,
+            typeOf: ttts.factory.chevre.eventType.ScreeningEventSeries
         }, workPerformed: {
             identifier: performance.film.id,
             name: performance.film.name.ja,
-            typeOf: 'Movie'
+            typeOf: ttts.factory.chevre.creativeWorkType.Movie
         } });
 }
 function performanceWithAvailability2event(performance) {
-    return Object.assign({}, performance, { typeOf: 'ScreeningEvent', additionalProperty: [], attendeeCount: 0, checkInCount: 0, eventStatus: (performance.onlineSalesStatus === ttts.factory.performance.OnlineSalesStatus.Suspended)
-            ? 'EventCancelled'
-            : 'EventScheduled', name: {}, offers: {
+    return Object.assign({}, performance, { typeOf: ttts.factory.chevre.eventType.ScreeningEvent, additionalProperty: [], attendeeCount: 0, checkInCount: 0, eventStatus: (performance.onlineSalesStatus === ttts.factory.performance.OnlineSalesStatus.Suspended)
+            ? ttts.factory.chevre.eventStatusType.EventCancelled
+            : ttts.factory.chevre.eventStatusType.EventScheduled, name: {}, offers: {
             id: '',
             name: {},
             typeOf: 'Offer',
-            priceCurrency: 'JPY',
+            priceCurrency: ttts.factory.chevre.priceCurrency.JPY,
             eligibleQuantity: {
                 unitCode: 'C62',
                 typeOf: 'QuantitativeValue'
@@ -165,7 +165,7 @@ function performanceWithAvailability2event(performance) {
                 }
             }
         }, location: {
-            typeOf: 'ScreeningRoom',
+            typeOf: ttts.factory.chevre.placeType.ScreeningRoom,
             branchCode: '',
             name: {}
         }, superEvent: {
@@ -176,26 +176,26 @@ function performanceWithAvailability2event(performance) {
                 id: '',
                 branchCode: '',
                 name: {},
-                typeOf: 'MovieTheater'
+                typeOf: ttts.factory.chevre.placeType.MovieTheater
             },
             videoFormat: [],
             soundFormat: [],
             workPerformed: {
                 identifier: '',
                 name: '',
-                typeOf: 'Movie'
+                typeOf: ttts.factory.chevre.creativeWorkType.Movie
             },
             offers: {
                 typeOf: 'Offer',
-                priceCurrency: 'JPY'
+                priceCurrency: ttts.factory.chevre.priceCurrency.JPY
             },
             additionalProperty: [],
-            eventStatus: 'EventScheduled',
-            typeOf: 'ScreeningEventSeries'
+            eventStatus: ttts.factory.chevre.eventStatusType.EventScheduled,
+            typeOf: ttts.factory.chevre.eventType.ScreeningEventSeries
         }, workPerformed: {
             identifier: '',
             name: {},
-            typeOf: 'Movie'
+            typeOf: ttts.factory.chevre.creativeWorkType.Movie
         } });
 }
 /**

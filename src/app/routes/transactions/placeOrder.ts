@@ -155,10 +155,12 @@ placeOrderTransactionsRouter.post(
                 req.body.offers = [];
             }
 
+            const performanceId: string = req.body.performance_id;
+
             const action = await ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
                 req.user.sub,
                 req.params.transactionId,
-                req.body.performance_id,
+                performanceId,
                 (<any[]>req.body.offers).map((offer) => {
                     return {
                         ticket_type: offer.ticket_type,
@@ -170,7 +172,9 @@ placeOrderTransactionsRouter.post(
                 new ttts.repository.Performance(ttts.mongoose.connection),
                 new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection),
                 new ttts.repository.PaymentNo(redisClient),
-                new ttts.repository.rateLimit.TicketTypeCategory(redisClient)
+                new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
+                new ttts.repository.Stock(redisClient),
+                new ttts.repository.Task(ttts.mongoose.connection)
             );
 
             res.status(CREATED)
@@ -197,7 +201,9 @@ placeOrderTransactionsRouter.delete(
             )(
                 new ttts.repository.Transaction(ttts.mongoose.connection),
                 new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection),
-                new ttts.repository.rateLimit.TicketTypeCategory(redisClient)
+                new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
+                new ttts.repository.Stock(redisClient),
+                new ttts.repository.Task(ttts.mongoose.connection)
             );
 
             res.status(NO_CONTENT)

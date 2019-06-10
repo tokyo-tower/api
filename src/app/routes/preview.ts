@@ -20,7 +20,7 @@ const redisClient = ttts.redis.createClient({
 // 集計データーつきのパフォーマンス検索
 previewRouter.get('/performancesWithAggregation', async (req, res, next) => {
     try {
-        const performanceWithAggregationRepo = new ttts.repository.PerformanceWithAggregation(redisClient);
+        const performanceWithAggregationRepo = new ttts.repository.EventWithAggregation(redisClient);
         let performancesWithAggregation = await performanceWithAggregationRepo.findAll();
 
         if (req.query.startFrom !== undefined) {
