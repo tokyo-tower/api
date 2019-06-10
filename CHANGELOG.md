@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v6.0.0 - 2019-06-10
+
+### Added
+
 - 予約distinct検索追加
 - 予約キャンセル追加
 - パフォーマンス拡張属性更新を追加
@@ -25,8 +39,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 新しい一時イベントリポジトリで再構築
 - スクリーンに車椅子タイプ座席をひとつ持つように設計調整
 
-### Deprecated
-
 ### Removed
 
 - 劇場、スクリーン、作品、券種、券種グループコレクションを削除(一時的に動的データ管理を不可能に変更)
@@ -34,10 +46,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - SendGridイベントコレクションを削除
 - パフォーマンスデータから不要な項目を削除
 - 一時イベントオファーリポジトリを削除
-
-### Fixed
-
-### Security
 
 ## v5.9.0 - 2019-05-26
 
