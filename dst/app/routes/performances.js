@@ -108,6 +108,20 @@ performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']), (req,
                     .toDate()
             }
             : undefined));
+        // 集計タスク作成
+        const taskRepo = new ttts.repository.Task(ttts.mongoose.connection);
+        const aggregateTask = {
+            name: ttts.factory.taskName.AggregateEventReservations,
+            status: ttts.factory.taskStatus.Ready,
+            runsAt: new Date(),
+            remainingNumberOfTries: 3,
+            // tslint:disable-next-line:no-null-keyword
+            lastTriedAt: null,
+            numberOfTried: 0,
+            executionResults: [],
+            data: { id: req.params.id }
+        };
+        yield taskRepo.save(aggregateTask);
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
