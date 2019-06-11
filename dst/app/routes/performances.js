@@ -34,7 +34,11 @@ performanceRouter.get('/:id', permitScopes_1.default(['performances', 'performan
     try {
         const repo = new ttts.repository.Performance(ttts.mongoose.connection);
         const performance = yield repo.findById(req.params.id);
-        res.json(performance);
+        // POSに対する互換性維持のため、charge属性を追加
+        const ticketTypes = performance.ticket_type_group.ticket_types.map((t) => {
+            return Object.assign({}, t, { charge: (t.priceSpecification !== undefined) ? t.priceSpecification.price : undefined });
+        });
+        res.json(Object.assign({}, performance, { ticket_type_group: Object.assign({}, performance.ticket_type_group, { ticket_types: ticketTypes }) }));
     }
     catch (error) {
         next(error);
