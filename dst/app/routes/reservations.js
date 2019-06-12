@@ -97,7 +97,7 @@ reservationsRouter.get('/:id', permitScopes_1.default(['reservations.read-only']
 /**
  * 予約検索
  */
-reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), (req, __2, next) => {
+reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), (req, __, next) => {
     req.checkQuery('reservationFor.startFrom')
         .optional()
         .isISO8601()
@@ -116,7 +116,11 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), (
         // 予約検索条件
         const conditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : undefined, performanceStartFrom: (!_.isEmpty(req.query.performanceStartFrom))
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : undefined, 
+            // デフォルトで余分確保分を除く
+            additionalProperty: {
+                $nin: [{ name: 'extra', value: '1' }]
+            }, performanceStartFrom: (!_.isEmpty(req.query.performanceStartFrom))
                 ? moment(req.query.performanceStartFrom)
                     .toDate()
                 : undefined, performanceStartThrough: (!_.isEmpty(req.query.performanceStartThrough))
