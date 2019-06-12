@@ -97,7 +97,7 @@ reservationsRouter.get('/:id', permitScopes_1.default(['reservations.read-only']
 /**
  * 予約検索
  */
-reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), (req, __2, next) => {
+reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), (req, __, next) => {
     req.checkQuery('reservationFor.startFrom')
         .optional()
         .isISO8601()
