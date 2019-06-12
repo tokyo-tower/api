@@ -97,7 +97,17 @@ reservationsRouter.get('/:id', permitScopes_1.default(['reservations.read-only']
 /**
  * 予約検索
  */
-reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), (req, __2, next) => {
+    req.checkQuery('reservationFor.startFrom')
+        .optional()
+        .isISO8601()
+        .toDate();
+    req.checkQuery('reservationFor.startThrough')
+        .optional()
+        .isISO8601()
+        .toDate();
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // 互換性維持のためｎ
         if (!_.isEmpty(req.query.performanceId)) {

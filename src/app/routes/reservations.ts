@@ -120,6 +120,18 @@ reservationsRouter.get(
 reservationsRouter.get(
     '',
     permitScopes(['reservations.read-only']),
+    (req, __, next) => {
+        req.checkQuery('reservationFor.startFrom')
+            .optional()
+            .isISO8601()
+            .toDate();
+        req.checkQuery('reservationFor.startThrough')
+            .optional()
+            .isISO8601()
+            .toDate();
+
+        next();
+    },
     validator,
     async (req, res, next) => {
         try {
