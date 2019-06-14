@@ -52,6 +52,17 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders', 'o
         const order = yield repository.findByOrderInquiryKey(key);
         // バウチャー印刷トークンを発行
         const tokenRepo = new ttts.repository.Token(redisClient);
+        // 余分確保分を除く
+        order.acceptedOffers = order.acceptedOffers.filter((o) => {
+            const reservation = o.itemOffered;
+            let extraProperty;
+            if (reservation.additionalProperty !== undefined) {
+                extraProperty = reservation.additionalProperty.find((p) => p.name === 'extra');
+            }
+            return reservation.additionalProperty === undefined
+                || extraProperty === undefined
+                || extraProperty.value !== '1';
+        });
         const reservationIds = order.acceptedOffers
             .filter((o) => o.itemOffered.status === ttts.factory.reservationStatusType.ReservationConfirmed)
             .map((o) => o.itemOffered.id);

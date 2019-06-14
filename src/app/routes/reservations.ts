@@ -120,6 +120,18 @@ reservationsRouter.get(
 reservationsRouter.get(
     '',
     permitScopes(['reservations.read-only']),
+    (req, __, next) => {
+        req.checkQuery('reservationFor.startFrom')
+            .optional()
+            .isISO8601()
+            .toDate();
+        req.checkQuery('reservationFor.startThrough')
+            .optional()
+            .isISO8601()
+            .toDate();
+
+        next();
+    },
     validator,
     async (req, res, next) => {
         try {
@@ -135,6 +147,10 @@ reservationsRouter.get(
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
                 sort: (req.query.sort !== undefined) ? req.query.sort : undefined,
+                // デフォルトで余分確保分を除く
+                additionalProperty: {
+                    $nin: [{ name: 'extra', value: '1' }]
+                },
                 performanceStartFrom: (!_.isEmpty(req.query.performanceStartFrom))
                     ? moment(req.query.performanceStartFrom)
                         .toDate()

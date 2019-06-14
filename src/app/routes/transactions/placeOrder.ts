@@ -177,6 +177,21 @@ placeOrderTransactionsRouter.post(
                 new ttts.repository.Task(ttts.mongoose.connection)
             );
 
+            // 余分確保予約を除いてレスポンスを返す
+            if (action.result !== undefined) {
+                action.result.tmpReservations = action.result.tmpReservations.filter((r) => {
+                    // 余分確保分を除く
+                    let extraProperty: ttts.factory.propertyValue.IPropertyValue<string> | undefined;
+                    if (r.additionalProperty !== undefined) {
+                        extraProperty = r.additionalProperty.find((p) => p.name === 'extra');
+                    }
+
+                    return r.additionalProperty === undefined
+                        || extraProperty === undefined
+                        || extraProperty.value !== '1';
+                });
+            }
+
             res.status(CREATED)
                 .json(action);
         } catch (error) {
@@ -315,6 +330,23 @@ placeOrderTransactionsRouter.post(
             );
             debug('transaction confirmed.');
 
+            // 余分確保予約を除いてレスポンスを返す
+            if (transactionResult !== undefined) {
+                transactionResult.eventReservations = transactionResult.eventReservations.filter((r) => {
+                    // 余分確保分を除く
+                    let extraProperty: ttts.factory.propertyValue.IPropertyValue<string> | undefined;
+                    if (r.additionalProperty !== undefined) {
+                        extraProperty = r.additionalProperty.find((p) => p.name === 'extra');
+                    }
+
+                    return r.additionalProperty === undefined
+                        || extraProperty === undefined
+                        || extraProperty.value !== '1';
+                });
+
+                transactionResult.eventReservations = transactionResult.eventReservations.map(chevreReservation2ttts);
+            }
+
             res.status(CREATED)
                 .json(transactionResult);
         } catch (error) {
@@ -322,6 +354,14 @@ placeOrderTransactionsRouter.post(
         }
     }
 );
+
+function chevreReservation2ttts(params: ttts.factory.reservation.event.IReservation): ttts.factory.reservation.event.IReservation {
+    params.qr_str = params.id;
+    params.payment_no = params.reservationNumber;
+    params.performance = params.reservationFor.id;
+
+    return params;
+}
 
 placeOrderTransactionsRouter.post(
     '/:transactionId/tasks/sendEmailNotification',
