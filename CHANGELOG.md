@@ -10,18 +10,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 予約検索条件を拡張
-- 車椅子の余分確保分を予約として作成するように調整
-
 ### Deprecated
 
 ### Removed
 
-- 在庫インターフェースを削除
-
 ### Fixed
 
 ### Security
+
+## v6.1.0 - 2019-06-14
+
+### Changed
+
+- 予約検索条件を拡張
+- 車椅子の余分確保分を予約として作成するように調整
+
+### Removed
+
+- 在庫インターフェースを削除
 
 ## v6.0.2 - 2019-06-12
 
