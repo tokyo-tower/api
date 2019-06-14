@@ -343,6 +343,8 @@ placeOrderTransactionsRouter.post(
                         || extraProperty === undefined
                         || extraProperty.value !== '1';
                 });
+
+                transactionResult.eventReservations = transactionResult.eventReservations.map(chevreReservation2ttts);
             }
 
             res.status(CREATED)
@@ -352,6 +354,14 @@ placeOrderTransactionsRouter.post(
         }
     }
 );
+
+function chevreReservation2ttts(params: ttts.factory.reservation.event.IReservation): ttts.factory.reservation.event.IReservation {
+    params.qr_str = params.id;
+    params.payment_no = params.reservationNumber;
+    params.performance = params.reservationFor.id;
+
+    return params;
+}
 
 placeOrderTransactionsRouter.post(
     '/:transactionId/tasks/sendEmailNotification',

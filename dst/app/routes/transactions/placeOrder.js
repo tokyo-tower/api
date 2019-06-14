@@ -222,6 +222,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
                     || extraProperty === undefined
                     || extraProperty.value !== '1';
             });
+            transactionResult.eventReservations = transactionResult.eventReservations.map(chevreReservation2ttts);
         }
         res.status(http_status_1.CREATED)
             .json(transactionResult);
@@ -230,6 +231,12 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         next(error);
     }
 }));
+function chevreReservation2ttts(params) {
+    params.qr_str = params.id;
+    params.payment_no = params.reservationNumber;
+    params.performance = params.reservationFor.id;
+    return params;
+}
 placeOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification', permitScopes_1.default(['transactions']), (req, __2, next) => {
     req.checkBody('sender.name', 'invalid sender')
         .notEmpty()
