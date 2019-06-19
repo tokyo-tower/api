@@ -45,6 +45,11 @@ function tttsReservation2chevre(params) {
     delete params.performance_open_time;
     // delete params.performance_start_date;
     // delete params.performance_start_time;
+    delete params.ticket_cancel_charge;
+    delete params.ticket_ttts_extension;
+    delete params.ticket_type;
+    delete params.ticket_type_charge;
+    delete params.ticket_type_name;
     return params;
 }
 exports.tttsReservation2chevre = tttsReservation2chevre;
