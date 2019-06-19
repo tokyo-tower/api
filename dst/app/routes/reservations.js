@@ -20,6 +20,7 @@ const _ = require("underscore");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
+const reservation_1 = require("../util/reservation");
 const debug = createDebug('ttts-api:routes:reservations');
 const redisClient = ttts.redis.createClient({
     host: process.env.REDIS_HOST,
@@ -88,7 +89,7 @@ reservationsRouter.get('/:id', permitScopes_1.default(['reservations.read-only']
         debug('searching reservation by id...', req.params.id);
         const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
         const reservation = yield reservationRepo.findById({ id: req.params.id });
-        res.json(reservation);
+        res.json(reservation_1.tttsReservation2chevre(reservation));
     }
     catch (error) {
         next(error);
@@ -139,7 +140,7 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), (
         const count = yield reservationRepo.count(conditions);
         const reservations = yield reservationRepo.search(conditions);
         res.set('X-Total-Count', count.toString())
-            .json(reservations);
+            .json(reservations.map(reservation_1.tttsReservation2chevre));
     }
     catch (error) {
         next(error);

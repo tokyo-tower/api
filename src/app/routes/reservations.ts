@@ -12,6 +12,8 @@ import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
+import { tttsReservation2chevre } from '../util/reservation';
+
 const debug = createDebug('ttts-api:routes:reservations');
 
 const redisClient = ttts.redis.createClient({
@@ -107,7 +109,7 @@ reservationsRouter.get(
             const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
             const reservation = await reservationRepo.findById({ id: req.params.id });
 
-            res.json(reservation);
+            res.json(tttsReservation2chevre(reservation));
         } catch (error) {
             next(error);
         }
@@ -176,7 +178,7 @@ reservationsRouter.get(
             const reservations = await reservationRepo.search(conditions);
 
             res.set('X-Total-Count', count.toString())
-                .json(reservations);
+                .json(reservations.map(tttsReservation2chevre));
         } catch (error) {
             next(error);
         }
