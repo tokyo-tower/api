@@ -45,15 +45,15 @@ export function tttsReservation2chevre(
     delete params.film_name;
 
     delete params.performance_canceled;
-    // delete params.performance_day;
+    delete params.performance_day;
     delete params.performance_door_time;
-    // delete params.performance_end_date;
-    // delete params.performance_end_time;
+    delete params.performance_end_date;
+    delete params.performance_end_time;
     delete params.performance_open_time;
-    // delete params.performance_start_date;
-    // delete params.performance_start_time;
+    delete params.performance_start_date;
+    delete params.performance_start_time;
 
-    delete params.ticket_cancel_charge;
+    delete (<any>params).ticket_cancel_charge;
     delete params.ticket_ttts_extension;
     delete params.ticket_type;
     delete params.ticket_type_charge;
