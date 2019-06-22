@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v7.0.0 - 2019-06-22
+
+### Changed
+
+- 予約データをChevreインターフェースへ変換する処理を追加
+
 ## v6.2.0 - 2019-06-18
 
 ### Changed

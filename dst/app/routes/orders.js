@@ -17,6 +17,7 @@ const express_1 = require("express");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
+const reservation_1 = require("../util/reservation");
 // 車椅子レート制限のためのRedis接続クライアント
 const redisClient = ttts.redis.createClient({
     host: process.env.REDIS_HOST,
@@ -50,10 +51,9 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders', 'o
         };
         const repository = new ttts.repository.Order(ttts.mongoose.connection);
         const order = yield repository.findByOrderInquiryKey(key);
-        // バウチャー印刷トークンを発行
-        const tokenRepo = new ttts.repository.Token(redisClient);
-        // 余分確保分を除く
-        order.acceptedOffers = order.acceptedOffers.filter((o) => {
+        order.acceptedOffers = order.acceptedOffers
+            // 余分確保分を除く
+            .filter((o) => {
             const reservation = o.itemOffered;
             let extraProperty;
             if (reservation.additionalProperty !== undefined) {
@@ -62,10 +62,14 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders', 'o
             return reservation.additionalProperty === undefined
                 || extraProperty === undefined
                 || extraProperty.value !== '1';
+        })
+            // 互換性維持
+            .map((o) => {
+            return Object.assign({}, o, { itemOffered: reservation_1.tttsReservation2chevre(o.itemOffered) });
         });
-        const reservationIds = order.acceptedOffers
-            .filter((o) => o.itemOffered.status === ttts.factory.reservationStatusType.ReservationConfirmed)
-            .map((o) => o.itemOffered.id);
+        // 印刷トークンを発行
+        const tokenRepo = new ttts.repository.Token(redisClient);
+        const reservationIds = order.acceptedOffers.map((o) => o.itemOffered.id);
         const printToken = yield tokenRepo.createPrintToken(reservationIds);
         res.json(Object.assign({}, order, { printToken: printToken }));
     }

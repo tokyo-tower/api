@@ -10,6 +10,8 @@ import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
+import { tttsReservation2chevre } from '../util/reservation';
+
 // 車椅子レート制限のためのRedis接続クライアント
 const redisClient = ttts.redis.createClient({
     host: <string>process.env.REDIS_HOST,
@@ -53,25 +55,30 @@ ordersRouter.post(
             const repository = new ttts.repository.Order(ttts.mongoose.connection);
             const order = await repository.findByOrderInquiryKey(key);
 
-            // バウチャー印刷トークンを発行
+            order.acceptedOffers = order.acceptedOffers
+                // 余分確保分を除く
+                .filter((o) => {
+                    const reservation = o.itemOffered;
+                    let extraProperty: ttts.factory.propertyValue.IPropertyValue<string> | undefined;
+                    if (reservation.additionalProperty !== undefined) {
+                        extraProperty = reservation.additionalProperty.find((p) => p.name === 'extra');
+                    }
+
+                    return reservation.additionalProperty === undefined
+                        || extraProperty === undefined
+                        || extraProperty.value !== '1';
+                })
+                // 互換性維持
+                .map((o) => {
+                    return {
+                        ...o,
+                        itemOffered: tttsReservation2chevre(o.itemOffered)
+                    };
+                });
+
+            // 印刷トークンを発行
             const tokenRepo = new ttts.repository.Token(redisClient);
-
-            // 余分確保分を除く
-            order.acceptedOffers = order.acceptedOffers.filter((o) => {
-                const reservation = o.itemOffered;
-                let extraProperty: ttts.factory.propertyValue.IPropertyValue<string> | undefined;
-                if (reservation.additionalProperty !== undefined) {
-                    extraProperty = reservation.additionalProperty.find((p) => p.name === 'extra');
-                }
-
-                return reservation.additionalProperty === undefined
-                    || extraProperty === undefined
-                    || extraProperty.value !== '1';
-            });
-
-            const reservationIds = order.acceptedOffers
-                .filter((o) => o.itemOffered.status === ttts.factory.reservationStatusType.ReservationConfirmed)
-                .map((o) => o.itemOffered.id);
+            const reservationIds = order.acceptedOffers.map((o) => o.itemOffered.id);
             const printToken = await tokenRepo.createPrintToken(reservationIds);
 
             res.json({
