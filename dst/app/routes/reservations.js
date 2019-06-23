@@ -14,6 +14,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const ttts = require("@motionpicture/ttts-domain");
 const createDebug = require("debug");
 const express = require("express");
+// tslint:disable-next-line:no-submodule-imports
+const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const _ = require("underscore");
@@ -49,7 +51,24 @@ reservationsRouter.post('/print/token', permitScopes_1.default(['admin']), valid
 /**
  * distinct検索
  */
-reservationsRouter.get('/distinct/:field', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+reservationsRouter.get('/distinct/:field', permitScopes_1.default(['admin']), ...[
+    check_1.query('reservationFor.startFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('reservationFor.startThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('reservationFor.endFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('reservationFor.endThrough')
+        .optional()
+        .isISO8601()
+        .toDate()
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // 予約検索条件
         const conditions = Object.assign({}, req.query, { 
@@ -98,17 +117,24 @@ reservationsRouter.get('/:id', permitScopes_1.default(['reservations.read-only']
 /**
  * 予約検索
  */
-reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), (req, __, next) => {
-    req.checkQuery('reservationFor.startFrom')
+reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), ...[
+    check_1.query('reservationFor.startFrom')
         .optional()
         .isISO8601()
-        .toDate();
-    req.checkQuery('reservationFor.startThrough')
+        .toDate(),
+    check_1.query('reservationFor.startThrough')
         .optional()
         .isISO8601()
-        .toDate();
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+        .toDate(),
+    check_1.query('reservationFor.endFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('reservationFor.endThrough')
+        .optional()
+        .isISO8601()
+        .toDate()
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // 互換性維持のためｎ
         if (!_.isEmpty(req.query.performanceId)) {
