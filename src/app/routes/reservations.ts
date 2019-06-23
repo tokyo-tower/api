@@ -4,6 +4,8 @@
 import * as ttts from '@motionpicture/ttts-domain';
 import * as createDebug from 'debug';
 import * as express from 'express';
+// tslint:disable-next-line:no-submodule-imports
+import { query } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 import * as _ from 'underscore';
@@ -55,6 +57,24 @@ reservationsRouter.post(
 reservationsRouter.get(
     '/distinct/:field',
     permitScopes(['admin']),
+    ...[
+        query('reservationFor.startFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('reservationFor.startThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('reservationFor.endFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('reservationFor.endThrough')
+            .optional()
+            .isISO8601()
+            .toDate()
+    ],
     validator,
     async (req, res, next) => {
         try {
@@ -122,18 +142,24 @@ reservationsRouter.get(
 reservationsRouter.get(
     '',
     permitScopes(['reservations.read-only']),
-    (req, __, next) => {
-        req.checkQuery('reservationFor.startFrom')
+    ...[
+        query('reservationFor.startFrom')
             .optional()
             .isISO8601()
-            .toDate();
-        req.checkQuery('reservationFor.startThrough')
+            .toDate(),
+        query('reservationFor.startThrough')
             .optional()
             .isISO8601()
-            .toDate();
-
-        next();
-    },
+            .toDate(),
+        query('reservationFor.endFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('reservationFor.endThrough')
+            .optional()
+            .isISO8601()
+            .toDate()
+    ],
     validator,
     async (req, res, next) => {
         try {
