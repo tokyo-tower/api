@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v7.1.0 - 2019-06-23
+
+### Changed
+
+- 予約検索条件にイベント終了日時を追加
+
 ## v7.0.0 - 2019-06-22
 
 ### Changed
