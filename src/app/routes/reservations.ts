@@ -73,6 +73,14 @@ reservationsRouter.get(
         query('reservationFor.endThrough')
             .optional()
             .isISO8601()
+            .toDate(),
+        query('modifiedFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('modifiedThrough')
+            .optional()
+            .isISO8601()
             .toDate()
     ],
     validator,
@@ -156,6 +164,14 @@ reservationsRouter.get(
             .isISO8601()
             .toDate(),
         query('reservationFor.endThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('modifiedFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('modifiedThrough')
             .optional()
             .isISO8601()
             .toDate()
