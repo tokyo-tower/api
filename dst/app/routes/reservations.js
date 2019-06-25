@@ -67,6 +67,14 @@ reservationsRouter.get('/distinct/:field', permitScopes_1.default(['admin']), ..
     check_1.query('reservationFor.endThrough')
         .optional()
         .isISO8601()
+        .toDate(),
+    check_1.query('modifiedFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('modifiedThrough')
+        .optional()
+        .isISO8601()
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -131,6 +139,14 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), .
         .isISO8601()
         .toDate(),
     check_1.query('reservationFor.endThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('modifiedFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('modifiedThrough')
         .optional()
         .isISO8601()
         .toDate()
