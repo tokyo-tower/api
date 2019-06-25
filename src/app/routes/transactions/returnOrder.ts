@@ -48,15 +48,13 @@ returnOrderTransactionsRouter.post(
             const transactionRepo = new ttts.repository.Transaction(ttts.mongoose.connection);
 
             // 取引を検索する
+            // 注文番号フォーマット: `TT-${req.body.performance_day.slice(-6)}-${req.body.payment_no}`
             const conditions = {
                 typeOf: ttts.factory.transactionType.PlaceOrder,
-                'result.eventReservations.performance_day': {
+                'result.order.orderNumber': {
                     $exists: true,
-                    $eq: req.body.performance_day
-                },
-                'result.eventReservations.payment_no': {
-                    $exists: true,
-                    $eq: req.body.payment_no
+                    // tslint:disable-next-line:no-magic-numbers
+                    $eq: `TT-${req.body.performance_day.slice(-6)}-${req.body.payment_no}`
                 }
             };
             debug('searching a transaction...', conditions);
