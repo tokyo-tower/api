@@ -18,6 +18,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v8.0.0 - 2019-06-25
+
+### Removed
+
+- 券種からキャンセルチャージ属性を削除
+- 予約インターフェースから不要な属性を削除
+- 予約検索条件インターフェースから不要な属性を削除
+
 ## v7.1.1 - 2019-06-23
 
 ### Changed
