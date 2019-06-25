@@ -17,8 +17,8 @@ export function tttsReservation2chevre(
     }
 
     // 劇場名を保管
-    if (params.theater_name !== undefined
-        && params.theater_name !== null) {
+    if ((<any>params).theater_name !== undefined
+        && (<any>params).theater_name !== null) {
         if (params.reservationFor === undefined || params.reservationFor === null) {
             params.reservationFor = <any>{};
         }
@@ -28,36 +28,36 @@ export function tttsReservation2chevre(
         if (params.reservationFor.superEvent.location === undefined || params.reservationFor.superEvent.location === null) {
             params.reservationFor.superEvent.location = <any>{};
         }
-        params.reservationFor.superEvent.location.name = params.theater_name;
+        params.reservationFor.superEvent.location.name = (<any>params).theater_name;
     }
 
     // 不要な属性を削除
-    delete params.theater;
-    delete params.theater_address;
-    delete params.theater_name;
+    delete (<any>params).theater;
+    delete (<any>params).theater_address;
+    delete (<any>params).theater_name;
 
-    delete params.screen;
-    delete params.screen_name;
+    delete (<any>params).screen;
+    delete (<any>params).screen_name;
 
-    delete params.film;
-    delete params.film_copyright;
-    delete params.film_is_mx4d;
-    delete params.film_name;
+    delete (<any>params).film;
+    delete (<any>params).film_copyright;
+    delete (<any>params).film_is_mx4d;
+    delete (<any>params).film_name;
 
-    delete params.performance_canceled;
-    delete params.performance_day;
-    delete params.performance_door_time;
-    delete params.performance_end_date;
-    delete params.performance_end_time;
-    delete params.performance_open_time;
-    delete params.performance_start_date;
-    delete params.performance_start_time;
+    delete (<any>params).performance_canceled;
+    delete (<any>params).performance_day;
+    delete (<any>params).performance_door_time;
+    delete (<any>params).performance_end_date;
+    delete (<any>params).performance_end_time;
+    delete (<any>params).performance_open_time;
+    delete (<any>params).performance_start_date;
+    delete (<any>params).performance_start_time;
 
     delete (<any>params).ticket_cancel_charge;
-    delete params.ticket_ttts_extension;
-    delete params.ticket_type;
-    delete params.ticket_type_charge;
-    delete params.ticket_type_name;
+    delete (<any>params).ticket_ttts_extension;
+    delete (<any>params).ticket_type;
+    delete (<any>params).ticket_type_charge;
+    delete (<any>params).ticket_type_name;
 
     return params;
 }
