@@ -234,7 +234,7 @@ reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.c
             lastTriedAt: null,
             numberOfTried: 0,
             executionResults: [],
-            data: { id: reservation.performance }
+            data: { id: reservation.reservationFor.id }
         };
         yield taskRepo.save(aggregateTask);
         res.status(http_status_1.NO_CONTENT)
@@ -284,7 +284,7 @@ reservationsRouter.delete('/:id/checkins/:when', permitScopes_1.default(['reserv
             lastTriedAt: null,
             numberOfTried: 0,
             executionResults: [],
-            data: { id: reservation.performance }
+            data: { id: reservation.reservationFor.id }
         };
         yield taskRepo.save(aggregateTask);
         res.status(http_status_1.NO_CONTENT)

@@ -232,6 +232,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
     }
 }));
 function chevreReservation2ttts(params) {
+    // POSへ互換性維持のため
     params.qr_str = params.id;
     params.payment_no = params.reservationNumber;
     params.performance = params.reservationFor.id;
