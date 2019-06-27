@@ -4,16 +4,16 @@ export function tttsReservation2chevre(
     params: factory.reservation.event.IReservation
 ): factory.reservation.event.IReservation {
     // ツアーナンバーを補完
-    if (params.performance_ttts_extension !== undefined
-        && params.performance_ttts_extension !== null
-        && typeof params.performance_ttts_extension.tour_number === 'string') {
+    if ((<any>params).performance_ttts_extension !== undefined
+        && (<any>params).performance_ttts_extension !== null
+        && typeof (<any>params).performance_ttts_extension.tour_number === 'string') {
         if (params.reservationFor === undefined || params.reservationFor === null) {
             params.reservationFor = <any>{};
         }
         if (!Array.isArray(params.reservationFor.additionalProperty)) {
             params.reservationFor.additionalProperty = [];
         }
-        params.reservationFor.additionalProperty.push({ name: 'tourNumber', value: params.performance_ttts_extension.tour_number });
+        params.reservationFor.additionalProperty.push({ name: 'tourNumber', value: (<any>params).performance_ttts_extension.tour_number });
     }
 
     // 劇場名を保管

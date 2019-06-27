@@ -356,9 +356,10 @@ placeOrderTransactionsRouter.post(
 );
 
 function chevreReservation2ttts(params: ttts.factory.reservation.event.IReservation): ttts.factory.reservation.event.IReservation {
-    params.qr_str = params.id;
-    params.payment_no = params.reservationNumber;
-    params.performance = params.reservationFor.id;
+    // POSへ互換性維持のため
+    (<any>params).qr_str = params.id;
+    (<any>params).payment_no = params.reservationNumber;
+    (<any>params).performance = params.reservationFor.id;
 
     return params;
 }

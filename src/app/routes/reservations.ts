@@ -282,7 +282,7 @@ reservationsRouter.post(
                 lastTriedAt: null,
                 numberOfTried: 0,
                 executionResults: [],
-                data: { id: reservation.performance }
+                data: { id: reservation.reservationFor.id }
             };
             await taskRepo.save(aggregateTask);
 
@@ -341,7 +341,7 @@ reservationsRouter.delete(
                 lastTriedAt: null,
                 numberOfTried: 0,
                 executionResults: [],
-                data: { id: reservation.performance }
+                data: { id: reservation.reservationFor.id }
             };
             await taskRepo.save(aggregateTask);
 
