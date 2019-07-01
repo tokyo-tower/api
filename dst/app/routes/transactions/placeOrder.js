@@ -212,7 +212,21 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         debug('transaction confirmed.');
         // 余分確保予約を除いてレスポンスを返す
         if (transactionResult !== undefined) {
-            transactionResult.eventReservations = transactionResult.eventReservations.filter((r) => {
+            transactionResult.eventReservations = transactionResult.eventReservations
+                .filter((r) => {
+                // 余分確保分を除く
+                let extraProperty;
+                if (r.additionalProperty !== undefined) {
+                    extraProperty = r.additionalProperty.find((p) => p.name === 'extra');
+                }
+                return r.additionalProperty === undefined
+                    || extraProperty === undefined
+                    || extraProperty.value !== '1';
+            })
+                .map(chevreReservation2ttts);
+            transactionResult.order.acceptedOffers = transactionResult.order.acceptedOffers
+                .filter((o) => {
+                const r = o.itemOffered;
                 // 余分確保分を除く
                 let extraProperty;
                 if (r.additionalProperty !== undefined) {
@@ -222,7 +236,6 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
                     || extraProperty === undefined
                     || extraProperty.value !== '1';
             });
-            transactionResult.eventReservations = transactionResult.eventReservations.map(chevreReservation2ttts);
         }
         res.status(http_status_1.CREATED)
             .json(transactionResult);
