@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v10.0.1 - 2019-07-01
+
+### Changed
+
+- 予約変更時に更新日時を連携
+
 ## v10.0.0 - 2019-07-01
 
 ### Changed
