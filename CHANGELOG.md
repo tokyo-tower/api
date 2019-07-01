@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 予約変更時に更新日時を連携
+
 ### Deprecated
 
 ### Removed
