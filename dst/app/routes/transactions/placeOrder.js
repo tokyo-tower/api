@@ -242,13 +242,6 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         next(error);
     }
 }));
-// function chevreReservation2ttts(params: ttts.factory.reservation.event.IReservation): ttts.factory.reservation.event.IReservation {
-//     // POSへ互換性維持のため
-//     (<any>params).qr_str = params.id;
-//     (<any>params).payment_no = params.reservationNumber;
-//     (<any>params).performance = params.reservationFor.id;
-//     return params;
-// }
 placeOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification', permitScopes_1.default(['transactions']), (req, __2, next) => {
     req.checkBody('sender.name', 'invalid sender')
         .notEmpty()

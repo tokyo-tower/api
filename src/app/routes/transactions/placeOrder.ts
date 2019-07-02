@@ -347,7 +347,7 @@ placeOrderTransactionsRouter.post(
                     });
 
                 // POSへ互換性維持のためにeventReservations属性を生成
-                transactionResult.eventReservations = transactionResult.order.acceptedOffers
+                (<any>transactionResult).eventReservations = transactionResult.order.acceptedOffers
                     .map((o) => {
                         const r = o.itemOffered;
 
@@ -366,15 +366,6 @@ placeOrderTransactionsRouter.post(
         }
     }
 );
-
-// function chevreReservation2ttts(params: ttts.factory.reservation.event.IReservation): ttts.factory.reservation.event.IReservation {
-//     // POSへ互換性維持のため
-//     (<any>params).qr_str = params.id;
-//     (<any>params).payment_no = params.reservationNumber;
-//     (<any>params).performance = params.reservationFor.id;
-
-//     return params;
-// }
 
 placeOrderTransactionsRouter.post(
     '/:transactionId/tasks/sendEmailNotification',

@@ -79,24 +79,12 @@ reservationsRouter.get('/distinct/:field', permitScopes_1.default(['admin']), ..
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // 予約検索条件
-        const conditions = Object.assign({}, req.query, { 
-            // tslint:disable-next-line:no-magic-numbers
-            // limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-            // page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
-            // sort: (req.query.sort !== undefined) ? req.query.sort : undefined,
-            performanceStartFrom: (!_.isEmpty(req.query.performanceStartFrom))
-                ? moment(req.query.performanceStartFrom)
-                    .toDate()
-                : undefined, performanceStartThrough: (!_.isEmpty(req.query.performanceStartThrough))
-                ? moment(req.query.performanceStartThrough)
-                    .toDate()
-                : undefined, performanceEndFrom: (!_.isEmpty(req.query.performanceEndFrom))
-                ? moment(req.query.performanceEndFrom)
-                    .toDate()
-                : undefined, performanceEndThrough: (!_.isEmpty(req.query.performanceEndThrough))
-                ? moment(req.query.performanceEndThrough)
-                    .toDate()
-                : undefined });
+        const conditions = Object.assign({}, req.query
+        // tslint:disable-next-line:no-magic-numbers
+        // limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+        // page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
+        // sort: (req.query.sort !== undefined) ? req.query.sort : undefined,
+        );
         // 予約を検索
         debug('searching reservations...', conditions);
         const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
@@ -163,19 +151,7 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), .
             // デフォルトで余分確保分を除く
             additionalProperty: {
                 $nin: [{ name: 'extra', value: '1' }]
-            }, performanceStartFrom: (!_.isEmpty(req.query.performanceStartFrom))
-                ? moment(req.query.performanceStartFrom)
-                    .toDate()
-                : undefined, performanceStartThrough: (!_.isEmpty(req.query.performanceStartThrough))
-                ? moment(req.query.performanceStartThrough)
-                    .toDate()
-                : undefined, performanceEndFrom: (!_.isEmpty(req.query.performanceEndFrom))
-                ? moment(req.query.performanceEndFrom)
-                    .toDate()
-                : undefined, performanceEndThrough: (!_.isEmpty(req.query.performanceEndThrough))
-                ? moment(req.query.performanceEndThrough)
-                    .toDate()
-                : undefined });
+            } });
         // 予約を検索
         debug('searching reservations...', conditions);
         const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);

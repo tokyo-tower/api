@@ -13,11 +13,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const ttts = require("@motionpicture/ttts-domain");
 const express = require("express");
+// tslint:disable-next-line:no-submodule-imports
+const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const _ = require("underscore");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
+const validator_1 = require("../middlewares/validator");
 const performanceRouter = express.Router();
 const redisClient = ttts.redis.createClient({
     host: process.env.REDIS_HOST,
@@ -47,18 +50,43 @@ performanceRouter.get('/:id', permitScopes_1.default(['performances', 'performan
 /**
  * パフォーマンス検索
  */
-performanceRouter.get('', permitScopes_1.default(['performances', 'performances.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+performanceRouter.get('', permitScopes_1.default(['performances', 'performances.read-only']), ...[
+    check_1.query('startFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('startThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('endFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('endThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('ttts_extension.online_sales_update_at.$gte')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('ttts_extension.online_sales_update_at.$lt')
+        .optional()
+        .isISO8601()
+        .toDate()
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const conditions = Object.assign({}, req.query, { limit: (!_.isEmpty(req.query.limit)) ? Number(req.query.limit) : undefined, page: (!_.isEmpty(req.query.page)) ? Number(req.query.page) : undefined, startFrom: (!_.isEmpty(req.query.start_from)) ? moment(req.query.start_from)
-                .toDate() : undefined, startThrough: (!_.isEmpty(req.query.start_through)) ? moment(req.query.start_through)
-                .toDate() : undefined, ttts_extension: Object.assign({}, req.query.ttts_extension, { online_sales_update_at: (req.query.ttts_extension !== undefined && req.query.ttts_extension.online_sales_update_at !== undefined)
-                    ? {
-                        $gte: moment(req.query.ttts_extension.online_sales_update_at.$gte)
-                            .toDate(),
-                        $lt: moment(req.query.ttts_extension.online_sales_update_at.$lt)
-                            .toDate()
-                    }
-                    : undefined }) });
+        // 互換性維持のため
+        if (!_.isEmpty(req.query.start_from)) {
+            req.query.startFrom = moment(req.query.start_from)
+                .toDate();
+        }
+        if (!_.isEmpty(req.query.start_through)) {
+            req.query.startThrough = moment(req.query.start_through)
+                .toDate();
+        }
+        const conditions = Object.assign({}, req.query, { limit: (!_.isEmpty(req.query.limit)) ? Number(req.query.limit) : undefined, page: (!_.isEmpty(req.query.page)) ? Number(req.query.page) : undefined });
         const performanceRepo = new ttts.repository.Performance(ttts.mongoose.connection);
         yield ttts.service.performance.search(conditions)(performanceRepo, new ttts.repository.EventWithAggregation(redisClient))
             .then((searchPerformanceResult) => {

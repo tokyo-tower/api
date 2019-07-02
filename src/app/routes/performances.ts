@@ -3,12 +3,15 @@
  */
 import * as ttts from '@motionpicture/ttts-domain';
 import * as express from 'express';
+// tslint:disable-next-line:no-submodule-imports
+import { query } from 'express-validator/check';
 import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 import * as _ from 'underscore';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
+import validator from '../middlewares/validator';
 
 const performanceRouter = express.Router();
 
@@ -59,28 +62,61 @@ performanceRouter.get(
 performanceRouter.get(
     '',
     permitScopes(['performances', 'performances.read-only']),
+    ...[
+        query('startFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('startThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('endFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('endThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('ttts_extension.online_sales_update_at.$gte')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('ttts_extension.online_sales_update_at.$lt')
+            .optional()
+            .isISO8601()
+            .toDate()
+    ],
+    validator,
     async (req, res, next) => {
         try {
+            // 互換性維持のため
+            if (!_.isEmpty(req.query.start_from)) {
+                req.query.startFrom = moment(req.query.start_from)
+                    .toDate();
+            }
+            if (!_.isEmpty(req.query.start_through)) {
+                req.query.startThrough = moment(req.query.start_through)
+                    .toDate();
+            }
+
             const conditions: ttts.factory.performance.ISearchConditions = {
                 ...req.query,
                 limit: (!_.isEmpty(req.query.limit)) ? Number(req.query.limit) : undefined,
-                page: (!_.isEmpty(req.query.page)) ? Number(req.query.page) : undefined,
-                startFrom: (!_.isEmpty(req.query.start_from)) ? moment(req.query.start_from)
-                    .toDate() : undefined,
-                startThrough: (!_.isEmpty(req.query.start_through)) ? moment(req.query.start_through)
-                    .toDate() : undefined,
-                ttts_extension: {
-                    ...req.query.ttts_extension,
-                    online_sales_update_at:
-                        (req.query.ttts_extension !== undefined && req.query.ttts_extension.online_sales_update_at !== undefined)
-                            ? {
-                                $gte: moment(req.query.ttts_extension.online_sales_update_at.$gte)
-                                    .toDate(),
-                                $lt: moment(req.query.ttts_extension.online_sales_update_at.$lt)
-                                    .toDate()
-                            }
-                            : undefined
-                }
+                page: (!_.isEmpty(req.query.page)) ? Number(req.query.page) : undefined
+                // ttts_extension: {
+                //     ...req.query.ttts_extension,
+                //     online_sales_update_at:
+                //         (req.query.ttts_extension !== undefined && req.query.ttts_extension.online_sales_update_at !== undefined)
+                //             ? {
+                //                 $gte: moment(req.query.ttts_extension.online_sales_update_at.$gte)
+                //                     .toDate(),
+                //                 $lt: moment(req.query.ttts_extension.online_sales_update_at.$lt)
+                //                     .toDate()
+                //             }
+                //             : undefined
+                // }
             };
 
             const performanceRepo = new ttts.repository.Performance(ttts.mongoose.connection);
