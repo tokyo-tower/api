@@ -332,20 +332,6 @@ placeOrderTransactionsRouter.post(
 
             // 余分確保予約を除いてレスポンスを返す
             if (transactionResult !== undefined) {
-                transactionResult.eventReservations = transactionResult.eventReservations
-                    .filter((r) => {
-                        // 余分確保分を除く
-                        let extraProperty: ttts.factory.propertyValue.IPropertyValue<string> | undefined;
-                        if (r.additionalProperty !== undefined) {
-                            extraProperty = r.additionalProperty.find((p) => p.name === 'extra');
-                        }
-
-                        return r.additionalProperty === undefined
-                            || extraProperty === undefined
-                            || extraProperty.value !== '1';
-                    })
-                    .map(chevreReservation2ttts);
-
                 transactionResult.order.acceptedOffers = transactionResult.order.acceptedOffers
                     .filter((o) => {
                         const r = o.itemOffered;
@@ -359,6 +345,18 @@ placeOrderTransactionsRouter.post(
                             || extraProperty === undefined
                             || extraProperty.value !== '1';
                     });
+
+                // POSへ互換性維持のためにeventReservations属性を生成
+                transactionResult.eventReservations = transactionResult.order.acceptedOffers
+                    .map((o) => {
+                        const r = o.itemOffered;
+
+                        return <any>{
+                            qr_str: r.id,
+                            payment_no: r.reservationNumber,
+                            performance: r.reservationFor.id
+                        };
+                    });
             }
 
             res.status(CREATED)
@@ -369,14 +367,14 @@ placeOrderTransactionsRouter.post(
     }
 );
 
-function chevreReservation2ttts(params: ttts.factory.reservation.event.IReservation): ttts.factory.reservation.event.IReservation {
-    // POSへ互換性維持のため
-    (<any>params).qr_str = params.id;
-    (<any>params).payment_no = params.reservationNumber;
-    (<any>params).performance = params.reservationFor.id;
+// function chevreReservation2ttts(params: ttts.factory.reservation.event.IReservation): ttts.factory.reservation.event.IReservation {
+//     // POSへ互換性維持のため
+//     (<any>params).qr_str = params.id;
+//     (<any>params).payment_no = params.reservationNumber;
+//     (<any>params).performance = params.reservationFor.id;
 
-    return params;
-}
+//     return params;
+// }
 
 placeOrderTransactionsRouter.post(
     '/:transactionId/tasks/sendEmailNotification',
