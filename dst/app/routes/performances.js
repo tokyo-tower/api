@@ -86,7 +86,18 @@ performanceRouter.get('', permitScopes_1.default(['performances', 'performances.
             req.query.startThrough = moment(req.query.start_through)
                 .toDate();
         }
-        const conditions = Object.assign({}, req.query, { limit: (!_.isEmpty(req.query.limit)) ? Number(req.query.limit) : undefined, page: (!_.isEmpty(req.query.page)) ? Number(req.query.page) : undefined });
+        // POSへの互換性維持
+        if (typeof req.query.day === 'string' && req.query.day.length > 0) {
+            req.query.startFrom = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                .toDate();
+            req.query.startThrough = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                .add(1, 'day')
+                .toDate();
+            delete req.query.day;
+        }
+        const conditions = Object.assign({}, req.query, { 
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100, page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1 });
         const performanceRepo = new ttts.repository.Performance(ttts.mongoose.connection);
         yield ttts.service.performance.search(conditions)(performanceRepo, new ttts.repository.EventWithAggregation(redisClient))
             .then((searchPerformanceResult) => {
