@@ -87,13 +87,28 @@ performanceRouter.get('', permitScopes_1.default(['performances', 'performances.
                 .toDate();
         }
         // POSへの互換性維持
-        if (typeof req.query.day === 'string' && req.query.day.length > 0) {
-            req.query.startFrom = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                .toDate();
-            req.query.startThrough = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                .add(1, 'day')
-                .toDate();
-            delete req.query.day;
+        if (req.query.day !== undefined) {
+            if (typeof req.query.day === 'string' && req.query.day.length > 0) {
+                req.query.startFrom = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                    .toDate();
+                req.query.startThrough = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                    .add(1, 'day')
+                    .toDate();
+                delete req.query.day;
+            }
+            if (typeof req.query.day === 'object') {
+                // day: { '$gte': '20190603', '$lte': '20190802' } } の場合
+                if (req.query.day.$gte !== undefined) {
+                    req.query.startFrom = moment(`${req.query.day.$gte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                        .toDate();
+                }
+                if (req.query.day.$lte !== undefined) {
+                    req.query.startThrough = moment(`${req.query.day.$lte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                        .add(1, 'day')
+                        .toDate();
+                }
+                delete req.query.day;
+            }
         }
         const conditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
