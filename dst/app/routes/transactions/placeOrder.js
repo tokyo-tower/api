@@ -212,18 +212,6 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         debug('transaction confirmed.');
         // 余分確保予約を除いてレスポンスを返す
         if (transactionResult !== undefined) {
-            transactionResult.eventReservations = transactionResult.eventReservations
-                .filter((r) => {
-                // 余分確保分を除く
-                let extraProperty;
-                if (r.additionalProperty !== undefined) {
-                    extraProperty = r.additionalProperty.find((p) => p.name === 'extra');
-                }
-                return r.additionalProperty === undefined
-                    || extraProperty === undefined
-                    || extraProperty.value !== '1';
-            })
-                .map(chevreReservation2ttts);
             transactionResult.order.acceptedOffers = transactionResult.order.acceptedOffers
                 .filter((o) => {
                 const r = o.itemOffered;
@@ -236,6 +224,16 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
                     || extraProperty === undefined
                     || extraProperty.value !== '1';
             });
+            // POSへ互換性維持のためにeventReservations属性を生成
+            transactionResult.eventReservations = transactionResult.order.acceptedOffers
+                .map((o) => {
+                const r = o.itemOffered;
+                return {
+                    qr_str: r.id,
+                    payment_no: r.reservationNumber,
+                    performance: r.reservationFor.id
+                };
+            });
         }
         res.status(http_status_1.CREATED)
             .json(transactionResult);
@@ -244,13 +242,6 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         next(error);
     }
 }));
-function chevreReservation2ttts(params) {
-    // POSへ互換性維持のため
-    params.qr_str = params.id;
-    params.payment_no = params.reservationNumber;
-    params.performance = params.reservationFor.id;
-    return params;
-}
 placeOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification', permitScopes_1.default(['transactions']), (req, __2, next) => {
     req.checkBody('sender.name', 'invalid sender')
         .notEmpty()

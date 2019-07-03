@@ -117,11 +117,11 @@ function performance2event(performance: ttts.factory.performance.IPerformanceWit
         additionalProperty: [],
         attendeeCount: 0,
         checkInCount: 0,
-        doorTime: performance.door_time,
-        endDate: performance.end_date,
-        startDate: performance.start_date,
+        doorTime: performance.doorTime,
+        endDate: performance.endDate,
+        startDate: performance.startDate,
         eventStatus: ttts.factory.chevre.eventStatusType.EventScheduled,
-        name: performance.film.name,
+        name: performance.superEvent.name,
         offers: {
             id: performance.ticket_type_group.id,
             name: performance.ticket_type_group.name,
@@ -140,24 +140,24 @@ function performance2event(performance: ttts.factory.performance.IPerformanceWit
         },
         location: {
             typeOf: ttts.factory.chevre.placeType.ScreeningRoom,
-            branchCode: performance.screen.id,
-            name: performance.screen.name
+            branchCode: performance.location.branchCode,
+            name: performance.location.name
         },
         superEvent: {
-            id: '',
-            name: performance.film.name,
-            alternativeHeadline: performance.film.name,
+            id: performance.superEvent.id,
+            name: performance.superEvent.name,
+            alternativeHeadline: performance.superEvent.name,
             location: {
-                id: performance.theater.id,
-                branchCode: performance.theater.id,
-                name: performance.theater.name,
+                id: performance.superEvent.location.id,
+                branchCode: performance.superEvent.location.branchCode,
+                name: performance.superEvent.location.name,
                 typeOf: ttts.factory.chevre.placeType.MovieTheater
             },
             videoFormat: [],
             soundFormat: [],
             workPerformed: {
-                identifier: performance.film.id,
-                name: performance.film.name.ja,
+                identifier: performance.superEvent.id,
+                name: performance.superEvent.name.ja,
                 typeOf: ttts.factory.chevre.creativeWorkType.Movie
             },
             offers: {
@@ -169,8 +169,8 @@ function performance2event(performance: ttts.factory.performance.IPerformanceWit
             typeOf: ttts.factory.chevre.eventType.ScreeningEventSeries
         },
         workPerformed: {
-            identifier: performance.film.id,
-            name: performance.film.name.ja,
+            identifier: performance.superEvent.id,
+            name: performance.superEvent.name.ja,
             typeOf: ttts.factory.chevre.creativeWorkType.Movie
         }
     };
