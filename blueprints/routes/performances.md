@@ -59,15 +59,16 @@
 
 # Group Performances
 
-## パフォーマンス検索 [/performances{?page,limit,theater,day}]
+## パフォーマンス検索 [/performances{?page,limit,day,performanceId}]
 
 + Parameters
     + page: `2` (number, optional) - ページ
       + Default: `1`
     + limit: `25` (number, optional) - 最大取得件数
       + Default: `100`
-    + theater: `001` (string, optional) - 施設
+    + theater: `001` (string, optional) - 施設(指定の必要がなくなりました)
     + day: `20110101` (string, optional) - 上映日
+    + performanceId: `171222001001012130` (string, optional) - パフォーマンスID
 
 ### パフォーマンス検索 [GET]
 条件指定でパフォーマンスを検索します。
@@ -78,7 +79,7 @@ This action requires an `access_token` with `performances.read-only` scope.
 
 example:
 ```no-highlight
-/performances?theater=001&limit=5
+/performances?day=20110101&limit=5
 ```
 
 + Response 200 (application/json)
