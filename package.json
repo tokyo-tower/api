@@ -1,6 +1,6 @@
 {
   "name": "ttts-api-mock",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "ttts api mock",
   "scripts": {
     "clean": "rimraf docs/**/* npm-debug.log*",
