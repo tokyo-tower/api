@@ -112,7 +112,11 @@ performanceRouter.get('', permitScopes_1.default(['performances', 'performances.
         }
         const conditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100, page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1 });
+            limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100, page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1, 
+            // POSへの互換性維持のためperformanceIdを補完
+            ids: (req.query.performanceId !== undefined)
+                ? [String(req.query.performanceId)]
+                : undefined });
         const performanceRepo = new ttts.repository.Performance(ttts.mongoose.connection);
         yield ttts.service.performance.search(conditions)(performanceRepo, new ttts.repository.EventWithAggregation(redisClient))
             .then((searchPerformanceResult) => {

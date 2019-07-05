@@ -133,19 +133,11 @@ performanceRouter.get(
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100,
-                page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1
-                // ttts_extension: {
-                //     ...req.query.ttts_extension,
-                //     online_sales_update_at:
-                //         (req.query.ttts_extension !== undefined && req.query.ttts_extension.online_sales_update_at !== undefined)
-                //             ? {
-                //                 $gte: moment(req.query.ttts_extension.online_sales_update_at.$gte)
-                //                     .toDate(),
-                //                 $lt: moment(req.query.ttts_extension.online_sales_update_at.$lt)
-                //                     .toDate()
-                //             }
-                //             : undefined
-                // }
+                page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1,
+                // POSへの互換性維持のためperformanceIdを補完
+                ids: (req.query.performanceId !== undefined)
+                    ? [String(req.query.performanceId)]
+                    : undefined
             };
 
             const performanceRepo = new ttts.repository.Performance(ttts.mongoose.connection);
