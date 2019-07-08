@@ -6,7 +6,6 @@
 
 ## Performances.TicketType
 + charge: 1800 (number, required) - 価格
-+ rate_limit_unit_in_seconds: 1 (number, required) - レート制限単位(秒)
 + name: (Performances.MultilingualString, required) - 券種名(多言語対応)
 + id: `001` (string, required) - 券種ID
 + available_num: 1 (number, required) - 在庫数
