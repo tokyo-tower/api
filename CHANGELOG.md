@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- イベントのオファー検索エンドポイントを追加
+
 ### Changed
 
 - Chevreからの作品コードの引き継ぎを調整

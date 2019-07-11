@@ -246,11 +246,20 @@ function performanceWithAvailability2event(performance: ttts.factory.performance
  */
 screeningEventRouter.get(
     '/:id/offers',
-    permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
+    permitScopes(['customer', 'events', 'events.read-only']),
     validator,
-    async (__, res, next) => {
+    async (req, res, next) => {
         try {
-            res.json([]);
+            const projectRepo = new ttts.repository.Project(ttts.mongoose.connection);
+
+            const offers = await ttts.service.offer.searchEventOffers({
+                project: req.project,
+                event: { id: req.params.id }
+            })({
+                project: projectRepo
+            });
+
+            res.json(offers);
         } catch (error) {
             next(error);
         }
@@ -262,21 +271,33 @@ screeningEventRouter.get(
  */
 screeningEventRouter.get(
     '/:id/offers/ticket',
-    permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
+    permitScopes(['customer', 'events', 'events.read-only']),
     ...[
-        query('seller')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required'),
-        query('store')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
+        // query('seller')
+        //     .not()
+        //     .isEmpty()
+        //     .withMessage((_, __) => 'required'),
+        // query('store')
+        //     .not()
+        //     .isEmpty()
+        //     .withMessage((_, __) => 'required')
     ],
     validator,
-    async (__, res, next) => {
+    async (req, res, next) => {
         try {
-            res.json([]);
+            const projectRepo = new ttts.repository.Project(ttts.mongoose.connection);
+            const sellerRepo = new ttts.repository.Seller(ttts.mongoose.connection);
+
+            const offers = await ttts.service.offer.searchEventTicketOffers({
+                project: req.project,
+                event: { id: req.params.id },
+                seller: req.query.seller,
+                store: req.query.store
+            })({
+                project: projectRepo,
+                seller: sellerRepo
+            });
+            res.json(offers);
         } catch (error) {
             next(error);
         }

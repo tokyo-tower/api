@@ -126,10 +126,7 @@ performanceRouter.get('', permitScopes_1.default(['performances', 'performances.
                     number_of_performances: searchPerformanceResult.numberOfPerformances,
                     number_of_films: searchPerformanceResult.filmIds.length
                 },
-                data: searchPerformanceResult.performances.map((p) => {
-                    return Object.assign({}, p, { ticketTypes: undefined // 券種リストは不要な可能性があるので削除してみる
-                     });
-                })
+                data: searchPerformanceResult.performances
             });
         });
     }

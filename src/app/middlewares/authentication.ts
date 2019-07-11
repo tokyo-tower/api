@@ -69,6 +69,8 @@ const pemsByIssuer: { [issuer: string]: IPems } = {};
 
 export default async (req: Request, __: Response, next: NextFunction) => {
     try {
+        req.project = { typeOf: 'Project', id: <string>process.env.PROJECT_ID };
+
         // ヘッダーからBearerトークンを取り出す
         // tslint:disable-next-line:no-null-keyword
         let token: string | null = null;
