@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v13.0.0 - 2019-07-12
+
+### Added
+
 - イベントのオファー検索エンドポイントを追加
 
 ### Changed
@@ -16,16 +30,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - パフォーマンス検索レスポンスから券種リストを削除
 - 複数座席の仮押さえを一度に実行するように変更
 
-### Deprecated
-
 ### Removed
 
 - パフォーマンスインターフェースから券種情報を削除
 - 仮予約インターフェースから冗長な属性を削除
-
-### Fixed
-
-### Security
 
 ## v12.1.0 - 2019-07-05
 
