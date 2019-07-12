@@ -29,6 +29,7 @@ const ISSUERS = process.env.TOKEN_ISSUERS.split(',');
 const pemsByIssuer = {};
 exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        req.project = { typeOf: 'Project', id: process.env.PROJECT_ID };
         // ヘッダーからBearerトークンを取り出す
         // tslint:disable-next-line:no-null-keyword
         let token = null;

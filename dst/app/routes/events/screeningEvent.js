@@ -201,9 +201,16 @@ function performanceWithAvailability2event(performance) {
 /**
  * イベントに対するオファー検索
  */
-screeningEventRouter.get('/:id/offers', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (__, res, next) => __awaiter(this, void 0, void 0, function* () {
+screeningEventRouter.get('/:id/offers', permitScopes_1.default(['customer', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        res.json([]);
+        const projectRepo = new ttts.repository.Project(ttts.mongoose.connection);
+        const offers = yield ttts.service.offer.searchEventOffers({
+            project: req.project,
+            event: { id: req.params.id }
+        })({
+            project: projectRepo
+        });
+        res.json(offers);
     }
     catch (error) {
         next(error);
@@ -212,18 +219,29 @@ screeningEventRouter.get('/:id/offers', permitScopes_1.default(['aws.cognito.sig
 /**
  * イベントに対する券種オファー検索
  */
-screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), ...[
-    check_1.query('seller')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required'),
-    check_1.query('store')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required')
-], validator_1.default, (__, res, next) => __awaiter(this, void 0, void 0, function* () {
+screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default(['customer', 'events', 'events.read-only']), ...[
+// query('seller')
+//     .not()
+//     .isEmpty()
+//     .withMessage((_, __) => 'required'),
+// query('store')
+//     .not()
+//     .isEmpty()
+//     .withMessage((_, __) => 'required')
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        res.json([]);
+        const projectRepo = new ttts.repository.Project(ttts.mongoose.connection);
+        const sellerRepo = new ttts.repository.Seller(ttts.mongoose.connection);
+        const offers = yield ttts.service.offer.searchEventTicketOffers({
+            project: req.project,
+            event: { id: req.params.id },
+            seller: req.query.seller,
+            store: req.query.store
+        })({
+            project: projectRepo,
+            seller: sellerRepo
+        });
+        res.json(offers);
     }
     catch (error) {
         next(error);
