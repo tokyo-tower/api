@@ -1,8 +1,4 @@
 "use strict";
-/**
- * orders router
- * @module ordersRouter
- */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -12,12 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * orders router
+ */
 const ttts = require("@motionpicture/ttts-domain");
 const express_1 = require("express");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const reservation_1 = require("../util/reservation");
+const USE_NEW_ORDER_INQUIRY = process.env.USE_NEW_ORDER_INQUIRY === '1';
 // 車椅子レート制限のためのRedis接続クライアント
 const redisClient = ttts.redis.createClient({
     host: process.env.REDIS_HOST,
@@ -26,6 +26,12 @@ const redisClient = ttts.redis.createClient({
     password: process.env.REDIS_KEY,
     tls: { servername: process.env.REDIS_HOST }
 });
+/**
+ * 正規表現をエスケープする
+ */
+function escapeRegExp(params) {
+    return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
+}
 const ordersRouter = express_1.Router();
 ordersRouter.use(authentication_1.default);
 /**
@@ -49,8 +55,24 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders', 'o
             paymentNo: req.body.paymentNo,
             telephone: req.body.telephone
         };
-        const repository = new ttts.repository.Order(ttts.mongoose.connection);
-        const order = yield repository.findByOrderInquiryKey(key);
+        const orderRepo = new ttts.repository.Order(ttts.mongoose.connection);
+        let order;
+        if (USE_NEW_ORDER_INQUIRY) {
+            const orders = yield orderRepo.search({
+                limit: 1,
+                sort: { orderDate: ttts.factory.sortType.Descending },
+                customer: { telephone: `${escapeRegExp(key.telephone)}$` },
+                confirmationNumbers: [`${key.performanceDay}${key.paymentNo}`]
+            });
+            order = orders.shift();
+            if (order === undefined) {
+                // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
+                throw new ttts.factory.errors.NotFound('Order');
+            }
+        }
+        else {
+            order = yield orderRepo.findByOrderInquiryKey(key);
+        }
         order.acceptedOffers = order.acceptedOffers
             // 余分確保分を除く
             .filter((o) => {
