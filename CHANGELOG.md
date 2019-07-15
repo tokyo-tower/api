@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v13.1.1 - 2019-07-15
+
+### Changed
+
+- 注文コレクションのインデックス調整
+
 ## v13.1.0 - 2019-07-15
 
 ### Changed
