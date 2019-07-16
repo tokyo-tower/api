@@ -53,7 +53,7 @@ ordersRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const key: ttts.factory.order.IOrderInquiryKey = {
+            const key = {
                 performanceDay: <string>req.body.performanceDay,
                 paymentNo: <string>req.body.paymentNo,
                 telephone: <string>req.body.telephone
