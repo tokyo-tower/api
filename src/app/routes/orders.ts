@@ -10,8 +10,6 @@ import validator from '../middlewares/validator';
 
 import { tttsReservation2chevre } from '../util/reservation';
 
-const USE_NEW_ORDER_INQUIRY = process.env.USE_NEW_ORDER_INQUIRY === '1';
-
 // 車椅子レート制限のためのRedis接続クライアント
 const redisClient = ttts.redis.createClient({
     host: <string>process.env.REDIS_HOST,
@@ -62,20 +60,16 @@ ordersRouter.post(
             const orderRepo = new ttts.repository.Order(ttts.mongoose.connection);
             let order: ttts.factory.order.IOrder | undefined;
 
-            if (USE_NEW_ORDER_INQUIRY) {
-                const orders = await orderRepo.search({
-                    limit: 1,
-                    sort: { orderDate: ttts.factory.sortType.Descending },
-                    customer: { telephone: `${escapeRegExp(key.telephone)}$` },
-                    confirmationNumbers: [`${key.performanceDay}${key.paymentNo}`]
-                });
-                order = orders.shift();
-                if (order === undefined) {
-                    // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
-                    throw new ttts.factory.errors.NotFound('Order');
-                }
-            } else {
-                throw new ttts.factory.errors.ServiceUnavailable('USE_NEW_ORDER_INQUIRY unset');
+            const orders = await orderRepo.search({
+                limit: 1,
+                sort: { orderDate: ttts.factory.sortType.Descending },
+                customer: { telephone: `${escapeRegExp(key.telephone)}$` },
+                confirmationNumbers: [`${key.performanceDay}${key.paymentNo}`]
+            });
+            order = orders.shift();
+            if (order === undefined) {
+                // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
+                throw new ttts.factory.errors.NotFound('Order');
             }
 
             order.acceptedOffers = order.acceptedOffers
