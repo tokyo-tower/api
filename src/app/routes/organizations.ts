@@ -3,7 +3,7 @@
  */
 import { Router } from 'express';
 
-import * as ttts from '@motionpicture/ttts-domain';
+import * as ttts from '@tokyotower/domain';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';

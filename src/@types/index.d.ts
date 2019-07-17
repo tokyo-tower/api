@@ -1,7 +1,7 @@
 /**
  * アプリケーション固有の型
  */
-import * as ttts from '@motionpicture/ttts-domain';
+import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
 
 declare global {

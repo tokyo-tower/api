@@ -4,7 +4,7 @@
  * @module middlewares.validator
  */
 
-import * as ttts from '@motionpicture/ttts-domain';
+import * as ttts from '@tokyotower/domain';
 import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
 import { } from 'express-validator'; // 型を読み込んでおかないとテストコードでコンパイルエラー発生

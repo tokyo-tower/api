@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 注文取引ルーター
  */
-const ttts = require("@motionpicture/ttts-domain");
+const ttts = require("@tokyotower/domain");
 const createDebug = require("debug");
 const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports

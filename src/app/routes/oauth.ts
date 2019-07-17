@@ -3,7 +3,7 @@
  * @namespace routes.oauth
  */
 
-import * as ttts from '@motionpicture/ttts-domain';
+import * as ttts from '@tokyotower/domain';
 import * as basicAuth from 'basic-auth';
 import * as createDebug from 'debug';
 import { Router } from 'express';

@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const express = require("express");
 const devRouter = express.Router();
-const ttts = require("@motionpicture/ttts-domain");
+const ttts = require("@tokyotower/domain");
 const createDebug = require("debug");
 const http_status_1 = require("http-status");
 const mongooseConnectionOptions_1 = require("../../mongooseConnectionOptions");

@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * IAMルーター
  */
-const ttts = require("@motionpicture/ttts-domain");
+const ttts = require("@tokyotower/domain");
 const express = require("express");
 // import { OK } from 'http-status';
 const authentication_1 = require("../middlewares/authentication");

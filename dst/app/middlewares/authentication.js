@@ -13,7 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ttts = require("@motionpicture/ttts-domain");
+const ttts = require("@tokyotower/domain");
 const createDebug = require("debug");
 const jwt = require("jsonwebtoken");
 // tslint:disable-next-line:no-require-imports no-var-requires

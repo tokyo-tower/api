@@ -1,7 +1,7 @@
 /**
  * expressアプリケーション
  */
-import * as ttts from '@motionpicture/ttts-domain';
+import * as ttts from '@tokyotower/domain';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import * as express from 'express';

@@ -3,7 +3,7 @@
  * @module middlewares.notFoundHandler
  */
 
-import * as ttts from '@motionpicture/ttts-domain';
+import * as ttts from '@tokyotower/domain';
 import { NextFunction, Request, Response } from 'express';
 
 export default (req: Request, __: Response, next: NextFunction) => {

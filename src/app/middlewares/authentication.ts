@@ -4,7 +4,7 @@
  * @see https://aws.amazon.com/blogs/mobile/integrating-amazon-cognito-user-pools-with-api-gateway/
  */
 
-import * as ttts from '@motionpicture/ttts-domain';
+import * as ttts from '@tokyotower/domain';
 import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';

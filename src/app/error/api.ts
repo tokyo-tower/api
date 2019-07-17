@@ -1,4 +1,4 @@
-import { factory } from '@motionpicture/ttts-domain';
+import { factory } from '@tokyotower/domain';
 
 /**
  * APIエラー
