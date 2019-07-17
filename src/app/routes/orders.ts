@@ -75,7 +75,7 @@ ordersRouter.post(
                     throw new ttts.factory.errors.NotFound('Order');
                 }
             } else {
-                order = await orderRepo.findByOrderInquiryKey(key);
+                throw new ttts.factory.errors.ServiceUnavailable('USE_NEW_ORDER_INQUIRY unset');
             }
 
             order.acceptedOffers = order.acceptedOffers

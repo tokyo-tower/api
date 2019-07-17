@@ -326,7 +326,8 @@ placeOrderTransactionsRouter.post(
                 new ttts.repository.Transaction(ttts.mongoose.connection),
                 new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection),
                 new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection),
-                new ttts.repository.Token(redisClient)
+                new ttts.repository.Token(redisClient),
+                new ttts.repository.PaymentNo(redisClient)
             );
             debug('transaction confirmed.');
 

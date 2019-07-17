@@ -71,7 +71,7 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders', 'o
             }
         }
         else {
-            order = yield orderRepo.findByOrderInquiryKey(key);
+            throw new ttts.factory.errors.ServiceUnavailable('USE_NEW_ORDER_INQUIRY unset');
         }
         order.acceptedOffers = order.acceptedOffers
             // 余分確保分を除く

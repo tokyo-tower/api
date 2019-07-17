@@ -208,7 +208,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             agentId: req.user.sub,
             transactionId: req.params.transactionId,
             paymentMethod: req.body.payment_method
-        })(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection), new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection), new ttts.repository.Token(redisClient));
+        })(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection), new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection), new ttts.repository.Token(redisClient), new ttts.repository.PaymentNo(redisClient));
         debug('transaction confirmed.');
         // 余分確保予約を除いてレスポンスを返す
         if (transactionResult !== undefined) {
