@@ -1,7 +1,7 @@
 /**
  * 販売者ルーター
  */
-import * as ttts from '@motionpicture/ttts-domain';
+import * as ttts from '@tokyotower/domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { body } from 'express-validator/check';

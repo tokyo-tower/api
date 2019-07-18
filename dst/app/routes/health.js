@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * ヘルスチェックルーター
  */
-const ttts = require("@motionpicture/ttts-domain");
+const ttts = require("@tokyotower/domain");
 const express = require("express");
 const healthRouter = express.Router();
 const createDebug = require("debug");

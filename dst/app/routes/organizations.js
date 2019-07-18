@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * 組織ルーター
  */
 const express_1 = require("express");
-const ttts = require("@motionpicture/ttts-domain");
+const ttts = require("@tokyotower/domain");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");

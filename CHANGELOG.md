@@ -18,6 +18,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v14.0.0 - 2019-07-18
+
+### Added
+
+- 予約検索条件の予約者に$elemMatchを追加
+
+### Changed
+
+- 予約データに購入番号を追加
+- 予約番号と購入番号を分離
+
+### Removed
+
+- 注文照会キーを削除
+
 ## v13.1.1 - 2019-07-15
 
 ### Changed

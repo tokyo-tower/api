@@ -1,4 +1,4 @@
-import { factory } from '@motionpicture/ttts-domain';
+import { factory } from '@tokyotower/domain';
 
 export function tttsReservation2chevre(
     params: factory.reservation.event.IReservation

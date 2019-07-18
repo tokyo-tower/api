@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * パフォーマンスルーター
  */
-const ttts = require("@motionpicture/ttts-domain");
+const ttts = require("@tokyotower/domain");
 const express = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");

@@ -1,7 +1,7 @@
 /**
  * 注文取引ルーター
  */
-import * as ttts from '@motionpicture/ttts-domain';
+import * as ttts from '@tokyotower/domain';
 import * as createDebug from 'debug';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
@@ -326,7 +326,8 @@ placeOrderTransactionsRouter.post(
                 new ttts.repository.Transaction(ttts.mongoose.connection),
                 new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection),
                 new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection),
-                new ttts.repository.Token(redisClient)
+                new ttts.repository.Token(redisClient),
+                new ttts.repository.PaymentNo(redisClient)
             );
             debug('transaction confirmed.');
 
@@ -353,7 +354,8 @@ placeOrderTransactionsRouter.post(
 
                         return <any>{
                             qr_str: r.id,
-                            payment_no: r.reservationNumber,
+                            // tslint:disable-next-line:no-magic-numbers
+                            payment_no: transactionResult.order.confirmationNumber.slice(-6),
                             performance: r.reservationFor.id
                         };
                     });

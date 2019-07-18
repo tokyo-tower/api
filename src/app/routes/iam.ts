@@ -1,7 +1,7 @@
 /**
  * IAMルーター
  */
-import * as ttts from '@motionpicture/ttts-domain';
+import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
 // import { OK } from 'http-status';
 

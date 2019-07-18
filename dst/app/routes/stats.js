@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 統計ルーター
  */
-const ttts = require("@motionpicture/ttts-domain");
+const ttts = require("@tokyotower/domain");
 const express = require("express");
 const statsRouter = express.Router();
 const http_status_1 = require("http-status");

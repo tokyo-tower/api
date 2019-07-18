@@ -1,7 +1,7 @@
 /**
  * 統計ルーター
  */
-import * as ttts from '@motionpicture/ttts-domain';
+import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
 
 const statsRouter = express.Router();

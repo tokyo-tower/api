@@ -6,7 +6,7 @@
 import * as express from 'express';
 const devRouter = express.Router();
 
-import * as ttts from '@motionpicture/ttts-domain';
+import * as ttts from '@tokyotower/domain';
 import * as createDebug from 'debug';
 import { NO_CONTENT } from 'http-status';
 

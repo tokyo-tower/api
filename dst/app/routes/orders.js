@@ -11,13 +11,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * orders router
  */
-const ttts = require("@motionpicture/ttts-domain");
+const ttts = require("@tokyotower/domain");
 const express_1 = require("express");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const reservation_1 = require("../util/reservation");
-const USE_NEW_ORDER_INQUIRY = process.env.USE_NEW_ORDER_INQUIRY === '1';
 // 車椅子レート制限のためのRedis接続クライアント
 const redisClient = ttts.redis.createClient({
     host: process.env.REDIS_HOST,
@@ -57,21 +56,16 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders', 'o
         };
         const orderRepo = new ttts.repository.Order(ttts.mongoose.connection);
         let order;
-        if (USE_NEW_ORDER_INQUIRY) {
-            const orders = yield orderRepo.search({
-                limit: 1,
-                sort: { orderDate: ttts.factory.sortType.Descending },
-                customer: { telephone: `${escapeRegExp(key.telephone)}$` },
-                confirmationNumbers: [`${key.performanceDay}${key.paymentNo}`]
-            });
-            order = orders.shift();
-            if (order === undefined) {
-                // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
-                throw new ttts.factory.errors.NotFound('Order');
-            }
-        }
-        else {
-            order = yield orderRepo.findByOrderInquiryKey(key);
+        const orders = yield orderRepo.search({
+            limit: 1,
+            sort: { orderDate: ttts.factory.sortType.Descending },
+            customer: { telephone: `${escapeRegExp(key.telephone)}$` },
+            confirmationNumbers: [`${key.performanceDay}${key.paymentNo}`]
+        });
+        order = orders.shift();
+        if (order === undefined) {
+            // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
+            throw new ttts.factory.errors.NotFound('Order');
         }
         order.acceptedOffers = order.acceptedOffers
             // 余分確保分を除く

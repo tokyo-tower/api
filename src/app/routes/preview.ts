@@ -3,7 +3,7 @@
  * @ignore
  */
 
-import * as ttts from '@motionpicture/ttts-domain';
+import * as ttts from '@tokyotower/domain';
 import { Router } from 'express';
 import * as moment from 'moment';
 

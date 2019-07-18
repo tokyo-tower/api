@@ -2,7 +2,7 @@
 /**
  * expressアプリケーション
  */
-const ttts = require("@motionpicture/ttts-domain");
+const ttts = require("@tokyotower/domain");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const express = require("express");
