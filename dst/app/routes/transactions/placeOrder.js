@@ -230,7 +230,8 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
                 const r = o.itemOffered;
                 return {
                     qr_str: r.id,
-                    payment_no: r.reservationNumber,
+                    // tslint:disable-next-line:no-magic-numbers
+                    payment_no: transactionResult.order.confirmationNumber.slice(-6),
                     performance: r.reservationFor.id
                 };
             });
