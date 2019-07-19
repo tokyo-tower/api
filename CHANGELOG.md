@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 非同期の継続的タスクをjobsアプリケーションから移行
+
 ### Changed
 
 ### Deprecated

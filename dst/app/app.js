@@ -2,17 +2,15 @@
 /**
  * expressアプリケーション
  */
-const ttts = require("@tokyotower/domain");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const express = require("express");
 const expressValidator = require("express-validator");
 const helmet = require("helmet");
-const mongooseConnectionOptions_1 = require("../mongooseConnectionOptions");
+const connectMongo_1 = require("../connectMongo");
 const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const admins_1 = require("./routes/admins");
-const dev_1 = require("./routes/dev");
 const events_1 = require("./routes/events");
 const health_1 = require("./routes/health");
 const iam_1 = require("./routes/iam");
@@ -84,15 +82,15 @@ app.use('/tasks', tasks_1.default);
 app.use('/transactions/placeOrder', placeOrder_1.default);
 app.use('/transactions/returnOrder', returnOrder_1.default);
 app.use('/userPools', userPools_1.default);
-if (process.env.NODE_ENV !== 'production') {
-    app.use('/dev', dev_1.default);
-}
 // 404
 app.use(notFoundHandler_1.default);
 // error handlers
 app.use(errorHandler_1.default);
-ttts.mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default)
+connectMongo_1.connectMongo({ defaultConnection: true })
     .then()
+    .catch((err) => {
     // tslint:disable-next-line:no-console
-    .catch(console.error);
+    console.error('connetMongo:', err);
+    process.exit(1);
+});
 module.exports = app;
