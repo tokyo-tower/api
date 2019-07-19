@@ -1,20 +1,18 @@
 /**
  * expressアプリケーション
  */
-import * as ttts from '@tokyotower/domain';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import * as express from 'express';
 import * as expressValidator from 'express-validator';
 import * as helmet from 'helmet';
 
-import mongooseConnectionOptions from '../mongooseConnectionOptions';
+import { connectMongo } from '../connectMongo';
 
 import errorHandler from './middlewares/errorHandler';
 import notFoundHandler from './middlewares/notFoundHandler';
 
 import adminsRouter from './routes/admins';
-import devRouter from './routes/dev';
 import eventsRouter from './routes/events';
 import healthRouter from './routes/health';
 import iamRouter from './routes/iam';
@@ -94,19 +92,18 @@ app.use('/transactions/placeOrder', placeOrderTransactionsRouter);
 app.use('/transactions/returnOrder', returnOrderTransactionsRouter);
 app.use('/userPools', userPoolsRouter);
 
-if (process.env.NODE_ENV !== 'production') {
-    app.use('/dev', devRouter);
-}
-
 // 404
 app.use(notFoundHandler);
 
 // error handlers
 app.use(errorHandler);
 
-ttts.mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions)
+connectMongo({ defaultConnection: true })
     .then()
-    // tslint:disable-next-line:no-console
-    .catch(console.error);
+    .catch((err) => {
+        // tslint:disable-next-line:no-console
+        console.error('connetMongo:', err);
+        process.exit(1);
+    });
 
 export = app;

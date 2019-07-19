@@ -7,14 +7,25 @@ const startTime = process.hrtime();
 import * as createDebug from 'debug';
 import * as http from 'http';
 import * as app from './app/app';
+import runJobs from './jobs/run';
 
-const debug = createDebug('ttts-api:index');
+const debug = createDebug('ttts-api:server');
+
+if (process.env.JOBS_STOPPED !== '1') {
+    runJobs()
+        .then()
+        .catch((err) => {
+            // tslint:disable-next-line:no-console
+            console.error('runJobs:', err);
+            process.exit(1);
+        });
+}
 
 /**
  * Get port from environment and store in Express.
  */
 
-const port = normalizePort((process.env.PORT === undefined) ? '8080' : process.env.PORT);
+const port = normalizePort((process.env.PORT === undefined) ? '8082' : process.env.PORT);
 app.set('port', port);
 
 /**
@@ -89,7 +100,7 @@ function onError(error: any) {
 function onListening() {
     const addr = server.address();
     const bind = typeof addr === 'string'
-        ? `pipe ${<string>addr}`
+        ? `pipe ${addr}`
         : `port ${addr.port.toString()}`;
     debug(`Listening on ${bind}`);
 

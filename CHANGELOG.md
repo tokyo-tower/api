@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v15.0.0 - 2019-07-19
+
+### Added
+
+- 非同期の継続的タスクをjobsアプリケーションから移行
+
 ## v14.0.0 - 2019-07-18
 
 ### Added
