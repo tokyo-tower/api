@@ -2,6 +2,8 @@
  * GMO実売上
  */
 import * as ttts from '@tokyotower/domain';
+import * as os from 'os';
+import * as util from 'util';
 
 import { connectMongo } from '../../../connectMongo';
 
@@ -21,6 +23,26 @@ export default async (params: {
         },
         // tslint:disable-next-line:no-magic-numbers
         10000
+    );
+
+    // デバッグ
+    setInterval(
+        async () => {
+            if (process.env.DEBUG_SINGLETON_PROCESS === '1') {
+                await ttts.service.notification.report2developers(
+                    `[${process.env.PROJECT_ID}] api:singletonProcess`,
+                    util.format(
+                        '%s\n%s\n%s\n%s\n%s',
+                        `key: 'settleCreditCard'`,
+                        `holdSingletonProcess: ${holdSingletonProcess}`,
+                        `os.hostname: ${os.hostname}`,
+                        `pid: ${process.pid}`
+                    )
+                )();
+            }
+        },
+        // tslint:disable-next-line:no-magic-numbers
+        900000
     );
 
     const connection = await connectMongo({ defaultConnection: false });

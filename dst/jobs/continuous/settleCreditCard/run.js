@@ -12,6 +12,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * GMO実売上
  */
 const ttts = require("@tokyotower/domain");
+const os = require("os");
+const util = require("util");
 const connectMongo_1 = require("../../../connectMongo");
 const singletonProcess = require("../../../singletonProcess");
 exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
@@ -25,6 +27,14 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     }), 
     // tslint:disable-next-line:no-magic-numbers
     10000);
+    // デバッグ
+    setInterval(() => __awaiter(this, void 0, void 0, function* () {
+        if (process.env.DEBUG_SINGLETON_PROCESS === '1') {
+            yield ttts.service.notification.report2developers(`[${process.env.PROJECT_ID}] api:singletonProcess`, util.format('%s\n%s\n%s\n%s\n%s', `key: 'settleCreditCard'`, `holdSingletonProcess: ${holdSingletonProcess}`, `os.hostname: ${os.hostname}`, `pid: ${process.pid}`))();
+        }
+    }), 
+    // tslint:disable-next-line:no-magic-numbers
+    900000);
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     const redisClient = ttts.redis.createClient({
         host: process.env.REDIS_HOST,
