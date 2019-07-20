@@ -37,7 +37,7 @@ export default async (params: {
     });
 
     const job = new CronJob(
-        `0 * * * *`,
+        '0 * * * *',
         async () => {
             if (!holdSingletonProcess) {
                 return;

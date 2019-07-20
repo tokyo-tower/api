@@ -10,7 +10,7 @@ import * as moment from 'moment-timezone';
 
 import * as singletonProcess from '../../../singletonProcess';
 
-const debug = createDebug('ttts-api:jobs:createEvents');
+const debug = createDebug('ttts-api:jobs');
 
 const project = { typeOf: <'Project'>'Project', id: <string>process.env.PROJECT_ID };
 
@@ -31,7 +31,7 @@ export default async (params: {
     );
 
     const job = new CronJob(
-        `0 * * * *`,
+        '0 * * * *',
         async () => {
             if (!holdSingletonProcess) {
                 return;

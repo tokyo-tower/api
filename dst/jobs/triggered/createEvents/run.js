@@ -17,7 +17,7 @@ const createDebug = require("debug");
 const fs = require("fs-extra");
 const moment = require("moment-timezone");
 const singletonProcess = require("../../../singletonProcess");
-const debug = createDebug('ttts-api:jobs:createEvents');
+const debug = createDebug('ttts-api:jobs');
 const project = { typeOf: 'Project', id: process.env.PROJECT_ID };
 exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     let holdSingletonProcess = false;
@@ -30,7 +30,7 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     }), 
     // tslint:disable-next-line:no-magic-numbers
     10000);
-    const job = new cron_1.CronJob(`0 * * * *`, () => __awaiter(this, void 0, void 0, function* () {
+    const job = new cron_1.CronJob('0 * * * *', () => __awaiter(this, void 0, void 0, function* () {
         if (!holdSingletonProcess) {
             return;
         }

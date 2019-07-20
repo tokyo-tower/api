@@ -36,7 +36,7 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
         password: process.env.REDIS_KEY,
         tls: { servername: process.env.REDIS_HOST }
     });
-    const job = new cron_1.CronJob(`0 * * * *`, () => __awaiter(this, void 0, void 0, function* () {
+    const job = new cron_1.CronJob('0 * * * *', () => __awaiter(this, void 0, void 0, function* () {
         if (!holdSingletonProcess) {
             return;
         }

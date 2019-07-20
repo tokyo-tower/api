@@ -1,6 +1,6 @@
-# 東京タワーチケット予約システムAPIアプリケーション
+# 東京タワーチケットシステムAPIアプリケーション
 
-[![CircleCI](https://circleci.com/gh/motionpicture/ttts-api.svg?style=svg)](https://circleci.com/gh/motionpicture/ttts-api)
+[![CircleCI](https://circleci.com/gh/tokyo-tower/api.svg?style=svg)](https://circleci.com/gh/tokyo-tower/api)
 
 ## Table of contents
 
@@ -36,6 +36,7 @@
 | `CHEVRE_CLIENT_SECRET`           | true     |            | Chevre API Settings                            |
 | `CHEVRE_API_ENDPOINT`            | true     |            | Chevre API Settings                            |
 | `PROJECT_ID`                     | true     |            | Project ID                                     |
+| `JOBS_STOPPED`                   | false    | 1 or 0     | Asynchronous jobs stopped flag                 |
 
 ## License
 
