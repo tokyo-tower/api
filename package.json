@@ -13,6 +13,7 @@
     }
   ],
   "dependencies": {
+    "@chevre/api-nodejs-client": "1.0.0-alpha.78",
     "@tokyotower/domain": "^19.0.0",
     "agentkeepalive": "^3.3.0",
     "basic-auth": "^2.0.0",
@@ -22,6 +23,7 @@
     "debug": "^3.1.0",
     "express": "^4.16.2",
     "express-validator": "^5.3.0",
+    "fs-extra": "^8.1.0",
     "helmet": "^3.9.0",
     "http-status": "^1.2.0",
     "jsonwebtoken": "^7.4.3",
@@ -43,6 +45,7 @@
     "@types/debug": "0.0.30",
     "@types/express": "^4.11.0",
     "@types/express-validator": "^3.0.0",
+    "@types/fs-extra": "^8.0.0",
     "@types/helmet": "0.0.35",
     "@types/http-status": "^0.2.30",
     "@types/jsonwebtoken": "^7.2.5",

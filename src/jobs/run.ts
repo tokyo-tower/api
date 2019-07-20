@@ -26,6 +26,7 @@ import settleSeatReservation from './continuous/settleSeatReservation/run';
 import triggerWebhook from './continuous/triggerWebhook/run';
 import updateOrderReportByReservation from './continuous/updateOrderReportByReservation/run';
 
+import createEvents from './triggered/createEvents/run';
 import makeAggregationsExpired from './triggered/makeAggregationsExpired/run';
 import syncCheckinGates from './triggered/syncCheckinGates/run';
 
@@ -57,6 +58,7 @@ export default async () => {
     await triggerWebhook({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await updateOrderReportByReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
 
+    await createEvents({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await makeAggregationsExpired({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await syncCheckinGates({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
 };
