@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- 定期タスクをjobsアプリケーションから移行
-
 ### Changed
 
 ### Deprecated
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v16.0.0 - 2019-07-22
+
+### Added
+
+- 定期タスクをjobsアプリケーションから移行
 
 ## v15.0.0 - 2019-07-19
 
