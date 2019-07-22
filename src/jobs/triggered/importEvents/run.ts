@@ -190,14 +190,9 @@ export async function main(connection: ttts.mongoose.Connection): Promise<void> 
                         refund_update_user: '',
                         refunded_count: 0
                     },
-                    ticket_type_group: <any>{
+                    ticket_type_group: {
                         id: offers.id,
-                        ticket_types: ticketTypes.map((t) => {
-                            return {
-                                ...t,
-                                id: t.identifier // 互換性維持のためIDを識別子に置き換える
-                            };
-                        }),
+                        ticket_types: ticketTypes,
                         name: offers.name
                     }
                 };
