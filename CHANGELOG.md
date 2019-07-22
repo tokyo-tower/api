@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v16.0.0 - 2019-07-22
+
+### Added
+
+- 定期タスクをjobsアプリケーションから移行
+
 ## v15.0.0 - 2019-07-19
 
 ### Added

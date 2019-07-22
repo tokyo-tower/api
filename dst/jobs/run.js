@@ -28,8 +28,10 @@ const run_17 = require("./continuous/settleCreditCard/run");
 const run_18 = require("./continuous/settleSeatReservation/run");
 const run_19 = require("./continuous/triggerWebhook/run");
 const run_20 = require("./continuous/updateOrderReportByReservation/run");
-// import createImportScreeningEventsTask from './triggered/createImportScreeningEventsTask/run';
-// import createUpdateEventAttendeeCapacityTask from './triggered/createUpdateEventAttendeeCapacityTask/run';
+const run_21 = require("./triggered/createEvents/run");
+const run_22 = require("./triggered/importEvents/run");
+const run_23 = require("./triggered/makeAggregationsExpired/run");
+const run_24 = require("./triggered/syncCheckinGates/run");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const project = { typeOf: 'Project', id: process.env.PROJECT_ID };
 // tslint:disable-next-line:cyclomatic-complexity
@@ -54,6 +56,8 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
     yield run_18.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     yield run_19.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     yield run_20.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    // await createImportScreeningEventsTask({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    // await createUpdateEventAttendeeCapacityTask({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    yield run_21.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    yield run_22.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    yield run_23.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    yield run_24.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
 });
