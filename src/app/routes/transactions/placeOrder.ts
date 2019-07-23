@@ -174,7 +174,8 @@ placeOrderTransactionsRouter.post(
                 new ttts.repository.PaymentNo(redisClient),
                 new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
                 new ttts.repository.Stock(redisClient),
-                new ttts.repository.Task(ttts.mongoose.connection)
+                new ttts.repository.Task(ttts.mongoose.connection),
+                new ttts.repository.Project(ttts.mongoose.connection)
             );
 
             // 余分確保予約を除いてレスポンスを返す

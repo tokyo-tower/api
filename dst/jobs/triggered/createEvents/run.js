@@ -12,10 +12,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * Chevreにイベントを作成する
  */
 const chevreapi = require("@chevre/api-nodejs-client");
+const ttts = require("@tokyotower/domain");
 const cron_1 = require("cron");
 const createDebug = require("debug");
 const fs = require("fs-extra");
 const moment = require("moment-timezone");
+const connectMongo_1 = require("../../../connectMongo");
 const singletonProcess = require("../../../singletonProcess");
 const debug = createDebug('ttts-api:jobs');
 const project = { typeOf: 'Project', id: process.env.PROJECT_ID };
@@ -30,12 +32,13 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     }), 
     // tslint:disable-next-line:no-magic-numbers
     10000);
+    const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     const job = new cron_1.CronJob('0 * * * *', () => __awaiter(this, void 0, void 0, function* () {
         if (!holdSingletonProcess) {
             return;
         }
         // tslint:disable-next-line:no-floating-promises
-        main()
+        main(connection)
             .then(() => {
             // tslint:disable-next-line:no-console
             console.log('success!');
@@ -51,7 +54,7 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
  * 設定からイベントを作成する
  */
 // tslint:disable-next-line:max-func-body-length
-function main() {
+function main(connection) {
     return __awaiter(this, void 0, void 0, function* () {
         // 作成情報取得
         const setting = fs.readJsonSync(`${__dirname}/../../../../data/setting.json`);
@@ -59,6 +62,14 @@ function main() {
         // 引数情報取得
         const targetInfo = getTargetInfoForCreateFromSetting(setting.performance_duration, setting.no_performance_times);
         debug('targetInfo:', targetInfo);
+        const projectRepo = new ttts.repository.Project(connection);
+        const projectDetails = yield projectRepo.findById({ id: project.id });
+        if (projectDetails.settings === undefined) {
+            throw new ttts.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        if (projectDetails.settings.chevre === undefined) {
+            throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
+        }
         const authClient = new chevreapi.auth.ClientCredentials({
             domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
             clientId: process.env.CHEVRE_CLIENT_ID,
@@ -67,15 +78,15 @@ function main() {
             state: ''
         });
         const offerService = new chevreapi.service.Offer({
-            endpoint: process.env.CHEVRE_API_ENDPOINT,
+            endpoint: projectDetails.settings.chevre.endpoint,
             auth: authClient
         });
         const placeService = new chevreapi.service.Place({
-            endpoint: process.env.CHEVRE_API_ENDPOINT,
+            endpoint: projectDetails.settings.chevre.endpoint,
             auth: authClient
         });
         const eventService = new chevreapi.service.Event({
-            endpoint: process.env.CHEVRE_API_ENDPOINT,
+            endpoint: projectDetails.settings.chevre.endpoint,
             auth: authClient
         });
         // 劇場検索

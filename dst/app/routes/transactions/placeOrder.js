@@ -123,7 +123,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
                 ticket_type: offer.ticket_type,
                 watcher_name: offer.watcher_name
             };
-        }))(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.Performance(ttts.mongoose.connection), new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection), new ttts.repository.PaymentNo(redisClient), new ttts.repository.rateLimit.TicketTypeCategory(redisClient), new ttts.repository.Stock(redisClient), new ttts.repository.Task(ttts.mongoose.connection));
+        }))(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.Performance(ttts.mongoose.connection), new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection), new ttts.repository.PaymentNo(redisClient), new ttts.repository.rateLimit.TicketTypeCategory(redisClient), new ttts.repository.Stock(redisClient), new ttts.repository.Task(ttts.mongoose.connection), new ttts.repository.Project(ttts.mongoose.connection));
         // 余分確保予約を除いてレスポンスを返す
         if (action.result !== undefined) {
             action.result.tmpReservations = action.result.tmpReservations.filter((r) => {

@@ -1,4 +1,4 @@
-# 東京タワーチケットシステムAPIアプリケーション
+# Tokyo Tower Ticket Service API Application
 
 [![CircleCI](https://circleci.com/gh/tokyo-tower/api.svg?style=svg)](https://circleci.com/gh/tokyo-tower/api)
 
@@ -34,7 +34,6 @@
 | `CHEVRE_AUTHORIZE_SERVER_DOMAIN`          | true     |            | Chevre API Settings                            |
 | `CHEVRE_CLIENT_ID`                        | true     |            | Chevre API Settings                            |
 | `CHEVRE_CLIENT_SECRET`                    | true     |            | Chevre API Settings                            |
-| `CHEVRE_API_ENDPOINT`                     | true     |            | Chevre API Settings                            |
 | `PROJECT_ID`                              | true     |            | Project ID                                     |
 | `JOBS_STOPPED`                            | false    | 1 or 0     | Asynchronous jobs stopped flag                 |
 | `TELEMETRY_API_ENDPOINT`                  | true     |            | Cinerino telemetry api endpoint                |
