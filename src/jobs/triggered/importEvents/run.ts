@@ -67,6 +67,15 @@ export async function main(connection: ttts.mongoose.Connection): Promise<void> 
     const { importFrom, importThrough } = getImportPeriod();
     debug(importFrom, importThrough);
 
+    const projectRepo = new ttts.repository.Project(connection);
+    const projectDetails = await projectRepo.findById({ id: project.id });
+    if (projectDetails.settings === undefined) {
+        throw new ttts.factory.errors.ServiceUnavailable('Project settings undefined');
+    }
+    if (projectDetails.settings.chevre === undefined) {
+        throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
+    }
+
     const authClient = new chevreapi.auth.ClientCredentials({
         domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
         clientId: <string>process.env.CHEVRE_CLIENT_ID,
@@ -76,15 +85,15 @@ export async function main(connection: ttts.mongoose.Connection): Promise<void> 
     });
 
     const offerService = new chevreapi.service.Offer({
-        endpoint: <string>process.env.CHEVRE_API_ENDPOINT,
+        endpoint: projectDetails.settings.chevre.endpoint,
         auth: authClient
     });
     const placeService = new chevreapi.service.Place({
-        endpoint: <string>process.env.CHEVRE_API_ENDPOINT,
+        endpoint: projectDetails.settings.chevre.endpoint,
         auth: authClient
     });
     const eventService = new chevreapi.service.Event({
-        endpoint: <string>process.env.CHEVRE_API_ENDPOINT,
+        endpoint: projectDetails.settings.chevre.endpoint,
         auth: authClient
     });
 

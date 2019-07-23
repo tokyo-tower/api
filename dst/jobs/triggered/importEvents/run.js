@@ -59,6 +59,14 @@ function main(connection) {
         // 引数情報取得
         const { importFrom, importThrough } = getImportPeriod();
         debug(importFrom, importThrough);
+        const projectRepo = new ttts.repository.Project(connection);
+        const projectDetails = yield projectRepo.findById({ id: project.id });
+        if (projectDetails.settings === undefined) {
+            throw new ttts.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        if (projectDetails.settings.chevre === undefined) {
+            throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
+        }
         const authClient = new chevreapi.auth.ClientCredentials({
             domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
             clientId: process.env.CHEVRE_CLIENT_ID,
@@ -67,15 +75,15 @@ function main(connection) {
             state: ''
         });
         const offerService = new chevreapi.service.Offer({
-            endpoint: process.env.CHEVRE_API_ENDPOINT,
+            endpoint: projectDetails.settings.chevre.endpoint,
             auth: authClient
         });
         const placeService = new chevreapi.service.Place({
-            endpoint: process.env.CHEVRE_API_ENDPOINT,
+            endpoint: projectDetails.settings.chevre.endpoint,
             auth: authClient
         });
         const eventService = new chevreapi.service.Event({
-            endpoint: process.env.CHEVRE_API_ENDPOINT,
+            endpoint: projectDetails.settings.chevre.endpoint,
             auth: authClient
         });
         // 劇場検索

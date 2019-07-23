@@ -8,6 +8,7 @@ import * as createDebug from 'debug';
 import * as fs from 'fs-extra';
 import * as moment from 'moment-timezone';
 
+import { connectMongo } from '../../../connectMongo';
 import * as singletonProcess from '../../../singletonProcess';
 
 const debug = createDebug('ttts-api:jobs');
@@ -30,6 +31,8 @@ export default async (params: {
         10000
     );
 
+    const connection = await connectMongo({ defaultConnection: false });
+
     const job = new CronJob(
         '0 * * * *',
         async () => {
@@ -38,7 +41,7 @@ export default async (params: {
             }
 
             // tslint:disable-next-line:no-floating-promises
-            main()
+            main(connection)
                 .then(() => {
                     // tslint:disable-next-line:no-console
                     console.log('success!');
@@ -58,7 +61,7 @@ export default async (params: {
  * 設定からイベントを作成する
  */
 // tslint:disable-next-line:max-func-body-length
-export async function main(): Promise<void> {
+export async function main(connection: ttts.mongoose.Connection): Promise<void> {
     // 作成情報取得
     const setting: any = fs.readJsonSync(`${__dirname}/../../../../data/setting.json`);
     debug('setting:', setting);
@@ -66,6 +69,15 @@ export async function main(): Promise<void> {
     // 引数情報取得
     const targetInfo = getTargetInfoForCreateFromSetting(setting.performance_duration, setting.no_performance_times);
     debug('targetInfo:', targetInfo);
+
+    const projectRepo = new ttts.repository.Project(connection);
+    const projectDetails = await projectRepo.findById({ id: project.id });
+    if (projectDetails.settings === undefined) {
+        throw new ttts.factory.errors.ServiceUnavailable('Project settings undefined');
+    }
+    if (projectDetails.settings.chevre === undefined) {
+        throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
+    }
 
     const authClient = new chevreapi.auth.ClientCredentials({
         domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
@@ -76,15 +88,15 @@ export async function main(): Promise<void> {
     });
 
     const offerService = new chevreapi.service.Offer({
-        endpoint: <string>process.env.CHEVRE_API_ENDPOINT,
+        endpoint: projectDetails.settings.chevre.endpoint,
         auth: authClient
     });
     const placeService = new chevreapi.service.Place({
-        endpoint: <string>process.env.CHEVRE_API_ENDPOINT,
+        endpoint: projectDetails.settings.chevre.endpoint,
         auth: authClient
     });
     const eventService = new chevreapi.service.Event({
-        endpoint: <string>process.env.CHEVRE_API_ENDPOINT,
+        endpoint: projectDetails.settings.chevre.endpoint,
         auth: authClient
     });
 
