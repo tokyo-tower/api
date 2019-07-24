@@ -273,7 +273,8 @@ placeOrderTransactionsRouter.post(
                 new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection),
                 new ttts.repository.Seller(ttts.mongoose.connection),
                 new ttts.repository.Transaction(ttts.mongoose.connection),
-                creditService
+                creditService,
+                new ttts.repository.Project(ttts.mongoose.connection)
             );
 
             res.status(CREATED)

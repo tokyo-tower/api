@@ -14,7 +14,7 @@
   ],
   "dependencies": {
     "@chevre/api-nodejs-client": "1.0.0-alpha.78",
-    "@tokyotower/domain": "^20.0.0",
+    "@tokyotower/domain": "21.0.0-alpha.0",
     "agentkeepalive": "^3.3.0",
     "basic-auth": "^2.0.0",
     "body-parser": "^1.18.2",
