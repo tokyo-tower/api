@@ -147,6 +147,7 @@ This action requires an `access_token` with `transactions` scope.
         + tel: `09012345678` (string, required) - 電話番号
         + age: `15` (string, required) - 年代
         + gender: `0` (string, required) - 性別
+        + address: `JP` (string) - 国コード
 
 + Response 201 (application/json)
     + Attributes
