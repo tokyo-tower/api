@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v17.0.1 - 2019-07-24
+
+### Changed
+
+- GMOサイト設定をプロジェクトリポジトリから参照するように変更
+
 ## v17.0.0 - 2019-07-23
 
 ### Changed
