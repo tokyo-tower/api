@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- GMOサイト設定をプロジェクトリポジトリから参照するように変更
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v17.0.1 - 2019-07-24
+
+### Changed
+
+- GMOサイト設定をプロジェクトリポジトリから参照するように変更
 
 ## v17.0.0 - 2019-07-23
 
