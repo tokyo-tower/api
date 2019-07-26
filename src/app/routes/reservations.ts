@@ -332,9 +332,9 @@ reservationsRouter.put(
         try {
             await ttts.service.reserve.cancelReservation({ id: req.params.id })({
                 reservation: new ttts.repository.Reservation(ttts.mongoose.connection),
-                stock: new ttts.repository.Stock(redisClient),
                 task: new ttts.repository.Task(ttts.mongoose.connection),
-                ticketTypeCategoryRateLimit: new ttts.repository.rateLimit.TicketTypeCategory(redisClient)
+                ticketTypeCategoryRateLimit: new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
+                project: new ttts.repository.Project(ttts.mongoose.connection)
             });
 
             res.status(NO_CONTENT)

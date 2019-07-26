@@ -277,9 +277,9 @@ reservationsRouter.put('/:id/cancel', permitScopes_1.default(['admin']), validat
     try {
         yield ttts.service.reserve.cancelReservation({ id: req.params.id })({
             reservation: new ttts.repository.Reservation(ttts.mongoose.connection),
-            stock: new ttts.repository.Stock(redisClient),
             task: new ttts.repository.Task(ttts.mongoose.connection),
-            ticketTypeCategoryRateLimit: new ttts.repository.rateLimit.TicketTypeCategory(redisClient)
+            ticketTypeCategoryRateLimit: new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
+            project: new ttts.repository.Project(ttts.mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT)
             .end();

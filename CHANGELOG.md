@@ -18,6 +18,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v18.0.0 - 2019-07-26
+
+### Changed
+
+- 座席の在庫管理をChevreへ移行
+
+### Removed
+
+- 在庫リポジトリを削除
+
 ## v17.0.1 - 2019-07-24
 
 ### Changed
