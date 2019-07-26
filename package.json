@@ -4,17 +4,13 @@
   },
   "contributors": [
     {
-      "name": "Mariko kusunose",
-      "email": "kusunose@motionpicture.jp"
-    },
-    {
       "name": "Tetsu Yamazaki",
       "email": "yamazaki@motionpicture.jp"
     }
   ],
   "dependencies": {
     "@chevre/api-nodejs-client": "1.0.0-alpha.78",
-    "@tokyotower/domain": "22.0.0-alpha.4",
+    "@tokyotower/domain": "^22.0.0",
     "agentkeepalive": "^3.3.0",
     "basic-auth": "^2.0.0",
     "body-parser": "^1.18.2",
@@ -35,7 +31,7 @@
     "underscore": "^1.8.3",
     "winston": "^2.4.3"
   },
-  "description": "This is a repogitory for TTTS API.",
+  "description": "Tokyo Tower Ticket Service API Application",
   "devDependencies": {
     "@types/basic-auth": "^1.1.2",
     "@types/body-parser": "0.0.34",
