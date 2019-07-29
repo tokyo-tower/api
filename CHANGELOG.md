@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 売上集計ストリーミング検索を追加
+
 ### Changed
 
 - 入場アクションをCheverへ連携

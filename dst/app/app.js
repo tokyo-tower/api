@@ -11,6 +11,7 @@ const connectMongo_1 = require("../connectMongo");
 const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const admins_1 = require("./routes/admins");
+const aggregateSales_1 = require("./routes/aggregateSales");
 const events_1 = require("./routes/events");
 const health_1 = require("./routes/health");
 const iam_1 = require("./routes/iam");
@@ -66,6 +67,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
 // ルーティング
 app.use('/admins', admins_1.default);
+app.use('/aggregateSales', aggregateSales_1.default);
 app.use('/events', events_1.default);
 app.use('/health', health_1.default);
 app.use('/iam', iam_1.default);
