@@ -8,13 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- 売上集計ストリーミング検索を追加
-
 ### Changed
-
-- 入場アクションをCheverへ連携
-- 中止タスクが存在しない場合に例外が投げられないように調整
-- 車椅子予約を含む注文データに、余分座席分が含まれないように調整
 
 ### Deprecated
 
@@ -23,6 +17,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v18.1.0 - 2019-07-29
+
+### Added
+
+- 売上集計ストリーミング検索を追加
+
+### Changed
+
+- 入場アクションをCheverへ連携
+- 中止タスクが存在しない場合に例外が投げられないように調整
+- 車椅子予約を含む注文データに、余分座席分が含まれないように調整
 
 ## v18.0.0 - 2019-07-26
 
