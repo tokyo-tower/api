@@ -7,6 +7,7 @@ import { Router } from 'express';
 import { body, query } from 'express-validator/check';
 import { CREATED } from 'http-status';
 import * as moment from 'moment';
+import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -40,7 +41,7 @@ tasksRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const taskRepo = new ttts.repository.Task(ttts.mongoose.connection);
+            const taskRepo = new ttts.repository.Task(mongoose.connection);
             const attributes: any = {
                 name: req.params.name,
                 status: ttts.factory.taskStatus.Ready,
@@ -71,7 +72,7 @@ tasksRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const taskRepo = new ttts.repository.Task(ttts.mongoose.connection);
+            const taskRepo = new ttts.repository.Task(mongoose.connection);
             const task = await taskRepo.findById({
                 name: req.params.name,
                 id: req.params.id
@@ -114,7 +115,7 @@ tasksRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const taskRepo = new ttts.repository.Task(ttts.mongoose.connection);
+            const taskRepo = new ttts.repository.Task(mongoose.connection);
             const searchConditions: any = {
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers

@@ -1,9 +1,9 @@
 /**
  * 組織ルーター
  */
-import { Router } from 'express';
-
 import * as ttts from '@tokyotower/domain';
+import { Router } from 'express';
+import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -23,7 +23,7 @@ organizationsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const sellerRepo = new ttts.repository.Seller(ttts.mongoose.connection);
+            const sellerRepo = new ttts.repository.Seller(mongoose.connection);
             const doc = await sellerRepo.organizationModel.findOne(
                 {
                     identifier: req.params.identifier

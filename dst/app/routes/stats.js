@@ -11,13 +11,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 統計ルーター
  */
-const ttts = require("@tokyotower/domain");
 const express = require("express");
+const mongoose = require("mongoose");
 const statsRouter = express.Router();
 const http_status_1 = require("http-status");
 statsRouter.get('/dbStats', (_, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const stats = yield ttts.mongoose.connection.db.stats();
+        const stats = yield mongoose.connection.db.stats();
         res.status(http_status_1.OK)
             .json(stats);
     }

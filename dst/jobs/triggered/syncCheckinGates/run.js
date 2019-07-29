@@ -75,7 +75,7 @@ function getCognitoGroups() {
                 secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
             });
             cognitoIdentityServiceProvider.listGroups({
-                UserPoolId: process.env.COGNITO_USER_POOL_ID
+                UserPoolId: process.env.ADMINS_USER_POOL_ID
             }, (err, data) => {
                 debug('listGroups result:', err, data);
                 if (err instanceof Error) {

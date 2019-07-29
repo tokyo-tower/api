@@ -11,8 +11,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 組織ルーター
  */
-const express_1 = require("express");
 const ttts = require("@tokyotower/domain");
+const express_1 = require("express");
+const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
@@ -24,7 +25,7 @@ organizationsRouter.use(authentication_1.default);
  */
 organizationsRouter.get('/corporation/:identifier', permitScopes_1.default(['organizations', 'organizations.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const sellerRepo = new ttts.repository.Seller(ttts.mongoose.connection);
+        const sellerRepo = new ttts.repository.Seller(mongoose.connection);
         const doc = yield sellerRepo.organizationModel.findOne({
             identifier: req.params.identifier
         }, {

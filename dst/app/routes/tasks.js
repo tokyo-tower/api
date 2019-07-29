@@ -17,6 +17,7 @@ const express_1 = require("express");
 const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const moment = require("moment");
+const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
@@ -42,7 +43,7 @@ tasksRouter.post('/:name', permitScopes_1.default(['admin']), ...[
         .withMessage((_, options) => `${options.path} is required`)
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const taskRepo = new ttts.repository.Task(ttts.mongoose.connection);
+        const taskRepo = new ttts.repository.Task(mongoose.connection);
         const attributes = {
             name: req.params.name,
             status: ttts.factory.taskStatus.Ready,
@@ -68,7 +69,7 @@ tasksRouter.post('/:name', permitScopes_1.default(['admin']), ...[
  */
 tasksRouter.get('/:name/:id', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const taskRepo = new ttts.repository.Task(ttts.mongoose.connection);
+        const taskRepo = new ttts.repository.Task(mongoose.connection);
         const task = yield taskRepo.findById({
             name: req.params.name,
             id: req.params.id
@@ -105,7 +106,7 @@ tasksRouter.get('', permitScopes_1.default(['admin']), ...[
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const taskRepo = new ttts.repository.Task(ttts.mongoose.connection);
+        const taskRepo = new ttts.repository.Task(mongoose.connection);
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { runsAt: ttts.factory.sortType.Descending } });

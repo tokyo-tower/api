@@ -3,6 +3,7 @@
  */
 import * as ttts from '@tokyotower/domain';
 import { Router } from 'express';
+import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -27,7 +28,7 @@ projectsRouter.get(
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
             };
 
-            const projectRepo = new ttts.repository.Project(ttts.mongoose.connection);
+            const projectRepo = new ttts.repository.Project(mongoose.connection);
             const projects = await projectRepo.search(
                 searchCoinditions,
                 undefined
@@ -51,7 +52,7 @@ projectsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new ttts.repository.Project(ttts.mongoose.connection);
+            const projectRepo = new ttts.repository.Project(mongoose.connection);
 
             const seller = await projectRepo.findById(
                 { id: req.params.id },

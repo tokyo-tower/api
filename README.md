@@ -1,4 +1,4 @@
-# Tokyo Tower Ticket Service API Application
+# TTTS API Application
 
 [![CircleCI](https://circleci.com/gh/tokyo-tower/api.svg?style=svg)](https://circleci.com/gh/tokyo-tower/api)
 

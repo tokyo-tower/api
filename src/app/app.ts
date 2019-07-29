@@ -13,6 +13,7 @@ import errorHandler from './middlewares/errorHandler';
 import notFoundHandler from './middlewares/notFoundHandler';
 
 import adminsRouter from './routes/admins';
+import aggregateSalesRouter from './routes/aggregateSales';
 import eventsRouter from './routes/events';
 import healthRouter from './routes/health';
 import iamRouter from './routes/iam';
@@ -75,6 +76,7 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 
 // ルーティング
 app.use('/admins', adminsRouter);
+app.use('/aggregateSales', aggregateSalesRouter);
 app.use('/events', eventsRouter);
 app.use('/health', healthRouter);
 app.use('/iam', iamRouter);

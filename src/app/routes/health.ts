@@ -3,6 +3,7 @@
  */
 import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
+import * as mongoose from 'mongoose';
 
 const healthRouter = express.Router();
 
@@ -25,7 +26,7 @@ healthRouter.get(
     '',
     async (_, res, next) => {
         try {
-            await ttts.mongoose.connection.db.admin()
+            await mongoose.connection.db.admin()
                 .ping();
             await new Promise(async (resolve, reject) => {
                 let givenUpChecking = false;

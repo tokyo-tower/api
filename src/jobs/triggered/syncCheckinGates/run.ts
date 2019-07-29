@@ -83,7 +83,7 @@ async function getCognitoGroups() {
 
         cognitoIdentityServiceProvider.listGroups(
             {
-                UserPoolId: <string>process.env.COGNITO_USER_POOL_ID
+                UserPoolId: <string>process.env.ADMINS_USER_POOL_ID
             },
             (err, data) => {
                 debug('listGroups result:', err, data);
