@@ -1,8 +1,8 @@
 /**
  * 統計ルーター
  */
-import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
+import * as mongoose from 'mongoose';
 
 const statsRouter = express.Router();
 
@@ -12,7 +12,7 @@ statsRouter.get(
     '/dbStats',
     async (_, res, next) => {
         try {
-            const stats = await ttts.mongoose.connection.db.stats();
+            const stats = await mongoose.connection.db.stats();
 
             res.status(OK)
                 .json(stats);

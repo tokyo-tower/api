@@ -8,6 +8,7 @@ import * as express from 'express';
 import { query } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
+import * as mongoose from 'mongoose';
 import * as _ from 'underscore';
 
 import authentication from '../middlewares/authentication';
@@ -24,6 +25,14 @@ const redisClient = ttts.redis.createClient({
     port: parseInt(<string>process.env.REDIS_PORT, 10),
     password: <string>process.env.REDIS_KEY,
     tls: { servername: <string>process.env.REDIS_HOST }
+});
+
+const chevreAuthClient = new ttts.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
 });
 
 const reservationsRouter = express.Router();
@@ -97,7 +106,7 @@ reservationsRouter.get(
 
             // 予約を検索
             debug('searching reservations...', conditions);
-            const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
+            const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
             const results = await reservationRepo.distinct(req.params.field, conditions);
 
             res.json(results);
@@ -118,7 +127,7 @@ reservationsRouter.get(
         try {
             // 予約を検索
             debug('searching reservation by id...', req.params.id);
-            const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
+            const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
             const reservation = await reservationRepo.findById({ id: req.params.id });
 
             res.json(tttsReservation2chevre(reservation));
@@ -183,7 +192,7 @@ reservationsRouter.get(
 
             // 予約を検索
             debug('searching reservations...', conditions);
-            const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
+            const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
             const count = await reservationRepo.count(conditions);
             const reservations = await reservationRepo.search(conditions);
 
@@ -212,8 +221,17 @@ reservationsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
-            const taskRepo = new ttts.repository.Task(ttts.mongoose.connection);
+            const projectRepo = new ttts.repository.Project(mongoose.connection);
+            const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
+            const taskRepo = new ttts.repository.Task(mongoose.connection);
+
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined) {
+                throw new ttts.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+            if (project.settings.chevre === undefined) {
+                throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
+            }
 
             const checkin: ttts.factory.reservation.event.ICheckin = {
                 when: moment(req.body.when)
@@ -254,6 +272,13 @@ reservationsRouter.post(
             };
             await taskRepo.save(aggregateTask);
 
+            // Chevreへ入場連携
+            const reservationService = new ttts.chevre.service.Reservation({
+                endpoint: project.settings.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            await reservationService.attendScreeningEvent(reservation);
+
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {
@@ -272,8 +297,8 @@ reservationsRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
-            const taskRepo = new ttts.repository.Task(ttts.mongoose.connection);
+            const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
+            const taskRepo = new ttts.repository.Task(mongoose.connection);
 
             const checkin: ttts.factory.reservation.event.ICheckin = {
                 when: req.params.when,
@@ -331,10 +356,10 @@ reservationsRouter.put(
     async (req, res, next) => {
         try {
             await ttts.service.reserve.cancelReservation({ id: req.params.id })({
-                reservation: new ttts.repository.Reservation(ttts.mongoose.connection),
-                task: new ttts.repository.Task(ttts.mongoose.connection),
+                reservation: new ttts.repository.Reservation(mongoose.connection),
+                task: new ttts.repository.Task(mongoose.connection),
                 ticketTypeCategoryRateLimit: new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
-                project: new ttts.repository.Project(ttts.mongoose.connection)
+                project: new ttts.repository.Project(mongoose.connection)
             });
 
             res.status(NO_CONTENT)

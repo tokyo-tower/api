@@ -13,7 +13,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const ttts = require("@tokyotower/domain");
 const createDebug = require("debug");
-const debug = createDebug('ttts-api:connectMongo');
+const mongoose = require("mongoose");
+const debug = createDebug('cinerino-api:connectMongo');
 const PING_INTERVAL = 10000;
 const MONGOLAB_URI = process.env.MONGOLAB_URI;
 const connectOptions = {
@@ -31,11 +32,11 @@ function connectMongo(params) {
         let connection;
         if (params === undefined || params.defaultConnection) {
             // コネクション確立
-            yield ttts.mongoose.connect(MONGOLAB_URI, connectOptions);
-            connection = ttts.mongoose.connection;
+            yield mongoose.connect(MONGOLAB_URI, connectOptions);
+            connection = mongoose.connection;
         }
         else {
-            connection = ttts.mongoose.createConnection(MONGOLAB_URI, connectOptions);
+            connection = mongoose.createConnection(MONGOLAB_URI, connectOptions);
         }
         // 定期的にコネクションチェック
         // tslint:disable-next-line:no-single-line-block-comment
@@ -66,7 +67,7 @@ function connectMongo(params) {
             try {
                 // コネクション再確立
                 yield connection.close();
-                yield connection.openUri(MONGOLAB_URI, undefined, undefined, connectOptions);
+                yield connection.openUri(MONGOLAB_URI, connectOptions);
                 debug('MongoDB reconnected!');
                 yield ttts.service.notification.report2developers(`[${process.env.PROJECT_ID}] api:connectMongo`, 'MongoDB connection reestablished!')();
             }

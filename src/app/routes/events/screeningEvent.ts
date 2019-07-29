@@ -5,6 +5,7 @@ import * as ttts from '@tokyotower/domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { query } from 'express-validator/check';
+import * as mongoose from 'mongoose';
 
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
@@ -78,7 +79,7 @@ screeningEventRouter.get(
             };
 
             const searchResult = await ttts.service.performance.search(conditions)(
-                new ttts.repository.Performance(ttts.mongoose.connection),
+                new ttts.repository.Performance(mongoose.connection),
                 new ttts.repository.EventWithAggregation(redisClient)
             );
 
@@ -99,7 +100,7 @@ screeningEventRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const repo = new ttts.repository.Performance(ttts.mongoose.connection);
+            const repo = new ttts.repository.Performance(mongoose.connection);
             const performance = await repo.findById(req.params.id);
             const event = performance2event(performance);
 
@@ -250,7 +251,7 @@ screeningEventRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new ttts.repository.Project(ttts.mongoose.connection);
+            const projectRepo = new ttts.repository.Project(mongoose.connection);
 
             const offers = await ttts.service.offer.searchEventOffers({
                 project: req.project,
@@ -285,8 +286,8 @@ screeningEventRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new ttts.repository.Project(ttts.mongoose.connection);
-            const sellerRepo = new ttts.repository.Seller(ttts.mongoose.connection);
+            const projectRepo = new ttts.repository.Project(mongoose.connection);
+            const sellerRepo = new ttts.repository.Seller(mongoose.connection);
 
             const offers = await ttts.service.offer.searchEventTicketOffers({
                 project: req.project,

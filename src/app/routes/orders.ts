@@ -3,6 +3,7 @@
  */
 import * as ttts from '@tokyotower/domain';
 import { Router } from 'express';
+import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -57,7 +58,7 @@ ordersRouter.post(
                 telephone: <string>req.body.telephone
             };
 
-            const orderRepo = new ttts.repository.Order(ttts.mongoose.connection);
+            const orderRepo = new ttts.repository.Order(mongoose.connection);
             let order: ttts.factory.order.IOrder | undefined;
 
             const orders = await orderRepo.search({
@@ -150,7 +151,7 @@ ordersRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const orderRepo = new ttts.repository.Order(ttts.mongoose.connection);
+            const orderRepo = new ttts.repository.Order(mongoose.connection);
             const searchConditions: ttts.factory.order.ISearchConditions = {
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers

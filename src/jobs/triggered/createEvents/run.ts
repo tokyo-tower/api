@@ -7,6 +7,7 @@ import { CronJob } from 'cron';
 import * as createDebug from 'debug';
 import * as fs from 'fs-extra';
 import * as moment from 'moment-timezone';
+import * as mongoose from 'mongoose';
 
 import { connectMongo } from '../../../connectMongo';
 import * as singletonProcess from '../../../singletonProcess';
@@ -61,7 +62,7 @@ export default async (params: {
  * 設定からイベントを作成する
  */
 // tslint:disable-next-line:max-func-body-length
-export async function main(connection: ttts.mongoose.Connection): Promise<void> {
+export async function main(connection: mongoose.Connection): Promise<void> {
     // 作成情報取得
     const setting: any = fs.readJsonSync(`${__dirname}/../../../../data/setting.json`);
     debug('setting:', setting);

@@ -7,6 +7,7 @@ import * as express from 'express';
 import { query } from 'express-validator/check';
 import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
+import * as mongoose from 'mongoose';
 import * as _ from 'underscore';
 
 import authentication from '../middlewares/authentication';
@@ -33,7 +34,7 @@ performanceRouter.get(
     permitScopes(['performances', 'performances.read-only']),
     async (req, res, next) => {
         try {
-            const repo = new ttts.repository.Performance(ttts.mongoose.connection);
+            const repo = new ttts.repository.Performance(mongoose.connection);
             const performance = await repo.findById(req.params.id);
 
             // POSに対する互換性維持のため、charge属性を追加
@@ -141,7 +142,7 @@ performanceRouter.get(
                     : undefined
             };
 
-            const performanceRepo = new ttts.repository.Performance(ttts.mongoose.connection);
+            const performanceRepo = new ttts.repository.Performance(mongoose.connection);
 
             await ttts.service.performance.search(conditions)(
                 performanceRepo,
@@ -171,7 +172,7 @@ performanceRouter.put(
     permitScopes(['admin']),
     async (req, res, next) => {
         try {
-            const performanceRepo = new ttts.repository.Performance(ttts.mongoose.connection);
+            const performanceRepo = new ttts.repository.Performance(mongoose.connection);
             await performanceRepo.updateOne(
                 { _id: req.params.id },
                 {
@@ -218,7 +219,7 @@ performanceRouter.put(
             );
 
             // 集計タスク作成
-            const taskRepo = new ttts.repository.Task(ttts.mongoose.connection);
+            const taskRepo = new ttts.repository.Task(mongoose.connection);
             const aggregateTask: ttts.factory.task.aggregateEventReservations.IAttributes = {
                 name: ttts.factory.taskName.AggregateEventReservations,
                 status: ttts.factory.taskStatus.Ready,

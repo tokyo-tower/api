@@ -15,6 +15,7 @@ const ttts = require("@tokyotower/domain");
 const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
+const mongoose = require("mongoose");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
 const redisClient = ttts.redis.createClient({
@@ -74,7 +75,7 @@ screeningEventRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
         const conditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-        const searchResult = yield ttts.service.performance.search(conditions)(new ttts.repository.Performance(ttts.mongoose.connection), new ttts.repository.EventWithAggregation(redisClient));
+        const searchResult = yield ttts.service.performance.search(conditions)(new ttts.repository.Performance(mongoose.connection), new ttts.repository.EventWithAggregation(redisClient));
         res.set('X-Total-Count', searchResult.numberOfPerformances.toString())
             .json(searchResult.performances.map(performanceWithAvailability2event));
     }
@@ -87,7 +88,7 @@ screeningEventRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
  */
 screeningEventRouter.get('/:id', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const repo = new ttts.repository.Performance(ttts.mongoose.connection);
+        const repo = new ttts.repository.Performance(mongoose.connection);
         const performance = yield repo.findById(req.params.id);
         const event = performance2event(performance);
         res.json(event);
@@ -203,7 +204,7 @@ function performanceWithAvailability2event(performance) {
  */
 screeningEventRouter.get('/:id/offers', permitScopes_1.default(['customer', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const projectRepo = new ttts.repository.Project(ttts.mongoose.connection);
+        const projectRepo = new ttts.repository.Project(mongoose.connection);
         const offers = yield ttts.service.offer.searchEventOffers({
             project: req.project,
             event: { id: req.params.id }
@@ -230,8 +231,8 @@ screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default(['customer
 //     .withMessage((_, __) => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const projectRepo = new ttts.repository.Project(ttts.mongoose.connection);
-        const sellerRepo = new ttts.repository.Seller(ttts.mongoose.connection);
+        const projectRepo = new ttts.repository.Project(mongoose.connection);
+        const sellerRepo = new ttts.repository.Seller(mongoose.connection);
         const offers = yield ttts.service.offer.searchEventTicketOffers({
             project: req.project,
             event: { id: req.params.id },

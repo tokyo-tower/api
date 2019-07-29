@@ -13,6 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const ttts = require("@tokyotower/domain");
 const express_1 = require("express");
+const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
@@ -54,7 +55,7 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders', 'o
             paymentNo: req.body.paymentNo,
             telephone: req.body.telephone
         };
-        const orderRepo = new ttts.repository.Order(ttts.mongoose.connection);
+        const orderRepo = new ttts.repository.Order(mongoose.connection);
         let order;
         const orders = yield orderRepo.search({
             limit: 1,
@@ -130,7 +131,7 @@ ordersRouter.get('', permitScopes_1.default(['admin']), (req, __2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const orderRepo = new ttts.repository.Order(ttts.mongoose.connection);
+        const orderRepo = new ttts.repository.Order(mongoose.connection);
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: ttts.factory.sortType.Descending } });

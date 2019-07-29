@@ -19,9 +19,7 @@ const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 // import * as https from 'https';
 const moment = require("moment");
-// tslint:disable-next-line:no-require-imports no-var-requires
-// const httpsAgent = require('agentkeepalive').HttpsAgent;
-// const agent = require('agentkeepalive');
+const mongoose = require("mongoose");
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const placeOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
@@ -69,7 +67,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
             clientUser: req.user,
             purchaserGroup: req.body.purchaser_group,
             passportToken: req.body.passportToken
-        })(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.Seller(ttts.mongoose.connection));
+        })(new ttts.repository.Transaction(mongoose.connection), new ttts.repository.Seller(mongoose.connection));
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
         // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
@@ -99,7 +97,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const contact = yield ttts.service.transaction.placeOrderInProgress.setCustomerContact(req.user.sub, req.params.transactionId, Object.assign({}, req.body, { age: (req.body.age !== undefined) ? req.body.age : '', address: (req.body.address !== undefined) ? req.body.address : '', gender: (req.body.gender !== undefined) ? req.body.gender : '' }))(new ttts.repository.Transaction(ttts.mongoose.connection));
+        const contact = yield ttts.service.transaction.placeOrderInProgress.setCustomerContact(req.user.sub, req.params.transactionId, Object.assign({}, req.body, { age: (req.body.age !== undefined) ? req.body.age : '', address: (req.body.address !== undefined) ? req.body.address : '', gender: (req.body.gender !== undefined) ? req.body.gender : '' }))(new ttts.repository.Transaction(mongoose.connection));
         res.status(http_status_1.CREATED)
             .json(contact);
     }
@@ -123,7 +121,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
                 ticket_type: offer.ticket_type,
                 watcher_name: offer.watcher_name
             };
-        }))(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.Performance(ttts.mongoose.connection), new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection), new ttts.repository.rateLimit.TicketTypeCategory(redisClient), new ttts.repository.Task(ttts.mongoose.connection), new ttts.repository.Project(ttts.mongoose.connection));
+        }))(new ttts.repository.Transaction(mongoose.connection), new ttts.repository.Performance(mongoose.connection), new ttts.repository.action.authorize.SeatReservation(mongoose.connection), new ttts.repository.rateLimit.TicketTypeCategory(redisClient), new ttts.repository.Task(mongoose.connection), new ttts.repository.Project(mongoose.connection));
         // 余分確保予約を除いてレスポンスを返す
         if (action.result !== undefined) {
             action.result.tmpReservations = action.result.tmpReservations.filter((r) => {
@@ -149,7 +147,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
  */
 placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.cancel(req.user.sub, req.params.transactionId, req.params.actionId)(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection), new ttts.repository.rateLimit.TicketTypeCategory(redisClient), new ttts.repository.Task(ttts.mongoose.connection), new ttts.repository.Project(ttts.mongoose.connection));
+        yield ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.cancel(req.user.sub, req.params.transactionId, req.params.actionId)(new ttts.repository.Transaction(mongoose.connection), new ttts.repository.action.authorize.SeatReservation(mongoose.connection), new ttts.repository.rateLimit.TicketTypeCategory(redisClient), new ttts.repository.Task(mongoose.connection), new ttts.repository.Project(mongoose.connection));
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
@@ -179,7 +177,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard'
         });
         debug('authorizing credit card...', creditCard);
         debug('authorizing credit card...', req.body.creditCard);
-        const action = yield ttts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(req.user.sub, req.params.transactionId, req.body.orderId, req.body.amount, req.body.method, creditCard)(new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection), new ttts.repository.Seller(ttts.mongoose.connection), new ttts.repository.Transaction(ttts.mongoose.connection), creditService, new ttts.repository.Project(ttts.mongoose.connection));
+        const action = yield ttts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(req.user.sub, req.params.transactionId, req.body.orderId, req.body.amount, req.body.method, creditCard)(new ttts.repository.action.authorize.CreditCard(mongoose.connection), new ttts.repository.Seller(mongoose.connection), new ttts.repository.Transaction(mongoose.connection), creditService, new ttts.repository.Project(mongoose.connection));
         res.status(http_status_1.CREATED)
             .json({
             id: action.id
@@ -194,7 +192,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard'
  */
 placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/creditCard/:actionId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield ttts.service.transaction.placeOrderInProgress.action.authorize.creditCard.cancel(req.user.sub, req.params.transactionId, req.params.actionId)(new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection), new ttts.repository.Transaction(ttts.mongoose.connection), creditService);
+        yield ttts.service.transaction.placeOrderInProgress.action.authorize.creditCard.cancel(req.user.sub, req.params.transactionId, req.params.actionId)(new ttts.repository.action.authorize.CreditCard(mongoose.connection), new ttts.repository.Transaction(mongoose.connection), creditService);
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
@@ -208,7 +206,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             agentId: req.user.sub,
             transactionId: req.params.transactionId,
             paymentMethod: req.body.payment_method
-        })(new ttts.repository.Transaction(ttts.mongoose.connection), new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection), new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection), new ttts.repository.Token(redisClient), new ttts.repository.PaymentNo(redisClient));
+        })(new ttts.repository.Transaction(mongoose.connection), new ttts.repository.action.authorize.CreditCard(mongoose.connection), new ttts.repository.action.authorize.SeatReservation(mongoose.connection), new ttts.repository.Token(redisClient), new ttts.repository.PaymentNo(redisClient));
         debug('transaction confirmed.');
         // 余分確保予約を除いてレスポンスを返す
         if (transactionResult !== undefined) {
@@ -277,7 +275,7 @@ placeOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification',
             },
             about: req.body.about,
             text: req.body.text
-        })(new ttts.repository.Task(ttts.mongoose.connection), new ttts.repository.Transaction(ttts.mongoose.connection));
+        })(new ttts.repository.Task(mongoose.connection), new ttts.repository.Transaction(mongoose.connection));
         res.status(http_status_1.CREATED)
             .json(task);
     }
@@ -307,7 +305,7 @@ placeOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const transactionRepo = new ttts.repository.Transaction(ttts.mongoose.connection);
+        const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: ttts.factory.sortType.Ascending }, typeOf: ttts.factory.transactionType.PlaceOrder });

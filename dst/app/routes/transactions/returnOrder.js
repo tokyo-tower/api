@@ -17,6 +17,7 @@ const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
+const mongoose = require("mongoose");
 const returnOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
@@ -44,7 +45,7 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const transactionRepo = new ttts.repository.Transaction(ttts.mongoose.connection);
+        const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
         // 取引を検索する
         // 注文番号フォーマット: `TT-${req.body.performance_day.slice(-6)}-${req.body.payment_no}`
         const conditions = {
@@ -121,7 +122,7 @@ returnOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification'
             },
             about: req.body.about,
             text: req.body.text
-        })(new ttts.repository.Task(ttts.mongoose.connection), new ttts.repository.Transaction(ttts.mongoose.connection));
+        })(new ttts.repository.Task(mongoose.connection), new ttts.repository.Transaction(mongoose.connection));
         res.status(http_status_1.CREATED)
             .json(task);
     }
@@ -151,7 +152,7 @@ returnOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const transactionRepo = new ttts.repository.Transaction(ttts.mongoose.connection);
+        const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: ttts.factory.sortType.Descending }, typeOf: ttts.factory.transactionType.ReturnOrder });

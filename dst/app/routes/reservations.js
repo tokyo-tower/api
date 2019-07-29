@@ -18,6 +18,7 @@ const express = require("express");
 const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const moment = require("moment");
+const mongoose = require("mongoose");
 const _ = require("underscore");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
@@ -30,6 +31,13 @@ const redisClient = ttts.redis.createClient({
     port: parseInt(process.env.REDIS_PORT, 10),
     password: process.env.REDIS_KEY,
     tls: { servername: process.env.REDIS_HOST }
+});
+const chevreAuthClient = new ttts.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
 });
 const reservationsRouter = express.Router();
 reservationsRouter.use(authentication_1.default);
@@ -87,7 +95,7 @@ reservationsRouter.get('/distinct/:field', permitScopes_1.default(['admin']), ..
         );
         // 予約を検索
         debug('searching reservations...', conditions);
-        const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
+        const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
         const results = yield reservationRepo.distinct(req.params.field, conditions);
         res.json(results);
     }
@@ -102,7 +110,7 @@ reservationsRouter.get('/:id', permitScopes_1.default(['reservations.read-only']
     try {
         // 予約を検索
         debug('searching reservation by id...', req.params.id);
-        const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
+        const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
         const reservation = yield reservationRepo.findById({ id: req.params.id });
         res.json(reservation_1.tttsReservation2chevre(reservation));
     }
@@ -154,7 +162,7 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), .
             } });
         // 予約を検索
         debug('searching reservations...', conditions);
-        const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
+        const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
         const count = yield reservationRepo.count(conditions);
         const reservations = yield reservationRepo.search(conditions);
         res.set('X-Total-Count', count.toString())
@@ -175,8 +183,16 @@ reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.c
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
-        const taskRepo = new ttts.repository.Task(ttts.mongoose.connection);
+        const projectRepo = new ttts.repository.Project(mongoose.connection);
+        const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
+        const taskRepo = new ttts.repository.Task(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (project.settings === undefined) {
+            throw new ttts.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        if (project.settings.chevre === undefined) {
+            throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
+        }
         const checkin = {
             when: moment(req.body.when)
                 .toDate(),
@@ -213,6 +229,12 @@ reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.c
             data: { id: reservation.reservationFor.id }
         };
         yield taskRepo.save(aggregateTask);
+        // Chevreへ入場連携
+        const reservationService = new ttts.chevre.service.Reservation({
+            endpoint: project.settings.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        yield reservationService.attendScreeningEvent(reservation);
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
@@ -226,8 +248,8 @@ reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.c
  */
 reservationsRouter.delete('/:id/checkins/:when', permitScopes_1.default(['reservations.checkins']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const reservationRepo = new ttts.repository.Reservation(ttts.mongoose.connection);
-        const taskRepo = new ttts.repository.Task(ttts.mongoose.connection);
+        const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
+        const taskRepo = new ttts.repository.Task(mongoose.connection);
         const checkin = {
             when: req.params.when,
             where: '',
@@ -276,10 +298,10 @@ reservationsRouter.delete('/:id/checkins/:when', permitScopes_1.default(['reserv
 reservationsRouter.put('/:id/cancel', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield ttts.service.reserve.cancelReservation({ id: req.params.id })({
-            reservation: new ttts.repository.Reservation(ttts.mongoose.connection),
-            task: new ttts.repository.Task(ttts.mongoose.connection),
+            reservation: new ttts.repository.Reservation(mongoose.connection),
+            task: new ttts.repository.Task(mongoose.connection),
             ticketTypeCategoryRateLimit: new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
-            project: new ttts.repository.Project(ttts.mongoose.connection)
+            project: new ttts.repository.Project(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT)
             .end();

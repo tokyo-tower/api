@@ -17,6 +17,7 @@ const express = require("express");
 const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const moment = require("moment");
+const mongoose = require("mongoose");
 const _ = require("underscore");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
@@ -35,7 +36,7 @@ performanceRouter.use(authentication_1.default);
  */
 performanceRouter.get('/:id', permitScopes_1.default(['performances', 'performances.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const repo = new ttts.repository.Performance(ttts.mongoose.connection);
+        const repo = new ttts.repository.Performance(mongoose.connection);
         const performance = yield repo.findById(req.params.id);
         // POSに対する互換性維持のため、charge属性を追加
         // const ticketTypes = performance.ticket_type_group.ticket_types.map((t) => {
@@ -127,7 +128,7 @@ performanceRouter.get('', permitScopes_1.default(['performances', 'performances.
             ids: (req.query.performanceId !== undefined)
                 ? [String(req.query.performanceId)]
                 : undefined });
-        const performanceRepo = new ttts.repository.Performance(ttts.mongoose.connection);
+        const performanceRepo = new ttts.repository.Performance(mongoose.connection);
         yield ttts.service.performance.search(conditions)(performanceRepo, new ttts.repository.EventWithAggregation(redisClient))
             .then((searchPerformanceResult) => {
             res.set('X-Total-Count', searchPerformanceResult.numberOfPerformances.toString())
@@ -149,7 +150,7 @@ performanceRouter.get('', permitScopes_1.default(['performances', 'performances.
  */
 performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const performanceRepo = new ttts.repository.Performance(ttts.mongoose.connection);
+        const performanceRepo = new ttts.repository.Performance(mongoose.connection);
         yield performanceRepo.updateOne({ _id: req.params.id }, Object.assign({}, (req.body.reservationsAtLastUpdateDate !== undefined)
             ? { 'ttts_extension.reservationsAtLastUpdateDate': req.body.reservationsAtLastUpdateDate }
             : undefined, (req.body.onlineSalesStatus !== undefined)
@@ -181,7 +182,7 @@ performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']), (req,
             }
             : undefined));
         // 集計タスク作成
-        const taskRepo = new ttts.repository.Task(ttts.mongoose.connection);
+        const taskRepo = new ttts.repository.Task(mongoose.connection);
         const aggregateTask = {
             name: ttts.factory.taskName.AggregateEventReservations,
             status: ttts.factory.taskStatus.Ready,

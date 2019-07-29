@@ -3,12 +3,13 @@
  */
 import * as ttts from '@tokyotower/domain';
 import * as createDebug from 'debug';
+import * as mongoose from 'mongoose';
 
-const debug = createDebug('ttts-api:connectMongo');
+const debug = createDebug('cinerino-api:connectMongo');
 const PING_INTERVAL = 10000;
 const MONGOLAB_URI = <string>process.env.MONGOLAB_URI;
 
-const connectOptions: ttts.mongoose.ConnectionOptions = {
+const connectOptions: mongoose.ConnectionOptions = {
     autoIndex: true,
     autoReconnect: true,
     keepAlive: true,
@@ -22,13 +23,13 @@ const connectOptions: ttts.mongoose.ConnectionOptions = {
 export async function connectMongo(params: {
     defaultConnection: boolean;
 }) {
-    let connection: ttts.mongoose.Connection;
+    let connection: mongoose.Connection;
     if (params === undefined || params.defaultConnection) {
         // コネクション確立
-        await ttts.mongoose.connect(MONGOLAB_URI, connectOptions);
-        connection = ttts.mongoose.connection;
+        await mongoose.connect(MONGOLAB_URI, connectOptions);
+        connection = mongoose.connection;
     } else {
-        connection = ttts.mongoose.createConnection(MONGOLAB_URI, connectOptions);
+        connection = mongoose.createConnection(MONGOLAB_URI, connectOptions);
     }
 
     // 定期的にコネクションチェック
@@ -63,7 +64,7 @@ export async function connectMongo(params: {
             try {
                 // コネクション再確立
                 await connection.close();
-                await connection.openUri(MONGOLAB_URI, undefined, undefined, connectOptions);
+                await connection.openUri(MONGOLAB_URI, connectOptions);
                 debug('MongoDB reconnected!');
                 await ttts.service.notification.report2developers(
                     `[${process.env.PROJECT_ID}] api:connectMongo`,

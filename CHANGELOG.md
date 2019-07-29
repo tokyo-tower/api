@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 入場アクションをCheverへ連携
+- 中止タスクが存在しない場合に例外が投げられないように調整
+
 ### Deprecated
 
 ### Removed

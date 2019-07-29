@@ -13,6 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const ttts = require("@tokyotower/domain");
 const express_1 = require("express");
+const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
@@ -26,7 +27,7 @@ projectsRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (
         const searchCoinditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-        const projectRepo = new ttts.repository.Project(ttts.mongoose.connection);
+        const projectRepo = new ttts.repository.Project(mongoose.connection);
         const projects = yield projectRepo.search(searchCoinditions, undefined);
         const totalCount = yield projectRepo.count(searchCoinditions);
         res.set('X-Total-Count', totalCount.toString());
@@ -41,7 +42,7 @@ projectsRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (
  */
 projectsRouter.get('/:id', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const projectRepo = new ttts.repository.Project(ttts.mongoose.connection);
+        const projectRepo = new ttts.repository.Project(mongoose.connection);
         const seller = yield projectRepo.findById({ id: req.params.id }, undefined);
         res.json(seller);
     }

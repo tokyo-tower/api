@@ -9,9 +9,7 @@ import { query } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
 // import * as https from 'https';
 import * as moment from 'moment';
-// tslint:disable-next-line:no-require-imports no-var-requires
-// const httpsAgent = require('agentkeepalive').HttpsAgent;
-// const agent = require('agentkeepalive');
+import * as mongoose from 'mongoose';
 
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 
@@ -80,8 +78,8 @@ placeOrderTransactionsRouter.post(
                 purchaserGroup: req.body.purchaser_group,
                 passportToken: req.body.passportToken
             })(
-                new ttts.repository.Transaction(ttts.mongoose.connection),
-                new ttts.repository.Seller(ttts.mongoose.connection)
+                new ttts.repository.Transaction(mongoose.connection),
+                new ttts.repository.Seller(mongoose.connection)
             );
 
             // tslint:disable-next-line:no-string-literal
@@ -129,7 +127,7 @@ placeOrderTransactionsRouter.put(
                     address: (req.body.address !== undefined) ? req.body.address : '',
                     gender: (req.body.gender !== undefined) ? req.body.gender : ''
                 }
-            )(new ttts.repository.Transaction(ttts.mongoose.connection));
+            )(new ttts.repository.Transaction(mongoose.connection));
 
             res.status(CREATED)
                 .json(contact);
@@ -168,12 +166,12 @@ placeOrderTransactionsRouter.post(
                     };
                 })
             )(
-                new ttts.repository.Transaction(ttts.mongoose.connection),
-                new ttts.repository.Performance(ttts.mongoose.connection),
-                new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection),
+                new ttts.repository.Transaction(mongoose.connection),
+                new ttts.repository.Performance(mongoose.connection),
+                new ttts.repository.action.authorize.SeatReservation(mongoose.connection),
                 new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
-                new ttts.repository.Task(ttts.mongoose.connection),
-                new ttts.repository.Project(ttts.mongoose.connection)
+                new ttts.repository.Task(mongoose.connection),
+                new ttts.repository.Project(mongoose.connection)
             );
 
             // 余分確保予約を除いてレスポンスを返す
@@ -213,11 +211,11 @@ placeOrderTransactionsRouter.delete(
                 req.params.transactionId,
                 req.params.actionId
             )(
-                new ttts.repository.Transaction(ttts.mongoose.connection),
-                new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection),
+                new ttts.repository.Transaction(mongoose.connection),
+                new ttts.repository.action.authorize.SeatReservation(mongoose.connection),
                 new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
-                new ttts.repository.Task(ttts.mongoose.connection),
-                new ttts.repository.Project(ttts.mongoose.connection)
+                new ttts.repository.Task(mongoose.connection),
+                new ttts.repository.Project(mongoose.connection)
             );
 
             res.status(NO_CONTENT)
@@ -268,11 +266,11 @@ placeOrderTransactionsRouter.post(
                 req.body.method,
                 creditCard
             )(
-                new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection),
-                new ttts.repository.Seller(ttts.mongoose.connection),
-                new ttts.repository.Transaction(ttts.mongoose.connection),
+                new ttts.repository.action.authorize.CreditCard(mongoose.connection),
+                new ttts.repository.Seller(mongoose.connection),
+                new ttts.repository.Transaction(mongoose.connection),
                 creditService,
-                new ttts.repository.Project(ttts.mongoose.connection)
+                new ttts.repository.Project(mongoose.connection)
             );
 
             res.status(CREATED)
@@ -299,8 +297,8 @@ placeOrderTransactionsRouter.delete(
                 req.params.transactionId,
                 req.params.actionId
             )(
-                new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection),
-                new ttts.repository.Transaction(ttts.mongoose.connection),
+                new ttts.repository.action.authorize.CreditCard(mongoose.connection),
+                new ttts.repository.Transaction(mongoose.connection),
                 creditService
             );
 
@@ -323,9 +321,9 @@ placeOrderTransactionsRouter.post(
                 transactionId: req.params.transactionId,
                 paymentMethod: req.body.payment_method
             })(
-                new ttts.repository.Transaction(ttts.mongoose.connection),
-                new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection),
-                new ttts.repository.action.authorize.SeatReservation(ttts.mongoose.connection),
+                new ttts.repository.Transaction(mongoose.connection),
+                new ttts.repository.action.authorize.CreditCard(mongoose.connection),
+                new ttts.repository.action.authorize.SeatReservation(mongoose.connection),
                 new ttts.repository.Token(redisClient),
                 new ttts.repository.PaymentNo(redisClient)
             );
@@ -413,8 +411,8 @@ placeOrderTransactionsRouter.post(
                     text: req.body.text
                 }
             )(
-                new ttts.repository.Task(ttts.mongoose.connection),
-                new ttts.repository.Transaction(ttts.mongoose.connection)
+                new ttts.repository.Task(mongoose.connection),
+                new ttts.repository.Transaction(mongoose.connection)
             );
 
             res.status(CREATED)
@@ -452,7 +450,7 @@ placeOrderTransactionsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const transactionRepo = new ttts.repository.Transaction(ttts.mongoose.connection);
+            const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
             const searchConditions: ttts.factory.transaction.placeOrder.ISearchConditions = {
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers

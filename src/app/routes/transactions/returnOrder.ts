@@ -7,6 +7,7 @@ import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { query } from 'express-validator/check';
 import { CREATED } from 'http-status';
+import * as mongoose from 'mongoose';
 
 const returnOrderTransactionsRouter = Router();
 
@@ -45,7 +46,7 @@ returnOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const transactionRepo = new ttts.repository.Transaction(ttts.mongoose.connection);
+            const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
 
             // 取引を検索する
             // 注文番号フォーマット: `TT-${req.body.performance_day.slice(-6)}-${req.body.payment_no}`
@@ -137,8 +138,8 @@ returnOrderTransactionsRouter.post(
                     text: req.body.text
                 }
             )(
-                new ttts.repository.Task(ttts.mongoose.connection),
-                new ttts.repository.Transaction(ttts.mongoose.connection)
+                new ttts.repository.Task(mongoose.connection),
+                new ttts.repository.Transaction(mongoose.connection)
             );
 
             res.status(CREATED)
@@ -176,7 +177,7 @@ returnOrderTransactionsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const transactionRepo = new ttts.repository.Transaction(ttts.mongoose.connection);
+            const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
             const searchConditions: ttts.factory.transaction.returnOrder.ISearchConditions = {
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers
