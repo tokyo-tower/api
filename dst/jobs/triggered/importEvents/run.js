@@ -11,7 +11,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Chevreからイベントをインポート
  */
-const chevreapi = require("@chevre/api-nodejs-client");
 const ttts = require("@tokyotower/domain");
 const cron_1 = require("cron");
 const createDebug = require("debug");
@@ -67,22 +66,22 @@ function main(connection) {
         if (projectDetails.settings.chevre === undefined) {
             throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
         }
-        const authClient = new chevreapi.auth.ClientCredentials({
+        const authClient = new ttts.chevre.auth.ClientCredentials({
             domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
             clientId: process.env.CHEVRE_CLIENT_ID,
             clientSecret: process.env.CHEVRE_CLIENT_SECRET,
             scopes: [],
             state: ''
         });
-        const offerService = new chevreapi.service.Offer({
+        const offerService = new ttts.chevre.service.Offer({
             endpoint: projectDetails.settings.chevre.endpoint,
             auth: authClient
         });
-        const placeService = new chevreapi.service.Place({
+        const placeService = new ttts.chevre.service.Place({
             endpoint: projectDetails.settings.chevre.endpoint,
             auth: authClient
         });
-        const eventService = new chevreapi.service.Event({
+        const eventService = new ttts.chevre.service.Event({
             endpoint: projectDetails.settings.chevre.endpoint,
             auth: authClient
         });
@@ -101,7 +100,7 @@ function main(connection) {
         const workPerformedIdentifier = setting.film;
         const searchScreeningEventSeriesResult = yield eventService.search({
             project: { ids: [project.id] },
-            typeOf: chevreapi.factory.eventType.ScreeningEventSeries,
+            typeOf: ttts.chevre.factory.eventType.ScreeningEventSeries,
             workPerformed: { identifiers: [workPerformedIdentifier] }
         });
         const screeningEventSeries = searchScreeningEventSeriesResult.data[0];
@@ -131,7 +130,7 @@ function main(connection) {
                 limit: limit,
                 page: page,
                 project: { ids: [project.id] },
-                typeOf: chevreapi.factory.eventType.ScreeningEvent,
+                typeOf: ttts.chevre.factory.eventType.ScreeningEvent,
                 inSessionFrom: importFrom,
                 inSessionThrough: importThrough
             });

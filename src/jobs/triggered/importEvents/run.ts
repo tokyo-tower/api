@@ -1,7 +1,6 @@
 /**
  * Chevreからイベントをインポート
  */
-import * as chevreapi from '@chevre/api-nodejs-client';
 import * as ttts from '@tokyotower/domain';
 import { CronJob } from 'cron';
 import * as createDebug from 'debug';
@@ -77,7 +76,7 @@ export async function main(connection: mongoose.Connection): Promise<void> {
         throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
     }
 
-    const authClient = new chevreapi.auth.ClientCredentials({
+    const authClient = new ttts.chevre.auth.ClientCredentials({
         domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
         clientId: <string>process.env.CHEVRE_CLIENT_ID,
         clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
@@ -85,15 +84,15 @@ export async function main(connection: mongoose.Connection): Promise<void> {
         state: ''
     });
 
-    const offerService = new chevreapi.service.Offer({
+    const offerService = new ttts.chevre.service.Offer({
         endpoint: projectDetails.settings.chevre.endpoint,
         auth: authClient
     });
-    const placeService = new chevreapi.service.Place({
+    const placeService = new ttts.chevre.service.Place({
         endpoint: projectDetails.settings.chevre.endpoint,
         auth: authClient
     });
-    const eventService = new chevreapi.service.Event({
+    const eventService = new ttts.chevre.service.Event({
         endpoint: projectDetails.settings.chevre.endpoint,
         auth: authClient
     });
@@ -113,9 +112,9 @@ export async function main(connection: mongoose.Connection): Promise<void> {
 
     // 劇場作品検索
     const workPerformedIdentifier = setting.film;
-    const searchScreeningEventSeriesResult = await eventService.search<chevreapi.factory.eventType.ScreeningEventSeries>({
+    const searchScreeningEventSeriesResult = await eventService.search<ttts.chevre.factory.eventType.ScreeningEventSeries>({
         project: { ids: [project.id] },
-        typeOf: chevreapi.factory.eventType.ScreeningEventSeries,
+        typeOf: ttts.chevre.factory.eventType.ScreeningEventSeries,
         workPerformed: { identifiers: [workPerformedIdentifier] }
     });
     const screeningEventSeries = searchScreeningEventSeriesResult.data[0];
@@ -141,14 +140,14 @@ export async function main(connection: mongoose.Connection): Promise<void> {
     const limit = 100;
     let page = 0;
     let numData: number = limit;
-    const events: chevreapi.factory.event.IEvent<chevreapi.factory.eventType.ScreeningEvent>[] = [];
+    const events: ttts.chevre.factory.event.IEvent<ttts.chevre.factory.eventType.ScreeningEvent>[] = [];
     while (numData === limit) {
         page += 1;
-        const searchScreeningEventsResult = await eventService.search<chevreapi.factory.eventType.ScreeningEvent>({
+        const searchScreeningEventsResult = await eventService.search<ttts.chevre.factory.eventType.ScreeningEvent>({
             limit: limit,
             page: page,
             project: { ids: [project.id] },
-            typeOf: chevreapi.factory.eventType.ScreeningEvent,
+            typeOf: ttts.chevre.factory.eventType.ScreeningEvent,
             inSessionFrom: importFrom,
             inSessionThrough: importThrough
         });
