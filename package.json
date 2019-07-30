@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@tokyotower/domain": "^23.1.0-alpha.0",
+    "@tokyotower/domain": "23.1.0-alpha.1",
     "basic-auth": "^2.0.0",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
