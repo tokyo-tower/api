@@ -11,7 +11,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Chevreにイベントを作成する
  */
-const chevreapi = require("@chevre/api-nodejs-client");
 const ttts = require("@tokyotower/domain");
 const cron_1 = require("cron");
 const createDebug = require("debug");
@@ -70,22 +69,22 @@ function main(connection) {
         if (projectDetails.settings.chevre === undefined) {
             throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
         }
-        const authClient = new chevreapi.auth.ClientCredentials({
+        const authClient = new ttts.chevre.auth.ClientCredentials({
             domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
             clientId: process.env.CHEVRE_CLIENT_ID,
             clientSecret: process.env.CHEVRE_CLIENT_SECRET,
             scopes: [],
             state: ''
         });
-        const offerService = new chevreapi.service.Offer({
+        const offerService = new ttts.chevre.service.Offer({
             endpoint: projectDetails.settings.chevre.endpoint,
             auth: authClient
         });
-        const placeService = new chevreapi.service.Place({
+        const placeService = new ttts.chevre.service.Place({
             endpoint: projectDetails.settings.chevre.endpoint,
             auth: authClient
         });
-        const eventService = new chevreapi.service.Event({
+        const eventService = new ttts.chevre.service.Event({
             endpoint: projectDetails.settings.chevre.endpoint,
             auth: authClient
         });
@@ -104,7 +103,7 @@ function main(connection) {
         const workPerformedIdentifier = setting.film;
         const searchScreeningEventSeriesResult = yield eventService.search({
             project: { ids: [project.id] },
-            typeOf: chevreapi.factory.eventType.ScreeningEventSeries,
+            typeOf: ttts.chevre.factory.eventType.ScreeningEventSeries,
             workPerformed: { identifiers: [workPerformedIdentifier] }
         });
         const screeningEventSeries = searchScreeningEventSeriesResult.data[0];
@@ -136,7 +135,7 @@ function main(connection) {
                 id: ticketTypeGroup.id,
                 name: ticketTypeGroup.name,
                 typeOf: 'Offer',
-                priceCurrency: chevreapi.factory.priceCurrency.JPY,
+                priceCurrency: ttts.chevre.factory.priceCurrency.JPY,
                 availabilityEnds: moment(performanceInfo.end_date)
                     .tz('Asia/Tokyo')
                     .endOf('date')
@@ -149,17 +148,17 @@ function main(connection) {
                     .toDate(),
                 eligibleQuantity: {
                     typeOf: 'QuantitativeValue',
-                    unitCode: chevreapi.factory.unitCode.C62,
+                    unitCode: ttts.chevre.factory.unitCode.C62,
                     maxValue: 10,
                     value: 1
                 },
                 itemOffered: {
                     serviceType: {},
                     serviceOutput: {
-                        typeOf: chevreapi.factory.reservationType.EventReservation,
+                        typeOf: ttts.chevre.factory.reservationType.EventReservation,
                         reservedTicket: {
                             typeOf: 'Ticket',
-                            ticketedSeat: { typeOf: chevreapi.factory.placeType.Seat }
+                            ticketedSeat: { typeOf: ttts.chevre.factory.placeType.Seat }
                         }
                     }
                 },
@@ -174,16 +173,16 @@ function main(connection) {
                     .add(-3, 'months')
                     .toDate(),
                 acceptedPaymentMethod: [
-                    chevreapi.factory.paymentMethodType.Cash,
-                    chevreapi.factory.paymentMethodType.CreditCard,
-                    chevreapi.factory.paymentMethodType.Others
+                    ttts.chevre.factory.paymentMethodType.Cash,
+                    ttts.chevre.factory.paymentMethodType.CreditCard,
+                    ttts.chevre.factory.paymentMethodType.Others
                 ]
             };
             // パフォーマンス登録
             const event = {
                 project: project,
-                typeOf: chevreapi.factory.eventType.ScreeningEvent,
-                eventStatus: chevreapi.factory.eventStatusType.EventScheduled,
+                typeOf: ttts.chevre.factory.eventType.ScreeningEvent,
+                eventStatus: ttts.chevre.factory.eventStatusType.EventScheduled,
                 name: screeningEventSeries.name,
                 doorTime: performanceInfo.door_time,
                 startDate: performanceInfo.start_date,

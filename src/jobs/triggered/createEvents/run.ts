@@ -1,7 +1,6 @@
 /**
  * Chevreにイベントを作成する
  */
-import * as chevreapi from '@chevre/api-nodejs-client';
 import * as ttts from '@tokyotower/domain';
 import { CronJob } from 'cron';
 import * as createDebug from 'debug';
@@ -80,7 +79,7 @@ export async function main(connection: mongoose.Connection): Promise<void> {
         throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
     }
 
-    const authClient = new chevreapi.auth.ClientCredentials({
+    const authClient = new ttts.chevre.auth.ClientCredentials({
         domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
         clientId: <string>process.env.CHEVRE_CLIENT_ID,
         clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
@@ -88,15 +87,15 @@ export async function main(connection: mongoose.Connection): Promise<void> {
         state: ''
     });
 
-    const offerService = new chevreapi.service.Offer({
+    const offerService = new ttts.chevre.service.Offer({
         endpoint: projectDetails.settings.chevre.endpoint,
         auth: authClient
     });
-    const placeService = new chevreapi.service.Place({
+    const placeService = new ttts.chevre.service.Place({
         endpoint: projectDetails.settings.chevre.endpoint,
         auth: authClient
     });
-    const eventService = new chevreapi.service.Event({
+    const eventService = new ttts.chevre.service.Event({
         endpoint: projectDetails.settings.chevre.endpoint,
         auth: authClient
     });
@@ -116,9 +115,9 @@ export async function main(connection: mongoose.Connection): Promise<void> {
 
     // 劇場作品検索
     const workPerformedIdentifier = setting.film;
-    const searchScreeningEventSeriesResult = await eventService.search<chevreapi.factory.eventType.ScreeningEventSeries>({
+    const searchScreeningEventSeriesResult = await eventService.search<ttts.chevre.factory.eventType.ScreeningEventSeries>({
         project: { ids: [project.id] },
-        typeOf: chevreapi.factory.eventType.ScreeningEventSeries,
+        typeOf: ttts.chevre.factory.eventType.ScreeningEventSeries,
         workPerformed: { identifiers: [workPerformedIdentifier] }
     });
     const screeningEventSeries = searchScreeningEventSeriesResult.data[0];
@@ -154,7 +153,7 @@ export async function main(connection: mongoose.Connection): Promise<void> {
             id: ticketTypeGroup.id,
             name: ticketTypeGroup.name,
             typeOf: <'Offer'>'Offer',
-            priceCurrency: chevreapi.factory.priceCurrency.JPY,
+            priceCurrency: ttts.chevre.factory.priceCurrency.JPY,
             availabilityEnds: moment(performanceInfo.end_date)
                 .tz('Asia/Tokyo')
                 .endOf('date')
@@ -167,17 +166,17 @@ export async function main(connection: mongoose.Connection): Promise<void> {
                 .toDate(),
             eligibleQuantity: {
                 typeOf: <'QuantitativeValue'>'QuantitativeValue',
-                unitCode: <chevreapi.factory.unitCode.C62>chevreapi.factory.unitCode.C62,
+                unitCode: <ttts.chevre.factory.unitCode.C62>ttts.chevre.factory.unitCode.C62,
                 maxValue: 10,
                 value: 1
             },
             itemOffered: {
                 serviceType: <any>{},
                 serviceOutput: {
-                    typeOf: chevreapi.factory.reservationType.EventReservation,
+                    typeOf: ttts.chevre.factory.reservationType.EventReservation,
                     reservedTicket: {
                         typeOf: <'Ticket'>'Ticket',
-                        ticketedSeat: { typeOf: <chevreapi.factory.placeType.Seat>chevreapi.factory.placeType.Seat }
+                        ticketedSeat: { typeOf: <ttts.chevre.factory.placeType.Seat>ttts.chevre.factory.placeType.Seat }
                     }
                 }
             },
@@ -192,17 +191,17 @@ export async function main(connection: mongoose.Connection): Promise<void> {
                 .add(-3, 'months')
                 .toDate(),
             acceptedPaymentMethod: [
-                chevreapi.factory.paymentMethodType.Cash,
-                chevreapi.factory.paymentMethodType.CreditCard,
-                chevreapi.factory.paymentMethodType.Others
+                ttts.chevre.factory.paymentMethodType.Cash,
+                ttts.chevre.factory.paymentMethodType.CreditCard,
+                ttts.chevre.factory.paymentMethodType.Others
             ]
         };
 
         // パフォーマンス登録
-        const event: chevreapi.factory.event.screeningEvent.IAttributes = {
+        const event: ttts.chevre.factory.event.screeningEvent.IAttributes = {
             project: project,
-            typeOf: chevreapi.factory.eventType.ScreeningEvent,
-            eventStatus: chevreapi.factory.eventStatusType.EventScheduled,
+            typeOf: ttts.chevre.factory.eventType.ScreeningEvent,
+            eventStatus: ttts.chevre.factory.eventStatusType.EventScheduled,
             name: screeningEventSeries.name,
             doorTime: performanceInfo.door_time,
             startDate: performanceInfo.start_date,
@@ -211,7 +210,7 @@ export async function main(connection: mongoose.Connection): Promise<void> {
             superEvent: screeningEventSeries,
             location: {
                 project: project,
-                typeOf: <chevreapi.factory.placeType.ScreeningRoom>screeningRoom.typeOf,
+                typeOf: <ttts.chevre.factory.placeType.ScreeningRoom>screeningRoom.typeOf,
                 branchCode: screeningRoom.branchCode,
                 name: screeningRoom.name,
                 alternateName: screeningRoom.alternateName,
