@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 注文インターフェースをCinerino化
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v18.3.0 - 2019-07-31
+
+### Changed
+
+- 注文インターフェースをCinerino化
 
 ## v18.2.0 - 2019-07-30
 
