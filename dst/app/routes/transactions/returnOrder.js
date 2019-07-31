@@ -112,6 +112,7 @@ returnOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification'
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const task = yield ttts.service.transaction.returnOrder.sendEmail(req.params.transactionId, {
+            typeOf: ttts.factory.creativeWorkType.EmailMessage,
             sender: {
                 name: req.body.sender.name,
                 email: req.body.sender.email

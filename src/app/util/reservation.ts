@@ -1,8 +1,8 @@
 import { factory } from '@tokyotower/domain';
 
 export function tttsReservation2chevre(
-    params: factory.reservation.event.IReservation
-): factory.reservation.event.IReservation {
+    params: factory.chevre.reservation.IReservation<factory.chevre.reservationType.EventReservation>
+): factory.chevre.reservation.IReservation<factory.chevre.reservationType.EventReservation> {
     // ツアーナンバーを補完
     if ((<any>params).performance_ttts_extension !== undefined
         && (<any>params).performance_ttts_extension !== null
