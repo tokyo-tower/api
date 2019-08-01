@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v18.4.0 - 2019-08-01
+
+### Changed
+
+- アクション、タスク、取引、注文にプロジェクト属性を追加
+
 ## v18.3.0 - 2019-07-31
 
 ### Changed
