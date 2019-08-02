@@ -273,11 +273,16 @@ reservationsRouter.post(
             await taskRepo.save(aggregateTask);
 
             // Chevreへ入場連携
-            const reservationService = new ttts.chevre.service.Reservation({
-                endpoint: project.settings.chevre.endpoint,
-                auth: chevreAuthClient
-            });
-            await reservationService.attendScreeningEvent(reservation);
+            try {
+                const reservationService = new ttts.chevre.service.Reservation({
+                    endpoint: project.settings.chevre.endpoint,
+                    auth: chevreAuthClient
+                });
+                await reservationService.attendScreeningEvent(reservation);
+            } catch (error) {
+                // tslint:disable-next-line:no-console
+                console.error('Chevre attendScreeningEvent failed:', error);
+            }
 
             res.status(NO_CONTENT)
                 .end();

@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v18.4.1 - 2019-08-02
+
+### Changed
+
+- 入場時に万が一Chevreに予約が存在しなくても正常終了するように調整
+
 ## v18.4.0 - 2019-08-01
 
 ### Changed
