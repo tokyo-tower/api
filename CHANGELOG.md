@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- クレジットカード決済承認アクションインターフェースをCinerino化
-- 座席予約承認アクションインターフェースをCinerino化
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v18.5.0 - 2019-08-05
+
+### Changed
+
+- クレジットカード決済承認アクションインターフェースをCinerino化
+- 座席予約承認アクションインターフェースをCinerino化
 
 ## v18.4.1 - 2019-08-02
 
