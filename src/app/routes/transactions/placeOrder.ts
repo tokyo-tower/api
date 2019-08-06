@@ -168,7 +168,7 @@ placeOrderTransactionsRouter.post(
             )(
                 new ttts.repository.Transaction(mongoose.connection),
                 new ttts.repository.Performance(mongoose.connection),
-                new ttts.repository.action.authorize.SeatReservation(mongoose.connection),
+                new ttts.repository.action.Authorize(mongoose.connection),
                 new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
                 new ttts.repository.Task(mongoose.connection),
                 new ttts.repository.Project(mongoose.connection)
@@ -212,7 +212,7 @@ placeOrderTransactionsRouter.delete(
                 req.params.actionId
             )(
                 new ttts.repository.Transaction(mongoose.connection),
-                new ttts.repository.action.authorize.SeatReservation(mongoose.connection),
+                new ttts.repository.action.Authorize(mongoose.connection),
                 new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
                 new ttts.repository.Task(mongoose.connection),
                 new ttts.repository.Project(mongoose.connection)
@@ -266,7 +266,7 @@ placeOrderTransactionsRouter.post(
                 req.body.method,
                 creditCard
             )(
-                new ttts.repository.action.authorize.CreditCard(mongoose.connection),
+                new ttts.repository.action.Authorize(mongoose.connection),
                 new ttts.repository.Seller(mongoose.connection),
                 new ttts.repository.Transaction(mongoose.connection),
                 creditService,
@@ -297,7 +297,7 @@ placeOrderTransactionsRouter.delete(
                 req.params.transactionId,
                 req.params.actionId
             )(
-                new ttts.repository.action.authorize.CreditCard(mongoose.connection),
+                new ttts.repository.action.Authorize(mongoose.connection),
                 new ttts.repository.Transaction(mongoose.connection),
                 creditService
             );
@@ -322,8 +322,7 @@ placeOrderTransactionsRouter.post(
                 paymentMethod: req.body.payment_method
             })(
                 new ttts.repository.Transaction(mongoose.connection),
-                new ttts.repository.action.authorize.CreditCard(mongoose.connection),
-                new ttts.repository.action.authorize.SeatReservation(mongoose.connection),
+                new ttts.repository.action.Authorize(mongoose.connection),
                 new ttts.repository.Token(redisClient),
                 new ttts.repository.PaymentNo(redisClient)
             );

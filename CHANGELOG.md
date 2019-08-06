@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- update @tokyotower/domain
+- 不要な依存パッケージを削除
+
 ### Deprecated
 
 ### Removed

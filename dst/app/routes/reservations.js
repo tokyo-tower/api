@@ -19,7 +19,6 @@ const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const mongoose = require("mongoose");
-const _ = require("underscore");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
@@ -148,8 +147,8 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), .
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        // 互換性維持のためｎ
-        if (!_.isEmpty(req.query.performanceId)) {
+        // POSに対する互換性維持のため
+        if (typeof req.query.performanceId === 'string' && req.query.performanceId !== '') {
             req.query.performance = req.query.performanceId;
         }
         // 予約検索条件

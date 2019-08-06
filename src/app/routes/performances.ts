@@ -8,7 +8,6 @@ import { query } from 'express-validator/check';
 import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
-import * as _ from 'underscore';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -94,11 +93,11 @@ performanceRouter.get(
     async (req, res, next) => {
         try {
             // 互換性維持のため
-            if (!_.isEmpty(req.query.start_from)) {
+            if (typeof req.query.start_from === 'string' && req.query.start_from !== '') {
                 req.query.startFrom = moment(req.query.start_from)
                     .toDate();
             }
-            if (!_.isEmpty(req.query.start_through)) {
+            if (typeof req.query.start_through === 'string' && req.query.start_through !== '') {
                 req.query.startThrough = moment(req.query.start_through)
                     .toDate();
             }

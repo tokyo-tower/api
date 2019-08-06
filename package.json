@@ -9,7 +9,8 @@
     }
   ],
   "dependencies": {
-    "@tokyotower/domain": "24.0.0-alpha.1",
+    "@motionpicture/express-middleware": "^0.1.1",
+    "@tokyotower/domain": "24.0.0-alpha.2",
     "basic-auth": "^2.0.0",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
@@ -22,15 +23,9 @@
     "helmet": "^3.9.0",
     "http-status": "^1.2.0",
     "iconv-lite": "^0.5.0",
-    "jsonwebtoken": "^7.4.3",
-    "jwk-to-pem": "^1.2.6",
     "moment": "^2.20.1",
     "moment-timezone": "^0.5.25",
-    "mongoose": "5.6.7",
-    "request": "^2.87.0",
-    "request-promise-native": "^1.0.5",
-    "underscore": "^1.8.3",
-    "winston": "^2.4.3"
+    "mongoose": "5.6.7"
   },
   "description": "TTTS API Application",
   "devDependencies": {
@@ -46,23 +41,16 @@
     "@types/helmet": "0.0.35",
     "@types/http-status": "^0.2.30",
     "@types/iconv-lite": "0.0.1",
-    "@types/jsonwebtoken": "^7.2.5",
     "@types/mocha": "^2.2.46",
     "@types/moment-timezone": "^0.5.12",
     "@types/mongoose": "5.5.11",
-    "@types/request-promise-native": "^1.0.10",
-    "@types/supertest": "^2.0.4",
-    "@types/underscore": "^1.8.7",
-    "@types/winston": "^2.3.7",
     "mocha": "^3.5.3",
     "nyc": "^11.4.1",
     "rimraf": "^2.6.2",
-    "snyk": "^1.83.0",
-    "supertest": "^3.0.0",
-    "ts-node": "^7.0.1",
-    "tslint": "^5.11.0",
-    "tslint-microsoft-contrib": "^6.0.0",
-    "typescript": "^3.2.2"
+    "ts-node": "^8.3.0",
+    "tslint": "^5.18.0",
+    "tslint-microsoft-contrib": "^6.2.0",
+    "typescript": "^3.5.3"
   },
   "engines": {
     "node": "8.9.0",
@@ -70,7 +58,7 @@
   },
   "keywords": [],
   "license": "ISC",
-  "main": "index.js",
+  "main": "dst/server.js",
   "name": "ttts-api",
   "private": true,
   "repository": {},
