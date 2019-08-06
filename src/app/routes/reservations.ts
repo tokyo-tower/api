@@ -9,7 +9,6 @@ import { query } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
-import * as _ from 'underscore';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -172,8 +171,8 @@ reservationsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            // 互換性維持のためｎ
-            if (!_.isEmpty(req.query.performanceId)) {
+            // POSに対する互換性維持のため
+            if (typeof req.query.performanceId === 'string' && req.query.performanceId !== '') {
                 req.query.performance = req.query.performanceId;
             }
 

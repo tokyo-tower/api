@@ -18,7 +18,6 @@ const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const mongoose = require("mongoose");
-const _ = require("underscore");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
@@ -89,11 +88,11 @@ performanceRouter.get('', permitScopes_1.default(['performances', 'performances.
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // 互換性維持のため
-        if (!_.isEmpty(req.query.start_from)) {
+        if (typeof req.query.start_from === 'string' && req.query.start_from !== '') {
             req.query.startFrom = moment(req.query.start_from)
                 .toDate();
         }
-        if (!_.isEmpty(req.query.start_through)) {
+        if (typeof req.query.start_through === 'string' && req.query.start_through !== '') {
             req.query.startThrough = moment(req.query.start_through)
                 .toDate();
         }
