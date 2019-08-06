@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- update @tokyotower/domain
-- 不要な依存パッケージを削除
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v18.5.1 - 2019-08-06
+
+### Changed
+
+- update @tokyotower/domain
+- 不要な依存パッケージを削除
 
 ## v18.5.0 - 2019-08-05
 
