@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- クレジットカード決済サービスをCinerino化
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v18.6.0 - 2019-08-07
+
+### Changed
+
+- クレジットカード決済サービスをCinerino化
 
 ## v18.5.1 - 2019-08-06
 
