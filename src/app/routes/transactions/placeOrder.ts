@@ -30,10 +30,6 @@ const redisClient = ttts.redis.createClient({
     tls: { servername: <string>process.env.REDIS_HOST }
 });
 
-const creditService = new ttts.GMO.service.Credit(
-    { endpoint: <string>process.env.GMO_ENDPOINT }
-);
-
 placeOrderTransactionsRouter.use(authentication);
 
 placeOrderTransactionsRouter.post(
@@ -230,9 +226,6 @@ placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/creditCard',
     permitScopes(['transactions']),
     (req, __2, next) => {
-        req.checkBody('orderId', 'invalid orderId')
-            .notEmpty()
-            .withMessage('orderId is required');
         req.checkBody('amount', 'invalid amount')
             .notEmpty()
             .withMessage('amount is required');
@@ -249,7 +242,7 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             // 会員IDを強制的にログイン中の人物IDに変更
-            const creditCard: ttts.service.transaction.placeOrderInProgress.action.authorize.creditCard.ICreditCard4authorizeAction = {
+            const creditCard: ttts.factory.cinerino.action.authorize.paymentMethod.creditCard.ICreditCard = {
                 ...req.body.creditCard,
                 ...{
                     memberId: (req.user.username !== undefined) ? req.user.sub : undefined
@@ -258,20 +251,25 @@ placeOrderTransactionsRouter.post(
             debug('authorizing credit card...', creditCard);
 
             debug('authorizing credit card...', req.body.creditCard);
-            const action = await ttts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(
-                req.user.sub,
-                req.params.transactionId,
-                req.body.orderId,
-                req.body.amount,
-                req.body.method,
-                creditCard
-            )(
-                new ttts.repository.action.Authorize(mongoose.connection),
-                new ttts.repository.Seller(mongoose.connection),
-                new ttts.repository.Transaction(mongoose.connection),
-                creditService,
-                new ttts.repository.Project(mongoose.connection)
-            );
+            const action = await ttts.service.payment.creditCard.authorize({
+                project: { id: <string>process.env.PROJECT_ID },
+                agent: { id: req.user.sub },
+                object: {
+                    typeOf: ttts.factory.cinerino.paymentMethodType.CreditCard,
+                    // name: req.body.object.name,
+                    // additionalProperty: req.body.object.additionalProperty,
+                    orderId: req.body.orderId,
+                    amount: req.body.amount,
+                    method: req.body.method,
+                    creditCard: creditCard
+                },
+                purpose: { typeOf: ttts.factory.transactionType.PlaceOrder, id: <string>req.params.transactionId }
+            })({
+                action: new ttts.repository.Action(mongoose.connection),
+                project: new ttts.repository.Project(mongoose.connection),
+                seller: new ttts.repository.Seller(mongoose.connection),
+                transaction: new ttts.repository.Transaction(mongoose.connection)
+            });
 
             res.status(CREATED)
                 .json({
@@ -292,15 +290,16 @@ placeOrderTransactionsRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            await ttts.service.transaction.placeOrderInProgress.action.authorize.creditCard.cancel(
-                req.user.sub,
-                req.params.transactionId,
-                req.params.actionId
-            )(
-                new ttts.repository.action.Authorize(mongoose.connection),
-                new ttts.repository.Transaction(mongoose.connection),
-                creditService
-            );
+            await ttts.service.payment.creditCard.voidTransaction({
+                project: { id: req.project.id },
+                agent: { id: req.user.sub },
+                id: req.params.actionId,
+                purpose: { typeOf: ttts.factory.transactionType.PlaceOrder, id: <string>req.params.transactionId }
+            })({
+                action: new ttts.repository.Action(mongoose.connection),
+                project: new ttts.repository.Project(mongoose.connection),
+                transaction: new ttts.repository.Transaction(mongoose.connection)
+            });
 
             res.status(NO_CONTENT)
                 .end();

@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v18.6.0 - 2019-08-07
+
+### Changed
+
+- クレジットカード決済サービスをCinerino化
+
 ## v18.5.1 - 2019-08-06
 
 ### Changed

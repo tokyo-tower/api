@@ -34,7 +34,6 @@ const redisClient = ttts.redis.createClient({
     password: process.env.REDIS_KEY,
     tls: { servername: process.env.REDIS_HOST }
 });
-const creditService = new ttts.GMO.service.Credit({ endpoint: process.env.GMO_ENDPOINT });
 placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), (req, _, next) => {
     req.checkBody('expires', 'invalid expires')
@@ -156,9 +155,6 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
     }
 }));
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard', permitScopes_1.default(['transactions']), (req, __2, next) => {
-    req.checkBody('orderId', 'invalid orderId')
-        .notEmpty()
-        .withMessage('orderId is required');
     req.checkBody('amount', 'invalid amount')
         .notEmpty()
         .withMessage('amount is required');
@@ -177,7 +173,25 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard'
         });
         debug('authorizing credit card...', creditCard);
         debug('authorizing credit card...', req.body.creditCard);
-        const action = yield ttts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(req.user.sub, req.params.transactionId, req.body.orderId, req.body.amount, req.body.method, creditCard)(new ttts.repository.action.Authorize(mongoose.connection), new ttts.repository.Seller(mongoose.connection), new ttts.repository.Transaction(mongoose.connection), creditService, new ttts.repository.Project(mongoose.connection));
+        const action = yield ttts.service.payment.creditCard.authorize({
+            project: { id: process.env.PROJECT_ID },
+            agent: { id: req.user.sub },
+            object: {
+                typeOf: ttts.factory.cinerino.paymentMethodType.CreditCard,
+                // name: req.body.object.name,
+                // additionalProperty: req.body.object.additionalProperty,
+                orderId: req.body.orderId,
+                amount: req.body.amount,
+                method: req.body.method,
+                creditCard: creditCard
+            },
+            purpose: { typeOf: ttts.factory.transactionType.PlaceOrder, id: req.params.transactionId }
+        })({
+            action: new ttts.repository.Action(mongoose.connection),
+            project: new ttts.repository.Project(mongoose.connection),
+            seller: new ttts.repository.Seller(mongoose.connection),
+            transaction: new ttts.repository.Transaction(mongoose.connection)
+        });
         res.status(http_status_1.CREATED)
             .json({
             id: action.id
@@ -192,7 +206,16 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard'
  */
 placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/creditCard/:actionId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield ttts.service.transaction.placeOrderInProgress.action.authorize.creditCard.cancel(req.user.sub, req.params.transactionId, req.params.actionId)(new ttts.repository.action.Authorize(mongoose.connection), new ttts.repository.Transaction(mongoose.connection), creditService);
+        yield ttts.service.payment.creditCard.voidTransaction({
+            project: { id: req.project.id },
+            agent: { id: req.user.sub },
+            id: req.params.actionId,
+            purpose: { typeOf: ttts.factory.transactionType.PlaceOrder, id: req.params.transactionId }
+        })({
+            action: new ttts.repository.Action(mongoose.connection),
+            project: new ttts.repository.Project(mongoose.connection),
+            transaction: new ttts.repository.Transaction(mongoose.connection)
+        });
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
