@@ -26,7 +26,7 @@ export default async (_: {
             count += 1;
 
             try {
-                await ttts.service.task.retry(RETRY_INTERVAL_MINUTES)(taskRepo);
+                await ttts.service.task.retry({ intervalInMinutes: RETRY_INTERVAL_MINUTES })({ task: taskRepo });
             } catch (error) {
                 // tslint:disable-next-line:no-console
                 console.error(error);

@@ -42,7 +42,6 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
         password: process.env.REDIS_KEY,
         tls: { servername: process.env.REDIS_HOST }
     });
-    const taskRepo = new ttts.repository.Task(connection);
     let count = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 1000;
@@ -55,7 +54,12 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
         }
         count += 1;
         try {
-            yield ttts.service.task.executeByName(ttts.factory.taskName.SettleCreditCard)(taskRepo, connection, redisClient);
+            yield ttts.service.task.executeByName({
+                name: ttts.factory.taskName.SettleCreditCard
+            })({
+                connection: connection,
+                redisClient: redisClient
+            });
         }
         catch (error) {
             // tslint:disable-next-line:no-console
