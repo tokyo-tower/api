@@ -17,7 +17,6 @@ export default async (_: {
             tls: { servername: <string>process.env.REDIS_HOST }
         }
     );
-    const taskRepo = new ttts.repository.Task(connection);
 
     let count = 0;
 
@@ -33,9 +32,12 @@ export default async (_: {
             count += 1;
 
             try {
-                await ttts.service.task.executeByName(
-                    ttts.factory.taskName.CreateReturnOrderReport
-                )(taskRepo, connection, redisClient);
+                await ttts.service.task.executeByName({
+                    name: ttts.factory.taskName.CreateReturnOrderReport
+                })({
+                    connection: connection,
+                    redisClient: redisClient
+                });
             } catch (error) {
                 // tslint:disable-next-line:no-console
                 console.error(error);

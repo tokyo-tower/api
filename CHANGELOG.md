@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v18.6.1 - 2019-08-08
+
+### Changed
+
+- update @tokyotower/domain
+
 ## v18.6.0 - 2019-08-07
 
 ### Changed

@@ -164,7 +164,7 @@ placeOrderTransactionsRouter.post(
             )(
                 new ttts.repository.Transaction(mongoose.connection),
                 new ttts.repository.Performance(mongoose.connection),
-                new ttts.repository.action.Authorize(mongoose.connection),
+                new ttts.repository.Action(mongoose.connection),
                 new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
                 new ttts.repository.Task(mongoose.connection),
                 new ttts.repository.Project(mongoose.connection)
@@ -208,7 +208,7 @@ placeOrderTransactionsRouter.delete(
                 req.params.actionId
             )(
                 new ttts.repository.Transaction(mongoose.connection),
-                new ttts.repository.action.Authorize(mongoose.connection),
+                new ttts.repository.Action(mongoose.connection),
                 new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
                 new ttts.repository.Task(mongoose.connection),
                 new ttts.repository.Project(mongoose.connection)
@@ -321,7 +321,7 @@ placeOrderTransactionsRouter.post(
                 paymentMethod: req.body.payment_method
             })(
                 new ttts.repository.Transaction(mongoose.connection),
-                new ttts.repository.action.Authorize(mongoose.connection),
+                new ttts.repository.Action(mongoose.connection),
                 new ttts.repository.Token(redisClient),
                 new ttts.repository.PaymentNo(redisClient)
             );

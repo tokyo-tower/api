@@ -120,7 +120,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
                 ticket_type: offer.ticket_type,
                 watcher_name: offer.watcher_name
             };
-        }))(new ttts.repository.Transaction(mongoose.connection), new ttts.repository.Performance(mongoose.connection), new ttts.repository.action.Authorize(mongoose.connection), new ttts.repository.rateLimit.TicketTypeCategory(redisClient), new ttts.repository.Task(mongoose.connection), new ttts.repository.Project(mongoose.connection));
+        }))(new ttts.repository.Transaction(mongoose.connection), new ttts.repository.Performance(mongoose.connection), new ttts.repository.Action(mongoose.connection), new ttts.repository.rateLimit.TicketTypeCategory(redisClient), new ttts.repository.Task(mongoose.connection), new ttts.repository.Project(mongoose.connection));
         // 余分確保予約を除いてレスポンスを返す
         if (action.result !== undefined) {
             action.result.tmpReservations = action.result.tmpReservations.filter((r) => {
@@ -146,7 +146,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
  */
 placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.cancel(req.user.sub, req.params.transactionId, req.params.actionId)(new ttts.repository.Transaction(mongoose.connection), new ttts.repository.action.Authorize(mongoose.connection), new ttts.repository.rateLimit.TicketTypeCategory(redisClient), new ttts.repository.Task(mongoose.connection), new ttts.repository.Project(mongoose.connection));
+        yield ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.cancel(req.user.sub, req.params.transactionId, req.params.actionId)(new ttts.repository.Transaction(mongoose.connection), new ttts.repository.Action(mongoose.connection), new ttts.repository.rateLimit.TicketTypeCategory(redisClient), new ttts.repository.Task(mongoose.connection), new ttts.repository.Project(mongoose.connection));
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
@@ -229,7 +229,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             agentId: req.user.sub,
             transactionId: req.params.transactionId,
             paymentMethod: req.body.payment_method
-        })(new ttts.repository.Transaction(mongoose.connection), new ttts.repository.action.Authorize(mongoose.connection), new ttts.repository.Token(redisClient), new ttts.repository.PaymentNo(redisClient));
+        })(new ttts.repository.Transaction(mongoose.connection), new ttts.repository.Action(mongoose.connection), new ttts.repository.Token(redisClient), new ttts.repository.PaymentNo(redisClient));
         debug('transaction confirmed.');
         // 余分確保予約を除いてレスポンスを返す
         if (transactionResult !== undefined) {
