@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - リポジトリのCinerino継承
+- 決済サービス、ユーティリティサービスをCinerino継承
 
 ### Deprecated
 

@@ -34,6 +34,8 @@
 | `CHEVRE_AUTHORIZE_SERVER_DOMAIN`          | true     |            | Chevre API Settings                            |
 | `CHEVRE_CLIENT_ID`                        | true     |            | Chevre API Settings                            |
 | `CHEVRE_CLIENT_SECRET`                    | true     |            | Chevre API Settings                            |
+| `COA_ENDPOINT`                            | true     |            | COA credentilas                                |
+| `COA_REFRESH_TOKEN`                       | true     |            | credentilas                                    |
 | `PROJECT_ID`                              | true     |            | Project ID                                     |
 | `JOBS_STOPPED`                            | false    | 1 or 0     | Asynchronous jobs stopped flag                 |
 | `TELEMETRY_API_ENDPOINT`                  | true     |            | Cinerino telemetry api endpoint                |
