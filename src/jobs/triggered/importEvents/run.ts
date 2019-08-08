@@ -222,7 +222,7 @@ export async function main(connection: mongoose.Connection): Promise<void> {
                     executionResults: [],
                     data: { id: performance.id }
                 };
-                await taskRepo.save(aggregateTask);
+                await taskRepo.save(<any>aggregateTask);
             }
         } catch (error) {
             // tslint:disable-next-line:no-single-line-block-comment

@@ -29,7 +29,7 @@ export default async (_: {
 
             try {
                 debug('transaction expiring...');
-                await transactionRepo.makeExpired();
+                await transactionRepo.makeExpired({});
             } catch (error) {
                 // tslint:disable-next-line:no-console
                 console.error(error);

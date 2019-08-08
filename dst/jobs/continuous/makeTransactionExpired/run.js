@@ -28,7 +28,7 @@ exports.default = (_) => __awaiter(this, void 0, void 0, function* () {
         count += 1;
         try {
             debug('transaction expiring...');
-            yield transactionRepo.makeExpired();
+            yield transactionRepo.makeExpired({});
         }
         catch (error) {
             // tslint:disable-next-line:no-console
