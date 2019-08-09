@@ -230,7 +230,7 @@ performanceRouter.put(
                 executionResults: [],
                 data: { id: req.params.id }
             };
-            await taskRepo.save(aggregateTask);
+            await taskRepo.save(<any>aggregateTask);
 
             res.status(NO_CONTENT)
                 .end();

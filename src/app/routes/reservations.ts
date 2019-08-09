@@ -255,7 +255,7 @@ reservationsRouter.post(
                 executionResults: [],
                 data: { reservation: reservation }
             });
-            await taskRepo.save(taskAttributes);
+            await taskRepo.save(<any>taskAttributes);
 
             // 集計タスク作成
             const aggregateTask: ttts.factory.task.aggregateEventReservations.IAttributes = {
@@ -269,7 +269,7 @@ reservationsRouter.post(
                 executionResults: [],
                 data: { id: reservation.reservationFor.id }
             };
-            await taskRepo.save(aggregateTask);
+            await taskRepo.save(<any>aggregateTask);
 
             // Chevreへ入場連携
             try {
@@ -326,7 +326,7 @@ reservationsRouter.delete(
                 executionResults: [],
                 data: { reservation: reservation }
             });
-            await taskRepo.save(taskAttributes);
+            await taskRepo.save(<any>taskAttributes);
 
             // 集計タスク作成
             const aggregateTask: ttts.factory.task.aggregateEventReservations.IAttributes = {
@@ -340,7 +340,7 @@ reservationsRouter.delete(
                 executionResults: [],
                 data: { id: reservation.reservationFor.id }
             };
-            await taskRepo.save(aggregateTask);
+            await taskRepo.save(<any>aggregateTask);
 
             res.status(NO_CONTENT)
                 .end();

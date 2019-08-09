@@ -198,7 +198,23 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard'
         });
     }
     catch (error) {
-        next(error);
+        let handledError = error;
+        if (error.name === 'CinerinoError') {
+            const reason = error.reason;
+            switch (reason) {
+                case ttts.factory.cinerino.errorCode.AlreadyInUse:
+                    handledError = new ttts.factory.errors.AlreadyInUse(error.entityName, error.fieldNames, error.message);
+                    break;
+                case ttts.factory.cinerino.errorCode.Argument:
+                    handledError = new ttts.factory.errors.Argument(error.argumentName, error.message);
+                    break;
+                case ttts.factory.cinerino.errorCode.RateLimitExceeded:
+                    handledError = new ttts.factory.errors.RateLimitExceeded(error.message);
+                    break;
+                default:
+            }
+        }
+        next(handledError);
     }
 }));
 /**
