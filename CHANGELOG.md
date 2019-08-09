@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- リポジトリのCinerino継承
-- 決済サービス、ユーティリティサービスをCinerino継承
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v18.7.0 - 2019-08-09
+
+### Changed
+
+- リポジトリのCinerino継承
+- 決済サービス、ユーティリティサービスをCinerino継承
 
 ## v18.6.1 - 2019-08-08
 
