@@ -18,6 +18,7 @@ import cancelSeatReservation from './continuous/cancelSeatReservation/run';
 import createOrder from './continuous/createOrder/run';
 import createPlaceOrderReport from './continuous/createPlaceOrderReport/run';
 import createReturnOrderReport from './continuous/createReturnOrderReport/run';
+import placeOrder from './continuous/placeOrder/run';
 import returnOrder from './continuous/returnOrder/run';
 import returnOrdersByPerformance from './continuous/returnOrdersByPerformance/run';
 import sendEmailNotification from './continuous/sendEmailNotification/run';
@@ -51,6 +52,7 @@ export default async () => {
     await createOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await createPlaceOrderReport({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await createReturnOrderReport({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    await placeOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await returnOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await returnOrdersByPerformance({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await sendEmailNotification({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
