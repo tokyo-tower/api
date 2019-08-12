@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v18.8.0 - 2019-08-12
+
+### Changed
+
+- 注文作成タスクをCinerino化
+- update @tokyotower/domain
+
 ## v18.7.0 - 2019-08-09
 
 ### Changed
