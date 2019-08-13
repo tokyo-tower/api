@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v19.0.0 - 2019-08-13
+
+### Changed
+
+- 座席予約承認アクションインターフェースをCinerino化
+
 ## v18.8.0 - 2019-08-12
 
 ### Changed
