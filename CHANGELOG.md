@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Removed
 
 - 注文取引から購入者区分属性を削除
+- SettleCreditCardタスクを削除
 
 ### Fixed
 

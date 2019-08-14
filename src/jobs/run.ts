@@ -22,7 +22,6 @@ import placeOrder from './continuous/placeOrder/run';
 import returnOrder from './continuous/returnOrder/run';
 import returnOrdersByPerformance from './continuous/returnOrdersByPerformance/run';
 import sendEmailNotification from './continuous/sendEmailNotification/run';
-import settleCreditCard from './continuous/settleCreditCard/run';
 import settleSeatReservation from './continuous/settleSeatReservation/run';
 import triggerWebhook from './continuous/triggerWebhook/run';
 import updateOrderReportByReservation from './continuous/updateOrderReportByReservation/run';
@@ -56,7 +55,6 @@ export default async () => {
     await returnOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await returnOrdersByPerformance({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await sendEmailNotification({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await settleCreditCard({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await settleSeatReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await triggerWebhook({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await updateOrderReportByReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
