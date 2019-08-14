@@ -21,6 +21,8 @@ const http_status_1 = require("http-status");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
+const POS_CLIENT_ID = process.env.POS_CLIENT_ID;
+const STAFF_CLIENT_ID = process.env.STAFF_CLIENT_ID;
 const placeOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
@@ -46,8 +48,8 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
     // POSからの流入制限を一時的に回避するため、許可証不要なクライアント設定ができるようにする
     // staffアプリケーションに関しても同様に
     if (!WAITER_DISABLED
-        && req.user.client_id !== process.env.POS_CLIENT_ID
-        && req.user.client_id !== process.env.STAFF_CLIENT_ID) {
+        && req.user.client_id !== POS_CLIENT_ID
+        && req.user.client_id !== STAFF_CLIENT_ID) {
         req.checkBody('passportToken', 'invalid passportToken')
             .notEmpty()
             .withMessage('passportToken is required');
@@ -239,13 +241,53 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/creditCar
         next(error);
     }
 }));
-placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['transactions']), validator_1.default, 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const paymentMethodType = req.body.payment_method;
+        const actionRepo = new ttts.repository.Action(mongoose.connection);
+        const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
+        // クライアントがPOSあるいは内部予約の場合、決済方法承認アクションを自動生成
+        if (req.user.client_id === POS_CLIENT_ID || req.user.client_id === STAFF_CLIENT_ID) {
+            const authorizeActions = yield actionRepo.searchByPurpose({
+                typeOf: ttts.factory.actionType.AuthorizeAction,
+                purpose: {
+                    typeOf: ttts.factory.transactionType.PlaceOrder,
+                    id: req.params.transactionId
+                }
+            });
+            const seatReservationAuthorizeAction = authorizeActions
+                .filter((a) => a.actionStatus === ttts.factory.actionStatusType.CompletedActionStatus)
+                .find((a) => a.object.typeOf === ttts.factory.action.authorize.seatReservation.ObjectType.SeatReservation);
+            const authorizeSeatReservationResult = seatReservationAuthorizeAction.result;
+            const tmpReservations = authorizeSeatReservationResult.tmpReservations;
+            const price = tmpReservations.reduce((a, b) => {
+                const unitPrice = (b.reservedTicket.ticketType.priceSpecification !== undefined)
+                    ? b.reservedTicket.ticketType.priceSpecification.price
+                    : 0;
+                return a + unitPrice;
+            }, 0);
+            yield ttts.service.payment.any.authorize({
+                agent: { id: req.user.sub },
+                object: {
+                    typeOf: paymentMethodType,
+                    name: paymentMethodType,
+                    additionalProperty: [],
+                    amount: price
+                },
+                purpose: { typeOf: ttts.factory.transactionType.PlaceOrder, id: req.params.transactionId }
+            })({
+                action: actionRepo,
+                seller: new ttts.repository.Seller(mongoose.connection),
+                transaction: transactionRepo
+            });
+        }
         const transactionResult = yield ttts.service.transaction.placeOrderInProgress.confirm({
             agentId: req.user.sub,
             transactionId: req.params.transactionId,
-            paymentMethod: req.body.payment_method
-        })(new ttts.repository.Transaction(mongoose.connection), new ttts.repository.Action(mongoose.connection), new ttts.repository.Token(redisClient), new ttts.repository.PaymentNo(redisClient));
+            paymentMethod: paymentMethodType
+        })(transactionRepo, actionRepo, new ttts.repository.Token(redisClient), new ttts.repository.PaymentNo(redisClient));
         debug('transaction confirmed.');
         // 余分確保予約を除いてレスポンスを返す
         if (transactionResult !== undefined) {
