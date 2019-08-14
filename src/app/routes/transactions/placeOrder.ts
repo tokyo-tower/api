@@ -73,7 +73,7 @@ placeOrderTransactionsRouter.post(
                 },
                 sellerIdentifier: req.body.seller_identifier,
                 clientUser: req.user,
-                purchaserGroup: req.body.purchaser_group,
+                // purchaserGroup: req.body.purchaser_group,
                 passportToken: req.body.passportToken
             })(
                 new ttts.repository.Transaction(mongoose.connection),

@@ -66,7 +66,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
                 ] }),
             sellerIdentifier: req.body.seller_identifier,
             clientUser: req.user,
-            purchaserGroup: req.body.purchaser_group,
+            // purchaserGroup: req.body.purchaser_group,
             passportToken: req.body.passportToken
         })(new ttts.repository.Transaction(mongoose.connection), new ttts.repository.Seller(mongoose.connection));
         // tslint:disable-next-line:no-string-literal
