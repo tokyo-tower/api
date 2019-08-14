@@ -15,9 +15,9 @@ import watchReturnOrderTransaction from './continuous/watchReturnOrderTransactio
 import aggregateEventReservations from './continuous/aggregateEventReservations/run';
 import cancelCreditCard from './continuous/cancelCreditCard/run';
 import cancelSeatReservation from './continuous/cancelSeatReservation/run';
-import createOrder from './continuous/createOrder/run';
 import createPlaceOrderReport from './continuous/createPlaceOrderReport/run';
 import createReturnOrderReport from './continuous/createReturnOrderReport/run';
+import payCreditCard from './continuous/payCreditCard/run';
 import placeOrder from './continuous/placeOrder/run';
 import returnOrder from './continuous/returnOrder/run';
 import returnOrdersByPerformance from './continuous/returnOrdersByPerformance/run';
@@ -49,9 +49,9 @@ export default async () => {
     await aggregateEventReservations({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await cancelCreditCard({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await cancelSeatReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await createOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await createPlaceOrderReport({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await createReturnOrderReport({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    await payCreditCard({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await placeOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await returnOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await returnOrdersByPerformance({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });

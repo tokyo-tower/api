@@ -18,6 +18,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v20.0.0 - 2019-08-14
+
+### Changed
+
+- クレジットカード決済タスクをCinerino化
+
+### Removed
+
+- CreateOrderタスクを削除
+
 ## v19.0.0 - 2019-08-13
 
 ### Changed

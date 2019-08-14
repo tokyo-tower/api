@@ -9,10 +9,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 注文作成
+ * クレジットカード支払
  */
 const ttts = require("@tokyotower/domain");
+const createDebug = require("debug");
 const connectMongo_1 = require("../../../connectMongo");
+const debug = createDebug('cinerino-api');
 exports.default = (_) => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     const redisClient = ttts.redis.createClient({
@@ -23,15 +25,16 @@ exports.default = (_) => __awaiter(this, void 0, void 0, function* () {
     });
     let count = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
-    const INTERVAL_MILLISECONDS = 200;
+    const INTERVAL_MILLISECONDS = 1000;
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
         if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
             return;
         }
         count += 1;
         try {
+            debug('count:', count);
             yield ttts.service.task.executeByName({
-                name: ttts.factory.taskName.CreateOrder
+                name: ttts.factory.cinerino.taskName.PayCreditCard
             })({
                 connection: connection,
                 redisClient: redisClient
