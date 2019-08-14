@@ -1,9 +1,12 @@
 /**
- * 注文作成
+ * クレジットカード支払
  */
 import * as ttts from '@tokyotower/domain';
+import * as createDebug from 'debug';
 
 import { connectMongo } from '../../../connectMongo';
+
+const debug = createDebug('cinerino-api');
 
 export default async (_: {
     project?: ttts.factory.project.IProject;
@@ -21,7 +24,7 @@ export default async (_: {
     let count = 0;
 
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
-    const INTERVAL_MILLISECONDS = 200;
+    const INTERVAL_MILLISECONDS = 1000;
 
     setInterval(
         async () => {
@@ -32,8 +35,9 @@ export default async (_: {
             count += 1;
 
             try {
+                debug('count:', count);
                 await ttts.service.task.executeByName({
-                    name: ttts.factory.taskName.CreateOrder
+                    name: <any>ttts.factory.cinerino.taskName.PayCreditCard
                 })({
                     connection: connection,
                     redisClient: redisClient
