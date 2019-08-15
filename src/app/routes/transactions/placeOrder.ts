@@ -12,6 +12,8 @@ import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
+const POS_CLIENT_ID = <string>process.env.POS_CLIENT_ID;
+const STAFF_CLIENT_ID = <string>process.env.STAFF_CLIENT_ID;
 
 const placeOrderTransactionsRouter = Router();
 
@@ -47,8 +49,8 @@ placeOrderTransactionsRouter.post(
         // POSからの流入制限を一時的に回避するため、許可証不要なクライアント設定ができるようにする
         // staffアプリケーションに関しても同様に
         if (!WAITER_DISABLED
-            && req.user.client_id !== <string>process.env.POS_CLIENT_ID
-            && req.user.client_id !== <string>process.env.STAFF_CLIENT_ID) {
+            && req.user.client_id !== POS_CLIENT_ID
+            && req.user.client_id !== STAFF_CLIENT_ID) {
             req.checkBody('passportToken', 'invalid passportToken')
                 .notEmpty()
                 .withMessage('passportToken is required');
@@ -71,7 +73,7 @@ placeOrderTransactionsRouter.post(
                 },
                 sellerIdentifier: req.body.seller_identifier,
                 clientUser: req.user,
-                purchaserGroup: req.body.purchaser_group,
+                // purchaserGroup: req.body.purchaser_group,
                 passportToken: req.body.passportToken
             })(
                 new ttts.repository.Transaction(mongoose.connection),
@@ -331,15 +333,64 @@ placeOrderTransactionsRouter.post(
     '/:transactionId/confirm',
     permitScopes(['transactions']),
     validator,
+    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
+            const paymentMethodType = req.body.payment_method;
+            const actionRepo = new ttts.repository.Action(mongoose.connection);
+            const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
+
+            // クライアントがPOSあるいは内部予約の場合、決済方法承認アクションを自動生成
+            if (req.user.client_id === POS_CLIENT_ID || req.user.client_id === STAFF_CLIENT_ID) {
+                const authorizeActions = await actionRepo.searchByPurpose({
+                    typeOf: ttts.factory.actionType.AuthorizeAction,
+                    purpose: {
+                        typeOf: ttts.factory.transactionType.PlaceOrder,
+                        id: req.params.transactionId
+                    }
+                });
+                const seatReservationAuthorizeAction = <ttts.factory.action.authorize.seatReservation.IAction>
+                    authorizeActions
+                        .filter((a) => a.actionStatus === ttts.factory.actionStatusType.CompletedActionStatus)
+                        .find((a) => a.object.typeOf === ttts.factory.action.authorize.seatReservation.ObjectType.SeatReservation);
+                const authorizeSeatReservationResult = <ttts.factory.action.authorize.seatReservation.IResult>
+                    seatReservationAuthorizeAction.result;
+                const tmpReservations = authorizeSeatReservationResult.tmpReservations;
+
+                const price: number = tmpReservations.reduce(
+                    (a, b) => {
+                        const unitPrice = (b.reservedTicket.ticketType.priceSpecification !== undefined)
+                            ? b.reservedTicket.ticketType.priceSpecification.price
+                            : 0;
+
+                        return a + unitPrice;
+                    },
+                    0
+                );
+
+                await ttts.service.payment.any.authorize({
+                    agent: { id: req.user.sub },
+                    object: {
+                        typeOf: paymentMethodType,
+                        name: paymentMethodType,
+                        additionalProperty: [],
+                        amount: price
+                    },
+                    purpose: { typeOf: ttts.factory.transactionType.PlaceOrder, id: <string>req.params.transactionId }
+                })({
+                    action: actionRepo,
+                    seller: new ttts.repository.Seller(mongoose.connection),
+                    transaction: transactionRepo
+                });
+            }
+
             const transactionResult = await ttts.service.transaction.placeOrderInProgress.confirm({
                 agentId: req.user.sub,
                 transactionId: req.params.transactionId,
-                paymentMethod: req.body.payment_method
+                paymentMethod: paymentMethodType
             })(
-                new ttts.repository.Transaction(mongoose.connection),
-                new ttts.repository.Action(mongoose.connection),
+                transactionRepo,
+                actionRepo,
                 new ttts.repository.Token(redisClient),
                 new ttts.repository.PaymentNo(redisClient)
             );
