@@ -10,18 +10,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- クレジットカード以外の決済方法に対する承認アクションに対応
-
 ### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v21.0.0 - 2019-08-15
+
+### Changed
+
+- クレジットカード以外の決済方法に対する承認アクションに対応
 
 ### Removed
 
 - 注文取引から購入者区分属性を削除
 - SettleCreditCardタスクを削除
-
-### Fixed
-
-### Security
 
 ## v20.0.0 - 2019-08-14
 
