@@ -99,8 +99,8 @@ screeningEventRouter.get('/:id', permitScopes_1.default(['aws.cognito.signin.use
 }));
 function performance2event(performance) {
     return Object.assign({}, performance, { typeOf: ttts.factory.chevre.eventType.ScreeningEvent, additionalProperty: [], attendeeCount: 0, checkInCount: 0, doorTime: performance.doorTime, endDate: performance.endDate, startDate: performance.startDate, eventStatus: ttts.factory.chevre.eventStatusType.EventScheduled, name: performance.superEvent.name, offers: {
-            id: performance.ticket_type_group.id,
-            name: performance.ticket_type_group.name,
+            id: (performance.ticket_type_group !== undefined) ? performance.ticket_type_group.id : '',
+            name: (performance.ticket_type_group !== undefined) ? performance.ticket_type_group.name : '',
             typeOf: 'Offer',
             priceCurrency: ttts.factory.chevre.priceCurrency.JPY,
             eligibleQuantity: {

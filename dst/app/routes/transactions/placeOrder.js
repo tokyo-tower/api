@@ -98,9 +98,11 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const contact = yield ttts.service.transaction.placeOrderInProgress.setCustomerContact(req.user.sub, req.params.transactionId, Object.assign({}, req.body, { age: (req.body.age !== undefined) ? req.body.age : '', address: (req.body.address !== undefined) ? req.body.address : '', gender: (req.body.gender !== undefined) ? req.body.gender : '' }))(new ttts.repository.Transaction(mongoose.connection));
+        const profile = yield ttts.service.transaction.placeOrderInProgress.setCustomerContact(req.user.sub, req.params.transactionId, Object.assign({}, req.body, { email: req.body.email, givenName: req.body.first_name, familyName: req.body.last_name, telephone: req.body.tel, age: (req.body.age !== undefined) ? req.body.age : '', address: (req.body.address !== undefined) ? req.body.address : '', gender: (req.body.gender !== undefined) ? req.body.gender : '' }))(new ttts.repository.Transaction(mongoose.connection));
         res.status(http_status_1.CREATED)
-            .json(contact);
+            .json(Object.assign({}, profile, { 
+            // POSへの互換性維持のために値補完
+            last_name: profile.familyName, first_name: profile.givenName, tel: profile.telephone }));
     }
     catch (error) {
         next(error);

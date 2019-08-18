@@ -116,11 +116,15 @@ placeOrderTransactionsRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const contact = await ttts.service.transaction.placeOrderInProgress.setCustomerContact(
+            const profile = await ttts.service.transaction.placeOrderInProgress.setCustomerContact(
                 req.user.sub,
                 req.params.transactionId,
                 {
                     ...req.body,
+                    email: req.body.email,
+                    givenName: req.body.first_name,
+                    familyName: req.body.last_name,
+                    telephone: req.body.tel,
                     age: (req.body.age !== undefined) ? req.body.age : '',
                     address: (req.body.address !== undefined) ? req.body.address : '',
                     gender: (req.body.gender !== undefined) ? req.body.gender : ''
@@ -128,7 +132,13 @@ placeOrderTransactionsRouter.put(
             )(new ttts.repository.Transaction(mongoose.connection));
 
             res.status(CREATED)
-                .json(contact);
+                .json({
+                    ...profile,
+                    // POSへの互換性維持のために値補完
+                    last_name: profile.familyName,
+                    first_name: profile.givenName,
+                    tel: profile.telephone
+                });
         } catch (error) {
             next(error);
         }
