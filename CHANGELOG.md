@@ -18,6 +18,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v21.2.0 - 2019-08-22
+
+### Changed
+
+- 人物インターフェースをCinerino化
+- アクションインターフェースをCinerino化
+- 取引インターフェースをCinerino化
+
 ## v21.1.0 - 2019-08-19
 
 ### Changed
