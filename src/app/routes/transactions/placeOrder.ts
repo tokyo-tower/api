@@ -378,10 +378,21 @@ placeOrderTransactionsRouter.post(
                     0
                 );
 
+                let authorizingPaymentMethodType: string;
+                switch (paymentMethodType) {
+                    case ttts.factory.cinerino.paymentMethodType.Cash:
+                    case ttts.factory.cinerino.paymentMethodType.CreditCard:
+                        authorizingPaymentMethodType = paymentMethodType;
+                        break;
+
+                    default:
+                        authorizingPaymentMethodType = ttts.factory.cinerino.paymentMethodType.Others;
+                }
+
                 await ttts.service.payment.any.authorize({
                     agent: { id: req.user.sub },
                     object: {
-                        typeOf: ttts.factory.cinerino.paymentMethodType.Others,
+                        typeOf: authorizingPaymentMethodType,
                         name: paymentMethodType,
                         additionalProperty: [],
                         amount: price

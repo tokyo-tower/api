@@ -270,10 +270,19 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
                     : 0;
                 return a + unitPrice;
             }, 0);
+            let authorizingPaymentMethodType;
+            switch (paymentMethodType) {
+                case ttts.factory.cinerino.paymentMethodType.Cash:
+                case ttts.factory.cinerino.paymentMethodType.CreditCard:
+                    authorizingPaymentMethodType = paymentMethodType;
+                    break;
+                default:
+                    authorizingPaymentMethodType = ttts.factory.cinerino.paymentMethodType.Others;
+            }
             yield ttts.service.payment.any.authorize({
                 agent: { id: req.user.sub },
                 object: {
-                    typeOf: ttts.factory.cinerino.paymentMethodType.Others,
+                    typeOf: authorizingPaymentMethodType,
                     name: paymentMethodType,
                     additionalProperty: [],
                     amount: price
