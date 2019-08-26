@@ -273,7 +273,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             yield ttts.service.payment.any.authorize({
                 agent: { id: req.user.sub },
                 object: {
-                    typeOf: paymentMethodType,
+                    typeOf: ttts.factory.cinerino.paymentMethodType.Others,
                     name: paymentMethodType,
                     additionalProperty: [],
                     amount: price
