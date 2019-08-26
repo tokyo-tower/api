@@ -15,6 +15,7 @@ import watchReturnOrderTransaction from './continuous/watchReturnOrderTransactio
 import aggregateEventReservations from './continuous/aggregateEventReservations/run';
 import cancelCreditCard from './continuous/cancelCreditCard/run';
 import cancelSeatReservation from './continuous/cancelSeatReservation/run';
+import confirmReservation from './continuous/confirmReservation/run';
 import createPlaceOrderReport from './continuous/createPlaceOrderReport/run';
 import createReturnOrderReport from './continuous/createReturnOrderReport/run';
 import payCreditCard from './continuous/payCreditCard/run';
@@ -22,6 +23,7 @@ import placeOrder from './continuous/placeOrder/run';
 import returnOrder from './continuous/returnOrder/run';
 import returnOrdersByPerformance from './continuous/returnOrdersByPerformance/run';
 import sendEmailNotification from './continuous/sendEmailNotification/run';
+import sendOrder from './continuous/sendOrder/run';
 import settleSeatReservation from './continuous/settleSeatReservation/run';
 import triggerWebhook from './continuous/triggerWebhook/run';
 import updateOrderReportByReservation from './continuous/updateOrderReportByReservation/run';
@@ -48,6 +50,7 @@ export default async () => {
     await aggregateEventReservations({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await cancelCreditCard({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await cancelSeatReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    await confirmReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await createPlaceOrderReport({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await createReturnOrderReport({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await payCreditCard({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
@@ -55,6 +58,7 @@ export default async () => {
     await returnOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await returnOrdersByPerformance({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await sendEmailNotification({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    await sendOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await settleSeatReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await triggerWebhook({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await updateOrderReportByReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
