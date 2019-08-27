@@ -52,7 +52,7 @@ export default async (params: {
 
             try {
                 await ttts.service.task.executeByName({
-                    name: ttts.factory.taskName.CancelCreditCard
+                    name: <any>ttts.factory.cinerino.taskName.CancelCreditCard
                 })({
                     connection: connection,
                     redisClient: redisClient

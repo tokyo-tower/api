@@ -45,6 +45,7 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const invoiceRepo = new ttts.repository.Invoice(mongoose.connection);
         const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
         // 取引を検索する
         // 注文番号フォーマット: `TT-${req.body.performance_day.slice(-6)}-${req.body.payment_no}`
@@ -74,7 +75,10 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
             cancellationFee: req.body.cancellation_fee,
             forcibly: req.body.forcibly,
             reason: ttts.factory.transaction.returnOrder.Reason.Customer
-        })(transactionRepo);
+        })({
+            invoice: invoiceRepo,
+            transaction: transactionRepo
+        });
         debug('returnOrder transaction confirmed.');
         res.status(http_status_1.CREATED)
             .json({

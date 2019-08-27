@@ -204,16 +204,15 @@ reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.c
             checkin: checkin
         });
         // レポート更新タスク作成
-        const taskAttributes = ttts.factory.task.updateOrderReportByReservation.createAttributes({
+        const taskAttributes = {
+            name: ttts.factory.taskName.UpdateOrderReportByReservation,
             status: ttts.factory.taskStatus.Ready,
             runsAt: new Date(),
             remainingNumberOfTries: 3,
-            // tslint:disable-next-line:no-null-keyword
-            lastTriedAt: null,
             numberOfTried: 0,
             executionResults: [],
             data: { reservation: reservation }
-        });
+        };
         yield taskRepo.save(taskAttributes);
         // 集計タスク作成
         const aggregateTask = {
@@ -221,8 +220,6 @@ reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.c
             status: ttts.factory.taskStatus.Ready,
             runsAt: new Date(),
             remainingNumberOfTries: 3,
-            // tslint:disable-next-line:no-null-keyword
-            lastTriedAt: null,
             numberOfTried: 0,
             executionResults: [],
             data: { id: reservation.reservationFor.id }
@@ -266,16 +263,15 @@ reservationsRouter.delete('/:id/checkins/:when', permitScopes_1.default(['reserv
             checkin: checkin
         });
         // レポート更新タスク作成
-        const taskAttributes = ttts.factory.task.updateOrderReportByReservation.createAttributes({
+        const taskAttributes = {
+            name: ttts.factory.taskName.UpdateOrderReportByReservation,
             status: ttts.factory.taskStatus.Ready,
             runsAt: new Date(),
             remainingNumberOfTries: 3,
-            // tslint:disable-next-line:no-null-keyword
-            lastTriedAt: null,
             numberOfTried: 0,
             executionResults: [],
             data: { reservation: reservation }
-        });
+        };
         yield taskRepo.save(taskAttributes);
         // 集計タスク作成
         const aggregateTask = {
@@ -283,8 +279,6 @@ reservationsRouter.delete('/:id/checkins/:when', permitScopes_1.default(['reserv
             status: ttts.factory.taskStatus.Ready,
             runsAt: new Date(),
             remainingNumberOfTries: 3,
-            // tslint:disable-next-line:no-null-keyword
-            lastTriedAt: null,
             numberOfTried: 0,
             executionResults: [],
             data: { id: reservation.reservationFor.id }
