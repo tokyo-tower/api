@@ -245,26 +245,23 @@ reservationsRouter.post(
             });
 
             // レポート更新タスク作成
-            const taskAttributes = ttts.factory.task.updateOrderReportByReservation.createAttributes({
+            const taskAttributes: ttts.factory.task.updateOrderReportByReservation.IAttributes = {
+                name: <any>ttts.factory.taskName.UpdateOrderReportByReservation,
                 status: ttts.factory.taskStatus.Ready,
                 runsAt: new Date(),
                 remainingNumberOfTries: 3,
-                // tslint:disable-next-line:no-null-keyword
-                lastTriedAt: null,
                 numberOfTried: 0,
                 executionResults: [],
                 data: { reservation: reservation }
-            });
+            };
             await taskRepo.save(<any>taskAttributes);
 
             // 集計タスク作成
             const aggregateTask: ttts.factory.task.aggregateEventReservations.IAttributes = {
-                name: ttts.factory.taskName.AggregateEventReservations,
+                name: <any>ttts.factory.taskName.AggregateEventReservations,
                 status: ttts.factory.taskStatus.Ready,
                 runsAt: new Date(),
                 remainingNumberOfTries: 3,
-                // tslint:disable-next-line:no-null-keyword
-                lastTriedAt: null,
                 numberOfTried: 0,
                 executionResults: [],
                 data: { id: reservation.reservationFor.id }
@@ -316,26 +313,23 @@ reservationsRouter.delete(
             });
 
             // レポート更新タスク作成
-            const taskAttributes = ttts.factory.task.updateOrderReportByReservation.createAttributes({
+            const taskAttributes: ttts.factory.task.updateOrderReportByReservation.IAttributes = {
+                name: <any>ttts.factory.taskName.UpdateOrderReportByReservation,
                 status: ttts.factory.taskStatus.Ready,
                 runsAt: new Date(),
                 remainingNumberOfTries: 3,
-                // tslint:disable-next-line:no-null-keyword
-                lastTriedAt: null,
                 numberOfTried: 0,
                 executionResults: [],
                 data: { reservation: reservation }
-            });
+            };
             await taskRepo.save(<any>taskAttributes);
 
             // 集計タスク作成
             const aggregateTask: ttts.factory.task.aggregateEventReservations.IAttributes = {
-                name: ttts.factory.taskName.AggregateEventReservations,
+                name: <any>ttts.factory.taskName.AggregateEventReservations,
                 status: ttts.factory.taskStatus.Ready,
                 runsAt: new Date(),
                 remainingNumberOfTries: 3,
-                // tslint:disable-next-line:no-null-keyword
-                lastTriedAt: null,
                 numberOfTried: 0,
                 executionResults: [],
                 data: { id: reservation.reservationFor.id }

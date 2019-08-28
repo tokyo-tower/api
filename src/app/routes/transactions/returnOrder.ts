@@ -46,6 +46,7 @@ returnOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
+            const invoiceRepo = new ttts.repository.Invoice(mongoose.connection);
             const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
 
             // 取引を検索する
@@ -78,7 +79,10 @@ returnOrderTransactionsRouter.post(
                 cancellationFee: req.body.cancellation_fee,
                 forcibly: req.body.forcibly,
                 reason: ttts.factory.transaction.returnOrder.Reason.Customer
-            })(transactionRepo);
+            })({
+                invoice: invoiceRepo,
+                transaction: transactionRepo
+            });
             debug('returnOrder transaction confirmed.');
 
             res.status(CREATED)

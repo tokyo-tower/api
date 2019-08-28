@@ -61,7 +61,7 @@ ordersRouter.post(
             const orderRepo = new ttts.repository.Order(mongoose.connection);
             let order: ttts.factory.order.IOrder | undefined;
 
-            const orders = <ttts.factory.order.IOrder[]>await orderRepo.search({
+            const orders = await orderRepo.search({
                 limit: 1,
                 sort: { orderDate: ttts.factory.sortType.Descending },
                 customer: { telephone: `${escapeRegExp(key.telephone)}$` },
@@ -76,7 +76,7 @@ ordersRouter.post(
             order.acceptedOffers = order.acceptedOffers
                 // 余分確保分を除く
                 .filter((o) => {
-                    const reservation = o.itemOffered;
+                    const reservation = <ttts.factory.order.IReservation>o.itemOffered;
                     let extraProperty: ttts.factory.propertyValue.IPropertyValue<string> | undefined;
                     if (reservation.additionalProperty !== undefined) {
                         extraProperty = reservation.additionalProperty.find((p) => p.name === 'extra');
@@ -90,13 +90,13 @@ ordersRouter.post(
                 .map((o) => {
                     return {
                         ...o,
-                        itemOffered: tttsReservation2chevre(o.itemOffered)
+                        itemOffered: tttsReservation2chevre(<ttts.factory.order.IReservation>o.itemOffered)
                     };
                 });
 
             // 印刷トークンを発行
             const tokenRepo = new ttts.repository.Token(redisClient);
-            const reservationIds = order.acceptedOffers.map((o) => o.itemOffered.id);
+            const reservationIds = order.acceptedOffers.map((o) => (<ttts.factory.order.IReservation>o.itemOffered).id);
             const printToken = await tokenRepo.createPrintToken(reservationIds);
 
             res.json({

@@ -212,12 +212,10 @@ export async function main(connection: mongoose.Connection): Promise<void> {
 
                 // 集計タスク作成
                 const aggregateTask: ttts.factory.task.aggregateEventReservations.IAttributes = {
-                    name: ttts.factory.taskName.AggregateEventReservations,
+                    name: <any>ttts.factory.taskName.AggregateEventReservations,
                     status: ttts.factory.taskStatus.Ready,
                     runsAt: new Date(),
                     remainingNumberOfTries: 3,
-                    // tslint:disable-next-line:no-null-keyword
-                    lastTriedAt: null,
                     numberOfTried: 0,
                     executionResults: [],
                     data: { id: performance.id }

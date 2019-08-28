@@ -33,7 +33,7 @@ export default async (_: {
 
             try {
                 await ttts.service.task.executeByName({
-                    name: ttts.factory.taskName.TriggerWebhook
+                    name: <any>ttts.factory.cinerino.taskName.TriggerWebhook
                 })({
                     connection: connection,
                     redisClient: redisClient

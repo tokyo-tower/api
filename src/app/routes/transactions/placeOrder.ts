@@ -378,10 +378,21 @@ placeOrderTransactionsRouter.post(
                     0
                 );
 
+                let authorizingPaymentMethodType: string;
+                switch (paymentMethodType) {
+                    case ttts.factory.cinerino.paymentMethodType.Cash:
+                    case ttts.factory.cinerino.paymentMethodType.CreditCard:
+                        authorizingPaymentMethodType = paymentMethodType;
+                        break;
+
+                    default:
+                        authorizingPaymentMethodType = ttts.factory.cinerino.paymentMethodType.Others;
+                }
+
                 await ttts.service.payment.any.authorize({
                     agent: { id: req.user.sub },
                     object: {
-                        typeOf: paymentMethodType,
+                        typeOf: authorizingPaymentMethodType,
                         name: paymentMethodType,
                         additionalProperty: [],
                         amount: price
@@ -410,7 +421,7 @@ placeOrderTransactionsRouter.post(
             if (transactionResult !== undefined) {
                 transactionResult.order.acceptedOffers = transactionResult.order.acceptedOffers
                     .filter((o) => {
-                        const r = o.itemOffered;
+                        const r = <ttts.factory.order.IReservation>o.itemOffered;
                         // 余分確保分を除く
                         let extraProperty: ttts.factory.propertyValue.IPropertyValue<string> | undefined;
                         if (r.additionalProperty !== undefined) {
@@ -425,7 +436,7 @@ placeOrderTransactionsRouter.post(
                 // POSへ互換性維持のためにeventReservations属性を生成
                 (<any>transactionResult).eventReservations = transactionResult.order.acceptedOffers
                     .map((o) => {
-                        const r = o.itemOffered;
+                        const r = <ttts.factory.order.IReservation>o.itemOffered;
 
                         return <any>{
                             qr_str: r.id,
