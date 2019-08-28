@@ -61,7 +61,7 @@ ordersRouter.post(
             const orderRepo = new ttts.repository.Order(mongoose.connection);
             let order: ttts.factory.order.IOrder | undefined;
 
-            const orders = <ttts.factory.order.IOrder[]>await orderRepo.search({
+            const orders = await orderRepo.search({
                 limit: 1,
                 sort: { orderDate: ttts.factory.sortType.Descending },
                 customer: { telephone: `${escapeRegExp(key.telephone)}$` },
