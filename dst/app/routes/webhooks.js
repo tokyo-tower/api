@@ -16,7 +16,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const webhooksRouter = express.Router();
 const http_status_1 = require("http-status");
-webhooksRouter.get('/onPlaceOrder', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+webhooksRouter.post('/onPlaceOrder', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const order = req.body.data;
         if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {

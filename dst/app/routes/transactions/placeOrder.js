@@ -308,7 +308,6 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
                 }
             }
         })(transactionRepo, actionRepo, new ttts.repository.Token(redisClient), new ttts.repository.PaymentNo(redisClient));
-        debug('transaction confirmed.');
         // 余分確保予約を除いてレスポンスを返す
         if (transactionResult !== undefined) {
             transactionResult.order.acceptedOffers = transactionResult.order.acceptedOffers

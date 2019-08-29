@@ -9,7 +9,7 @@ const webhooksRouter = express.Router();
 
 import { NO_CONTENT } from 'http-status';
 
-webhooksRouter.get(
+webhooksRouter.post(
     '/onPlaceOrder',
     async (req, res, next) => {
         try {
