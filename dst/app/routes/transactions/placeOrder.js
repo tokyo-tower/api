@@ -277,6 +277,10 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
                     authorizingPaymentMethodType = paymentMethodType;
                     break;
                 default:
+                    // その他の決済方法を認められるのは代理予約だけ(管理者としてログインしているはず)
+                    if (req.user.client_id !== STAFF_CLIENT_ID || req.agent.memberOf === undefined) {
+                        throw new ttts.factory.errors.Argument('paymentMethod', `Invalid payment method for the client`);
+                    }
                     authorizingPaymentMethodType = ttts.factory.cinerino.paymentMethodType.Others;
             }
             yield ttts.service.payment.any.authorize({
