@@ -28,6 +28,7 @@ const tasks_1 = require("./routes/tasks");
 const placeOrder_1 = require("./routes/transactions/placeOrder");
 const returnOrder_1 = require("./routes/transactions/returnOrder");
 const userPools_1 = require("./routes/userPools");
+const webhooks_1 = require("./routes/webhooks");
 const app = express();
 const options = {
     origin: '*',
@@ -84,6 +85,7 @@ app.use('/tasks', tasks_1.default);
 app.use('/transactions/placeOrder', placeOrder_1.default);
 app.use('/transactions/returnOrder', returnOrder_1.default);
 app.use('/userPools', userPools_1.default);
+app.use('/webhooks', webhooks_1.default);
 // 404
 app.use(notFoundHandler_1.default);
 // error handlers

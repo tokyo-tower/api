@@ -30,6 +30,7 @@ import tasksRouter from './routes/tasks';
 import placeOrderTransactionsRouter from './routes/transactions/placeOrder';
 import returnOrderTransactionsRouter from './routes/transactions/returnOrder';
 import userPoolsRouter from './routes/userPools';
+import webhooksRouter from './routes/webhooks';
 
 const app = express();
 
@@ -93,6 +94,7 @@ app.use('/tasks', tasksRouter);
 app.use('/transactions/placeOrder', placeOrderTransactionsRouter);
 app.use('/transactions/returnOrder', returnOrderTransactionsRouter);
 app.use('/userPools', userPoolsRouter);
+app.use('/webhooks', webhooksRouter);
 
 // 404
 app.use(notFoundHandler);
