@@ -71,8 +71,10 @@ app.use((__, res, next) => {
 // app.set('views', `${__dirname}/views`);
 // app.set('view engine', 'ejs');
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ limit: '50mb' }));
+// The extended option allows to choose between parsing the URL-encoded data
+// with the querystring library (when false) or the qs library (when true).
+app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
 
 // ルーティング
