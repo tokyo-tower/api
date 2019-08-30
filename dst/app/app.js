@@ -28,6 +28,7 @@ const tasks_1 = require("./routes/tasks");
 const placeOrder_1 = require("./routes/transactions/placeOrder");
 const returnOrder_1 = require("./routes/transactions/returnOrder");
 const userPools_1 = require("./routes/userPools");
+const webhooks_1 = require("./routes/webhooks");
 const app = express();
 const options = {
     origin: '*',
@@ -62,8 +63,10 @@ app.use((__, res, next) => {
 // view engine setup
 // app.set('views', `${__dirname}/views`);
 // app.set('view engine', 'ejs');
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ limit: '50mb' }));
+// The extended option allows to choose between parsing the URL-encoded data
+// with the querystring library (when false) or the qs library (when true).
+app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
 // ルーティング
 app.use('/admins', admins_1.default);
@@ -84,6 +87,7 @@ app.use('/tasks', tasks_1.default);
 app.use('/transactions/placeOrder', placeOrder_1.default);
 app.use('/transactions/returnOrder', returnOrder_1.default);
 app.use('/userPools', userPools_1.default);
+app.use('/webhooks', webhooks_1.default);
 // 404
 app.use(notFoundHandler_1.default);
 // error handlers

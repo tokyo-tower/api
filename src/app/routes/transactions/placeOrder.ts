@@ -386,6 +386,11 @@ placeOrderTransactionsRouter.post(
                         break;
 
                     default:
+                        // その他の決済方法を認められるのは代理予約だけ(管理者としてログインしているはず)
+                        if (req.user.client_id !== STAFF_CLIENT_ID || req.agent.memberOf === undefined) {
+                            throw new ttts.factory.errors.Argument('paymentMethod', `Invalid payment method for the client`);
+                        }
+
                         authorizingPaymentMethodType = ttts.factory.cinerino.paymentMethodType.Others;
                 }
 
@@ -408,14 +413,22 @@ placeOrderTransactionsRouter.post(
             const transactionResult = await ttts.service.transaction.placeOrderInProgress.confirm({
                 agentId: req.user.sub,
                 transactionId: req.params.transactionId,
-                paymentMethod: paymentMethodType
+                paymentMethod: paymentMethodType,
+                potentialActions: {
+                    order: {
+                        potentialActions: {
+                            informOrder: [
+                                { recipient: { url: `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder` } }
+                            ]
+                        }
+                    }
+                }
             })(
                 transactionRepo,
                 actionRepo,
                 new ttts.repository.Token(redisClient),
                 new ttts.repository.PaymentNo(redisClient)
             );
-            debug('transaction confirmed.');
 
             // 余分確保予約を除いてレスポンスを返す
             if (transactionResult !== undefined) {

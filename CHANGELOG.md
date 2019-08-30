@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v21.4.0 - 2019-08-30
+
+### Changed
+
+- 注文レポート作成タスクを、注文後の通知アクション先で作成するように設計変更
+- 注文取引の決済方法に関するバリデーションをAPIアプリケーション側へ以降
+
 ## v21.3.0 - 2019-08-28
 
 ### Added
