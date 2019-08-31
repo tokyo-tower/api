@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 注文返品レポート作成タスクを、注文返品後の通知アクション先で作成するように設計変更
+
 ### Deprecated
 
 ### Removed
