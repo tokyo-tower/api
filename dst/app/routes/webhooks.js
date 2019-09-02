@@ -21,27 +21,43 @@ webhooksRouter.post('/onPlaceOrder', (req, res, next) => __awaiter(this, void 0,
         const order = req.body.data;
         if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
             const taskRepo = new ttts.repository.Task(mongoose.connection);
-            const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
-            const transactions = yield transactionRepo.search({
-                limit: 1,
-                typeOf: ttts.factory.transactionType.PlaceOrder,
-                result: { order: { orderNumbers: [order.orderNumber] } }
-            });
-            const transaction = transactions.shift();
-            if (transaction !== undefined) {
-                const taskAttribute = {
-                    name: ttts.factory.taskName.CreatePlaceOrderReport,
-                    status: ttts.factory.taskStatus.Ready,
-                    runsAt: new Date(),
-                    remainingNumberOfTries: 10,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transaction: transaction
-                    }
-                };
-                yield taskRepo.save(taskAttribute);
-            }
+            const taskAttribute = {
+                name: ttts.factory.taskName.CreatePlaceOrderReport,
+                status: ttts.factory.taskStatus.Ready,
+                runsAt: new Date(),
+                remainingNumberOfTries: 10,
+                numberOfTried: 0,
+                executionResults: [],
+                data: {
+                    order: order
+                }
+            };
+            yield taskRepo.save(taskAttribute);
+        }
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const order = req.body.data;
+        if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
+            const taskRepo = new ttts.repository.Task(mongoose.connection);
+            const taskAttribute = {
+                name: ttts.factory.taskName.CreateReturnOrderReport,
+                status: ttts.factory.taskStatus.Ready,
+                runsAt: new Date(),
+                remainingNumberOfTries: 10,
+                numberOfTried: 0,
+                executionResults: [],
+                data: {
+                    order: order
+                }
+            };
+            yield taskRepo.save(taskAttribute);
         }
         res.status(http_status_1.NO_CONTENT)
             .end();

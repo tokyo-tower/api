@@ -74,7 +74,16 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
             transactionId: placeOrderTransaction.id,
             cancellationFee: req.body.cancellation_fee,
             forcibly: req.body.forcibly,
-            reason: ttts.factory.transaction.returnOrder.Reason.Customer
+            reason: ttts.factory.transaction.returnOrder.Reason.Customer,
+            potentialActions: {
+                returnOrder: {
+                    potentialActions: {
+                        informOrder: [
+                            { recipient: { url: `${req.protocol}://${req.hostname}/webhooks/onReturnOrder` } }
+                        ]
+                    }
+                }
+            }
         })({
             invoice: invoiceRepo,
             transaction: transactionRepo
