@@ -9,20 +9,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 注文取引ルーター
+ * 注文返品取引ルーター
  */
 const ttts = require("@tokyotower/domain");
-const createDebug = require("debug");
 const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
+const PROJECT_ID = process.env.PROJECT_ID;
 const returnOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
-const debug = createDebug('ttts-api:returnOrderTransactionsRouter');
 returnOrderTransactionsRouter.use(authentication_1.default);
 /**
  * 上映日と購入番号で返品
@@ -46,27 +45,29 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const invoiceRepo = new ttts.repository.Invoice(mongoose.connection);
+        const orderRepo = new ttts.repository.Order(mongoose.connection);
         const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
-        // 取引を検索する
-        // 注文番号フォーマット: `TT-${req.body.performance_day.slice(-6)}-${req.body.payment_no}`
-        const conditions = {
-            typeOf: ttts.factory.transactionType.PlaceOrder,
-            'result.order.orderNumber': {
-                $exists: true,
-                // tslint:disable-next-line:no-magic-numbers
-                $eq: `TT-${req.body.performance_day.slice(-6)}-${req.body.payment_no}`
-            }
-        };
-        debug('searching a transaction...', conditions);
-        const placeOrderTransaction = yield transactionRepo.transactionModel.findOne(conditions)
-            .exec()
-            .then((doc) => {
-            if (doc === null) {
-                throw new ttts.factory.errors.NotFound('transaction');
-            }
-            return doc.toObject();
+        // 確認番号で注文検索
+        const confirmationNumber = `${req.body.performance_day}${req.body.payment_no}`;
+        const orders = yield orderRepo.search({
+            limit: 1,
+            confirmationNumbers: [confirmationNumber],
+            project: { ids: [PROJECT_ID] }
         });
-        debug('placeOrder transaction found.');
+        const order = orders.shift();
+        if (order === undefined) {
+            throw new ttts.factory.errors.NotFound('Order');
+        }
+        // 注文取引を検索する
+        const placeOrderTransactions = yield transactionRepo.search({
+            limit: 1,
+            typeOf: ttts.factory.transactionType.PlaceOrder,
+            result: { order: { orderNumbers: [order.orderNumber] } }
+        });
+        const placeOrderTransaction = placeOrderTransactions.shift();
+        if (placeOrderTransaction === undefined) {
+            throw new ttts.factory.errors.NotFound('Transaction');
+        }
         // 取引があれば、返品取引確定
         const returnOrderTransaction = yield ttts.service.transaction.returnOrder.confirm({
             clientUser: req.user,
@@ -88,7 +89,6 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
             invoice: invoiceRepo,
             transaction: transactionRepo
         });
-        debug('returnOrder transaction confirmed.');
         res.status(http_status_1.CREATED)
             .json({
             id: returnOrderTransaction.id

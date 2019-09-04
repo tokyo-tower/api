@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - 予約確定時の予約者属性とポストアクションをカスタムできるように調整
 - SettleSeatReservationタスクを廃止
+- 注文番号をCinerino化
 
 ### Deprecated
 
