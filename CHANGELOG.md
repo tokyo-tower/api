@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 予約確定時の予約者属性とポストアクションをカスタムできるように調整
+
 ### Deprecated
 
 ### Removed
