@@ -79,27 +79,35 @@ webhooksRouter.post('/onReservationConfirmed', (req, res, next) => __awaiter(thi
             && typeof reservation.reservationNumber === 'string') {
             const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
             const taskRepo = new ttts.repository.Task(mongoose.connection);
-            // 予約データを作成する
-            const tttsResevation = Object.assign({}, reservation, { reservationFor: Object.assign({}, reservation.reservationFor, { doorTime: (reservation.reservationFor.doorTime !== undefined)
-                        ? moment(reservation.reservationFor.doorTime)
-                            .toDate()
-                        : undefined, endDate: moment(reservation.reservationFor.endDate)
-                        .toDate(), startDate: moment(reservation.reservationFor.startDate)
-                        .toDate() }), checkins: [] });
-            yield reservationRepo.saveEventReservation(tttsResevation);
-            // 集計タスク作成
-            const task = {
-                name: ttts.factory.taskName.AggregateEventReservations,
-                status: ttts.factory.taskStatus.Ready,
-                runsAt: new Date(),
-                remainingNumberOfTries: 3,
-                numberOfTried: 0,
-                executionResults: [],
-                data: {
-                    id: reservation.reservationFor.id
-                }
-            };
-            yield taskRepo.save(task);
+            // 余分確保分を除く
+            let extraProperty;
+            if (reservation.additionalProperty !== undefined) {
+                extraProperty = reservation.additionalProperty.find((p) => p.name === 'extra');
+            }
+            const isExtra = extraProperty !== undefined && extraProperty.value === '1';
+            if (!isExtra) {
+                // 余分確保分でなければ予約データを作成する
+                const tttsResevation = Object.assign({}, reservation, { reservationFor: Object.assign({}, reservation.reservationFor, { doorTime: (reservation.reservationFor.doorTime !== undefined)
+                            ? moment(reservation.reservationFor.doorTime)
+                                .toDate()
+                            : undefined, endDate: moment(reservation.reservationFor.endDate)
+                            .toDate(), startDate: moment(reservation.reservationFor.startDate)
+                            .toDate() }), checkins: [] });
+                yield reservationRepo.saveEventReservation(tttsResevation);
+                // 集計タスク作成
+                const task = {
+                    name: ttts.factory.taskName.AggregateEventReservations,
+                    status: ttts.factory.taskStatus.Ready,
+                    runsAt: new Date(),
+                    remainingNumberOfTries: 3,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        id: reservation.reservationFor.id
+                    }
+                };
+                yield taskRepo.save(task);
+            }
         }
         res.status(http_status_1.NO_CONTENT)
             .end();

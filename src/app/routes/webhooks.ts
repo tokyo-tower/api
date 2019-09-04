@@ -91,37 +91,46 @@ webhooksRouter.post(
                 const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
                 const taskRepo = new ttts.repository.Task(mongoose.connection);
 
-                // 予約データを作成する
-                const tttsResevation: ttts.factory.reservation.event.IReservation = {
-                    ...reservation,
-                    reservationFor: {
-                        ...reservation.reservationFor,
-                        doorTime: (reservation.reservationFor.doorTime !== undefined)
-                            ? moment(reservation.reservationFor.doorTime)
-                                .toDate()
-                            : undefined,
-                        endDate: moment(reservation.reservationFor.endDate)
-                            .toDate(),
-                        startDate: moment(reservation.reservationFor.startDate)
-                            .toDate()
-                    },
-                    checkins: []
-                };
-                await reservationRepo.saveEventReservation(tttsResevation);
+                // 余分確保分を除く
+                let extraProperty: ttts.factory.propertyValue.IPropertyValue<string> | undefined;
+                if (reservation.additionalProperty !== undefined) {
+                    extraProperty = reservation.additionalProperty.find((p) => p.name === 'extra');
+                }
+                const isExtra = extraProperty !== undefined && extraProperty.value === '1';
 
-                // 集計タスク作成
-                const task: ttts.factory.task.aggregateEventReservations.IAttributes = {
-                    name: <any>ttts.factory.taskName.AggregateEventReservations,
-                    status: ttts.factory.taskStatus.Ready,
-                    runsAt: new Date(),
-                    remainingNumberOfTries: 3,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        id: reservation.reservationFor.id
-                    }
-                };
-                await taskRepo.save(<any>task);
+                if (!isExtra) {
+                    // 余分確保分でなければ予約データを作成する
+                    const tttsResevation: ttts.factory.reservation.event.IReservation = {
+                        ...reservation,
+                        reservationFor: {
+                            ...reservation.reservationFor,
+                            doorTime: (reservation.reservationFor.doorTime !== undefined)
+                                ? moment(reservation.reservationFor.doorTime)
+                                    .toDate()
+                                : undefined,
+                            endDate: moment(reservation.reservationFor.endDate)
+                                .toDate(),
+                            startDate: moment(reservation.reservationFor.startDate)
+                                .toDate()
+                        },
+                        checkins: []
+                    };
+                    await reservationRepo.saveEventReservation(tttsResevation);
+
+                    // 集計タスク作成
+                    const task: ttts.factory.task.aggregateEventReservations.IAttributes = {
+                        name: <any>ttts.factory.taskName.AggregateEventReservations,
+                        status: ttts.factory.taskStatus.Ready,
+                        runsAt: new Date(),
+                        remainingNumberOfTries: 3,
+                        numberOfTried: 0,
+                        executionResults: [],
+                        data: {
+                            id: reservation.reservationFor.id
+                        }
+                    };
+                    await taskRepo.save(<any>task);
+                }
             }
 
             res.status(NO_CONTENT)
