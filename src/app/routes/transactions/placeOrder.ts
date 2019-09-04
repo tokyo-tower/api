@@ -480,7 +480,7 @@ placeOrderTransactionsRouter.post(
                         confirmationNumber: confirmationNumber
                     }
                 }
-            })(<any>{
+            })({
                 action: actionRepo,
                 orderNumber: orderNumberRepo,
                 token: tokenRepo,

@@ -13,6 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const ttts = require("@tokyotower/domain");
 const express = require("express");
+const moment = require("moment");
 const mongoose = require("mongoose");
 const webhooksRouter = express.Router();
 const http_status_1 = require("http-status");
@@ -79,7 +80,13 @@ webhooksRouter.post('/onReservationConfirmed', (req, res, next) => __awaiter(thi
             const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
             const taskRepo = new ttts.repository.Task(mongoose.connection);
             // 予約データを作成する
-            yield reservationRepo.saveEventReservation(Object.assign({}, reservation, { checkins: [] }));
+            const tttsResevation = Object.assign({}, reservation, { reservationFor: Object.assign({}, reservation.reservationFor, { doorTime: (reservation.reservationFor.doorTime !== undefined)
+                        ? moment(reservation.reservationFor.doorTime)
+                            .toDate()
+                        : undefined, endDate: moment(reservation.reservationFor.endDate)
+                        .toDate(), startDate: moment(reservation.reservationFor.startDate)
+                        .toDate() }), checkins: [] });
+            yield reservationRepo.saveEventReservation(tttsResevation);
             // 集計タスク作成
             const task = {
                 name: ttts.factory.taskName.AggregateEventReservations,

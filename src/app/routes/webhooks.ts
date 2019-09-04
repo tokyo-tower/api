@@ -3,6 +3,7 @@
  */
 import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
+import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 const webhooksRouter = express.Router();
@@ -80,7 +81,8 @@ webhooksRouter.post(
     '/onReservationConfirmed',
     async (req, res, next) => {
         try {
-            const reservation = req.body.data;
+            const reservation =
+                <ttts.factory.chevre.reservation.IReservation<ttts.factory.chevre.reservationType.EventReservation>>req.body.data;
 
             if (reservation !== undefined
                 && reservation !== null
@@ -90,10 +92,22 @@ webhooksRouter.post(
                 const taskRepo = new ttts.repository.Task(mongoose.connection);
 
                 // 予約データを作成する
-                await reservationRepo.saveEventReservation({
+                const tttsResevation: ttts.factory.reservation.event.IReservation = {
                     ...reservation,
+                    reservationFor: {
+                        ...reservation.reservationFor,
+                        doorTime: (reservation.reservationFor.doorTime !== undefined)
+                            ? moment(reservation.reservationFor.doorTime)
+                                .toDate()
+                            : undefined,
+                        endDate: moment(reservation.reservationFor.endDate)
+                            .toDate(),
+                        startDate: moment(reservation.reservationFor.startDate)
+                            .toDate()
+                    },
                     checkins: []
-                });
+                };
+                await reservationRepo.saveEventReservation(tttsResevation);
 
                 // 集計タスク作成
                 const task: ttts.factory.task.aggregateEventReservations.IAttributes = {
