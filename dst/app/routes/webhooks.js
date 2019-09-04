@@ -72,7 +72,10 @@ webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(this, void 0
 webhooksRouter.post('/onReservationConfirmed', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const reservation = req.body.data;
-        if (reservation !== undefined && reservation !== null && typeof reservation.reservationNumber === 'string') {
+        if (reservation !== undefined
+            && reservation !== null
+            && typeof reservation.id === 'string'
+            && typeof reservation.reservationNumber === 'string') {
             const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
             const taskRepo = new ttts.repository.Task(mongoose.connection);
             // 予約データを作成する
