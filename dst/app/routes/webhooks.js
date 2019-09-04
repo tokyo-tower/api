@@ -66,4 +66,36 @@ webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(this, void 0
         next(error);
     }
 }));
+/**
+ * 予約確定イベント
+ */
+webhooksRouter.post('/onReservationConfirmed', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const reservation = req.body.data;
+        if (reservation !== undefined && reservation !== null && typeof reservation.reservationNumber === 'string') {
+            const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
+            const taskRepo = new ttts.repository.Task(mongoose.connection);
+            // 予約データを作成する
+            yield reservationRepo.saveEventReservation(Object.assign({}, reservation, { checkins: [] }));
+            // 集計タスク作成
+            const task = {
+                name: ttts.factory.taskName.AggregateEventReservations,
+                status: ttts.factory.taskStatus.Ready,
+                runsAt: new Date(),
+                remainingNumberOfTries: 3,
+                numberOfTried: 0,
+                executionResults: [],
+                data: {
+                    id: reservation.reservationFor.id
+                }
+            };
+            yield taskRepo.save(task);
+        }
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 exports.default = webhooksRouter;

@@ -73,4 +73,49 @@ webhooksRouter.post(
     }
 );
 
+/**
+ * 予約確定イベント
+ */
+webhooksRouter.post(
+    '/onReservationConfirmed',
+    async (req, res, next) => {
+        try {
+            const reservation = req.body.data;
+
+            if (reservation !== undefined
+                && reservation !== null
+                && typeof reservation.id === 'string'
+                && typeof reservation.reservationNumber === 'string') {
+                const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
+                const taskRepo = new ttts.repository.Task(mongoose.connection);
+
+                // 予約データを作成する
+                await reservationRepo.saveEventReservation({
+                    ...reservation,
+                    checkins: []
+                });
+
+                // 集計タスク作成
+                const task: ttts.factory.task.aggregateEventReservations.IAttributes = {
+                    name: <any>ttts.factory.taskName.AggregateEventReservations,
+                    status: ttts.factory.taskStatus.Ready,
+                    runsAt: new Date(),
+                    remainingNumberOfTries: 3,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        id: reservation.reservationFor.id
+                    }
+                };
+                await taskRepo.save(<any>task);
+            }
+
+            res.status(NO_CONTENT)
+                .end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 export default webhooksRouter;

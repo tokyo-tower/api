@@ -14,6 +14,8 @@ import * as mongoose from 'mongoose';
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const POS_CLIENT_ID = <string>process.env.POS_CLIENT_ID;
 const STAFF_CLIENT_ID = <string>process.env.STAFF_CLIENT_ID;
+const PROJECT_ID = <string>process.env.PROJECT_ID;
+const TELEMETRY_API_ENDPOINT = <string>process.env.TELEMETRY_API_ENDPOINT;
 
 const placeOrderTransactionsRouter = Router();
 
@@ -264,7 +266,7 @@ placeOrderTransactionsRouter.post(
 
             debug('authorizing credit card...', req.body.creditCard);
             const action = await ttts.service.payment.creditCard.authorize({
-                project: { id: <string>process.env.PROJECT_ID },
+                project: { id: PROJECT_ID },
                 agent: { id: req.user.sub },
                 object: {
                     typeOf: ttts.factory.cinerino.paymentMethodType.CreditCard,
@@ -350,23 +352,23 @@ placeOrderTransactionsRouter.post(
             const actionRepo = new ttts.repository.Action(mongoose.connection);
             const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
 
+            const authorizeActions = await actionRepo.searchByPurpose({
+                typeOf: ttts.factory.actionType.AuthorizeAction,
+                purpose: {
+                    typeOf: ttts.factory.transactionType.PlaceOrder,
+                    id: req.params.transactionId
+                }
+            });
+            const seatReservationAuthorizeAction = <ttts.factory.action.authorize.seatReservation.IAction>
+                authorizeActions
+                    .filter((a) => a.actionStatus === ttts.factory.actionStatusType.CompletedActionStatus)
+                    .find((a) => a.object.typeOf === ttts.factory.action.authorize.seatReservation.ObjectType.SeatReservation);
+            const authorizeSeatReservationResult = <ttts.factory.action.authorize.seatReservation.IResult>
+                seatReservationAuthorizeAction.result;
+            const tmpReservations = authorizeSeatReservationResult.tmpReservations;
+
             // クライアントがPOSあるいは内部予約の場合、決済方法承認アクションを自動生成
             if (req.user.client_id === POS_CLIENT_ID || req.user.client_id === STAFF_CLIENT_ID) {
-                const authorizeActions = await actionRepo.searchByPurpose({
-                    typeOf: ttts.factory.actionType.AuthorizeAction,
-                    purpose: {
-                        typeOf: ttts.factory.transactionType.PlaceOrder,
-                        id: req.params.transactionId
-                    }
-                });
-                const seatReservationAuthorizeAction = <ttts.factory.action.authorize.seatReservation.IAction>
-                    authorizeActions
-                        .filter((a) => a.actionStatus === ttts.factory.actionStatusType.CompletedActionStatus)
-                        .find((a) => a.object.typeOf === ttts.factory.action.authorize.seatReservation.ObjectType.SeatReservation);
-                const authorizeSeatReservationResult = <ttts.factory.action.authorize.seatReservation.IResult>
-                    seatReservationAuthorizeAction.result;
-                const tmpReservations = authorizeSeatReservationResult.tmpReservations;
-
                 const price: number = tmpReservations.reduce(
                     (a, b) => {
                         const unitPrice = (b.reservedTicket.ticketType.priceSpecification !== undefined)
@@ -410,6 +412,41 @@ placeOrderTransactionsRouter.post(
                 });
             }
 
+            const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`;
+            const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationConfirmed`;
+            const lineNotifyUrl = `${TELEMETRY_API_ENDPOINT}/organizations/project/${PROJECT_ID}/lineNotify`;
+
+            // 予約確定パラメータを生成
+            const confirmReservationParams: ttts.factory.transaction.placeOrder.IConfirmReservationParams[] = [];
+            const reserveTransaction = authorizeSeatReservationResult.responseBody;
+            if (reserveTransaction !== undefined) {
+                confirmReservationParams.push({
+                    object: {
+                        typeOf: reserveTransaction.typeOf,
+                        id: reserveTransaction.id,
+                        // object?: {
+                        //     reservations: IConfirmingReservation[];
+                        // };
+                        potentialActions: {
+                            reserve: {
+                                potentialActions: {
+                                    informReservation: [
+                                        { recipient: { url: lineNotifyUrl } },
+                                        { recipient: { url: informReservationUrl } }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 注文通知パラメータを生成
+            const informOrderParams: ttts.factory.transaction.placeOrder.IConfirmInformOrderParams[] = [
+                { recipient: { url: lineNotifyUrl } },
+                { recipient: { url: informOrderUrl } }
+            ];
+
             const transactionResult = await ttts.service.transaction.placeOrderInProgress.confirm({
                 agentId: req.user.sub,
                 transactionId: req.params.transactionId,
@@ -417,9 +454,12 @@ placeOrderTransactionsRouter.post(
                 potentialActions: {
                     order: {
                         potentialActions: {
-                            informOrder: [
-                                { recipient: { url: `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder` } }
-                            ]
+                            sendOrder: {
+                                potentialActions: {
+                                    confirmReservation: confirmReservationParams
+                                }
+                            },
+                            informOrder: informOrderParams
                         }
                     }
                 }
