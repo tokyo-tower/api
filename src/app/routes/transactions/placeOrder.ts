@@ -347,7 +347,6 @@ placeOrderTransactionsRouter.post(
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
-            const now = new Date();
             const paymentMethodType = req.body.payment_method;
 
             const actionRepo = new ttts.repository.Action(mongoose.connection);
@@ -459,6 +458,8 @@ placeOrderTransactionsRouter.post(
             const paymentNo = await paymentNoRepo.publish(eventStartDateStr);
             const confirmationNumber: string = `${eventStartDateStr}${paymentNo}`;
 
+            const orderDate = new Date();
+
             const transactionResult = await ttts.service.transaction.placeOrderInProgress.confirm({
                 agent: { id: req.user.sub },
                 id: req.params.transactionId,
@@ -476,7 +477,7 @@ placeOrderTransactionsRouter.post(
                 },
                 result: {
                     order: {
-                        orderDate: now,
+                        orderDate: orderDate,
                         confirmationNumber: confirmationNumber
                     }
                 }
