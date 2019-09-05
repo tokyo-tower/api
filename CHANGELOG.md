@@ -10,12 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 予約確定時の予約者属性とポストアクションをカスタムできるように調整
-- SettleSeatReservationタスクを廃止
-- 注文番号をCinerino化
-- Eメール送信タスクをCinerino化
-- 通知サービスをCinerino化
-
 ### Deprecated
 
 ### Removed
@@ -23,6 +17,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v21.6.0 - 2019-09-05
+
+### Changed
+
+- 予約確定時の予約者属性とポストアクションをカスタムできるように調整
+- SettleSeatReservationタスクを廃止
+- 注文番号をCinerino化
+- Eメール送信タスクをCinerino化
+- 通知サービスをCinerino化
 
 ## v21.5.0 - 2019-09-02
 
