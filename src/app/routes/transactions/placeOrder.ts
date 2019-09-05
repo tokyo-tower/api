@@ -14,7 +14,6 @@ const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const POS_CLIENT_ID = <string>process.env.POS_CLIENT_ID;
 const STAFF_CLIENT_ID = <string>process.env.STAFF_CLIENT_ID;
 const PROJECT_ID = <string>process.env.PROJECT_ID;
-const TELEMETRY_API_ENDPOINT = <string>process.env.TELEMETRY_API_ENDPOINT;
 
 const placeOrderTransactionsRouter = Router();
 
@@ -417,7 +416,6 @@ placeOrderTransactionsRouter.post(
 
             const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`;
             const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationConfirmed`;
-            const lineNotifyUrl = `${TELEMETRY_API_ENDPOINT}/organizations/project/${PROJECT_ID}/lineNotify`;
 
             // 予約確定パラメータを生成
             const confirmReservationParams: ttts.factory.transaction.placeOrder.IConfirmReservationParams[] = [];
@@ -434,7 +432,6 @@ placeOrderTransactionsRouter.post(
                             reserve: {
                                 potentialActions: {
                                     informReservation: [
-                                        { recipient: { url: lineNotifyUrl } },
                                         { recipient: { url: informReservationUrl } }
                                     ]
                                 }
@@ -446,7 +443,6 @@ placeOrderTransactionsRouter.post(
 
             // 注文通知パラメータを生成
             const informOrderParams: ttts.factory.transaction.placeOrder.IConfirmInformOrderParams[] = [
-                { recipient: { url: lineNotifyUrl } },
                 { recipient: { url: informOrderUrl } }
             ];
 

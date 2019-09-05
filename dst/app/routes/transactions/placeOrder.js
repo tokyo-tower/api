@@ -23,7 +23,6 @@ const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const POS_CLIENT_ID = process.env.POS_CLIENT_ID;
 const STAFF_CLIENT_ID = process.env.STAFF_CLIENT_ID;
 const PROJECT_ID = process.env.PROJECT_ID;
-const TELEMETRY_API_ENDPOINT = process.env.TELEMETRY_API_ENDPOINT;
 const placeOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
@@ -304,7 +303,6 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         }
         const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`;
         const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationConfirmed`;
-        const lineNotifyUrl = `${TELEMETRY_API_ENDPOINT}/organizations/project/${PROJECT_ID}/lineNotify`;
         // 予約確定パラメータを生成
         const confirmReservationParams = [];
         const reserveTransaction = authorizeSeatReservationResult.responseBody;
@@ -320,7 +318,6 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
                         reserve: {
                             potentialActions: {
                                 informReservation: [
-                                    { recipient: { url: lineNotifyUrl } },
                                     { recipient: { url: informReservationUrl } }
                                 ]
                             }
@@ -331,7 +328,6 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         }
         // 注文通知パラメータを生成
         const informOrderParams = [
-            { recipient: { url: lineNotifyUrl } },
             { recipient: { url: informOrderUrl } }
         ];
         // 確認番号を事前生成
