@@ -1,5 +1,5 @@
 /**
- * メール通知
+ * Eメールメッセージ送信タスク監視
  */
 import * as ttts from '@tokyotower/domain';
 
@@ -33,7 +33,8 @@ export default async (_: {
 
             try {
                 await ttts.service.task.executeByName({
-                    name: ttts.factory.taskName.SendEmailNotification
+                    // project: params.project,
+                    name: <any>ttts.factory.cinerino.taskName.SendEmailMessage
                 })({
                     connection: connection,
                     redisClient: redisClient
