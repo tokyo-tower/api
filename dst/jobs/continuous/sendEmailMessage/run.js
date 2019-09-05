@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 座席予約資産移動
+ * Eメールメッセージ送信タスク監視
  */
 const ttts = require("@tokyotower/domain");
 const connectMongo_1 = require("../../../connectMongo");
@@ -31,7 +31,8 @@ exports.default = (_) => __awaiter(this, void 0, void 0, function* () {
         count += 1;
         try {
             yield ttts.service.task.executeByName({
-                name: ttts.factory.taskName.SettleSeatReservation
+                // project: params.project,
+                name: ttts.factory.cinerino.taskName.SendEmailMessage
             })({
                 connection: connection,
                 redisClient: redisClient

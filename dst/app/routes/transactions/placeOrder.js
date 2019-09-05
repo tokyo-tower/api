@@ -17,12 +17,12 @@ const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
-// import * as https from 'https';
-const moment = require("moment");
+const moment = require("moment-timezone");
 const mongoose = require("mongoose");
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const POS_CLIENT_ID = process.env.POS_CLIENT_ID;
 const STAFF_CLIENT_ID = process.env.STAFF_CLIENT_ID;
+const PROJECT_ID = process.env.PROJECT_ID;
 const placeOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
@@ -178,7 +178,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard'
         debug('authorizing credit card...', creditCard);
         debug('authorizing credit card...', req.body.creditCard);
         const action = yield ttts.service.payment.creditCard.authorize({
-            project: { id: process.env.PROJECT_ID },
+            project: { id: PROJECT_ID },
             agent: { id: req.user.sub },
             object: {
                 typeOf: ttts.factory.cinerino.paymentMethodType.CreditCard,
@@ -249,21 +249,24 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
     try {
         const paymentMethodType = req.body.payment_method;
         const actionRepo = new ttts.repository.Action(mongoose.connection);
+        const orderNumberRepo = new ttts.repository.OrderNumber(redisClient);
+        const paymentNoRepo = new ttts.repository.PaymentNo(redisClient);
+        const tokenRepo = new ttts.repository.Token(redisClient);
         const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
+        const authorizeActions = yield actionRepo.searchByPurpose({
+            typeOf: ttts.factory.actionType.AuthorizeAction,
+            purpose: {
+                typeOf: ttts.factory.transactionType.PlaceOrder,
+                id: req.params.transactionId
+            }
+        });
+        const seatReservationAuthorizeAction = authorizeActions
+            .filter((a) => a.actionStatus === ttts.factory.actionStatusType.CompletedActionStatus)
+            .find((a) => a.object.typeOf === ttts.factory.action.authorize.seatReservation.ObjectType.SeatReservation);
+        const authorizeSeatReservationResult = seatReservationAuthorizeAction.result;
+        const tmpReservations = authorizeSeatReservationResult.tmpReservations;
         // クライアントがPOSあるいは内部予約の場合、決済方法承認アクションを自動生成
         if (req.user.client_id === POS_CLIENT_ID || req.user.client_id === STAFF_CLIENT_ID) {
-            const authorizeActions = yield actionRepo.searchByPurpose({
-                typeOf: ttts.factory.actionType.AuthorizeAction,
-                purpose: {
-                    typeOf: ttts.factory.transactionType.PlaceOrder,
-                    id: req.params.transactionId
-                }
-            });
-            const seatReservationAuthorizeAction = authorizeActions
-                .filter((a) => a.actionStatus === ttts.factory.actionStatusType.CompletedActionStatus)
-                .find((a) => a.object.typeOf === ttts.factory.action.authorize.seatReservation.ObjectType.SeatReservation);
-            const authorizeSeatReservationResult = seatReservationAuthorizeAction.result;
-            const tmpReservations = authorizeSeatReservationResult.tmpReservations;
             const price = tmpReservations.reduce((a, b) => {
                 const unitPrice = (b.reservedTicket.ticketType.priceSpecification !== undefined)
                     ? b.reservedTicket.ticketType.priceSpecification.price
@@ -298,42 +301,91 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
                 transaction: transactionRepo
             });
         }
+        const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`;
+        const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationConfirmed`;
+        // 予約確定パラメータを生成
+        const confirmReservationParams = [];
+        const reserveTransaction = authorizeSeatReservationResult.responseBody;
+        if (reserveTransaction !== undefined) {
+            confirmReservationParams.push({
+                object: {
+                    typeOf: reserveTransaction.typeOf,
+                    id: reserveTransaction.id,
+                    // object?: {
+                    //     reservations: IConfirmingReservation[];
+                    // };
+                    potentialActions: {
+                        reserve: {
+                            potentialActions: {
+                                informReservation: [
+                                    { recipient: { url: informReservationUrl } }
+                                ]
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        // 注文通知パラメータを生成
+        const informOrderParams = [
+            { recipient: { url: informOrderUrl } }
+        ];
+        // 確認番号を事前生成
+        const event = seatReservationAuthorizeAction.object.event;
+        const eventStartDateStr = moment(event.startDate)
+            .tz('Asia/Tokyo')
+            .format('YYYYMMDD');
+        const paymentNo = yield paymentNoRepo.publish(eventStartDateStr);
+        const confirmationNumber = `${eventStartDateStr}${paymentNo}`;
+        const orderDate = new Date();
         const transactionResult = yield ttts.service.transaction.placeOrderInProgress.confirm({
-            agentId: req.user.sub,
-            transactionId: req.params.transactionId,
-            paymentMethod: paymentMethodType,
+            agent: { id: req.user.sub },
+            id: req.params.transactionId,
             potentialActions: {
                 order: {
                     potentialActions: {
-                        informOrder: [
-                            { recipient: { url: `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder` } }
-                        ]
+                        sendOrder: {
+                            potentialActions: {
+                                confirmReservation: confirmReservationParams
+                            }
+                        },
+                        informOrder: informOrderParams
                     }
                 }
-            }
-        })(transactionRepo, actionRepo, new ttts.repository.Token(redisClient), new ttts.repository.PaymentNo(redisClient));
-        // 余分確保予約を除いてレスポンスを返す
-        if (transactionResult !== undefined) {
-            transactionResult.order.acceptedOffers = transactionResult.order.acceptedOffers
-                .filter((o) => {
-                const r = o.itemOffered;
-                // 余分確保分を除く
-                let extraProperty;
-                if (r.additionalProperty !== undefined) {
-                    extraProperty = r.additionalProperty.find((p) => p.name === 'extra');
+            },
+            result: {
+                order: {
+                    orderDate: orderDate,
+                    confirmationNumber: confirmationNumber
                 }
-                return r.additionalProperty === undefined
-                    || extraProperty === undefined
-                    || extraProperty.value !== '1';
-            });
+            }
+        })({
+            action: actionRepo,
+            orderNumber: orderNumberRepo,
+            token: tokenRepo,
+            transaction: transactionRepo
+        });
+        if (transactionResult !== undefined) {
+            // 余分確保予約を除いてレスポンスを返す
+            // transactionResult.order.acceptedOffers = transactionResult.order.acceptedOffers
+            //     .filter((o) => {
+            //         const r = <ttts.factory.order.IReservation>o.itemOffered;
+            //         // 余分確保分を除く
+            //         let extraProperty: ttts.factory.propertyValue.IPropertyValue<string> | undefined;
+            //         if (r.additionalProperty !== undefined) {
+            //             extraProperty = r.additionalProperty.find((p) => p.name === 'extra');
+            //         }
+            //         return r.additionalProperty === undefined
+            //             || extraProperty === undefined
+            //             || extraProperty.value !== '1';
+            //     });
             // POSへ互換性維持のためにeventReservations属性を生成
             transactionResult.eventReservations = transactionResult.order.acceptedOffers
                 .map((o) => {
                 const r = o.itemOffered;
                 return {
                     qr_str: r.id,
-                    // tslint:disable-next-line:no-magic-numbers
-                    payment_no: transactionResult.order.confirmationNumber.slice(-6),
+                    payment_no: paymentNo,
                     performance: r.reservationFor.id
                 };
             });

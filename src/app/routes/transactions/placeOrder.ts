@@ -7,13 +7,13 @@ import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { query } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
-// import * as https from 'https';
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const POS_CLIENT_ID = <string>process.env.POS_CLIENT_ID;
 const STAFF_CLIENT_ID = <string>process.env.STAFF_CLIENT_ID;
+const PROJECT_ID = <string>process.env.PROJECT_ID;
 
 const placeOrderTransactionsRouter = Router();
 
@@ -264,7 +264,7 @@ placeOrderTransactionsRouter.post(
 
             debug('authorizing credit card...', req.body.creditCard);
             const action = await ttts.service.payment.creditCard.authorize({
-                project: { id: <string>process.env.PROJECT_ID },
+                project: { id: PROJECT_ID },
                 agent: { id: req.user.sub },
                 object: {
                     typeOf: ttts.factory.cinerino.paymentMethodType.CreditCard,
@@ -347,26 +347,30 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             const paymentMethodType = req.body.payment_method;
+
             const actionRepo = new ttts.repository.Action(mongoose.connection);
+            const orderNumberRepo = new ttts.repository.OrderNumber(redisClient);
+            const paymentNoRepo = new ttts.repository.PaymentNo(redisClient);
+            const tokenRepo = new ttts.repository.Token(redisClient);
             const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
+
+            const authorizeActions = await actionRepo.searchByPurpose({
+                typeOf: ttts.factory.actionType.AuthorizeAction,
+                purpose: {
+                    typeOf: ttts.factory.transactionType.PlaceOrder,
+                    id: req.params.transactionId
+                }
+            });
+            const seatReservationAuthorizeAction = <ttts.factory.action.authorize.seatReservation.IAction>
+                authorizeActions
+                    .filter((a) => a.actionStatus === ttts.factory.actionStatusType.CompletedActionStatus)
+                    .find((a) => a.object.typeOf === ttts.factory.action.authorize.seatReservation.ObjectType.SeatReservation);
+            const authorizeSeatReservationResult = <ttts.factory.action.authorize.seatReservation.IResult>
+                seatReservationAuthorizeAction.result;
+            const tmpReservations = authorizeSeatReservationResult.tmpReservations;
 
             // クライアントがPOSあるいは内部予約の場合、決済方法承認アクションを自動生成
             if (req.user.client_id === POS_CLIENT_ID || req.user.client_id === STAFF_CLIENT_ID) {
-                const authorizeActions = await actionRepo.searchByPurpose({
-                    typeOf: ttts.factory.actionType.AuthorizeAction,
-                    purpose: {
-                        typeOf: ttts.factory.transactionType.PlaceOrder,
-                        id: req.params.transactionId
-                    }
-                });
-                const seatReservationAuthorizeAction = <ttts.factory.action.authorize.seatReservation.IAction>
-                    authorizeActions
-                        .filter((a) => a.actionStatus === ttts.factory.actionStatusType.CompletedActionStatus)
-                        .find((a) => a.object.typeOf === ttts.factory.action.authorize.seatReservation.ObjectType.SeatReservation);
-                const authorizeSeatReservationResult = <ttts.factory.action.authorize.seatReservation.IResult>
-                    seatReservationAuthorizeAction.result;
-                const tmpReservations = authorizeSeatReservationResult.tmpReservations;
-
                 const price: number = tmpReservations.reduce(
                     (a, b) => {
                         const unitPrice = (b.reservedTicket.ticketType.priceSpecification !== undefined)
@@ -410,41 +414,91 @@ placeOrderTransactionsRouter.post(
                 });
             }
 
+            const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`;
+            const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationConfirmed`;
+
+            // 予約確定パラメータを生成
+            const confirmReservationParams: ttts.factory.transaction.placeOrder.IConfirmReservationParams[] = [];
+            const reserveTransaction = authorizeSeatReservationResult.responseBody;
+            if (reserveTransaction !== undefined) {
+                confirmReservationParams.push({
+                    object: {
+                        typeOf: reserveTransaction.typeOf,
+                        id: reserveTransaction.id,
+                        // object?: {
+                        //     reservations: IConfirmingReservation[];
+                        // };
+                        potentialActions: {
+                            reserve: {
+                                potentialActions: {
+                                    informReservation: [
+                                        { recipient: { url: informReservationUrl } }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 注文通知パラメータを生成
+            const informOrderParams: ttts.factory.transaction.placeOrder.IConfirmInformOrderParams[] = [
+                { recipient: { url: informOrderUrl } }
+            ];
+
+            // 確認番号を事前生成
+            const event = seatReservationAuthorizeAction.object.event;
+            const eventStartDateStr = moment(event.startDate)
+                .tz('Asia/Tokyo')
+                .format('YYYYMMDD');
+            const paymentNo = await paymentNoRepo.publish(eventStartDateStr);
+            const confirmationNumber: string = `${eventStartDateStr}${paymentNo}`;
+
+            const orderDate = new Date();
+
             const transactionResult = await ttts.service.transaction.placeOrderInProgress.confirm({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
-                paymentMethod: paymentMethodType,
+                agent: { id: req.user.sub },
+                id: req.params.transactionId,
                 potentialActions: {
                     order: {
                         potentialActions: {
-                            informOrder: [
-                                { recipient: { url: `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder` } }
-                            ]
+                            sendOrder: {
+                                potentialActions: {
+                                    confirmReservation: confirmReservationParams
+                                }
+                            },
+                            informOrder: informOrderParams
                         }
                     }
+                },
+                result: {
+                    order: {
+                        orderDate: orderDate,
+                        confirmationNumber: confirmationNumber
+                    }
                 }
-            })(
-                transactionRepo,
-                actionRepo,
-                new ttts.repository.Token(redisClient),
-                new ttts.repository.PaymentNo(redisClient)
-            );
+            })({
+                action: actionRepo,
+                orderNumber: orderNumberRepo,
+                token: tokenRepo,
+                transaction: transactionRepo
+            });
 
-            // 余分確保予約を除いてレスポンスを返す
             if (transactionResult !== undefined) {
-                transactionResult.order.acceptedOffers = transactionResult.order.acceptedOffers
-                    .filter((o) => {
-                        const r = <ttts.factory.order.IReservation>o.itemOffered;
-                        // 余分確保分を除く
-                        let extraProperty: ttts.factory.propertyValue.IPropertyValue<string> | undefined;
-                        if (r.additionalProperty !== undefined) {
-                            extraProperty = r.additionalProperty.find((p) => p.name === 'extra');
-                        }
+                // 余分確保予約を除いてレスポンスを返す
+                // transactionResult.order.acceptedOffers = transactionResult.order.acceptedOffers
+                //     .filter((o) => {
+                //         const r = <ttts.factory.order.IReservation>o.itemOffered;
+                //         // 余分確保分を除く
+                //         let extraProperty: ttts.factory.propertyValue.IPropertyValue<string> | undefined;
+                //         if (r.additionalProperty !== undefined) {
+                //             extraProperty = r.additionalProperty.find((p) => p.name === 'extra');
+                //         }
 
-                        return r.additionalProperty === undefined
-                            || extraProperty === undefined
-                            || extraProperty.value !== '1';
-                    });
+                //         return r.additionalProperty === undefined
+                //             || extraProperty === undefined
+                //             || extraProperty.value !== '1';
+                //     });
 
                 // POSへ互換性維持のためにeventReservations属性を生成
                 (<any>transactionResult).eventReservations = transactionResult.order.acceptedOffers
@@ -453,8 +507,7 @@ placeOrderTransactionsRouter.post(
 
                         return <any>{
                             qr_str: r.id,
-                            // tslint:disable-next-line:no-magic-numbers
-                            payment_no: transactionResult.order.confirmationNumber.slice(-6),
+                            payment_no: paymentNo,
                             performance: r.reservationFor.id
                         };
                     });

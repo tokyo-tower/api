@@ -22,9 +22,8 @@ import payCreditCard from './continuous/payCreditCard/run';
 import placeOrder from './continuous/placeOrder/run';
 import returnOrder from './continuous/returnOrder/run';
 import returnOrdersByPerformance from './continuous/returnOrdersByPerformance/run';
-import sendEmailNotification from './continuous/sendEmailNotification/run';
+import sendEmailMessage from './continuous/sendEmailMessage/run';
 import sendOrder from './continuous/sendOrder/run';
-import settleSeatReservation from './continuous/settleSeatReservation/run';
 import triggerWebhook from './continuous/triggerWebhook/run';
 import updateOrderReportByReservation from './continuous/updateOrderReportByReservation/run';
 
@@ -57,9 +56,8 @@ export default async () => {
     await placeOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await returnOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await returnOrdersByPerformance({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await sendEmailNotification({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    await sendEmailMessage({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await sendOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await settleSeatReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await triggerWebhook({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await updateOrderReportByReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
 
