@@ -191,6 +191,7 @@ function main(connection) {
                     // 集計タスク作成
                     const aggregateTask = {
                         name: ttts.factory.taskName.AggregateEventReservations,
+                        project: project,
                         status: ttts.factory.taskStatus.Ready,
                         runsAt: new Date(),
                         remainingNumberOfTries: 3,

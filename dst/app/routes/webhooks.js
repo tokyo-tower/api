@@ -24,6 +24,7 @@ webhooksRouter.post('/onPlaceOrder', (req, res, next) => __awaiter(this, void 0,
             const taskRepo = new ttts.repository.Task(mongoose.connection);
             const taskAttribute = {
                 name: ttts.factory.taskName.CreatePlaceOrderReport,
+                project: req.project,
                 status: ttts.factory.taskStatus.Ready,
                 runsAt: new Date(),
                 remainingNumberOfTries: 10,
@@ -49,6 +50,7 @@ webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(this, void 0
             const taskRepo = new ttts.repository.Task(mongoose.connection);
             const taskAttribute = {
                 name: ttts.factory.taskName.CreateReturnOrderReport,
+                project: req.project,
                 status: ttts.factory.taskStatus.Ready,
                 runsAt: new Date(),
                 remainingNumberOfTries: 10,
@@ -97,6 +99,7 @@ webhooksRouter.post('/onReservationConfirmed', (req, res, next) => __awaiter(thi
                 // 集計タスク作成
                 const task = {
                     name: ttts.factory.taskName.AggregateEventReservations,
+                    project: req.project,
                     status: ttts.factory.taskStatus.Ready,
                     runsAt: new Date(),
                     remainingNumberOfTries: 3,

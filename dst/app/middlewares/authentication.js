@@ -55,10 +55,11 @@ exports.default = (req, res, next) => __awaiter(this, void 0, void 0, function* 
                 let programMembership;
                 if (user.username !== undefined) {
                     programMembership = {
-                        typeOf: 'ProgramMembership',
+                        award: [],
                         membershipNumber: user.username,
                         programName: 'Amazon Cognito',
-                        award: [],
+                        project: req.project,
+                        typeOf: 'ProgramMembership',
                         url: user.iss
                     };
                 }

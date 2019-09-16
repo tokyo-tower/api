@@ -221,6 +221,7 @@ performanceRouter.put(
             const taskRepo = new ttts.repository.Task(mongoose.connection);
             const aggregateTask: ttts.factory.task.aggregateEventReservations.IAttributes = {
                 name: <any>ttts.factory.taskName.AggregateEventReservations,
+                project: req.project,
                 status: ttts.factory.taskStatus.Ready,
                 runsAt: new Date(),
                 remainingNumberOfTries: 3,

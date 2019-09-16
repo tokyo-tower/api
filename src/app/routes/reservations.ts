@@ -247,6 +247,7 @@ reservationsRouter.post(
             // レポート更新タスク作成
             const taskAttributes: ttts.factory.task.updateOrderReportByReservation.IAttributes = {
                 name: <any>ttts.factory.taskName.UpdateOrderReportByReservation,
+                project: req.project,
                 status: ttts.factory.taskStatus.Ready,
                 runsAt: new Date(),
                 remainingNumberOfTries: 3,
@@ -259,6 +260,7 @@ reservationsRouter.post(
             // 集計タスク作成
             const aggregateTask: ttts.factory.task.aggregateEventReservations.IAttributes = {
                 name: <any>ttts.factory.taskName.AggregateEventReservations,
+                project: req.project,
                 status: ttts.factory.taskStatus.Ready,
                 runsAt: new Date(),
                 remainingNumberOfTries: 3,
@@ -315,6 +317,7 @@ reservationsRouter.delete(
             // レポート更新タスク作成
             const taskAttributes: ttts.factory.task.updateOrderReportByReservation.IAttributes = {
                 name: <any>ttts.factory.taskName.UpdateOrderReportByReservation,
+                project: req.project,
                 status: ttts.factory.taskStatus.Ready,
                 runsAt: new Date(),
                 remainingNumberOfTries: 3,
@@ -327,6 +330,7 @@ reservationsRouter.delete(
             // 集計タスク作成
             const aggregateTask: ttts.factory.task.aggregateEventReservations.IAttributes = {
                 name: <any>ttts.factory.taskName.AggregateEventReservations,
+                project: req.project,
                 status: ttts.factory.taskStatus.Ready,
                 runsAt: new Date(),
                 remainingNumberOfTries: 3,

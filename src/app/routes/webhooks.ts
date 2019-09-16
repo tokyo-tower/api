@@ -21,6 +21,7 @@ webhooksRouter.post(
 
                 const taskAttribute: ttts.factory.task.createPlaceOrderReport.IAttributes = {
                     name: <any>ttts.factory.taskName.CreatePlaceOrderReport,
+                    project: req.project,
                     status: ttts.factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -53,6 +54,7 @@ webhooksRouter.post(
 
                 const taskAttribute: ttts.factory.task.createReturnOrderReport.IAttributes = {
                     name: <any>ttts.factory.taskName.CreateReturnOrderReport,
+                    project: req.project,
                     status: ttts.factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -120,6 +122,7 @@ webhooksRouter.post(
                     // 集計タスク作成
                     const task: ttts.factory.task.aggregateEventReservations.IAttributes = {
                         name: <any>ttts.factory.taskName.AggregateEventReservations,
+                        project: req.project,
                         status: ttts.factory.taskStatus.Ready,
                         runsAt: new Date(),
                         remainingNumberOfTries: 3,
