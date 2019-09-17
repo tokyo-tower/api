@@ -213,6 +213,7 @@ export async function main(connection: mongoose.Connection): Promise<void> {
                 // 集計タスク作成
                 const aggregateTask: ttts.factory.task.aggregateEventReservations.IAttributes = {
                     name: <any>ttts.factory.taskName.AggregateEventReservations,
+                    project: project,
                     status: ttts.factory.taskStatus.Ready,
                     runsAt: new Date(),
                     remainingNumberOfTries: 3,

@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v21.7.0 - 2019-09-17
+
+### Changed
+
+- 全リソースにプロジェクト属性を結合
+
 ## v21.6.0 - 2019-09-05
 
 ### Changed

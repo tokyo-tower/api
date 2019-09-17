@@ -442,7 +442,7 @@ placeOrderTransactionsRouter.post(
             }
 
             // 注文通知パラメータを生成
-            const informOrderParams: ttts.factory.transaction.placeOrder.IConfirmInformOrderParams[] = [
+            const informOrderParams: ttts.factory.transaction.placeOrder.IInformOrderParams[] = [
                 { recipient: { url: informOrderUrl } }
             ];
 

@@ -206,6 +206,7 @@ reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.c
         // レポート更新タスク作成
         const taskAttributes = {
             name: ttts.factory.taskName.UpdateOrderReportByReservation,
+            project: req.project,
             status: ttts.factory.taskStatus.Ready,
             runsAt: new Date(),
             remainingNumberOfTries: 3,
@@ -217,6 +218,7 @@ reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.c
         // 集計タスク作成
         const aggregateTask = {
             name: ttts.factory.taskName.AggregateEventReservations,
+            project: req.project,
             status: ttts.factory.taskStatus.Ready,
             runsAt: new Date(),
             remainingNumberOfTries: 3,
@@ -265,6 +267,7 @@ reservationsRouter.delete('/:id/checkins/:when', permitScopes_1.default(['reserv
         // レポート更新タスク作成
         const taskAttributes = {
             name: ttts.factory.taskName.UpdateOrderReportByReservation,
+            project: req.project,
             status: ttts.factory.taskStatus.Ready,
             runsAt: new Date(),
             remainingNumberOfTries: 3,
@@ -276,6 +279,7 @@ reservationsRouter.delete('/:id/checkins/:when', permitScopes_1.default(['reserv
         // 集計タスク作成
         const aggregateTask = {
             name: ttts.factory.taskName.AggregateEventReservations,
+            project: req.project,
             status: ttts.factory.taskStatus.Ready,
             runsAt: new Date(),
             remainingNumberOfTries: 3,

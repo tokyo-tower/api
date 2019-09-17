@@ -184,6 +184,7 @@ performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']), (req,
         const taskRepo = new ttts.repository.Task(mongoose.connection);
         const aggregateTask = {
             name: ttts.factory.taskName.AggregateEventReservations,
+            project: req.project,
             status: ttts.factory.taskStatus.Ready,
             runsAt: new Date(),
             remainingNumberOfTries: 3,
