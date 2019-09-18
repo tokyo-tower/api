@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- Chevre@6.0.0に対応
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v21.8.0 - 2019-09-18
+
+### Changed
+
+- Chevre@6.0.0に対応
 
 ## v21.7.0 - 2019-09-17
 
