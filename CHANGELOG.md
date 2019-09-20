@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 取引リポジトリをCinerino化
+- Chevre@6.0.0に対応
+
 ### Deprecated
 
 ### Removed
