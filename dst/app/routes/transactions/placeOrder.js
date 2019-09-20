@@ -57,18 +57,47 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
+        const sellerRepo = new ttts.repository.Seller(mongoose.connection);
+        const doc = yield sellerRepo.organizationModel.findOne({
+            identifier: req.body.seller_identifier
+        })
+            .exec();
+        if (doc === null) {
+            throw new ttts.factory.errors.NotFound('Seller');
+        }
+        const seller = doc.toObject();
+        let passport;
+        if (!WAITER_DISABLED) {
+            if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
+                throw new ttts.factory.errors.ServiceUnavailable('WAITER_PASSPORT_ISSUER undefined');
+            }
+            if (process.env.WAITER_SECRET === undefined) {
+                throw new ttts.factory.errors.ServiceUnavailable('WAITER_SECRET undefined');
+            }
+            passport = {
+                token: req.body.passportToken,
+                issuer: process.env.WAITER_PASSPORT_ISSUER,
+                secret: process.env.WAITER_SECRET
+            };
+        }
         const transaction = yield ttts.service.transaction.placeOrderInProgress.start({
+            project: req.project,
             expires: moment(req.body.expires)
                 .toDate(),
             agent: Object.assign({}, req.agent, { identifier: [
                     ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
                     ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
                 ] }),
-            sellerIdentifier: req.body.seller_identifier,
-            clientUser: req.user,
-            // purchaserGroup: req.body.purchaser_group,
-            passportToken: req.body.passportToken
-        })(new ttts.repository.Transaction(mongoose.connection), new ttts.repository.Seller(mongoose.connection));
+            seller: { typeOf: seller.typeOf, id: seller.id },
+            object: {
+                clientUser: req.user,
+                passport: passport
+            }
+        })({
+            seller: sellerRepo,
+            transaction: transactionRepo
+        });
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
         // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
@@ -79,6 +108,26 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         next(error);
     }
 }));
+/**
+ * WAITER許可証の有効性チェック
+ * @param passport WAITER許可証
+ * @param sellerIdentifier 販売者識別子
+ */
+// function validatePassport(passport: ttts.factory.cinerino.waiter.passport.IPassport, sellerIdentifier: string) {
+//     const WAITER_PASSPORT_ISSUER = process.env.WAITER_PASSPORT_ISSUER;
+//     if (WAITER_PASSPORT_ISSUER === undefined) {
+//         throw new Error('WAITER_PASSPORT_ISSUER unset');
+//     }
+//     const issuers = WAITER_PASSPORT_ISSUER.split(',');
+//     const validIssuer = issuers.indexOf(passport.iss) >= 0;
+//     // スコープのフォーマットは、placeOrderTransaction.{sellerId}
+//     const explodedScopeStrings = passport.scope.split('.');
+//     const validScope = (
+//         explodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
+//         explodedScopeStrings[1] === sellerIdentifier // 販売者識別子確認
+//     );
+//     return validIssuer && validScope;
+// }
 /**
  * 購入者情報を変更する
  */
@@ -98,7 +147,12 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const profile = yield ttts.service.transaction.placeOrderInProgress.setCustomerContact(req.user.sub, req.params.transactionId, Object.assign({}, req.body, { email: req.body.email, givenName: req.body.first_name, familyName: req.body.last_name, telephone: req.body.tel, age: (req.body.age !== undefined) ? req.body.age : '', address: (req.body.address !== undefined) ? req.body.address : '', gender: (req.body.gender !== undefined) ? req.body.gender : '' }))(new ttts.repository.Transaction(mongoose.connection));
+        const profile = yield ttts.service.transaction.placeOrderInProgress.updateAgent({
+            id: req.params.transactionId,
+            agent: Object.assign({}, req.body, { id: req.user.sub, email: req.body.email, givenName: req.body.first_name, familyName: req.body.last_name, telephone: req.body.tel, age: (req.body.age !== undefined) ? req.body.age : '', address: (req.body.address !== undefined) ? req.body.address : '', gender: (req.body.gender !== undefined) ? req.body.gender : '' })
+        })({
+            transaction: new ttts.repository.Transaction(mongoose.connection)
+        });
         res.status(http_status_1.CREATED)
             .json(Object.assign({}, profile, { 
             // POSへの互換性維持のために値補完
