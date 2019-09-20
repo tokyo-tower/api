@@ -129,16 +129,18 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
         new ttts.repository.Action(mongoose.connection), new ttts.repository.rateLimit.TicketTypeCategory(redisClient), new ttts.repository.Task(mongoose.connection), new ttts.repository.Project(mongoose.connection));
         // 余分確保予約を除いてレスポンスを返す
         if (action.result !== undefined) {
-            action.result.tmpReservations = action.result.tmpReservations.filter((r) => {
-                // 余分確保分を除く
-                let extraProperty;
-                if (r.additionalProperty !== undefined) {
-                    extraProperty = r.additionalProperty.find((p) => p.name === 'extra');
-                }
-                return r.additionalProperty === undefined
-                    || extraProperty === undefined
-                    || extraProperty.value !== '1';
-            });
+            action.result.tmpReservations = (Array.isArray(action.result.tmpReservations))
+                ? action.result.tmpReservations.filter((r) => {
+                    // 余分確保分を除く
+                    let extraProperty;
+                    if (r.additionalProperty !== undefined) {
+                        extraProperty = r.additionalProperty.find((p) => p.name === 'extra');
+                    }
+                    return r.additionalProperty === undefined
+                        || extraProperty === undefined
+                        || extraProperty.value !== '1';
+                })
+                : [];
         }
         res.status(http_status_1.CREATED)
             .json(action);

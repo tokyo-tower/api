@@ -184,17 +184,19 @@ placeOrderTransactionsRouter.post(
 
             // 余分確保予約を除いてレスポンスを返す
             if (action.result !== undefined) {
-                action.result.tmpReservations = action.result.tmpReservations.filter((r) => {
-                    // 余分確保分を除く
-                    let extraProperty: ttts.factory.propertyValue.IPropertyValue<string> | undefined;
-                    if (r.additionalProperty !== undefined) {
-                        extraProperty = r.additionalProperty.find((p) => p.name === 'extra');
-                    }
+                action.result.tmpReservations = (Array.isArray(action.result.tmpReservations))
+                    ? action.result.tmpReservations.filter((r) => {
+                        // 余分確保分を除く
+                        let extraProperty: ttts.factory.propertyValue.IPropertyValue<string> | undefined;
+                        if (r.additionalProperty !== undefined) {
+                            extraProperty = r.additionalProperty.find((p) => p.name === 'extra');
+                        }
 
-                    return r.additionalProperty === undefined
-                        || extraProperty === undefined
-                        || extraProperty.value !== '1';
-                });
+                        return r.additionalProperty === undefined
+                            || extraProperty === undefined
+                            || extraProperty.value !== '1';
+                    })
+                    : [];
             }
 
             res.status(CREATED)
