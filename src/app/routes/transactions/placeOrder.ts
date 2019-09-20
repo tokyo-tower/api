@@ -175,7 +175,7 @@ placeOrderTransactionsRouter.post(
                 })
             )(
                 new ttts.repository.Transaction(mongoose.connection),
-                new ttts.repository.Performance(mongoose.connection),
+                // new ttts.repository.Performance(mongoose.connection),
                 new ttts.repository.Action(mongoose.connection),
                 new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
                 new ttts.repository.Task(mongoose.connection),

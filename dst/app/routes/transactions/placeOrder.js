@@ -124,7 +124,9 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
                 ticket_type: offer.ticket_type,
                 watcher_name: offer.watcher_name
             };
-        }))(new ttts.repository.Transaction(mongoose.connection), new ttts.repository.Performance(mongoose.connection), new ttts.repository.Action(mongoose.connection), new ttts.repository.rateLimit.TicketTypeCategory(redisClient), new ttts.repository.Task(mongoose.connection), new ttts.repository.Project(mongoose.connection));
+        }))(new ttts.repository.Transaction(mongoose.connection), 
+        // new ttts.repository.Performance(mongoose.connection),
+        new ttts.repository.Action(mongoose.connection), new ttts.repository.rateLimit.TicketTypeCategory(redisClient), new ttts.repository.Task(mongoose.connection), new ttts.repository.Project(mongoose.connection));
         // 余分確保予約を除いてレスポンスを返す
         if (action.result !== undefined) {
             action.result.tmpReservations = action.result.tmpReservations.filter((r) => {
