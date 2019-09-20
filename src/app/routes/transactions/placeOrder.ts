@@ -88,6 +88,29 @@ placeOrderTransactionsRouter.post(
                 };
             }
 
+            /**
+             * WAITER許可証の有効性チェック
+             */
+            const passportValidator = (params: {
+                passport: ttts.factory.cinerino.waiter.passport.IPassport;
+            }) => {
+                const WAITER_PASSPORT_ISSUER = process.env.WAITER_PASSPORT_ISSUER;
+                if (WAITER_PASSPORT_ISSUER === undefined) {
+                    throw new Error('WAITER_PASSPORT_ISSUER unset');
+                }
+                const issuers = WAITER_PASSPORT_ISSUER.split(',');
+                const validIssuer = issuers.indexOf(params.passport.iss) >= 0;
+
+                // スコープのフォーマットは、placeOrderTransaction.{sellerIdentifier}
+                const explodedScopeStrings = params.passport.scope.split('.');
+                const validScope = (
+                    explodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
+                    explodedScopeStrings[1] === seller.identifier // 販売者識別子確認
+                );
+
+                return validIssuer && validScope;
+            };
+
             const transaction = await ttts.service.transaction.placeOrderInProgress.start({
                 project: req.project,
                 expires: moment(req.body.expires)
@@ -103,7 +126,8 @@ placeOrderTransactionsRouter.post(
                 object: {
                     clientUser: req.user,
                     passport: passport
-                }
+                },
+                passportValidator: passportValidator
             })({
                 seller: sellerRepo,
                 transaction: transactionRepo
@@ -120,29 +144,6 @@ placeOrderTransactionsRouter.post(
         }
     }
 );
-
-/**
- * WAITER許可証の有効性チェック
- * @param passport WAITER許可証
- * @param sellerIdentifier 販売者識別子
- */
-// function validatePassport(passport: ttts.factory.cinerino.waiter.passport.IPassport, sellerIdentifier: string) {
-//     const WAITER_PASSPORT_ISSUER = process.env.WAITER_PASSPORT_ISSUER;
-//     if (WAITER_PASSPORT_ISSUER === undefined) {
-//         throw new Error('WAITER_PASSPORT_ISSUER unset');
-//     }
-//     const issuers = WAITER_PASSPORT_ISSUER.split(',');
-//     const validIssuer = issuers.indexOf(passport.iss) >= 0;
-
-//     // スコープのフォーマットは、placeOrderTransaction.{sellerId}
-//     const explodedScopeStrings = passport.scope.split('.');
-//     const validScope = (
-//         explodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
-//         explodedScopeStrings[1] === sellerIdentifier // 販売者識別子確認
-//     );
-
-//     return validIssuer && validScope;
-// }
 
 /**
  * 購入者情報を変更する
@@ -174,13 +175,14 @@ placeOrderTransactionsRouter.put(
                 agent: {
                     ...req.body,
                     id: req.user.sub,
-                    email: req.body.email,
-                    givenName: req.body.first_name,
-                    familyName: req.body.last_name,
-                    telephone: req.body.tel,
-                    age: (req.body.age !== undefined) ? req.body.age : '',
-                    address: (req.body.address !== undefined) ? req.body.address : '',
-                    gender: (req.body.gender !== undefined) ? req.body.gender : ''
+                    // address: (typeof req.body.address === 'string') ? req.body.address : '',
+                    // age: (typeof req.body.age === 'string') ? req.body.age : '',
+                    // email: (typeof req.body.email === 'string') ? req.body.email : '',
+                    // gender: (typeof req.body.gender === 'string') ? req.body.gender : '',
+                    givenName: (typeof req.body.first_name === 'string') ? req.body.first_name : '',
+                    familyName: (typeof req.body.last_name === 'string') ? req.body.last_name : '',
+                    telephone: (typeof req.body.tel === 'string') ? req.body.tel : '',
+                    telephoneRegion: (typeof req.body.address === 'string') ? req.body.address : ''
                 }
             })({
                 transaction: new ttts.repository.Transaction(mongoose.connection)
@@ -206,9 +208,6 @@ placeOrderTransactionsRouter.put(
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/seatReservation',
     permitScopes(['transactions']),
-    (__1, __2, next) => {
-        next();
-    },
     validator,
     async (req, res, next) => {
         try {
@@ -512,6 +511,11 @@ placeOrderTransactionsRouter.post(
             const confirmationNumber: string = `${eventStartDateStr}${paymentNo}`;
 
             const orderDate = new Date();
+
+            // 印刷トークンを発行
+            // const printToken = await repos.token.createPrintToken(
+            //     order.acceptedOffers.map((o) => (<factory.order.IReservation>o.itemOffered).id)
+            // );
 
             const transactionResult = await ttts.service.transaction.placeOrderInProgress.confirm({
                 agent: { id: req.user.sub },
