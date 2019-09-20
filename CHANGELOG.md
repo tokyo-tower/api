@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - 取引リポジトリをCinerino化
 - Chevre@6.0.0に対応
+- 注文取引サービスを@cinerino/domainへ移行
 
 ### Deprecated
 

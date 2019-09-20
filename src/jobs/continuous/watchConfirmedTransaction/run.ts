@@ -5,7 +5,7 @@ import * as ttts from '@tokyotower/domain';
 
 import { connectMongo } from '../../../connectMongo';
 
-export default async (_: {
+export default async (params: {
     project?: ttts.factory.project.IProject;
 }) => {
     const connection = await connectMongo({ defaultConnection: false });
@@ -26,9 +26,13 @@ export default async (_: {
             countExecute += 1;
 
             try {
-                await ttts.service.transaction.placeOrder.exportTasks(
-                    ttts.factory.transactionStatusType.Confirmed
-                )(taskRepo, transactionRepo);
+                await ttts.service.transaction.placeOrder.exportTasks({
+                    project: params.project,
+                    status: ttts.factory.transactionStatusType.Confirmed
+                })({
+                    task: taskRepo,
+                    transaction: transactionRepo
+                });
             } catch (error) {
                 // tslint:disable-next-line:no-console
                 console.error(error);

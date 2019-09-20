@@ -565,10 +565,10 @@ placeOrderTransactionsRouter.post(
                     about: req.body.about,
                     text: req.body.text
                 }
-            )(
-                new ttts.repository.Task(mongoose.connection),
-                new ttts.repository.Transaction(mongoose.connection)
-            );
+            )({
+                task: new ttts.repository.Task(mongoose.connection),
+                transaction: new ttts.repository.Transaction(mongoose.connection)
+            });
 
             res.status(CREATED)
                 .json(task);

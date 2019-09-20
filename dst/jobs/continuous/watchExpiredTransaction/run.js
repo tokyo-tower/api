@@ -13,7 +13,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const ttts = require("@tokyotower/domain");
 const connectMongo_1 = require("../../../connectMongo");
-exports.default = (_) => __awaiter(this, void 0, void 0, function* () {
+const RUNS_TASKS_AFTER_IN_SECONDS = 120;
+exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     let countExecute = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
@@ -26,7 +27,14 @@ exports.default = (_) => __awaiter(this, void 0, void 0, function* () {
         }
         countExecute += 1;
         try {
-            yield ttts.service.transaction.placeOrder.exportTasks(ttts.factory.transactionStatusType.Expired)(taskRepo, transactionRepo);
+            yield ttts.service.transaction.placeOrder.exportTasks({
+                project: params.project,
+                status: ttts.factory.transactionStatusType.Expired,
+                runsTasksAfterInSeconds: RUNS_TASKS_AFTER_IN_SECONDS
+            })({
+                task: taskRepo,
+                transaction: transactionRepo
+            });
         }
         catch (error) {
             // tslint:disable-next-line:no-console
