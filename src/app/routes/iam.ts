@@ -11,15 +11,6 @@ import validator from '../middlewares/validator';
 
 const USER_POOL_ID = <string>process.env.ADMINS_USER_POOL_ID;
 
-const cognitoIdentityServiceProvider = new ttts.AWS.CognitoIdentityServiceProvider({
-    apiVersion: 'latest',
-    region: 'ap-northeast-1',
-    credentials: new ttts.AWS.Credentials({
-        accessKeyId: <string>process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: <string>process.env.AWS_SECRET_ACCESS_KEY
-    })
-});
-
 const iamRouter = express.Router();
 iamRouter.use(authentication);
 
@@ -66,9 +57,10 @@ iamRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const personRepo = new ttts.repository.Person(cognitoIdentityServiceProvider);
+            const personRepo = new ttts.repository.Person({
+                userPoolId: USER_POOL_ID
+            });
             const users = await personRepo.search({
-                userPooId: USER_POOL_ID,
                 id: req.query.id,
                 username: req.query.username,
                 email: req.query.email,
@@ -94,9 +86,10 @@ iamRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const personRepo = new ttts.repository.Person(cognitoIdentityServiceProvider);
+            const personRepo = new ttts.repository.Person({
+                userPoolId: USER_POOL_ID
+            });
             const user = await personRepo.findById({
-                userPooId: USER_POOL_ID,
                 userId: req.params.id
             });
 
