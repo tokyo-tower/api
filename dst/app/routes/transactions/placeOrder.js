@@ -65,7 +65,9 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         }
         const seller = doc.toObject();
         let passport;
-        if (!WAITER_DISABLED) {
+        if (!WAITER_DISABLED
+            && req.user.client_id !== POS_CLIENT_ID
+            && req.user.client_id !== STAFF_CLIENT_ID) {
             if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
                 throw new ttts.factory.errors.ServiceUnavailable('WAITER_PASSPORT_ISSUER undefined');
             }
