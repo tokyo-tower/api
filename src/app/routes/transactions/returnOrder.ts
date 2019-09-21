@@ -8,8 +8,6 @@ import { query } from 'express-validator/check';
 import { CREATED } from 'http-status';
 import * as mongoose from 'mongoose';
 
-const PROJECT_ID = <string>process.env.PROJECT_ID;
-
 const returnOrderTransactionsRouter = Router();
 
 import authentication from '../../middlewares/authentication';
@@ -54,7 +52,7 @@ returnOrderTransactionsRouter.post(
             const orders = await orderRepo.search({
                 limit: 1,
                 confirmationNumbers: [confirmationNumber],
-                project: { ids: [PROJECT_ID] }
+                project: { ids: [req.project.id] }
             });
             const order = orders.shift();
             if (order === undefined) {
