@@ -303,7 +303,6 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const orderDate = new Date();
         const paymentMethodType = req.body.payment_method;
         const actionRepo = new ttts.repository.Action(mongoose.connection);
         const orderNumberRepo = new ttts.repository.OrderNumber(redisClient);
@@ -369,6 +368,8 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             .format('YYYYMMDD');
         const paymentNo = yield paymentNoRepo.publish(eventStartDateStr);
         const confirmationNumber = `${eventStartDateStr}${paymentNo}`;
+        // 決済承認後に注文日時を確定しなければ、取引条件を満たさないので注意
+        const orderDate = new Date();
         // 印刷トークンを事前に発行
         const printToken = yield tokenRepo.createPrintToken(tmpReservations.map((r) => r.id));
         const transactionResult = yield ttts.service.transaction.placeOrderInProgress.confirm({

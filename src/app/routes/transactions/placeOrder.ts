@@ -400,7 +400,6 @@ placeOrderTransactionsRouter.post(
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
-            const orderDate = new Date();
             const paymentMethodType = req.body.payment_method;
 
             const actionRepo = new ttts.repository.Action(mongoose.connection);
@@ -473,6 +472,9 @@ placeOrderTransactionsRouter.post(
                 .format('YYYYMMDD');
             const paymentNo = await paymentNoRepo.publish(eventStartDateStr);
             const confirmationNumber: string = `${eventStartDateStr}${paymentNo}`;
+
+            // 決済承認後に注文日時を確定しなければ、取引条件を満たさないので注意
+            const orderDate = new Date();
 
             // 印刷トークンを事前に発行
             const printToken = await tokenRepo.createPrintToken(tmpReservations.map((r) => r.id));
