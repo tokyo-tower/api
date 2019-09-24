@@ -18,6 +18,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v21.10.0 - 2019-09-24
+
+### Changed
+
+- 取引リポジトリをCinerino化
+- Chevre@6.0.0に対応
+- 注文取引サービスを@cinerino/domainへ移行
+- 座席予約承認時のイベント存在確認を直接Chevreにて実行するように変更
+- 会員リポジトリをCinerino化
+
 ## v21.8.0 - 2019-09-18
 
 ### Changed

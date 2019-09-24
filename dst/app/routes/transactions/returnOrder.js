@@ -17,7 +17,6 @@ const express_1 = require("express");
 const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
-const PROJECT_ID = process.env.PROJECT_ID;
 const returnOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
@@ -52,7 +51,7 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
         const orders = yield orderRepo.search({
             limit: 1,
             confirmationNumbers: [confirmationNumber],
-            project: { ids: [PROJECT_ID] }
+            project: { ids: [req.project.id] }
         });
         const order = orders.shift();
         if (order === undefined) {
