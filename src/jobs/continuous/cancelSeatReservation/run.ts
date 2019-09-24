@@ -1,5 +1,5 @@
 /**
- * COA仮予約キャンセル
+ * 仮予約取消
  */
 import * as ttts from '@tokyotower/domain';
 
@@ -33,7 +33,7 @@ export default async (_: {
 
             try {
                 await ttts.service.task.executeByName({
-                    name: ttts.factory.taskName.CancelSeatReservation
+                    name: <any>ttts.factory.cinerino.taskName.CancelSeatReservation
                 })({
                     connection: connection,
                     redisClient: redisClient

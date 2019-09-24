@@ -31,7 +31,7 @@ exports.default = (_) => __awaiter(this, void 0, void 0, function* () {
         count += 1;
         try {
             yield ttts.service.task.executeByName({
-                name: ttts.factory.taskName.CancelSeatReservation
+                name: ttts.factory.cinerino.taskName.CancelSeatReservation
             })({
                 connection: connection,
                 redisClient: redisClient
