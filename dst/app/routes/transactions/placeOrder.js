@@ -431,6 +431,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         // 印刷トークンを事前に発行
         const printToken = yield tokenRepo.createPrintToken(tmpReservations.map((r) => r.id));
         const transactionResult = yield ttts.service.transaction.placeOrderInProgress.confirm({
+            project: req.project,
             agent: { id: req.user.sub },
             id: req.params.transactionId,
             potentialActions: {
