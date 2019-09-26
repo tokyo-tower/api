@@ -545,6 +545,7 @@ placeOrderTransactionsRouter.post(
             const printToken = await tokenRepo.createPrintToken(tmpReservations.map((r) => r.id));
 
             const transactionResult = await ttts.service.transaction.placeOrderInProgress.confirm({
+                project: req.project,
                 agent: { id: req.user.sub },
                 id: req.params.transactionId,
                 potentialActions: {

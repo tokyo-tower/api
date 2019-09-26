@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v22.0.0 - 2019-09-26
+
+### Changed
+
+- 注文データから確定予約情報を削除
+- 決済方法タイプをCinerino化
+
 ## v21.10.0 - 2019-09-24
 
 ### Changed
