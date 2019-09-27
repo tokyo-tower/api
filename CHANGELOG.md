@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v22.1.0 - 2019-09-27
+
+### Changed
+
+- 注文データのacceptedOffersを最適化
+- 注文レポートから不要な情報(実務上使用されていない情報)を削除
+
 ## v22.0.0 - 2019-09-26
 
 ### Changed
