@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 注文データのacceptedOffersを最適化
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v22.1.1 - 2019-09-30
+
+### Changed
+
+- 注文データのacceptedOffersを最適化
 
 ## v22.1.0 - 2019-09-27
 
