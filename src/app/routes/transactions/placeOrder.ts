@@ -538,7 +538,7 @@ placeOrderTransactionsRouter.post(
             // 印刷トークンを事前に発行
             const printToken = await tokenRepo.createPrintToken(tmpReservations.map((r) => r.id));
 
-            const transactionResult = await ttts.service.transaction.placeOrderInProgress.confirm4ttts({
+            const transactionResult = await ttts.service.transaction.placeOrderInProgress.confirm({
                 project: req.project,
                 agent: { id: req.user.sub },
                 id: req.params.transactionId,
@@ -563,7 +563,7 @@ placeOrderTransactionsRouter.post(
             })({
                 action: actionRepo,
                 orderNumber: orderNumberRepo,
-                token: tokenRepo,
+                seller: sellerRepo,
                 transaction: transactionRepo
             });
 
