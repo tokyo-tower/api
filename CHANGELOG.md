@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - 座席予約承認結果をCinerino化
+- 注文取引結果生成処理をCinerino化
 
 ### Deprecated
 
