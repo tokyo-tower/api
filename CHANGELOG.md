@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 座席予約承認結果をCinerino化
+
 ### Deprecated
 
 ### Removed

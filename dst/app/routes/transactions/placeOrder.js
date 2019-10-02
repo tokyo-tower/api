@@ -319,7 +319,9 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         })({
             action: actionRepo
         });
-        const tmpReservations = authorizeSeatReservationResult.tmpReservations;
+        const tmpReservations = (Array.isArray(authorizeSeatReservationResult.tmpReservations))
+            ? authorizeSeatReservationResult.tmpReservations
+            : [];
         const reserveTransaction = authorizeSeatReservationResult.responseBody;
         if (reserveTransaction === undefined) {
             throw new ttts.factory.errors.Argument('Transaction', 'Reserve trasaction required');
@@ -336,7 +338,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             agent: { id: req.user.sub },
             client: { id: req.user.client_id },
             paymentMethodType: paymentMethodType,
-            tmpReservations: tmpReservations,
+            amount: authorizeSeatReservationResult.price,
             transaction: { id: req.params.transactionId }
         })({
             action: actionRepo,
@@ -365,12 +367,9 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
                 tmpReservation: tmpReservation,
                 chevreReservation: chevreReservation,
                 transaction: transaction,
-                // orderNumber: orderNumber,
                 paymentNo: paymentNo,
                 gmoOrderId: authorizePaymentMethodActionResult.paymentMethodId,
                 paymentSeatIndex: index.toString(),
-                // customer: profile,
-                // bookingTime: orderDate,
                 paymentMethodName: authorizePaymentMethodActionResult.name
             });
         });
@@ -386,11 +385,6 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
                             return {
                                 id: r.id,
                                 additionalTicketText: r.additionalTicketText,
-                                // reservedTicket: {
-                                //     issuedBy: r.reservedTicket.issuedBy,
-                                //     ticketToken: r.reservedTicket.ticketToken,
-                                //     underName: r.reservedTicket.underName
-                                // },
                                 underName: r.underName,
                                 additionalProperty: r.additionalProperty
                             };
@@ -513,12 +507,6 @@ function authorizeOtherPayment(params) {
         if (authorizePaymentMethodAction === undefined) {
             // クライアントがPOSあるいは内部予約の場合、決済方法承認アクションを自動生成
             if (params.client.id === POS_CLIENT_ID || params.client.id === STAFF_CLIENT_ID) {
-                const price = params.tmpReservations.reduce((a, b) => {
-                    const unitPrice = (b.reservedTicket.ticketType.priceSpecification !== undefined)
-                        ? b.reservedTicket.ticketType.priceSpecification.price
-                        : 0;
-                    return a + unitPrice;
-                }, 0);
                 let authorizingPaymentMethodType;
                 switch (params.paymentMethodType) {
                     case ttts.factory.cinerino.paymentMethodType.Cash:
@@ -538,7 +526,7 @@ function authorizeOtherPayment(params) {
                         typeOf: authorizingPaymentMethodType,
                         name: params.paymentMethodType,
                         additionalProperty: [],
-                        amount: price
+                        amount: params.amount
                     },
                     purpose: { typeOf: ttts.factory.transactionType.PlaceOrder, id: params.transaction.id }
                 })(repos);
@@ -553,7 +541,6 @@ function authorizeOtherPayment(params) {
 function temporaryReservation2confirmed(params) {
     const customer = params.transaction.agent;
     const underName = Object.assign({ typeOf: ttts.factory.personType.Person, id: customer.id, name: `${customer.givenName} ${customer.familyName}`, familyName: customer.familyName, givenName: customer.givenName, email: customer.email, telephone: customer.telephone, gender: customer.gender, identifier: [
-            // { name: 'orderNumber', value: params.orderNumber },
             { name: 'paymentNo', value: params.paymentNo },
             { name: 'transaction', value: params.transaction.id },
             { name: 'gmoOrderId', value: params.gmoOrderId },
