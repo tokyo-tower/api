@@ -215,20 +215,21 @@ placeOrderTransactionsRouter.post(
 
             const performanceId: string = req.body.performance_id;
 
-            const action = await ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
-                req.project,
-                req.user.sub,
-                req.params.transactionId,
-                performanceId,
-                (<any[]>req.body.offers).map((offer) => {
-                    return {
-                        ticket_type: offer.ticket_type,
-                        watcher_name: offer.watcher_name
-                    };
-                })
-            )(
+            const action = await ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create({
+                project: req.project,
+                agent: { id: req.user.sub },
+                transaction: { id: req.params.transactionId },
+                object: {
+                    event: { id: performanceId },
+                    acceptedOffers: (<any[]>req.body.offers).map((offer) => {
+                        return {
+                            ticket_type: offer.ticket_type,
+                            watcher_name: offer.watcher_name
+                        };
+                    })
+                }
+            })(
                 new ttts.repository.Transaction(mongoose.connection),
-                // new ttts.repository.Performance(mongoose.connection),
                 new ttts.repository.Action(mongoose.connection),
                 new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
                 new ttts.repository.Task(mongoose.connection),
@@ -269,12 +270,12 @@ placeOrderTransactionsRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            await ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.cancel(
-                req.project,
-                req.user.sub,
-                req.params.transactionId,
-                req.params.actionId
-            )(
+            await ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.cancel({
+                project: req.project,
+                agent: { id: req.user.sub },
+                transaction: { id: req.params.transactionId },
+                id: req.params.actionId
+            })(
                 new ttts.repository.Transaction(mongoose.connection),
                 new ttts.repository.Action(mongoose.connection),
                 new ttts.repository.rateLimit.TicketTypeCategory(redisClient),

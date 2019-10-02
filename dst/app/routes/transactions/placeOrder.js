@@ -173,14 +173,20 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
             req.body.offers = [];
         }
         const performanceId = req.body.performance_id;
-        const action = yield ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(req.project, req.user.sub, req.params.transactionId, performanceId, req.body.offers.map((offer) => {
-            return {
-                ticket_type: offer.ticket_type,
-                watcher_name: offer.watcher_name
-            };
-        }))(new ttts.repository.Transaction(mongoose.connection), 
-        // new ttts.repository.Performance(mongoose.connection),
-        new ttts.repository.Action(mongoose.connection), new ttts.repository.rateLimit.TicketTypeCategory(redisClient), new ttts.repository.Task(mongoose.connection), new ttts.repository.Project(mongoose.connection));
+        const action = yield ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create({
+            project: req.project,
+            agent: { id: req.user.sub },
+            transaction: { id: req.params.transactionId },
+            object: {
+                event: { id: performanceId },
+                acceptedOffers: req.body.offers.map((offer) => {
+                    return {
+                        ticket_type: offer.ticket_type,
+                        watcher_name: offer.watcher_name
+                    };
+                })
+            }
+        })(new ttts.repository.Transaction(mongoose.connection), new ttts.repository.Action(mongoose.connection), new ttts.repository.rateLimit.TicketTypeCategory(redisClient), new ttts.repository.Task(mongoose.connection), new ttts.repository.Project(mongoose.connection));
         // 余分確保予約を除いてレスポンスを返す
         if (action.result !== undefined) {
             action.result.tmpReservations = (Array.isArray(action.result.tmpReservations))
@@ -208,7 +214,12 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
  */
 placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.cancel(req.project, req.user.sub, req.params.transactionId, req.params.actionId)(new ttts.repository.Transaction(mongoose.connection), new ttts.repository.Action(mongoose.connection), new ttts.repository.rateLimit.TicketTypeCategory(redisClient), new ttts.repository.Task(mongoose.connection), new ttts.repository.Project(mongoose.connection));
+        yield ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.cancel({
+            project: req.project,
+            agent: { id: req.user.sub },
+            transaction: { id: req.params.transactionId },
+            id: req.params.actionId
+        })(new ttts.repository.Transaction(mongoose.connection), new ttts.repository.Action(mongoose.connection), new ttts.repository.rateLimit.TicketTypeCategory(redisClient), new ttts.repository.Task(mongoose.connection), new ttts.repository.Project(mongoose.connection));
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
