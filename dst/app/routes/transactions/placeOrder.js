@@ -187,21 +187,6 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
                 })
             }
         })(new ttts.repository.Transaction(mongoose.connection), new ttts.repository.Action(mongoose.connection), new ttts.repository.rateLimit.TicketTypeCategory(redisClient), new ttts.repository.Task(mongoose.connection), new ttts.repository.Project(mongoose.connection));
-        // 余分確保予約を除いてレスポンスを返す
-        if (action.result !== undefined) {
-            action.result.tmpReservations = (Array.isArray(action.result.tmpReservations))
-                ? action.result.tmpReservations.filter((r) => {
-                    // 余分確保分を除く
-                    let extraProperty;
-                    if (r.additionalProperty !== undefined) {
-                        extraProperty = r.additionalProperty.find((p) => p.name === 'extra');
-                    }
-                    return r.additionalProperty === undefined
-                        || extraProperty === undefined
-                        || extraProperty.value !== '1';
-                })
-                : [];
-        }
         res.status(http_status_1.CREATED)
             .json(action);
     }
@@ -330,8 +315,8 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         })({
             action: actionRepo
         });
-        const tmpReservations = (Array.isArray(authorizeSeatReservationResult.tmpReservations))
-            ? authorizeSeatReservationResult.tmpReservations
+        const acceptedOffers = (Array.isArray(authorizeSeatReservationResult.acceptedOffers))
+            ? authorizeSeatReservationResult.acceptedOffers
             : [];
         const reserveTransaction = authorizeSeatReservationResult.responseBody;
         if (reserveTransaction === undefined) {
@@ -369,13 +354,14 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`;
         const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationConfirmed`;
         // 予約確定パラメータを生成
-        const eventReservations = tmpReservations.map((tmpReservation, index) => {
-            const chevreReservation = chevreReservations.find((r) => r.id === tmpReservation.id);
+        const eventReservations = acceptedOffers.map((acceptedOffer, index) => {
+            const reservation = acceptedOffer.itemOffered;
+            const chevreReservation = chevreReservations.find((r) => r.id === reservation.id);
             if (chevreReservation === undefined) {
-                throw new ttts.factory.errors.Argument('Transaction', `Unexpected temporary reservation: ${tmpReservation.id}`);
+                throw new ttts.factory.errors.Argument('Transaction', `Unexpected temporary reservation: ${reservation.id}`);
             }
             return temporaryReservation2confirmed({
-                tmpReservation: tmpReservation,
+                reservation: reservation,
                 chevreReservation: chevreReservation,
                 transaction: transaction,
                 paymentNo: paymentNo,
@@ -434,7 +420,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         // 決済承認後に注文日時を確定しなければ、取引条件を満たさないので注意
         const orderDate = new Date();
         // 印刷トークンを事前に発行
-        const printToken = yield tokenRepo.createPrintToken(tmpReservations.map((r) => r.id));
+        const printToken = yield tokenRepo.createPrintToken(acceptedOffers.map((o) => o.itemOffered.id));
         const transactionResult = yield ttts.service.transaction.placeOrderInProgress.confirm({
             project: req.project,
             agent: { id: req.user.sub },
@@ -567,9 +553,9 @@ function temporaryReservation2confirmed(params) {
                 : []
         ] }, { address: customer.address });
     return Object.assign({}, params.chevreReservation, { underName: underName, additionalProperty: [
-            ...(Array.isArray(params.tmpReservation.additionalProperty)) ? params.tmpReservation.additionalProperty : [],
+            ...(Array.isArray(params.reservation.additionalProperty)) ? params.reservation.additionalProperty : [],
             { name: 'paymentSeatIndex', value: params.paymentSeatIndex }
-        ], additionalTicketText: params.tmpReservation.additionalTicketText });
+        ], additionalTicketText: params.reservation.additionalTicketText });
 }
 placeOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification', permitScopes_1.default(['transactions']), (req, __2, next) => {
     req.checkBody('sender.name', 'invalid sender')
