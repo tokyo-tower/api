@@ -215,42 +215,26 @@ placeOrderTransactionsRouter.post(
 
             const performanceId: string = req.body.performance_id;
 
-            const action = await ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
-                req.project,
-                req.user.sub,
-                req.params.transactionId,
-                performanceId,
-                (<any[]>req.body.offers).map((offer) => {
-                    return {
-                        ticket_type: offer.ticket_type,
-                        watcher_name: offer.watcher_name
-                    };
-                })
-            )(
+            const action = await ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create({
+                project: req.project,
+                agent: { id: req.user.sub },
+                transaction: { id: req.params.transactionId },
+                object: {
+                    event: { id: performanceId },
+                    acceptedOffers: (<any[]>req.body.offers).map((offer) => {
+                        return {
+                            ticket_type: offer.ticket_type,
+                            watcher_name: offer.watcher_name
+                        };
+                    })
+                }
+            })(
                 new ttts.repository.Transaction(mongoose.connection),
-                // new ttts.repository.Performance(mongoose.connection),
                 new ttts.repository.Action(mongoose.connection),
                 new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
                 new ttts.repository.Task(mongoose.connection),
                 new ttts.repository.Project(mongoose.connection)
             );
-
-            // 余分確保予約を除いてレスポンスを返す
-            if (action.result !== undefined) {
-                action.result.tmpReservations = (Array.isArray(action.result.tmpReservations))
-                    ? action.result.tmpReservations.filter((r) => {
-                        // 余分確保分を除く
-                        let extraProperty: ttts.factory.propertyValue.IPropertyValue<string> | undefined;
-                        if (r.additionalProperty !== undefined) {
-                            extraProperty = r.additionalProperty.find((p) => p.name === 'extra');
-                        }
-
-                        return r.additionalProperty === undefined
-                            || extraProperty === undefined
-                            || extraProperty.value !== '1';
-                    })
-                    : [];
-            }
 
             res.status(CREATED)
                 .json(action);
@@ -269,12 +253,12 @@ placeOrderTransactionsRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            await ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.cancel(
-                req.project,
-                req.user.sub,
-                req.params.transactionId,
-                req.params.actionId
-            )(
+            await ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.cancel({
+                project: req.project,
+                agent: { id: req.user.sub },
+                transaction: { id: req.params.transactionId },
+                id: req.params.actionId
+            })(
                 new ttts.repository.Transaction(mongoose.connection),
                 new ttts.repository.Action(mongoose.connection),
                 new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
@@ -419,7 +403,9 @@ placeOrderTransactionsRouter.post(
             })({
                 action: actionRepo
             });
-            const tmpReservations = authorizeSeatReservationResult.tmpReservations;
+            const acceptedOffers = (Array.isArray(authorizeSeatReservationResult.acceptedOffers))
+                ? authorizeSeatReservationResult.acceptedOffers
+                : [];
             const reserveTransaction = authorizeSeatReservationResult.responseBody;
             if (reserveTransaction === undefined) {
                 throw new ttts.factory.errors.Argument('Transaction', 'Reserve trasaction required');
@@ -437,7 +423,7 @@ placeOrderTransactionsRouter.post(
                 agent: { id: req.user.sub },
                 client: { id: req.user.client_id },
                 paymentMethodType: paymentMethodType,
-                tmpReservations: tmpReservations,
+                amount: authorizeSeatReservationResult.price,
                 transaction: { id: req.params.transactionId }
             })({
                 action: actionRepo,
@@ -461,22 +447,21 @@ placeOrderTransactionsRouter.post(
             const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationConfirmed`;
 
             // 予約確定パラメータを生成
-            const eventReservations = tmpReservations.map((tmpReservation, index) => {
-                const chevreReservation = chevreReservations.find((r) => r.id === tmpReservation.id);
+            const eventReservations = acceptedOffers.map((acceptedOffer, index) => {
+                const reservation = acceptedOffer.itemOffered;
+
+                const chevreReservation = chevreReservations.find((r) => r.id === reservation.id);
                 if (chevreReservation === undefined) {
-                    throw new ttts.factory.errors.Argument('Transaction', `Unexpected temporary reservation: ${tmpReservation.id}`);
+                    throw new ttts.factory.errors.Argument('Transaction', `Unexpected temporary reservation: ${reservation.id}`);
                 }
 
                 return temporaryReservation2confirmed({
-                    tmpReservation: tmpReservation,
+                    reservation: reservation,
                     chevreReservation: chevreReservation,
                     transaction: <any>transaction,
-                    // orderNumber: orderNumber,
                     paymentNo: paymentNo,
                     gmoOrderId: authorizePaymentMethodActionResult.paymentMethodId,
                     paymentSeatIndex: index.toString(),
-                    // customer: profile,
-                    // bookingTime: orderDate,
                     paymentMethodName: authorizePaymentMethodActionResult.name
                 });
             });
@@ -493,11 +478,6 @@ placeOrderTransactionsRouter.post(
                                 return {
                                     id: r.id,
                                     additionalTicketText: r.additionalTicketText,
-                                    // reservedTicket: {
-                                    //     issuedBy: r.reservedTicket.issuedBy,
-                                    //     ticketToken: r.reservedTicket.ticketToken,
-                                    //     underName: r.reservedTicket.underName
-                                    // },
                                     underName: r.underName,
                                     additionalProperty: r.additionalProperty
                                 };
@@ -542,7 +522,7 @@ placeOrderTransactionsRouter.post(
             const orderDate = new Date();
 
             // 印刷トークンを事前に発行
-            const printToken = await tokenRepo.createPrintToken(tmpReservations.map((r) => r.id));
+            const printToken = await tokenRepo.createPrintToken(acceptedOffers.map((o) => o.itemOffered.id));
 
             const transactionResult = await ttts.service.transaction.placeOrderInProgress.confirm({
                 project: req.project,
@@ -569,7 +549,7 @@ placeOrderTransactionsRouter.post(
             })({
                 action: actionRepo,
                 orderNumber: orderNumberRepo,
-                token: tokenRepo,
+                seller: sellerRepo,
                 transaction: transactionRepo
             });
 
@@ -627,7 +607,7 @@ function authorizeOtherPayment(params: {
     agent: { id: string };
     client: { id: string };
     paymentMethodType: ttts.factory.cinerino.paymentMethodType;
-    tmpReservations: ttts.factory.action.authorize.seatReservation.ITmpReservation[];
+    amount: number;
     transaction: { id: string };
 }) {
     return async (repos: {
@@ -650,17 +630,6 @@ function authorizeOtherPayment(params: {
         if (authorizePaymentMethodAction === undefined) {
             // クライアントがPOSあるいは内部予約の場合、決済方法承認アクションを自動生成
             if (params.client.id === POS_CLIENT_ID || params.client.id === STAFF_CLIENT_ID) {
-                const price: number = params.tmpReservations.reduce(
-                    (a, b) => {
-                        const unitPrice = (b.reservedTicket.ticketType.priceSpecification !== undefined)
-                            ? b.reservedTicket.ticketType.priceSpecification.price
-                            : 0;
-
-                        return a + unitPrice;
-                    },
-                    0
-                );
-
                 let authorizingPaymentMethodType: string;
                 switch (params.paymentMethodType) {
                     case ttts.factory.cinerino.paymentMethodType.Cash:
@@ -683,7 +652,7 @@ function authorizeOtherPayment(params: {
                         typeOf: authorizingPaymentMethodType,
                         name: params.paymentMethodType,
                         additionalProperty: [],
-                        amount: price
+                        amount: params.amount
                     },
                     purpose: { typeOf: ttts.factory.transactionType.PlaceOrder, id: params.transaction.id }
                 })(repos);
@@ -698,15 +667,12 @@ function authorizeOtherPayment(params: {
  * 仮予約から確定予約を生成する
  */
 function temporaryReservation2confirmed(params: {
-    tmpReservation: ttts.factory.action.authorize.seatReservation.ITmpReservation;
+    reservation: ttts.factory.order.IReservation;
     chevreReservation: ttts.factory.chevre.reservation.IReservation<ttts.factory.chevre.reservationType.EventReservation>;
     transaction: ttts.factory.cinerino.transaction.ITransaction<ttts.factory.cinerino.transactionType.PlaceOrder>;
-    // orderNumber: string;
     paymentNo: string;
     gmoOrderId: string;
     paymentSeatIndex: string;
-    // customer: ttts.factory.transaction.placeOrder.IAgent;
-    // bookingTime: Date;
     paymentMethodName: string;
 }): ttts.factory.chevre.reservation.IReservation<ttts.factory.chevre.reservationType.EventReservation> {
     const customer = params.transaction.agent;
@@ -721,7 +687,6 @@ function temporaryReservation2confirmed(params: {
         telephone: customer.telephone,
         gender: customer.gender,
         identifier: [
-            // { name: 'orderNumber', value: params.orderNumber },
             { name: 'paymentNo', value: params.paymentNo },
             { name: 'transaction', value: params.transaction.id },
             { name: 'gmoOrderId', value: params.gmoOrderId },
@@ -743,10 +708,10 @@ function temporaryReservation2confirmed(params: {
         ...params.chevreReservation,
         underName: underName,
         additionalProperty: [
-            ...(Array.isArray(params.tmpReservation.additionalProperty)) ? params.tmpReservation.additionalProperty : [],
+            ...(Array.isArray(params.reservation.additionalProperty)) ? params.reservation.additionalProperty : [],
             { name: 'paymentSeatIndex', value: params.paymentSeatIndex }
         ],
-        additionalTicketText: params.tmpReservation.additionalTicketText
+        additionalTicketText: params.reservation.additionalTicketText
     };
 }
 
