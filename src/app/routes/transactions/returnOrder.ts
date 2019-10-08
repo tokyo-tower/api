@@ -89,6 +89,11 @@ returnOrderTransactionsRouter.post(
                 .filter((a) => a.typeOf === ttts.factory.actionType.PayAction)
                 .filter((a) => a.actionStatus === ttts.factory.actionStatusType.CompletedActionStatus);
 
+            const emailCustomization = getEmailCustomization({
+                placeOrderTransaction: placeOrderTransaction,
+                reason: ttts.factory.transaction.returnOrder.Reason.Customer
+            });
+
             // クレジットカード返金アクション
             const refundCreditCardActionsParams =
                 await Promise.all((<ttts.factory.cinerino.action.trade.pay.IAction<ttts.factory.paymentMethodType.CreditCard>[]>payActions)
@@ -113,7 +118,9 @@ returnOrderTransactionsRouter.post(
                                      * 挿入変数として`order`を使用できます
                                      * @see https://pugjs.org/api/getting-started.html
                                      */
-                                    // object?: ICustomization;
+                                    ...(emailCustomization !== undefined)
+                                        ? { object: emailCustomization }
+                                        : undefined
                                 }
                             }
                         };
@@ -182,6 +189,55 @@ returnOrderTransactionsRouter.post(
         }
     }
 );
+
+export function getEmailCustomization(params: {
+    placeOrderTransaction: ttts.factory.transaction.placeOrder.ITransaction;
+    reason: ttts.factory.transaction.returnOrder.Reason;
+}) {
+    // const placeOrderTransaction = returnOrderTransaction.object.transaction;
+    if (params.placeOrderTransaction.result === undefined) {
+        throw new ttts.factory.errors.NotFound('PlaceOrder Transaction Result');
+    }
+    // const order = params.placeOrderTransaction.result.order;
+
+    // let emailMessageAttributes: ttts.factory.creativeWork.message.email.IAttributes;
+    const emailMessage: ttts.factory.creativeWork.message.email.ICreativeWork | undefined = undefined;
+
+    switch (params.reason) {
+        case ttts.factory.transaction.returnOrder.Reason.Customer:
+            // no op
+
+            break;
+
+        case ttts.factory.transaction.returnOrder.Reason.Seller:
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO 二重送信対策
+            // emailMessageAttributes = await createEmailMessage4sellerReason(params.placeOrderTransaction);
+            // emailMessage = {
+            //     typeOf: ttts.factory.creativeWorkType.EmailMessage,
+            //     identifier: `returnOrderTransaction-${order.orderNumber}`,
+            //     name: `returnOrderTransaction-${order.orderNumber}`,
+            //     sender: {
+            //         typeOf: params.placeOrderTransaction.seller.typeOf,
+            //         name: emailMessageAttributes.sender.name,
+            //         email: emailMessageAttributes.sender.email
+            //     },
+            //     toRecipient: {
+            //         typeOf: params.placeOrderTransaction.agent.typeOf,
+            //         name: emailMessageAttributes.toRecipient.name,
+            //         email: emailMessageAttributes.toRecipient.email
+            //     },
+            //     about: emailMessageAttributes.about,
+            //     text: emailMessageAttributes.text
+            // };
+
+            break;
+
+        default:
+    }
+
+    return emailMessage;
+}
 
 /**
  * 返品メール送信
