@@ -14,6 +14,7 @@ import watchReturnOrderTransaction from './continuous/watchReturnOrderTransactio
 
 import aggregateEventReservations from './continuous/aggregateEventReservations/run';
 import cancelCreditCard from './continuous/cancelCreditCard/run';
+import cancelReservation from './continuous/cancelReservation/run';
 import cancelSeatReservation from './continuous/cancelSeatReservation/run';
 import confirmReservation from './continuous/confirmReservation/run';
 import createPlaceOrderReport from './continuous/createPlaceOrderReport/run';
@@ -48,6 +49,7 @@ export default async () => {
 
     await aggregateEventReservations({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await cancelCreditCard({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    await cancelReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await cancelSeatReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await confirmReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await createPlaceOrderReport({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
