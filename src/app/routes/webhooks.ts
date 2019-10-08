@@ -173,7 +173,7 @@ webhooksRouter.post(
                 const isExtra = extraProperty !== undefined && extraProperty.value === '1';
 
                 if (!isExtra) {
-                    await ttts.service.reserve.cancelReservation({ id: req.params.id })({
+                    await ttts.service.reserve.cancelReservation({ id: reservation.id })({
                         reservation: new ttts.repository.Reservation(mongoose.connection),
                         task: new ttts.repository.Task(mongoose.connection),
                         ticketTypeCategoryRateLimit: new ttts.repository.rateLimit.TicketTypeCategory(redisClient),

@@ -142,7 +142,7 @@ webhooksRouter.post('/onReservationCancelled', (req, res, next) => __awaiter(thi
             }
             const isExtra = extraProperty !== undefined && extraProperty.value === '1';
             if (!isExtra) {
-                yield ttts.service.reserve.cancelReservation({ id: req.params.id })({
+                yield ttts.service.reserve.cancelReservation({ id: reservation.id })({
                     reservation: new ttts.repository.Reservation(mongoose.connection),
                     task: new ttts.repository.Task(mongoose.connection),
                     ticketTypeCategoryRateLimit: new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
