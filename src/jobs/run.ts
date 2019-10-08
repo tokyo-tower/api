@@ -21,6 +21,7 @@ import createPlaceOrderReport from './continuous/createPlaceOrderReport/run';
 import createReturnOrderReport from './continuous/createReturnOrderReport/run';
 import payCreditCard from './continuous/payCreditCard/run';
 import placeOrder from './continuous/placeOrder/run';
+import refundCreditCard from './continuous/refundCreditCard/run';
 import returnOrder from './continuous/returnOrder/run';
 import returnOrdersByPerformance from './continuous/returnOrdersByPerformance/run';
 import sendEmailMessage from './continuous/sendEmailMessage/run';
@@ -56,6 +57,7 @@ export default async () => {
     await createReturnOrderReport({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await payCreditCard({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await placeOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    await refundCreditCard({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await returnOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await returnOrdersByPerformance({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await sendEmailMessage({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
