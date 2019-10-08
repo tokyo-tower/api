@@ -44,8 +44,10 @@ returnOrderTransactionsRouter.post(
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
+            const actionRepo = new ttts.repository.Action(mongoose.connection);
             const invoiceRepo = new ttts.repository.Invoice(mongoose.connection);
             const orderRepo = new ttts.repository.Order(mongoose.connection);
+            const sellerRepo = new ttts.repository.Seller(mongoose.connection);
             const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
 
             // 確認番号で注文検索
@@ -81,6 +83,41 @@ returnOrderTransactionsRouter.post(
 
             const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onReturnOrder`;
             const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationCancelled`;
+
+            const actionsOnOrder = await actionRepo.searchByOrderNumber({ orderNumber: order.orderNumber });
+            const payActions = <ttts.factory.cinerino.action.trade.pay.IAction<ttts.factory.paymentMethodType>[]>actionsOnOrder
+                .filter((a) => a.typeOf === ttts.factory.actionType.PayAction)
+                .filter((a) => a.actionStatus === ttts.factory.actionStatusType.CompletedActionStatus);
+
+            // クレジットカード返金アクション
+            const refundCreditCardActionsParams =
+                await Promise.all((<ttts.factory.cinerino.action.trade.pay.IAction<ttts.factory.paymentMethodType.CreditCard>[]>payActions)
+                    .filter((a) => a.object[0].paymentMethod.typeOf === ttts.factory.paymentMethodType.CreditCard)
+                    // tslint:disable-next-line:max-line-length
+                    .map(async (a) => {
+                        return {
+                            object: {
+                                object: a.object.map((o) => {
+                                    return {
+                                        paymentMethod: {
+                                            paymentMethodId: o.paymentMethod.paymentMethodId
+                                        }
+                                    };
+                                })
+                            },
+                            potentialActions: {
+                                sendEmailMessage: {
+                                    /**
+                                     * 返金メールカスタマイズ
+                                     * メール本文をカスタマイズしたい場合、PUGテンプレートを指定
+                                     * 挿入変数として`order`を使用できます
+                                     * @see https://pugjs.org/api/getting-started.html
+                                     */
+                                    // object?: ICustomization;
+                                }
+                            }
+                        };
+                    }));
 
             const confirmReservationParams: ttts.factory.cinerino.transaction.returnOrder.ICancelReservationParams[] =
                 authorizeSeatReservationActions.map((authorizeSeatReservationAction) => {
@@ -124,12 +161,15 @@ returnOrderTransactionsRouter.post(
                     returnOrder: {
                         potentialActions: {
                             cancelReservation: confirmReservationParams,
-                            informOrder: informOrderParams
+                            informOrder: informOrderParams,
+                            refundCreditCard: refundCreditCardActionsParams
                         }
                     }
                 }
             })({
+                action: actionRepo,
                 invoice: invoiceRepo,
+                seller: sellerRepo,
                 transaction: transactionRepo
             });
 
