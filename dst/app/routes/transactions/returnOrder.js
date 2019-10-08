@@ -103,7 +103,11 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
                 potentialActions: {
                     sendEmailMessage: Object.assign({}, (emailCustomization !== undefined)
                         ? { object: emailCustomization }
-                        : undefined)
+                        : undefined),
+                    // クレジットカード返金後に注文通知
+                    informOrder: [
+                        { recipient: { url: informOrderUrl } }
+                    ]
                 }
             };
         })));
@@ -129,9 +133,7 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
             };
         });
         // 注文通知パラメータを生成
-        const informOrderParams = [
-            { recipient: { url: informOrderUrl } }
-        ];
+        const informOrderParams = [];
         // 取引があれば、返品取引確定
         const returnOrderTransaction = yield ttts.service.transaction.returnOrder.confirm({
             clientUser: req.user,

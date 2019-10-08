@@ -121,7 +121,11 @@ returnOrderTransactionsRouter.post(
                                     ...(emailCustomization !== undefined)
                                         ? { object: emailCustomization }
                                         : undefined
-                                }
+                                },
+                                // クレジットカード返金後に注文通知
+                                informOrder: [
+                                    { recipient: { url: informOrderUrl } }
+                                ]
                             }
                         };
                     }));
@@ -152,9 +156,7 @@ returnOrderTransactionsRouter.post(
                 });
 
             // 注文通知パラメータを生成
-            const informOrderParams: ttts.factory.cinerino.transaction.returnOrder.IInformOrderParams[] = [
-                { recipient: { url: informOrderUrl } }
-            ];
+            const informOrderParams: ttts.factory.cinerino.transaction.returnOrder.IInformOrderParams[] = [];
 
             // 取引があれば、返品取引確定
             const returnOrderTransaction = await ttts.service.transaction.returnOrder.confirm({
