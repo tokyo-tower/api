@@ -41,7 +41,9 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
         .withMessage('forcibly is required')
         .isBoolean();
     next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}, validator_1.default, 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const invoiceRepo = new ttts.repository.Invoice(mongoose.connection);
         const orderRepo = new ttts.repository.Order(mongoose.connection);
@@ -67,6 +69,37 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
         if (placeOrderTransaction === undefined) {
             throw new ttts.factory.errors.NotFound('Transaction');
         }
+        // tslint:disable-next-line:max-line-length
+        const authorizeSeatReservationActions = placeOrderTransaction.object.authorizeActions
+            .filter((a) => a.object.typeOf === ttts.factory.cinerino.action.authorize.offer.seatReservation.ObjectType.SeatReservation)
+            .filter((a) => a.actionStatus === ttts.factory.actionStatusType.CompletedActionStatus);
+        const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onReturnOrder`;
+        const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationCancelled`;
+        const confirmReservationParams = authorizeSeatReservationActions.map((authorizeSeatReservationAction) => {
+            if (authorizeSeatReservationAction.result === undefined) {
+                throw new ttts.factory.errors.NotFound('Result of seat reservation authorize action');
+            }
+            const reserveTransaction = authorizeSeatReservationAction.result.responseBody;
+            return {
+                object: {
+                    typeOf: reserveTransaction.typeOf,
+                    id: reserveTransaction.id
+                },
+                potentialActions: {
+                    cancelReservation: {
+                        potentialActions: {
+                            informReservation: [
+                                { recipient: { url: informReservationUrl } }
+                            ]
+                        }
+                    }
+                }
+            };
+        });
+        // 注文通知パラメータを生成
+        const informOrderParams = [
+            { recipient: { url: informOrderUrl } }
+        ];
         // 取引があれば、返品取引確定
         const returnOrderTransaction = yield ttts.service.transaction.returnOrder.confirm({
             clientUser: req.user,
@@ -78,9 +111,8 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
             potentialActions: {
                 returnOrder: {
                     potentialActions: {
-                        informOrder: [
-                            { recipient: { url: `${req.protocol}://${req.hostname}/webhooks/onReturnOrder` } }
-                        ]
+                        cancelReservation: confirmReservationParams,
+                        informOrder: informOrderParams
                     }
                 }
             }

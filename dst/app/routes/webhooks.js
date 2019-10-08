@@ -17,6 +17,12 @@ const moment = require("moment");
 const mongoose = require("mongoose");
 const webhooksRouter = express.Router();
 const http_status_1 = require("http-status");
+const redisClient = ttts.redis.createClient({
+    host: process.env.REDIS_HOST,
+    port: Number(process.env.REDIS_PORT),
+    password: process.env.REDIS_KEY,
+    tls: { servername: process.env.REDIS_HOST }
+});
 webhooksRouter.post('/onPlaceOrder', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const order = req.body.data;
@@ -110,6 +116,38 @@ webhooksRouter.post('/onReservationConfirmed', (req, res, next) => __awaiter(thi
                     }
                 };
                 yield taskRepo.save(task);
+            }
+        }
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 予約取消イベント
+ */
+webhooksRouter.post('/onReservationCancelled', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const reservation = req.body.data;
+        if (reservation !== undefined
+            && reservation !== null
+            && typeof reservation.id === 'string'
+            && typeof reservation.reservationNumber === 'string') {
+            // 余分確保分を除く
+            let extraProperty;
+            if (reservation.additionalProperty !== undefined) {
+                extraProperty = reservation.additionalProperty.find((p) => p.name === 'extra');
+            }
+            const isExtra = extraProperty !== undefined && extraProperty.value === '1';
+            if (!isExtra) {
+                yield ttts.service.reserve.cancelReservation({ id: req.params.id })({
+                    reservation: new ttts.repository.Reservation(mongoose.connection),
+                    task: new ttts.repository.Task(mongoose.connection),
+                    ticketTypeCategoryRateLimit: new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
+                    project: new ttts.repository.Project(mongoose.connection)
+                });
             }
         }
         res.status(http_status_1.NO_CONTENT)

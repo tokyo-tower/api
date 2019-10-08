@@ -41,6 +41,7 @@ returnOrderTransactionsRouter.post(
         next();
     },
     validator,
+    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
             const invoiceRepo = new ttts.repository.Invoice(mongoose.connection);
@@ -60,7 +61,7 @@ returnOrderTransactionsRouter.post(
             }
 
             // 注文取引を検索する
-            const placeOrderTransactions = await transactionRepo.search({
+            const placeOrderTransactions = await transactionRepo.search<ttts.factory.transactionType.PlaceOrder>({
                 limit: 1,
                 typeOf: ttts.factory.transactionType.PlaceOrder,
                 result: { order: { orderNumbers: [order.orderNumber] } }
@@ -69,6 +70,47 @@ returnOrderTransactionsRouter.post(
             if (placeOrderTransaction === undefined) {
                 throw new ttts.factory.errors.NotFound('Transaction');
             }
+
+            // tslint:disable-next-line:max-line-length
+            const authorizeSeatReservationActions = <ttts.factory.cinerino.action.authorize.offer.seatReservation.IAction<ttts.factory.cinerino.service.webAPI.Identifier.Chevre>[]>
+                placeOrderTransaction.object.authorizeActions
+                    .filter(
+                        (a) => a.object.typeOf === ttts.factory.cinerino.action.authorize.offer.seatReservation.ObjectType.SeatReservation
+                    )
+                    .filter((a) => a.actionStatus === ttts.factory.actionStatusType.CompletedActionStatus);
+
+            const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onReturnOrder`;
+            const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationCancelled`;
+
+            const confirmReservationParams: ttts.factory.cinerino.transaction.returnOrder.ICancelReservationParams[] =
+                authorizeSeatReservationActions.map((authorizeSeatReservationAction) => {
+                    if (authorizeSeatReservationAction.result === undefined) {
+                        throw new ttts.factory.errors.NotFound('Result of seat reservation authorize action');
+                    }
+
+                    const reserveTransaction = authorizeSeatReservationAction.result.responseBody;
+
+                    return {
+                        object: {
+                            typeOf: reserveTransaction.typeOf,
+                            id: reserveTransaction.id
+                        },
+                        potentialActions: {
+                            cancelReservation: {
+                                potentialActions: {
+                                    informReservation: [
+                                        { recipient: { url: informReservationUrl } }
+                                    ]
+                                }
+                            }
+                        }
+                    };
+                });
+
+            // 注文通知パラメータを生成
+            const informOrderParams: ttts.factory.cinerino.transaction.returnOrder.IInformOrderParams[] = [
+                { recipient: { url: informOrderUrl } }
+            ];
 
             // 取引があれば、返品取引確定
             const returnOrderTransaction = await ttts.service.transaction.returnOrder.confirm({
@@ -81,9 +123,8 @@ returnOrderTransactionsRouter.post(
                 potentialActions: {
                     returnOrder: {
                         potentialActions: {
-                            informOrder: [
-                                { recipient: { url: `${req.protocol}://${req.hostname}/webhooks/onReturnOrder` } }
-                            ]
+                            cancelReservation: confirmReservationParams,
+                            informOrder: informOrderParams
                         }
                     }
                 }

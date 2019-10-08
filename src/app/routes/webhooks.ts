@@ -10,6 +10,13 @@ const webhooksRouter = express.Router();
 
 import { NO_CONTENT } from 'http-status';
 
+const redisClient = ttts.redis.createClient({
+    host: <string>process.env.REDIS_HOST,
+    port: Number(<string>process.env.REDIS_PORT),
+    password: <string>process.env.REDIS_KEY,
+    tls: { servername: <string>process.env.REDIS_HOST }
+});
+
 webhooksRouter.post(
     '/onPlaceOrder',
     async (req, res, next) => {
@@ -133,6 +140,45 @@ webhooksRouter.post(
                         }
                     };
                     await taskRepo.save(<any>task);
+                }
+            }
+
+            res.status(NO_CONTENT)
+                .end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 予約取消イベント
+ */
+webhooksRouter.post(
+    '/onReservationCancelled',
+    async (req, res, next) => {
+        try {
+            const reservation =
+                <ttts.factory.chevre.reservation.IReservation<ttts.factory.chevre.reservationType.EventReservation>>req.body.data;
+
+            if (reservation !== undefined
+                && reservation !== null
+                && typeof reservation.id === 'string'
+                && typeof reservation.reservationNumber === 'string') {
+                // 余分確保分を除く
+                let extraProperty: ttts.factory.propertyValue.IPropertyValue<string> | undefined;
+                if (reservation.additionalProperty !== undefined) {
+                    extraProperty = reservation.additionalProperty.find((p) => p.name === 'extra');
+                }
+                const isExtra = extraProperty !== undefined && extraProperty.value === '1';
+
+                if (!isExtra) {
+                    await ttts.service.reserve.cancelReservation({ id: req.params.id })({
+                        reservation: new ttts.repository.Reservation(mongoose.connection),
+                        task: new ttts.repository.Task(mongoose.connection),
+                        ticketTypeCategoryRateLimit: new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
+                        project: new ttts.repository.Project(mongoose.connection)
+                    });
                 }
             }
 
