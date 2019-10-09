@@ -160,6 +160,7 @@ returnOrderTransactionsRouter.post(
 
             // 取引があれば、返品取引確定
             const returnOrderTransaction = await ttts.service.transaction.returnOrder.confirm({
+                project: req.project,
                 clientUser: req.user,
                 agentId: req.user.sub,
                 transactionId: placeOrderTransaction.id,

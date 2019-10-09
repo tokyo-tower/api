@@ -45,7 +45,7 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
         count += 1;
         try {
             yield ttts.service.task.executeByName({
-                name: ttts.factory.taskName.ReturnOrder
+                name: ttts.factory.cinerino.taskName.ReturnOrder
             })({
                 connection: connection,
                 redisClient: redisClient

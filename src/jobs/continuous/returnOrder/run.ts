@@ -52,7 +52,7 @@ export default async (params: {
 
             try {
                 await ttts.service.task.executeByName({
-                    name: ttts.factory.taskName.ReturnOrder
+                    name: <any>ttts.factory.cinerino.taskName.ReturnOrder
                 })({
                     connection: connection,
                     redisClient: redisClient

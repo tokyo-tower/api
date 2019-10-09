@@ -136,6 +136,7 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
         const informOrderParams = [];
         // 取引があれば、返品取引確定
         const returnOrderTransaction = yield ttts.service.transaction.returnOrder.confirm({
+            project: req.project,
             clientUser: req.user,
             agentId: req.user.sub,
             transactionId: placeOrderTransaction.id,
