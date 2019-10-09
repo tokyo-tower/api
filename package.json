@@ -10,7 +10,7 @@
   ],
   "dependencies": {
     "@motionpicture/express-middleware": "^0.1.1",
-    "@tokyotower/domain": "33.0.0-alpha.10",
+    "@tokyotower/domain": "33.0.0-alpha.11",
     "basic-auth": "^2.0.0",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
