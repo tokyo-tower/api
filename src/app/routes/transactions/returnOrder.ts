@@ -159,7 +159,7 @@ returnOrderTransactionsRouter.post(
             const informOrderParams: ttts.factory.cinerino.transaction.returnOrder.IInformOrderParams[] = [];
 
             // 取引があれば、返品取引確定
-            const returnOrderTransaction = await ttts.service.transaction.returnOrder.confirm({
+            const returnOrderTransaction = await ttts.service.transaction.returnOrder.confirm4ttts({
                 project: req.project,
                 clientUser: req.user,
                 agentId: req.user.sub,
