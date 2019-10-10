@@ -6,6 +6,7 @@ import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { query } from 'express-validator/check';
 import { CREATED } from 'http-status';
+import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 const returnOrderTransactionsRouter = Router();
@@ -13,6 +14,8 @@ const returnOrderTransactionsRouter = Router();
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
+
+const CANCELLABLE_DAYS = 3;
 
 returnOrderTransactionsRouter.use(authentication);
 
@@ -44,9 +47,12 @@ returnOrderTransactionsRouter.post(
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
+            const now = new Date();
+
             const actionRepo = new ttts.repository.Action(mongoose.connection);
             const invoiceRepo = new ttts.repository.Invoice(mongoose.connection);
             const orderRepo = new ttts.repository.Order(mongoose.connection);
+            const projectRepo = new ttts.repository.Project(mongoose.connection);
             const sellerRepo = new ttts.repository.Seller(mongoose.connection);
             const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
 
@@ -158,15 +164,36 @@ returnOrderTransactionsRouter.post(
             // 注文通知パラメータを生成
             const informOrderParams: ttts.factory.cinerino.transaction.returnOrder.IInformOrderParams[] = [];
 
+            // 検証
+            const forcibly = req.body.forcibly === true;
+            if (!forcibly) {
+                const performanceStartDate = (<ttts.factory.order.IReservation>order.acceptedOffers[0].itemOffered)
+                    .reservationFor.startDate;
+
+                // 入塔予定日の3日前までキャンセル可能(3日前を過ぎていたらエラー)
+                const cancellableThrough = moment(performanceStartDate)
+                    .add(-CANCELLABLE_DAYS + 1, 'days')
+                    .toDate();
+                if (cancellableThrough <= now) {
+                    throw new ttts.factory.errors.Argument('performance_day', 'キャンセルできる期限を過ぎています。');
+                }
+            }
+
+            const expires = moment()
+                .add(1, 'minute')
+                .toDate();
+
             // 取引があれば、返品取引確定
             const returnOrderTransaction = await ttts.service.transaction.returnOrder.confirm4ttts({
                 project: req.project,
                 clientUser: req.user,
                 agentId: req.user.sub,
-                transactionId: placeOrderTransaction.id,
+                expires: expires,
+                order: { orderNumber: order.orderNumber },
                 cancellationFee: req.body.cancellation_fee,
-                forcibly: req.body.forcibly,
+                // forcibly: req.body.forcibly,
                 reason: ttts.factory.transaction.returnOrder.Reason.Customer,
+                seller: { typeOf: order.seller.typeOf, id: order.seller.id },
                 potentialActions: {
                     returnOrder: {
                         potentialActions: {
@@ -179,6 +206,8 @@ returnOrderTransactionsRouter.post(
             })({
                 action: actionRepo,
                 invoice: invoiceRepo,
+                order: orderRepo,
+                project: projectRepo,
                 seller: sellerRepo,
                 transaction: transactionRepo
             });
