@@ -101,7 +101,7 @@ returnOrderTransactionsRouter.post(
             });
 
             // クレジットカード返金アクション
-            const refundCreditCardActionsParams =
+            const refundCreditCardActionsParams: ttts.factory.transaction.returnOrder.IRefundCreditCardParams[] =
                 await Promise.all((<ttts.factory.cinerino.action.trade.pay.IAction<ttts.factory.paymentMethodType.CreditCard>[]>payActions)
                     .filter((a) => a.object[0].paymentMethod.typeOf === ttts.factory.paymentMethodType.CreditCard)
                     // tslint:disable-next-line:max-line-length
@@ -118,15 +118,15 @@ returnOrderTransactionsRouter.post(
                             },
                             potentialActions: {
                                 sendEmailMessage: {
-                                    /**
-                                     * 返金メールカスタマイズ
-                                     * メール本文をカスタマイズしたい場合、PUGテンプレートを指定
-                                     * 挿入変数として`order`を使用できます
-                                     * @see https://pugjs.org/api/getting-started.html
-                                     */
                                     ...(emailCustomization !== undefined)
                                         ? { object: emailCustomization }
-                                        : undefined
+                                        : {
+                                            object: {
+                                                toRecipient: {
+                                                    email: <string>process.env.DEVELOPER_EMAIL
+                                                }
+                                            }
+                                        }
                                 },
                                 // クレジットカード返金後に注文通知
                                 informOrder: [

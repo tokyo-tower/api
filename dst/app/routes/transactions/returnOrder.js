@@ -107,7 +107,13 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
                 potentialActions: {
                     sendEmailMessage: Object.assign({}, (emailCustomization !== undefined)
                         ? { object: emailCustomization }
-                        : undefined),
+                        : {
+                            object: {
+                                toRecipient: {
+                                    email: process.env.DEVELOPER_EMAIL
+                                }
+                            }
+                        }),
                     // クレジットカード返金後に注文通知
                     informOrder: [
                         { recipient: { url: informOrderUrl } }
