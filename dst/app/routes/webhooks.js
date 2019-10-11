@@ -23,6 +23,9 @@ const redisClient = ttts.redis.createClient({
     password: process.env.REDIS_KEY,
     tls: { servername: process.env.REDIS_HOST }
 });
+/**
+ * 注文イベント
+ */
 webhooksRouter.post('/onPlaceOrder', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const order = req.body.data;
@@ -49,11 +52,17 @@ webhooksRouter.post('/onPlaceOrder', (req, res, next) => __awaiter(this, void 0,
         next(error);
     }
 }));
+/**
+ * 注文返品イベント
+ */
 webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const order = req.body.data;
         if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
+            const orderRepo = new ttts.repository.Order(mongoose.connection);
+            const performanceRepo = new ttts.repository.Performance(mongoose.connection);
             const taskRepo = new ttts.repository.Task(mongoose.connection);
+            const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
             const taskAttribute = {
                 name: ttts.factory.taskName.CreateReturnOrderReport,
                 project: req.project,
@@ -67,6 +76,11 @@ webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(this, void 0
                 }
             };
             yield taskRepo.save(taskAttribute);
+            yield ttts.service.performance.onOrderReturned({ orderNumber: order.orderNumber })({
+                order: orderRepo,
+                performance: performanceRepo,
+                transaction: transactionRepo
+            });
         }
         res.status(http_status_1.NO_CONTENT)
             .end();
