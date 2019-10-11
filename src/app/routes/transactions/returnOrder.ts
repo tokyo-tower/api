@@ -36,10 +36,10 @@ returnOrderTransactionsRouter.post(
             .notEmpty()
             .withMessage('cancellation_fee is required')
             .isInt();
-        req.checkBody('forcibly', 'invalid forcibly')
-            .notEmpty()
-            .withMessage('forcibly is required')
-            .isBoolean();
+        // req.checkBody('forcibly', 'invalid forcibly')
+        //     .notEmpty()
+        //     .withMessage('forcibly is required')
+        //     .isBoolean();
 
         next();
     },

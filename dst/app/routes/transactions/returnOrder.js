@@ -38,10 +38,10 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
         .notEmpty()
         .withMessage('cancellation_fee is required')
         .isInt();
-    req.checkBody('forcibly', 'invalid forcibly')
-        .notEmpty()
-        .withMessage('forcibly is required')
-        .isBoolean();
+    // req.checkBody('forcibly', 'invalid forcibly')
+    //     .notEmpty()
+    //     .withMessage('forcibly is required')
+    //     .isBoolean();
     next();
 }, validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
