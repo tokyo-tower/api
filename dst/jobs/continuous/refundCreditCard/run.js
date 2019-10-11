@@ -1,4 +1,7 @@
 "use strict";
+/**
+ * クレジットカード売上取消
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8,23 +11,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * 返品実行
- */
 const ttts = require("@tokyotower/domain");
 const connectMongo_1 = require("../../../connectMongo");
-const singletonProcess = require("../../../singletonProcess");
-exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
-    let holdSingletonProcess = false;
-    setInterval(() => __awaiter(this, void 0, void 0, function* () {
-        holdSingletonProcess = yield singletonProcess.lock({
-            project: params.project,
-            key: 'returnOrder',
-            ttl: 60
-        });
-    }), 
-    // tslint:disable-next-line:no-magic-numbers
-    10000);
+exports.default = (_) => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     const redisClient = ttts.redis.createClient({
         host: process.env.REDIS_HOST,
@@ -34,18 +23,16 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     });
     let count = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
-    const INTERVAL_MILLISECONDS = 500;
+    const INTERVAL_MILLISECONDS = 1000;
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
-        if (!holdSingletonProcess) {
-            return;
-        }
         if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
             return;
         }
         count += 1;
         try {
             yield ttts.service.task.executeByName({
-                name: ttts.factory.cinerino.taskName.ReturnOrder
+                // project: params.project,
+                name: ttts.factory.cinerino.taskName.RefundCreditCard
             })({
                 connection: connection,
                 redisClient: redisClient

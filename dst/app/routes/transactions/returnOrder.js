@@ -16,11 +16,13 @@ const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
+const moment = require("moment");
 const mongoose = require("mongoose");
 const returnOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
+// const CANCELLABLE_DAYS = 3;
 returnOrderTransactionsRouter.use(authentication_1.default);
 /**
  * 上映日と購入番号で返品
@@ -36,15 +38,21 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
         .notEmpty()
         .withMessage('cancellation_fee is required')
         .isInt();
-    req.checkBody('forcibly', 'invalid forcibly')
-        .notEmpty()
-        .withMessage('forcibly is required')
-        .isBoolean();
+    // req.checkBody('forcibly', 'invalid forcibly')
+    //     .notEmpty()
+    //     .withMessage('forcibly is required')
+    //     .isBoolean();
     next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}, validator_1.default, 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        // const now = new Date();
+        const actionRepo = new ttts.repository.Action(mongoose.connection);
         const invoiceRepo = new ttts.repository.Invoice(mongoose.connection);
         const orderRepo = new ttts.repository.Order(mongoose.connection);
+        const projectRepo = new ttts.repository.Project(mongoose.connection);
+        const sellerRepo = new ttts.repository.Seller(mongoose.connection);
         const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
         // 確認番号で注文検索
         const confirmationNumber = `${req.body.performance_day}${req.body.payment_no}`;
@@ -67,25 +75,126 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
         if (placeOrderTransaction === undefined) {
             throw new ttts.factory.errors.NotFound('Transaction');
         }
-        // 取引があれば、返品取引確定
-        const returnOrderTransaction = yield ttts.service.transaction.returnOrder.confirm({
-            clientUser: req.user,
-            agentId: req.user.sub,
-            transactionId: placeOrderTransaction.id,
-            cancellationFee: req.body.cancellation_fee,
-            forcibly: req.body.forcibly,
-            reason: ttts.factory.transaction.returnOrder.Reason.Customer,
-            potentialActions: {
-                returnOrder: {
-                    potentialActions: {
-                        informOrder: [
-                            { recipient: { url: `${req.protocol}://${req.hostname}/webhooks/onReturnOrder` } }
-                        ]
+        // tslint:disable-next-line:max-line-length
+        const authorizeSeatReservationActions = placeOrderTransaction.object.authorizeActions
+            .filter((a) => a.object.typeOf === ttts.factory.cinerino.action.authorize.offer.seatReservation.ObjectType.SeatReservation)
+            .filter((a) => a.actionStatus === ttts.factory.actionStatusType.CompletedActionStatus);
+        const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onReturnOrder`;
+        const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationCancelled`;
+        const actionsOnOrder = yield actionRepo.searchByOrderNumber({ orderNumber: order.orderNumber });
+        const payActions = actionsOnOrder
+            .filter((a) => a.typeOf === ttts.factory.actionType.PayAction)
+            .filter((a) => a.actionStatus === ttts.factory.actionStatusType.CompletedActionStatus);
+        const emailCustomization = getEmailCustomization({
+            placeOrderTransaction: placeOrderTransaction,
+            reason: ttts.factory.transaction.returnOrder.Reason.Customer
+        });
+        // クレジットカード返金アクション
+        const refundCreditCardActionsParams = yield Promise.all(payActions
+            .filter((a) => a.object[0].paymentMethod.typeOf === ttts.factory.paymentMethodType.CreditCard)
+            // tslint:disable-next-line:max-line-length
+            .map((a) => __awaiter(this, void 0, void 0, function* () {
+            return {
+                object: {
+                    object: a.object.map((o) => {
+                        return {
+                            paymentMethod: {
+                                paymentMethodId: o.paymentMethod.paymentMethodId
+                            }
+                        };
+                    })
+                },
+                potentialActions: {
+                    sendEmailMessage: Object.assign({}, (emailCustomization !== undefined)
+                        ? { object: emailCustomization }
+                        : {
+                            object: {
+                                toRecipient: {
+                                    email: process.env.DEVELOPER_EMAIL
+                                }
+                            }
+                        }),
+                    // クレジットカード返金後に注文通知
+                    informOrder: [
+                        { recipient: { url: informOrderUrl } }
+                    ]
+                }
+            };
+        })));
+        const confirmReservationParams = authorizeSeatReservationActions.map((authorizeSeatReservationAction) => {
+            if (authorizeSeatReservationAction.result === undefined) {
+                throw new ttts.factory.errors.NotFound('Result of seat reservation authorize action');
+            }
+            const reserveTransaction = authorizeSeatReservationAction.result.responseBody;
+            return {
+                object: {
+                    typeOf: reserveTransaction.typeOf,
+                    id: reserveTransaction.id
+                },
+                potentialActions: {
+                    cancelReservation: {
+                        potentialActions: {
+                            informReservation: [
+                                { recipient: { url: informReservationUrl } }
+                            ]
+                        }
                     }
                 }
+            };
+        });
+        // 注文通知パラメータを生成
+        const informOrderParams = [];
+        // 検証
+        // const forcibly = req.body.forcibly === true;
+        // if (!forcibly) {
+        //     const performanceStartDate = (<ttts.factory.order.IReservation>order.acceptedOffers[0].itemOffered)
+        //         .reservationFor.startDate;
+        //     // 入塔予定日の3日前までキャンセル可能(3日前を過ぎていたらエラー)
+        //     const cancellableThrough = moment(performanceStartDate)
+        //         .add(-CANCELLABLE_DAYS + 1, 'days')
+        //         .toDate();
+        //     if (cancellableThrough <= now) {
+        //         throw new ttts.factory.errors.Argument('performance_day', 'キャンセルできる期限を過ぎています。');
+        //     }
+        // }
+        const expires = moment()
+            .add(1, 'minute')
+            .toDate();
+        const potentialActionParams = {
+            returnOrder: {
+                potentialActions: {
+                    cancelReservation: confirmReservationParams,
+                    informOrder: informOrderParams,
+                    refundCreditCard: refundCreditCardActionsParams
+                }
             }
+        };
+        // 取引があれば、返品取引進行
+        const returnOrderTransaction = yield ttts.service.transaction.returnOrder.start({
+            project: req.project,
+            agent: req.agent,
+            expires: expires,
+            object: {
+                cancellationFee: Number(req.body.cancellation_fee),
+                clientUser: req.user,
+                order: { orderNumber: order.orderNumber },
+                reason: ttts.factory.transaction.returnOrder.Reason.Customer
+            },
+            seller: { typeOf: order.seller.typeOf, id: order.seller.id }
         })({
+            action: actionRepo,
             invoice: invoiceRepo,
+            order: orderRepo,
+            project: projectRepo,
+            seller: sellerRepo,
+            transaction: transactionRepo
+        });
+        yield ttts.service.transaction.returnOrder.confirm({
+            id: returnOrderTransaction.id,
+            potentialActions: potentialActionParams
+        })({
+            action: actionRepo,
+            seller: sellerRepo,
             transaction: transactionRepo
         });
         res.status(http_status_1.CREATED)
@@ -97,6 +206,45 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
         next(error);
     }
 }));
+function getEmailCustomization(params) {
+    // const placeOrderTransaction = returnOrderTransaction.object.transaction;
+    if (params.placeOrderTransaction.result === undefined) {
+        throw new ttts.factory.errors.NotFound('PlaceOrder Transaction Result');
+    }
+    // const order = params.placeOrderTransaction.result.order;
+    // let emailMessageAttributes: ttts.factory.creativeWork.message.email.IAttributes;
+    const emailMessage = undefined;
+    switch (params.reason) {
+        case ttts.factory.transaction.returnOrder.Reason.Customer:
+            // no op
+            break;
+        case ttts.factory.transaction.returnOrder.Reason.Seller:
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO 二重送信対策
+            // emailMessageAttributes = await createEmailMessage4sellerReason(params.placeOrderTransaction);
+            // emailMessage = {
+            //     typeOf: ttts.factory.creativeWorkType.EmailMessage,
+            //     identifier: `returnOrderTransaction-${order.orderNumber}`,
+            //     name: `returnOrderTransaction-${order.orderNumber}`,
+            //     sender: {
+            //         typeOf: params.placeOrderTransaction.seller.typeOf,
+            //         name: emailMessageAttributes.sender.name,
+            //         email: emailMessageAttributes.sender.email
+            //     },
+            //     toRecipient: {
+            //         typeOf: params.placeOrderTransaction.agent.typeOf,
+            //         name: emailMessageAttributes.toRecipient.name,
+            //         email: emailMessageAttributes.toRecipient.email
+            //     },
+            //     about: emailMessageAttributes.about,
+            //     text: emailMessageAttributes.text
+            // };
+            break;
+        default:
+    }
+    return emailMessage;
+}
+exports.getEmailCustomization = getEmailCustomization;
 /**
  * 返品メール送信
  */

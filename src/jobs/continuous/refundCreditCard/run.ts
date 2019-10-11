@@ -1,28 +1,14 @@
 /**
- * 返品実行
+ * クレジットカード売上取消
  */
+
 import * as ttts from '@tokyotower/domain';
 
 import { connectMongo } from '../../../connectMongo';
 
-import * as singletonProcess from '../../../singletonProcess';
-
-export default async (params: {
+export default async (_: {
     project?: ttts.factory.project.IProject;
 }) => {
-    let holdSingletonProcess = false;
-    setInterval(
-        async () => {
-            holdSingletonProcess = await singletonProcess.lock({
-                project: params.project,
-                key: 'returnOrder',
-                ttl: 60
-            });
-        },
-        // tslint:disable-next-line:no-magic-numbers
-        10000
-    );
-
     const connection = await connectMongo({ defaultConnection: false });
     const redisClient = ttts.redis.createClient(
         {
@@ -36,14 +22,10 @@ export default async (params: {
     let count = 0;
 
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
-    const INTERVAL_MILLISECONDS = 500;
+    const INTERVAL_MILLISECONDS = 1000;
 
     setInterval(
         async () => {
-            if (!holdSingletonProcess) {
-                return;
-            }
-
             if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
                 return;
             }
@@ -52,7 +34,8 @@ export default async (params: {
 
             try {
                 await ttts.service.task.executeByName({
-                    name: <any>ttts.factory.cinerino.taskName.ReturnOrder
+                    // project: params.project,
+                    name: <any>ttts.factory.cinerino.taskName.RefundCreditCard
                 })({
                     connection: connection,
                     redisClient: redisClient

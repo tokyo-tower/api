@@ -286,6 +286,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/creditCar
         })({
             action: new ttts.repository.Action(mongoose.connection),
             project: new ttts.repository.Project(mongoose.connection),
+            seller: new ttts.repository.Seller(mongoose.connection),
             transaction: new ttts.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT)

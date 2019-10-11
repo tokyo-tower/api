@@ -1,28 +1,13 @@
 /**
- * 返品実行
+ * 予約取消
  */
 import * as ttts from '@tokyotower/domain';
 
 import { connectMongo } from '../../../connectMongo';
 
-import * as singletonProcess from '../../../singletonProcess';
-
-export default async (params: {
+export default async (_: {
     project?: ttts.factory.project.IProject;
 }) => {
-    let holdSingletonProcess = false;
-    setInterval(
-        async () => {
-            holdSingletonProcess = await singletonProcess.lock({
-                project: params.project,
-                key: 'returnOrder',
-                ttl: 60
-            });
-        },
-        // tslint:disable-next-line:no-magic-numbers
-        10000
-    );
-
     const connection = await connectMongo({ defaultConnection: false });
     const redisClient = ttts.redis.createClient(
         {
@@ -40,10 +25,6 @@ export default async (params: {
 
     setInterval(
         async () => {
-            if (!holdSingletonProcess) {
-                return;
-            }
-
             if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
                 return;
             }
@@ -52,7 +33,7 @@ export default async (params: {
 
             try {
                 await ttts.service.task.executeByName({
-                    name: <any>ttts.factory.cinerino.taskName.ReturnOrder
+                    name: <any>ttts.factory.cinerino.taskName.CancelReservation
                 })({
                     connection: connection,
                     redisClient: redisClient
