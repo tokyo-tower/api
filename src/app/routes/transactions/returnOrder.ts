@@ -15,7 +15,7 @@ import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
 
-const CANCELLABLE_DAYS = 3;
+// const CANCELLABLE_DAYS = 3;
 
 returnOrderTransactionsRouter.use(authentication);
 
@@ -47,7 +47,7 @@ returnOrderTransactionsRouter.post(
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
-            const now = new Date();
+            // const now = new Date();
 
             const actionRepo = new ttts.repository.Action(mongoose.connection);
             const invoiceRepo = new ttts.repository.Invoice(mongoose.connection);
@@ -165,19 +165,19 @@ returnOrderTransactionsRouter.post(
             const informOrderParams: ttts.factory.cinerino.transaction.returnOrder.IInformOrderParams[] = [];
 
             // 検証
-            const forcibly = req.body.forcibly === true;
-            if (!forcibly) {
-                const performanceStartDate = (<ttts.factory.order.IReservation>order.acceptedOffers[0].itemOffered)
-                    .reservationFor.startDate;
+            // const forcibly = req.body.forcibly === true;
+            // if (!forcibly) {
+            //     const performanceStartDate = (<ttts.factory.order.IReservation>order.acceptedOffers[0].itemOffered)
+            //         .reservationFor.startDate;
 
-                // 入塔予定日の3日前までキャンセル可能(3日前を過ぎていたらエラー)
-                const cancellableThrough = moment(performanceStartDate)
-                    .add(-CANCELLABLE_DAYS + 1, 'days')
-                    .toDate();
-                if (cancellableThrough <= now) {
-                    throw new ttts.factory.errors.Argument('performance_day', 'キャンセルできる期限を過ぎています。');
-                }
-            }
+            //     // 入塔予定日の3日前までキャンセル可能(3日前を過ぎていたらエラー)
+            //     const cancellableThrough = moment(performanceStartDate)
+            //         .add(-CANCELLABLE_DAYS + 1, 'days')
+            //         .toDate();
+            //     if (cancellableThrough <= now) {
+            //         throw new ttts.factory.errors.Argument('performance_day', 'キャンセルできる期限を過ぎています。');
+            //     }
+            // }
 
             const expires = moment()
                 .add(1, 'minute')
