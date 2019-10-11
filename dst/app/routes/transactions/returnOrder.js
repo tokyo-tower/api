@@ -154,31 +154,40 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
         const expires = moment()
             .add(1, 'minute')
             .toDate();
-        // 取引があれば、返品取引確定
-        const returnOrderTransaction = yield ttts.service.transaction.returnOrder.confirm4ttts({
-            project: req.project,
-            clientUser: req.user,
-            agentId: req.user.sub,
-            expires: expires,
-            order: { orderNumber: order.orderNumber },
-            cancellationFee: req.body.cancellation_fee,
-            // forcibly: req.body.forcibly,
-            reason: ttts.factory.transaction.returnOrder.Reason.Customer,
-            seller: { typeOf: order.seller.typeOf, id: order.seller.id },
-            potentialActions: {
-                returnOrder: {
-                    potentialActions: {
-                        cancelReservation: confirmReservationParams,
-                        informOrder: informOrderParams,
-                        refundCreditCard: refundCreditCardActionsParams
-                    }
+        const potentialActionParams = {
+            returnOrder: {
+                potentialActions: {
+                    cancelReservation: confirmReservationParams,
+                    informOrder: informOrderParams,
+                    refundCreditCard: refundCreditCardActionsParams
                 }
             }
+        };
+        // 取引があれば、返品取引進行
+        const returnOrderTransaction = yield ttts.service.transaction.returnOrder.start({
+            project: req.project,
+            agent: req.agent,
+            expires: expires,
+            object: {
+                cancellationFee: Number(req.body.cancellation_fee),
+                clientUser: req.user,
+                order: { orderNumber: order.orderNumber },
+                reason: ttts.factory.transaction.returnOrder.Reason.Customer
+            },
+            seller: { typeOf: order.seller.typeOf, id: order.seller.id }
         })({
             action: actionRepo,
             invoice: invoiceRepo,
             order: orderRepo,
             project: projectRepo,
+            seller: sellerRepo,
+            transaction: transactionRepo
+        });
+        yield ttts.service.transaction.returnOrder.confirm({
+            id: returnOrderTransaction.id,
+            potentialActions: potentialActionParams
+        })({
+            action: actionRepo,
             seller: sellerRepo,
             transaction: transactionRepo
         });
