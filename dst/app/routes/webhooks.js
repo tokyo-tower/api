@@ -24,6 +24,32 @@ const redisClient = ttts.redis.createClient({
     tls: { servername: process.env.REDIS_HOST }
 });
 /**
+ * 取引ステータス変更イベント
+ */
+webhooksRouter.post('/onTransactionStatusChanged', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const transaction = req.body.data;
+        if (transaction !== undefined && transaction !== null && typeof transaction.id === 'string') {
+            if (transaction.typeOf === ttts.factory.transactionType.PlaceOrder && typeof transaction.id === 'string') {
+                switch (transaction.status) {
+                    case ttts.factory.transactionStatusType.Confirmed:
+                        break;
+                    case ttts.factory.transactionStatusType.Canceled:
+                    case ttts.factory.transactionStatusType.Expired:
+                        // 取引が成立しなかった場合の処理
+                        break;
+                    default:
+                }
+            }
+        }
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
  * 注文イベント
  */
 webhooksRouter.post('/onPlaceOrder', (req, res, next) => __awaiter(this, void 0, void 0, function* () {

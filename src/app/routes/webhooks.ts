@@ -18,6 +18,40 @@ const redisClient = ttts.redis.createClient({
 });
 
 /**
+ * 取引ステータス変更イベント
+ */
+webhooksRouter.post(
+    '/onTransactionStatusChanged',
+    async (req, res, next) => {
+        try {
+            const transaction = <ttts.factory.transaction.ITransaction<ttts.factory.transactionType>>req.body.data;
+
+            if (transaction !== undefined && transaction !== null && typeof transaction.id === 'string') {
+                if (transaction.typeOf === ttts.factory.transactionType.PlaceOrder && typeof transaction.id === 'string') {
+                    switch (transaction.status) {
+                        case ttts.factory.transactionStatusType.Confirmed:
+                            break;
+
+                        case ttts.factory.transactionStatusType.Canceled:
+                        case ttts.factory.transactionStatusType.Expired:
+                            // 取引が成立しなかった場合の処理
+
+                            break;
+
+                        default:
+                    }
+                }
+            }
+
+            res.status(NO_CONTENT)
+                .end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
  * 注文イベント
  */
 webhooksRouter.post(

@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - 取引ウェブフック設定を追加
+- 取引ステータス変更イベント受信エンドポイントを追加
 
 ### Changed
 
