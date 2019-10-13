@@ -31,12 +31,24 @@ webhooksRouter.post('/onTransactionStatusChanged', (req, res, next) => __awaiter
         const transaction = req.body.data;
         if (transaction !== undefined && transaction !== null && typeof transaction.id === 'string') {
             if (transaction.typeOf === ttts.factory.transactionType.PlaceOrder && typeof transaction.id === 'string') {
+                const actionRepo = new ttts.repository.Action(mongoose.connection);
+                const taskRepo = new ttts.repository.Task(mongoose.connection);
+                const ticketTypeCategoryRateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
                 switch (transaction.status) {
                     case ttts.factory.transactionStatusType.Confirmed:
                         break;
                     case ttts.factory.transactionStatusType.Canceled:
                     case ttts.factory.transactionStatusType.Expired:
                         // 取引が成立しなかった場合の処理
+                        yield ttts.service.stock.onTransactionVoided({
+                            project: { id: req.project.id },
+                            typeOf: transaction.typeOf,
+                            id: transaction.id
+                        })({
+                            action: actionRepo,
+                            task: taskRepo,
+                            ticketTypeCategoryRateLimit: ticketTypeCategoryRateLimitRepo
+                        });
                         break;
                     default:
                 }
