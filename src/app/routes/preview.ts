@@ -11,8 +11,7 @@ const previewRouter = Router();
 
 const redisClient = ttts.redis.createClient({
     host: <string>process.env.REDIS_HOST,
-    // tslint:disable-next-line:no-magic-numbers
-    port: parseInt(<string>process.env.REDIS_PORT, 10),
+    port: Number(<string>process.env.REDIS_PORT),
     password: <string>process.env.REDIS_KEY,
     tls: { servername: <string>process.env.REDIS_HOST }
 });
