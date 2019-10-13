@@ -29,7 +29,7 @@ const redisClient = ttts.redis.createClient({
 webhooksRouter.post('/onTransactionStatusChanged', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const transaction = req.body.data;
-        if (transaction !== undefined && transaction !== null && typeof transaction.id === 'string') {
+        if (transaction !== undefined && transaction !== null) {
             if (transaction.typeOf === ttts.factory.transactionType.PlaceOrder && typeof transaction.id === 'string') {
                 const actionRepo = new ttts.repository.Action(mongoose.connection);
                 const taskRepo = new ttts.repository.Task(mongoose.connection);

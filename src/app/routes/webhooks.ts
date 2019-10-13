@@ -26,7 +26,7 @@ webhooksRouter.post(
         try {
             const transaction = <ttts.factory.transaction.ITransaction<ttts.factory.transactionType>>req.body.data;
 
-            if (transaction !== undefined && transaction !== null && typeof transaction.id === 'string') {
+            if (transaction !== undefined && transaction !== null) {
                 if (transaction.typeOf === ttts.factory.transactionType.PlaceOrder && typeof transaction.id === 'string') {
                     const actionRepo = new ttts.repository.Action(mongoose.connection);
                     const taskRepo = new ttts.repository.Task(mongoose.connection);
