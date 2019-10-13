@@ -41,7 +41,7 @@ webhooksRouter.post('/onTransactionStatusChanged', (req, res, next) => __awaiter
                     case ttts.factory.transactionStatusType.Expired:
                         // 取引が成立しなかった場合の処理
                         yield ttts.service.stock.onTransactionVoided({
-                            project: { id: req.project.id },
+                            project: { id: transaction.project.id },
                             typeOf: transaction.typeOf,
                             id: transaction.id
                         })({
@@ -71,7 +71,7 @@ webhooksRouter.post('/onPlaceOrder', (req, res, next) => __awaiter(this, void 0,
             const taskRepo = new ttts.repository.Task(mongoose.connection);
             const taskAttribute = {
                 name: ttts.factory.taskName.CreatePlaceOrderReport,
-                project: req.project,
+                project: { typeOf: order.project.typeOf, id: order.project.id },
                 status: ttts.factory.taskStatus.Ready,
                 runsAt: new Date(),
                 remainingNumberOfTries: 10,
@@ -103,7 +103,7 @@ webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(this, void 0
             const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
             const taskAttribute = {
                 name: ttts.factory.taskName.CreateReturnOrderReport,
-                project: req.project,
+                project: { typeOf: order.project.typeOf, id: order.project.id },
                 status: ttts.factory.taskStatus.Ready,
                 runsAt: new Date(),
                 remainingNumberOfTries: 10,
@@ -157,7 +157,7 @@ webhooksRouter.post('/onReservationConfirmed', (req, res, next) => __awaiter(thi
                 // 集計タスク作成
                 const task = {
                     name: ttts.factory.taskName.AggregateEventReservations,
-                    project: req.project,
+                    project: { typeOf: reservation.project.typeOf, id: reservation.project.id },
                     status: ttts.factory.taskStatus.Ready,
                     runsAt: new Date(),
                     remainingNumberOfTries: 3,

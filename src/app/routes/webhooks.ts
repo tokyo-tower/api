@@ -40,7 +40,7 @@ webhooksRouter.post(
                         case ttts.factory.transactionStatusType.Expired:
                             // 取引が成立しなかった場合の処理
                             await ttts.service.stock.onTransactionVoided({
-                                project: { id: req.project.id },
+                                project: { id: transaction.project.id },
                                 typeOf: transaction.typeOf,
                                 id: transaction.id
                             })({
@@ -78,7 +78,7 @@ webhooksRouter.post(
 
                 const taskAttribute: ttts.factory.task.createPlaceOrderReport.IAttributes = {
                     name: <any>ttts.factory.taskName.CreatePlaceOrderReport,
-                    project: req.project,
+                    project: { typeOf: order.project.typeOf, id: order.project.id },
                     status: ttts.factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -117,7 +117,7 @@ webhooksRouter.post(
 
                 const taskAttribute: ttts.factory.task.createReturnOrderReport.IAttributes = {
                     name: <any>ttts.factory.taskName.CreateReturnOrderReport,
-                    project: req.project,
+                    project: { typeOf: order.project.typeOf, id: order.project.id },
                     status: ttts.factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -191,7 +191,7 @@ webhooksRouter.post(
                     // 集計タスク作成
                     const task: ttts.factory.task.aggregateEventReservations.IAttributes = {
                         name: <any>ttts.factory.taskName.AggregateEventReservations,
-                        project: req.project,
+                        project: { typeOf: reservation.project.typeOf, id: reservation.project.id },
                         status: ttts.factory.taskStatus.Ready,
                         runsAt: new Date(),
                         remainingNumberOfTries: 3,
