@@ -14,11 +14,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
-- 注文ルーターを削除(Cinerino以降)
+- 注文ルーターを削除(Cinerino移行)
 - IAMルーターを削除
 - プロジェクトルーターを削除
 - 販売者ルーターを削除
 - ユーザープールルーターを削除
+- 取引に関する非同期タスクを削除(Cinerino移行)
 
 ### Fixed
 
