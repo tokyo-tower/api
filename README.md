@@ -5,7 +5,6 @@
 ## Table of contents
 
 * [Usage](#usage)
-* [Code Samples](#code-samples)
 * [License](#license)
 
 ## Usage
@@ -40,7 +39,7 @@
 | `COA_REFRESH_TOKEN`              | true     |            | credentilas                                    |
 | `PROJECT_ID`                     | true     |            | Project ID                                     |
 | `JOBS_STOPPED`                   | false    | 1 or 0     | Asynchronous jobs stopped flag                 |
-| `TELEMETRY_API_ENDPOINT`         | true     |            | Cinerino telemetry api endpoint                |
+| `TRANSACTION_WEBHOOK_URL`        | true     |            | 取引ウェブフックURL                            |
 
 ## License
 

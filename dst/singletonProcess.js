@@ -19,8 +19,7 @@ const util = require("util");
 const debug = createDebug('ttts-api:singletonProcess');
 const redisClient = ttts.redis.createClient({
     host: process.env.REDIS_HOST,
-    // tslint:disable-next-line:no-magic-numbers
-    port: parseInt(process.env.REDIS_PORT, 10),
+    port: Number(process.env.REDIS_PORT),
     password: process.env.REDIS_KEY,
     tls: { servername: process.env.REDIS_HOST }
 });

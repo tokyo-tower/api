@@ -17,6 +17,56 @@ const redisClient = ttts.redis.createClient({
     tls: { servername: <string>process.env.REDIS_HOST }
 });
 
+/**
+ * 取引ステータス変更イベント
+ */
+webhooksRouter.post(
+    '/onTransactionStatusChanged',
+    async (req, res, next) => {
+        try {
+            const transaction = <ttts.factory.transaction.ITransaction<ttts.factory.transactionType>>req.body.data;
+
+            if (transaction !== undefined && transaction !== null) {
+                if (transaction.typeOf === ttts.factory.transactionType.PlaceOrder && typeof transaction.id === 'string') {
+                    const actionRepo = new ttts.repository.Action(mongoose.connection);
+                    const taskRepo = new ttts.repository.Task(mongoose.connection);
+                    const ticketTypeCategoryRateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
+
+                    switch (transaction.status) {
+                        case ttts.factory.transactionStatusType.Confirmed:
+                            break;
+
+                        case ttts.factory.transactionStatusType.Canceled:
+                        case ttts.factory.transactionStatusType.Expired:
+                            // 取引が成立しなかった場合の処理
+                            await ttts.service.stock.onTransactionVoided({
+                                project: { id: transaction.project.id },
+                                typeOf: transaction.typeOf,
+                                id: transaction.id
+                            })({
+                                action: actionRepo,
+                                task: taskRepo,
+                                ticketTypeCategoryRateLimit: ticketTypeCategoryRateLimitRepo
+                            });
+
+                            break;
+
+                        default:
+                    }
+                }
+            }
+
+            res.status(NO_CONTENT)
+                .end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 注文イベント
+ */
 webhooksRouter.post(
     '/onPlaceOrder',
     async (req, res, next) => {
@@ -28,7 +78,7 @@ webhooksRouter.post(
 
                 const taskAttribute: ttts.factory.task.createPlaceOrderReport.IAttributes = {
                     name: <any>ttts.factory.taskName.CreatePlaceOrderReport,
-                    project: req.project,
+                    project: { typeOf: order.project.typeOf, id: order.project.id },
                     status: ttts.factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -50,6 +100,9 @@ webhooksRouter.post(
     }
 );
 
+/**
+ * 注文返品イベント
+ */
 webhooksRouter.post(
     '/onReturnOrder',
     async (req, res, next) => {
@@ -57,11 +110,14 @@ webhooksRouter.post(
             const order = req.body.data;
 
             if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
+                const orderRepo = new ttts.repository.Order(mongoose.connection);
+                const performanceRepo = new ttts.repository.Performance(mongoose.connection);
                 const taskRepo = new ttts.repository.Task(mongoose.connection);
+                const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
 
                 const taskAttribute: ttts.factory.task.createReturnOrderReport.IAttributes = {
                     name: <any>ttts.factory.taskName.CreateReturnOrderReport,
-                    project: req.project,
+                    project: { typeOf: order.project.typeOf, id: order.project.id },
                     status: ttts.factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -73,6 +129,12 @@ webhooksRouter.post(
                 };
 
                 await taskRepo.save(<any>taskAttribute);
+
+                await ttts.service.performance.onOrderReturned({ orderNumber: order.orderNumber })({
+                    order: orderRepo,
+                    performance: performanceRepo,
+                    transaction: transactionRepo
+                });
             }
 
             res.status(NO_CONTENT)
@@ -129,7 +191,7 @@ webhooksRouter.post(
                     // 集計タスク作成
                     const task: ttts.factory.task.aggregateEventReservations.IAttributes = {
                         name: <any>ttts.factory.taskName.AggregateEventReservations,
-                        project: req.project,
+                        project: { typeOf: reservation.project.typeOf, id: reservation.project.id },
                         status: ttts.factory.taskStatus.Ready,
                         runsAt: new Date(),
                         remainingNumberOfTries: 3,

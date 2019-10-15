@@ -23,6 +23,47 @@ const redisClient = ttts.redis.createClient({
     password: process.env.REDIS_KEY,
     tls: { servername: process.env.REDIS_HOST }
 });
+/**
+ * 取引ステータス変更イベント
+ */
+webhooksRouter.post('/onTransactionStatusChanged', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const transaction = req.body.data;
+        if (transaction !== undefined && transaction !== null) {
+            if (transaction.typeOf === ttts.factory.transactionType.PlaceOrder && typeof transaction.id === 'string') {
+                const actionRepo = new ttts.repository.Action(mongoose.connection);
+                const taskRepo = new ttts.repository.Task(mongoose.connection);
+                const ticketTypeCategoryRateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
+                switch (transaction.status) {
+                    case ttts.factory.transactionStatusType.Confirmed:
+                        break;
+                    case ttts.factory.transactionStatusType.Canceled:
+                    case ttts.factory.transactionStatusType.Expired:
+                        // 取引が成立しなかった場合の処理
+                        yield ttts.service.stock.onTransactionVoided({
+                            project: { id: transaction.project.id },
+                            typeOf: transaction.typeOf,
+                            id: transaction.id
+                        })({
+                            action: actionRepo,
+                            task: taskRepo,
+                            ticketTypeCategoryRateLimit: ticketTypeCategoryRateLimitRepo
+                        });
+                        break;
+                    default:
+                }
+            }
+        }
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 注文イベント
+ */
 webhooksRouter.post('/onPlaceOrder', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const order = req.body.data;
@@ -30,7 +71,7 @@ webhooksRouter.post('/onPlaceOrder', (req, res, next) => __awaiter(this, void 0,
             const taskRepo = new ttts.repository.Task(mongoose.connection);
             const taskAttribute = {
                 name: ttts.factory.taskName.CreatePlaceOrderReport,
-                project: req.project,
+                project: { typeOf: order.project.typeOf, id: order.project.id },
                 status: ttts.factory.taskStatus.Ready,
                 runsAt: new Date(),
                 remainingNumberOfTries: 10,
@@ -49,14 +90,20 @@ webhooksRouter.post('/onPlaceOrder', (req, res, next) => __awaiter(this, void 0,
         next(error);
     }
 }));
+/**
+ * 注文返品イベント
+ */
 webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const order = req.body.data;
         if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
+            const orderRepo = new ttts.repository.Order(mongoose.connection);
+            const performanceRepo = new ttts.repository.Performance(mongoose.connection);
             const taskRepo = new ttts.repository.Task(mongoose.connection);
+            const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
             const taskAttribute = {
                 name: ttts.factory.taskName.CreateReturnOrderReport,
-                project: req.project,
+                project: { typeOf: order.project.typeOf, id: order.project.id },
                 status: ttts.factory.taskStatus.Ready,
                 runsAt: new Date(),
                 remainingNumberOfTries: 10,
@@ -67,6 +114,11 @@ webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(this, void 0
                 }
             };
             yield taskRepo.save(taskAttribute);
+            yield ttts.service.performance.onOrderReturned({ orderNumber: order.orderNumber })({
+                order: orderRepo,
+                performance: performanceRepo,
+                transaction: transactionRepo
+            });
         }
         res.status(http_status_1.NO_CONTENT)
             .end();
@@ -105,7 +157,7 @@ webhooksRouter.post('/onReservationConfirmed', (req, res, next) => __awaiter(thi
                 // 集計タスク作成
                 const task = {
                     name: ttts.factory.taskName.AggregateEventReservations,
-                    project: req.project,
+                    project: { typeOf: reservation.project.typeOf, id: reservation.project.id },
                     status: ttts.factory.taskStatus.Ready,
                     runsAt: new Date(),
                     remainingNumberOfTries: 3,
