@@ -14,7 +14,7 @@ import notFoundHandler from './middlewares/notFoundHandler';
 
 import adminsRouter from './routes/admins';
 import aggregateSalesRouter from './routes/aggregateSales';
-import eventsRouter from './routes/events';
+// import eventsRouter from './routes/events';
 import healthRouter from './routes/health';
 // import iamRouter from './routes/iam';
 import oauthRouter from './routes/oauth';
@@ -80,7 +80,7 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 // ルーティング
 app.use('/admins', adminsRouter);
 app.use('/aggregateSales', aggregateSalesRouter);
-app.use('/events', eventsRouter);
+// app.use('/events', eventsRouter);
 app.use('/health', healthRouter);
 // app.use('/iam', iamRouter);
 app.use('/oauth', oauthRouter);

@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - プロジェクトルーターを削除
 - 販売者ルーターを削除
 - ユーザープールルーターを削除
+- イベントルーターを削除
 - 取引に関する非同期タスクを削除(Cinerino移行)
 
 ### Fixed

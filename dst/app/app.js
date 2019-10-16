@@ -12,7 +12,7 @@ const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const admins_1 = require("./routes/admins");
 const aggregateSales_1 = require("./routes/aggregateSales");
-const events_1 = require("./routes/events");
+// import eventsRouter from './routes/events';
 const health_1 = require("./routes/health");
 // import iamRouter from './routes/iam';
 const oauth_1 = require("./routes/oauth");
@@ -71,7 +71,7 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 // ルーティング
 app.use('/admins', admins_1.default);
 app.use('/aggregateSales', aggregateSales_1.default);
-app.use('/events', events_1.default);
+// app.use('/events', eventsRouter);
 app.use('/health', health_1.default);
 // app.use('/iam', iamRouter);
 app.use('/oauth', oauth_1.default);
