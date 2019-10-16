@@ -14,22 +14,15 @@ import notFoundHandler from './middlewares/notFoundHandler';
 
 import adminsRouter from './routes/admins';
 import aggregateSalesRouter from './routes/aggregateSales';
-// import eventsRouter from './routes/events';
 import healthRouter from './routes/health';
-// import iamRouter from './routes/iam';
 import oauthRouter from './routes/oauth';
-// import ordersRouter from './routes/orders';
-import organizationsRouter from './routes/organizations';
 import performanceRouter from './routes/performances';
 import previewRouter from './routes/preview';
-// import projectsRouter from './routes/projects';
 import reservationsRouter from './routes/reservations';
-// import sellersRouter from './routes/sellers';
 import statsRouter from './routes/stats';
 import tasksRouter from './routes/tasks';
 import placeOrderTransactionsRouter from './routes/transactions/placeOrder';
 import returnOrderTransactionsRouter from './routes/transactions/returnOrder';
-// import userPoolsRouter from './routes/userPools';
 import webhooksRouter from './routes/webhooks';
 
 const app = express();
@@ -80,22 +73,15 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 // ルーティング
 app.use('/admins', adminsRouter);
 app.use('/aggregateSales', aggregateSalesRouter);
-// app.use('/events', eventsRouter);
 app.use('/health', healthRouter);
-// app.use('/iam', iamRouter);
 app.use('/oauth', oauthRouter);
-// app.use('/orders', ordersRouter);
-app.use('/organizations', organizationsRouter);
 app.use('/preview', previewRouter);
 app.use('/performances', performanceRouter);
-// app.use('/projects', projectsRouter);
 app.use('/reservations', reservationsRouter);
-// app.use('/sellers', sellersRouter);
 app.use('/stats', statsRouter);
 app.use('/tasks', tasksRouter);
 app.use('/transactions/placeOrder', placeOrderTransactionsRouter);
 app.use('/transactions/returnOrder', returnOrderTransactionsRouter);
-// app.use('/userPools', userPoolsRouter);
 app.use('/webhooks', webhooksRouter);
 
 // 404
