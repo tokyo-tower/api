@@ -12,22 +12,15 @@ const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const admins_1 = require("./routes/admins");
 const aggregateSales_1 = require("./routes/aggregateSales");
-const events_1 = require("./routes/events");
 const health_1 = require("./routes/health");
-const iam_1 = require("./routes/iam");
 const oauth_1 = require("./routes/oauth");
-const orders_1 = require("./routes/orders");
-const organizations_1 = require("./routes/organizations");
 const performances_1 = require("./routes/performances");
 const preview_1 = require("./routes/preview");
-const projects_1 = require("./routes/projects");
 const reservations_1 = require("./routes/reservations");
-const sellers_1 = require("./routes/sellers");
 const stats_1 = require("./routes/stats");
 const tasks_1 = require("./routes/tasks");
 const placeOrder_1 = require("./routes/transactions/placeOrder");
 const returnOrder_1 = require("./routes/transactions/returnOrder");
-const userPools_1 = require("./routes/userPools");
 const webhooks_1 = require("./routes/webhooks");
 const app = express();
 const options = {
@@ -71,22 +64,15 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 // ルーティング
 app.use('/admins', admins_1.default);
 app.use('/aggregateSales', aggregateSales_1.default);
-app.use('/events', events_1.default);
 app.use('/health', health_1.default);
-app.use('/iam', iam_1.default);
 app.use('/oauth', oauth_1.default);
-app.use('/orders', orders_1.default);
-app.use('/organizations', organizations_1.default);
 app.use('/preview', preview_1.default);
 app.use('/performances', performances_1.default);
-app.use('/projects', projects_1.default);
 app.use('/reservations', reservations_1.default);
-app.use('/sellers', sellers_1.default);
 app.use('/stats', stats_1.default);
 app.use('/tasks', tasks_1.default);
 app.use('/transactions/placeOrder', placeOrder_1.default);
 app.use('/transactions/returnOrder', returnOrder_1.default);
-app.use('/userPools', userPools_1.default);
 app.use('/webhooks', webhooks_1.default);
 // 404
 app.use(notFoundHandler_1.default);
