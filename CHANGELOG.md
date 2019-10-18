@@ -14,6 +14,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
+### Fixed
+
+### Security
+
+## v25.0.0 - 2019-10-18
+
+### Removed
+
 - 注文ルーターを削除(Cinerino移行)
 - IAMルーターを削除
 - プロジェクトルーターを削除
@@ -22,10 +30,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - イベントルーターを削除
 - 組織ルーターを削除
 - 取引に関する非同期タスクを削除(Cinerino移行)
-
-### Fixed
-
-### Security
 
 ## v24.0.0 - 2019-10-15
 
