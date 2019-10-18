@@ -1,17 +1,11 @@
 /**
- * 注文取引ルーター
+ * 注文取引ルーター(POS専用)
  */
 import * as ttts from '@tokyotower/domain';
 import { Router } from 'express';
-// tslint:disable-next-line:no-submodule-imports
-import { query } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
-
-const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
-const POS_CLIENT_ID = <string>process.env.POS_CLIENT_ID;
-const STAFF_CLIENT_ID = <string>process.env.STAFF_CLIENT_ID;
 
 const placeOrderTransactionsRouter = Router();
 
@@ -31,7 +25,7 @@ placeOrderTransactionsRouter.use(authentication);
 
 placeOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['transactions']),
+    permitScopes(['pos', 'transactions']),
     (req, _, next) => {
         req.checkBody('expires', 'invalid expires')
             .notEmpty()
@@ -40,16 +34,6 @@ placeOrderTransactionsRouter.post(
         req.checkBody('seller_identifier', 'invalid seller_identifier')
             .notEmpty()
             .withMessage('seller_identifier is required');
-
-        // POSからの流入制限を一時的に回避するため、許可証不要なクライアント設定ができるようにする
-        // staffアプリケーションに関しても同様に
-        if (!WAITER_DISABLED
-            && req.user.client_id !== POS_CLIENT_ID
-            && req.user.client_id !== STAFF_CLIENT_ID) {
-            req.checkBody('passportToken', 'invalid passportToken')
-                .notEmpty()
-                .withMessage('passportToken is required');
-        }
 
         next();
     },
@@ -68,46 +52,6 @@ placeOrderTransactionsRouter.post(
             }
             const seller = doc.toObject();
 
-            let passport: ttts.factory.cinerino.transaction.placeOrder.IPassportBeforeStart | undefined;
-            if (!WAITER_DISABLED
-                && req.user.client_id !== POS_CLIENT_ID
-                && req.user.client_id !== STAFF_CLIENT_ID) {
-                if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
-                    throw new ttts.factory.errors.ServiceUnavailable('WAITER_PASSPORT_ISSUER undefined');
-                }
-                if (process.env.WAITER_SECRET === undefined) {
-                    throw new ttts.factory.errors.ServiceUnavailable('WAITER_SECRET undefined');
-                }
-                passport = {
-                    token: req.body.passportToken,
-                    issuer: process.env.WAITER_PASSPORT_ISSUER,
-                    secret: process.env.WAITER_SECRET
-                };
-            }
-
-            /**
-             * WAITER許可証の有効性チェック
-             */
-            const passportValidator = (params: {
-                passport: ttts.factory.cinerino.waiter.passport.IPassport;
-            }) => {
-                const WAITER_PASSPORT_ISSUER = process.env.WAITER_PASSPORT_ISSUER;
-                if (WAITER_PASSPORT_ISSUER === undefined) {
-                    throw new Error('WAITER_PASSPORT_ISSUER unset');
-                }
-                const issuers = WAITER_PASSPORT_ISSUER.split(',');
-                const validIssuer = issuers.indexOf(params.passport.iss) >= 0;
-
-                // スコープのフォーマットは、placeOrderTransaction.{sellerIdentifier}
-                const explodedScopeStrings = params.passport.scope.split('.');
-                const validScope = (
-                    explodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
-                    explodedScopeStrings[1] === seller.identifier // 販売者識別子確認
-                );
-
-                return validIssuer && validScope;
-            };
-
             const transaction = await ttts.service.transaction.placeOrderInProgress.start({
                 project: req.project,
                 expires: moment(req.body.expires)
@@ -121,10 +65,8 @@ placeOrderTransactionsRouter.post(
                 },
                 seller: { typeOf: seller.typeOf, id: seller.id },
                 object: {
-                    clientUser: req.user,
-                    passport: passport
-                },
-                passportValidator: passportValidator
+                    clientUser: req.user
+                }
             })({
                 seller: sellerRepo,
                 transaction: transactionRepo
@@ -147,7 +89,7 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.put(
     '/:transactionId/customerContact',
-    permitScopes(['transactions']),
+    permitScopes(['pos', 'transactions']),
     (req, _, next) => {
         req.checkBody('last_name')
             .notEmpty()
@@ -204,7 +146,7 @@ placeOrderTransactionsRouter.put(
  */
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/seatReservation',
-    permitScopes(['transactions']),
+    permitScopes(['pos', 'transactions']),
     validator,
     async (req, res, next) => {
         try {
@@ -248,7 +190,7 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.delete(
     '/:transactionId/actions/authorize/seatReservation/:actionId',
-    permitScopes(['transactions']),
+    permitScopes(['pos', 'transactions']),
     validator,
     async (req, res, next) => {
         try {
@@ -274,112 +216,8 @@ placeOrderTransactionsRouter.delete(
 );
 
 placeOrderTransactionsRouter.post(
-    '/:transactionId/actions/authorize/creditCard',
-    permitScopes(['transactions']),
-    (req, __2, next) => {
-        req.checkBody('amount', 'invalid amount')
-            .notEmpty()
-            .withMessage('amount is required');
-        req.checkBody('method', 'invalid method')
-            .notEmpty()
-            .withMessage('gmo_order_id is required');
-        req.checkBody('creditCard', 'invalid creditCard')
-            .notEmpty()
-            .withMessage('gmo_amount is required');
-
-        next();
-    },
-    validator,
-    async (req, res, next) => {
-        try {
-            // 会員IDを強制的にログイン中の人物IDに変更
-            const creditCard: ttts.factory.cinerino.action.authorize.paymentMethod.creditCard.ICreditCard = {
-                ...req.body.creditCard,
-                ...{
-                    memberId: (req.user.username !== undefined) ? req.user.sub : undefined
-                }
-            };
-
-            const action = await ttts.service.payment.creditCard.authorize({
-                project: req.project,
-                agent: { id: req.user.sub },
-                object: {
-                    typeOf: ttts.factory.cinerino.paymentMethodType.CreditCard,
-                    // name: req.body.object.name,
-                    // additionalProperty: req.body.object.additionalProperty,
-                    orderId: req.body.orderId,
-                    amount: req.body.amount,
-                    method: req.body.method,
-                    creditCard: creditCard
-                },
-                purpose: { typeOf: ttts.factory.transactionType.PlaceOrder, id: <string>req.params.transactionId }
-            })({
-                action: new ttts.repository.Action(mongoose.connection),
-                project: new ttts.repository.Project(mongoose.connection),
-                seller: new ttts.repository.Seller(mongoose.connection),
-                transaction: new ttts.repository.Transaction(mongoose.connection)
-            });
-
-            res.status(CREATED)
-                .json({
-                    id: action.id
-                });
-        } catch (error) {
-            let handledError = error;
-
-            if (error.name === 'CinerinoError') {
-                const reason = (<ttts.factory.cinerino.errors.Cinerino>error).reason;
-                switch (reason) {
-                    case ttts.factory.cinerino.errorCode.AlreadyInUse:
-                        handledError = new ttts.factory.errors.AlreadyInUse(error.entityName, error.fieldNames, error.message);
-                        break;
-                    case ttts.factory.cinerino.errorCode.Argument:
-                        handledError = new ttts.factory.errors.Argument(error.argumentName, error.message);
-                        break;
-                    case ttts.factory.cinerino.errorCode.RateLimitExceeded:
-                        handledError = new ttts.factory.errors.RateLimitExceeded(error.message);
-                        break;
-                    default:
-                }
-            }
-
-            next(handledError);
-        }
-    }
-);
-
-/**
- * クレジットカードオーソリ取消
- */
-placeOrderTransactionsRouter.delete(
-    '/:transactionId/actions/authorize/creditCard/:actionId',
-    permitScopes(['transactions']),
-    validator,
-    async (req, res, next) => {
-        try {
-            await ttts.service.payment.creditCard.voidTransaction({
-                project: { id: req.project.id },
-                agent: { id: req.user.sub },
-                id: req.params.actionId,
-                purpose: { typeOf: ttts.factory.transactionType.PlaceOrder, id: <string>req.params.transactionId }
-            })({
-                action: new ttts.repository.Action(mongoose.connection),
-                project: new ttts.repository.Project(mongoose.connection),
-                seller: new ttts.repository.Seller(mongoose.connection),
-                transaction: new ttts.repository.Transaction(mongoose.connection)
-            });
-
-            res.status(NO_CONTENT)
-                .end();
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-placeOrderTransactionsRouter.post(
     '/:transactionId/confirm',
-    permitScopes(['transactions']),
+    permitScopes(['pos', 'transactions']),
     validator,
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
@@ -421,7 +259,6 @@ placeOrderTransactionsRouter.post(
             // クライアントがPOSあるいは内部予約の場合、決済方法承認アクションを自動生成
             const authorizePaymentMethodAction = await authorizeOtherPayment({
                 agent: { id: req.user.sub },
-                client: { id: req.user.client_id },
                 paymentMethodType: paymentMethodType,
                 amount: authorizeSeatReservationResult.price,
                 transaction: { id: req.params.transactionId }
@@ -430,9 +267,6 @@ placeOrderTransactionsRouter.post(
                 seller: sellerRepo,
                 transaction: transactionRepo
             });
-            if (authorizePaymentMethodAction === undefined) {
-                throw new ttts.factory.errors.Argument('Transaction', 'Payment method authorization required');
-            }
             const authorizePaymentMethodActionResult = <ttts.factory.cinerino.action.authorize.paymentMethod.any.IResult<any>>
                 authorizePaymentMethodAction.result;
 
@@ -605,7 +439,6 @@ function getTmpReservations(params: {
 
 function authorizeOtherPayment(params: {
     agent: { id: string };
-    client: { id: string };
     paymentMethodType: ttts.factory.cinerino.paymentMethodType;
     amount: number;
     transaction: { id: string };
@@ -616,48 +449,30 @@ function authorizeOtherPayment(params: {
         transaction: ttts.repository.Transaction;
     }) => {
         let authorizePaymentMethodAction: ttts.factory.cinerino.action.authorize.paymentMethod.any.IAction<any> | undefined;
-        const authorizeActions = await repos.action.searchByPurpose({
-            typeOf: ttts.factory.actionType.AuthorizeAction,
-            purpose: {
-                typeOf: ttts.factory.transactionType.PlaceOrder,
-                id: params.transaction.id
-            }
-        });
-        authorizePaymentMethodAction = authorizeActions
-            .filter((a) => a.actionStatus === ttts.factory.actionStatusType.CompletedActionStatus)
-            .find((a) => a.object.typeOf === ttts.factory.paymentMethodType.CreditCard);
 
-        if (authorizePaymentMethodAction === undefined) {
-            // クライアントがPOSあるいは内部予約の場合、決済方法承認アクションを自動生成
-            if (params.client.id === POS_CLIENT_ID || params.client.id === STAFF_CLIENT_ID) {
-                let authorizingPaymentMethodType: string;
-                switch (params.paymentMethodType) {
-                    case ttts.factory.cinerino.paymentMethodType.Cash:
-                    case ttts.factory.cinerino.paymentMethodType.CreditCard:
-                        authorizingPaymentMethodType = params.paymentMethodType;
-                        break;
+        // クライアントがPOSの場合、決済方法承認アクションを自動生成
+        let authorizingPaymentMethodType: string;
+        switch (params.paymentMethodType) {
+            case ttts.factory.cinerino.paymentMethodType.Cash:
+            case ttts.factory.cinerino.paymentMethodType.CreditCard:
+                authorizingPaymentMethodType = params.paymentMethodType;
+                break;
 
-                    default:
-                        // その他の決済方法を認められるのは代理予約だけ(管理者としてログインしているはず)
-                        if (params.client.id !== STAFF_CLIENT_ID || params.client.id === undefined) {
-                            throw new ttts.factory.errors.Argument('paymentMethod', `Invalid payment method for the client`);
-                        }
-
-                        authorizingPaymentMethodType = ttts.factory.cinerino.paymentMethodType.Others;
-                }
-
-                authorizePaymentMethodAction = await ttts.service.payment.any.authorize({
-                    agent: { id: params.agent.id },
-                    object: {
-                        typeOf: authorizingPaymentMethodType,
-                        name: params.paymentMethodType,
-                        additionalProperty: [],
-                        amount: params.amount
-                    },
-                    purpose: { typeOf: ttts.factory.transactionType.PlaceOrder, id: params.transaction.id }
-                })(repos);
-            }
+            default:
+                // その他の決済方法を認められるのは代理予約だけ
+                throw new ttts.factory.errors.Argument('paymentMethod', `Invalid payment method for the client`);
         }
+
+        authorizePaymentMethodAction = await ttts.service.payment.any.authorize({
+            agent: { id: params.agent.id },
+            object: {
+                typeOf: authorizingPaymentMethodType,
+                name: params.paymentMethodType,
+                additionalProperty: [],
+                amount: params.amount
+            },
+            purpose: { typeOf: ttts.factory.transactionType.PlaceOrder, id: params.transaction.id }
+        })(repos);
 
         return authorizePaymentMethodAction;
     };
@@ -766,52 +581,6 @@ placeOrderTransactionsRouter.post(
 
             res.status(CREATED)
                 .json(task);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-/**
- * 取引検索
- */
-placeOrderTransactionsRouter.get(
-    '',
-    permitScopes(['admin']),
-    ...[
-        query('startFrom')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('startThrough')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('endFrom')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('endThrough')
-            .optional()
-            .isISO8601()
-            .toDate()
-    ],
-    validator,
-    async (req, res, next) => {
-        try {
-            const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
-            const searchConditions: ttts.factory.transaction.placeOrder.ISearchConditions = {
-                ...req.query,
-                // tslint:disable-next-line:no-magic-numbers
-                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
-                sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: ttts.factory.sortType.Ascending },
-                typeOf: ttts.factory.transactionType.PlaceOrder
-            };
-            const transactions = await transactionRepo.search(searchConditions);
-            const totalCount = await transactionRepo.count(searchConditions);
-            res.set('X-Total-Count', totalCount.toString());
-            res.json(transactions);
         } catch (error) {
             next(error);
         }

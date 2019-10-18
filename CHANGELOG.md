@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
+- POSによる取引に不要な機能を削除
+
 ### Fixed
 
 ### Security
