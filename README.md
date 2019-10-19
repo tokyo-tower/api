@@ -27,7 +27,6 @@
 | `ADMINS_USER_POOL_ID`            | true     |            | 管理者ユーザープールID                         |
 | `AWS_ACCESS_KEY_ID`              | true     |            | AWSリソースアクセスキー                        |
 | `AWS_SECRET_ACCESS_KEY`          | true     |            | AWSリソースアクセスシークレット                |
-| `STAFF_CLIENT_ID`                | true     |            | 代理予約アプリクライアントID                   |
 | `CHEVRE_AUTHORIZE_SERVER_DOMAIN` | true     |            | Chevre API Settings                            |
 | `CHEVRE_CLIENT_ID`               | true     |            | Chevre API Settings                            |
 | `CHEVRE_CLIENT_SECRET`           | true     |            | Chevre API Settings                            |
