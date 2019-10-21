@@ -1,10 +1,8 @@
 /**
- * 注文返品取引ルーター
+ * 注文返品取引ルーター(POS専用)
  */
 import * as ttts from '@tokyotower/domain';
 import { Router } from 'express';
-// tslint:disable-next-line:no-submodule-imports
-import { query } from 'express-validator/check';
 import { CREATED } from 'http-status';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
@@ -15,8 +13,6 @@ import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
 
-// const CANCELLABLE_DAYS = 3;
-
 returnOrderTransactionsRouter.use(authentication);
 
 /**
@@ -24,7 +20,7 @@ returnOrderTransactionsRouter.use(authentication);
  */
 returnOrderTransactionsRouter.post(
     '/confirm',
-    permitScopes(['transactions']),
+    permitScopes(['pos', 'transactions']),
     (req, __, next) => {
         req.checkBody('performance_day', 'invalid performance_day')
             .notEmpty()
@@ -36,10 +32,6 @@ returnOrderTransactionsRouter.post(
             .notEmpty()
             .withMessage('cancellation_fee is required')
             .isInt();
-        // req.checkBody('forcibly', 'invalid forcibly')
-        //     .notEmpty()
-        //     .withMessage('forcibly is required')
-        //     .isBoolean();
 
         next();
     },
@@ -47,8 +39,6 @@ returnOrderTransactionsRouter.post(
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
-            // const now = new Date();
-
             const actionRepo = new ttts.repository.Action(mongoose.connection);
             const invoiceRepo = new ttts.repository.Invoice(mongoose.connection);
             const orderRepo = new ttts.repository.Order(mongoose.connection);
@@ -87,54 +77,7 @@ returnOrderTransactionsRouter.post(
                     )
                     .filter((a) => a.actionStatus === ttts.factory.actionStatusType.CompletedActionStatus);
 
-            const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onReturnOrder`;
             const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationCancelled`;
-
-            const actionsOnOrder = await actionRepo.searchByOrderNumber({ orderNumber: order.orderNumber });
-            const payActions = <ttts.factory.cinerino.action.trade.pay.IAction<ttts.factory.paymentMethodType>[]>actionsOnOrder
-                .filter((a) => a.typeOf === ttts.factory.actionType.PayAction)
-                .filter((a) => a.actionStatus === ttts.factory.actionStatusType.CompletedActionStatus);
-
-            const emailCustomization = getEmailCustomization({
-                placeOrderTransaction: placeOrderTransaction,
-                reason: ttts.factory.transaction.returnOrder.Reason.Customer
-            });
-
-            // クレジットカード返金アクション
-            const refundCreditCardActionsParams: ttts.factory.transaction.returnOrder.IRefundCreditCardParams[] =
-                await Promise.all((<ttts.factory.cinerino.action.trade.pay.IAction<ttts.factory.paymentMethodType.CreditCard>[]>payActions)
-                    .filter((a) => a.object[0].paymentMethod.typeOf === ttts.factory.paymentMethodType.CreditCard)
-                    // tslint:disable-next-line:max-line-length
-                    .map(async (a) => {
-                        return {
-                            object: {
-                                object: a.object.map((o) => {
-                                    return {
-                                        paymentMethod: {
-                                            paymentMethodId: o.paymentMethod.paymentMethodId
-                                        }
-                                    };
-                                })
-                            },
-                            potentialActions: {
-                                sendEmailMessage: {
-                                    ...(emailCustomization !== undefined)
-                                        ? { object: emailCustomization }
-                                        : {
-                                            object: {
-                                                toRecipient: {
-                                                    email: <string>process.env.DEVELOPER_EMAIL
-                                                }
-                                            }
-                                        }
-                                },
-                                // クレジットカード返金後に注文通知
-                                informOrder: [
-                                    { recipient: { url: informOrderUrl } }
-                                ]
-                            }
-                        };
-                    }));
 
             const confirmReservationParams: ttts.factory.cinerino.transaction.returnOrder.ICancelReservationParams[] =
                 authorizeSeatReservationActions.map((authorizeSeatReservationAction) => {
@@ -164,21 +107,6 @@ returnOrderTransactionsRouter.post(
             // 注文通知パラメータを生成
             const informOrderParams: ttts.factory.cinerino.transaction.returnOrder.IInformOrderParams[] = [];
 
-            // 検証
-            // const forcibly = req.body.forcibly === true;
-            // if (!forcibly) {
-            //     const performanceStartDate = (<ttts.factory.order.IReservation>order.acceptedOffers[0].itemOffered)
-            //         .reservationFor.startDate;
-
-            //     // 入塔予定日の3日前までキャンセル可能(3日前を過ぎていたらエラー)
-            //     const cancellableThrough = moment(performanceStartDate)
-            //         .add(-CANCELLABLE_DAYS + 1, 'days')
-            //         .toDate();
-            //     if (cancellableThrough <= now) {
-            //         throw new ttts.factory.errors.Argument('performance_day', 'キャンセルできる期限を過ぎています。');
-            //     }
-            // }
-
             const expires = moment()
                 .add(1, 'minute')
                 .toDate();
@@ -188,7 +116,7 @@ returnOrderTransactionsRouter.post(
                     potentialActions: {
                         cancelReservation: confirmReservationParams,
                         informOrder: informOrderParams,
-                        refundCreditCard: refundCreditCardActionsParams
+                        refundCreditCard: []
                     }
                 }
             };
@@ -227,161 +155,6 @@ returnOrderTransactionsRouter.post(
                 .json({
                     id: returnOrderTransaction.id
                 });
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-export function getEmailCustomization(params: {
-    placeOrderTransaction: ttts.factory.transaction.placeOrder.ITransaction;
-    reason: ttts.factory.transaction.returnOrder.Reason;
-}) {
-    // const placeOrderTransaction = returnOrderTransaction.object.transaction;
-    if (params.placeOrderTransaction.result === undefined) {
-        throw new ttts.factory.errors.NotFound('PlaceOrder Transaction Result');
-    }
-    // const order = params.placeOrderTransaction.result.order;
-
-    // let emailMessageAttributes: ttts.factory.creativeWork.message.email.IAttributes;
-    const emailMessage: ttts.factory.creativeWork.message.email.ICreativeWork | undefined = undefined;
-
-    switch (params.reason) {
-        case ttts.factory.transaction.returnOrder.Reason.Customer:
-            // no op
-
-            break;
-
-        case ttts.factory.transaction.returnOrder.Reason.Seller:
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO 二重送信対策
-            // emailMessageAttributes = await createEmailMessage4sellerReason(params.placeOrderTransaction);
-            // emailMessage = {
-            //     typeOf: ttts.factory.creativeWorkType.EmailMessage,
-            //     identifier: `returnOrderTransaction-${order.orderNumber}`,
-            //     name: `returnOrderTransaction-${order.orderNumber}`,
-            //     sender: {
-            //         typeOf: params.placeOrderTransaction.seller.typeOf,
-            //         name: emailMessageAttributes.sender.name,
-            //         email: emailMessageAttributes.sender.email
-            //     },
-            //     toRecipient: {
-            //         typeOf: params.placeOrderTransaction.agent.typeOf,
-            //         name: emailMessageAttributes.toRecipient.name,
-            //         email: emailMessageAttributes.toRecipient.email
-            //     },
-            //     about: emailMessageAttributes.about,
-            //     text: emailMessageAttributes.text
-            // };
-
-            break;
-
-        default:
-    }
-
-    return emailMessage;
-}
-
-/**
- * 返品メール送信
- */
-returnOrderTransactionsRouter.post(
-    '/:transactionId/tasks/sendEmailNotification',
-    permitScopes(['transactions']),
-    (req, __2, next) => {
-        req.checkBody('sender.name', 'invalid sender')
-            .notEmpty()
-            .withMessage('sender.name is required');
-        req.checkBody('sender.email', 'invalid sender')
-            .notEmpty()
-            .withMessage('sender.email is required');
-        req.checkBody('toRecipient.name', 'invalid toRecipient')
-            .notEmpty()
-            .withMessage('toRecipient.name is required');
-        req.checkBody('toRecipient.email', 'invalid toRecipient')
-            .notEmpty()
-            .withMessage('toRecipient.email is required')
-            .isEmail();
-        req.checkBody('about', 'invalid about')
-            .notEmpty()
-            .withMessage('about is required');
-        req.checkBody('text', 'invalid text')
-            .notEmpty()
-            .withMessage('text is required');
-
-        next();
-    },
-    validator,
-    async (req, res, next) => {
-        try {
-            const task = await ttts.service.transaction.returnOrder.sendEmail(
-                req.params.transactionId,
-                {
-                    typeOf: ttts.factory.creativeWorkType.EmailMessage,
-                    sender: {
-                        name: req.body.sender.name,
-                        email: req.body.sender.email
-                    },
-                    toRecipient: {
-                        name: req.body.toRecipient.name,
-                        email: req.body.toRecipient.email
-                    },
-                    about: req.body.about,
-                    text: req.body.text
-                }
-            )(
-                new ttts.repository.Task(mongoose.connection),
-                new ttts.repository.Transaction(mongoose.connection)
-            );
-
-            res.status(CREATED)
-                .json(task);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-/**
- * 取引検索
- */
-returnOrderTransactionsRouter.get(
-    '',
-    permitScopes(['admin']),
-    ...[
-        query('startFrom')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('startThrough')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('endFrom')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('endThrough')
-            .optional()
-            .isISO8601()
-            .toDate()
-    ],
-    validator,
-    async (req, res, next) => {
-        try {
-            const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
-            const searchConditions: ttts.factory.transaction.returnOrder.ISearchConditions = {
-                ...req.query,
-                // tslint:disable-next-line:no-magic-numbers
-                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
-                sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: ttts.factory.sortType.Descending },
-                typeOf: ttts.factory.transactionType.ReturnOrder
-            };
-            const transactions = await transactionRepo.search(searchConditions);
-            const totalCount = await transactionRepo.count(searchConditions);
-            res.set('X-Total-Count', totalCount.toString());
-            res.json(transactions);
         } catch (error) {
             next(error);
         }
