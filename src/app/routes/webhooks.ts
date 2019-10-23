@@ -110,10 +110,8 @@ webhooksRouter.post(
             const order = req.body.data;
 
             if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
-                const orderRepo = new ttts.repository.Order(mongoose.connection);
                 const performanceRepo = new ttts.repository.Performance(mongoose.connection);
                 const taskRepo = new ttts.repository.Task(mongoose.connection);
-                const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
 
                 const taskAttribute: ttts.factory.task.createReturnOrderReport.IAttributes = {
                     name: <any>ttts.factory.taskName.CreateReturnOrderReport,
@@ -130,10 +128,8 @@ webhooksRouter.post(
 
                 await taskRepo.save(<any>taskAttribute);
 
-                await ttts.service.performance.onOrderReturned({ orderNumber: order.orderNumber })({
-                    order: orderRepo,
-                    performance: performanceRepo,
-                    transaction: transactionRepo
+                await ttts.service.performance.onOrderReturned(order)({
+                    performance: performanceRepo
                 });
             }
 

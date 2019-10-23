@@ -97,10 +97,8 @@ webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(this, void 0
     try {
         const order = req.body.data;
         if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
-            const orderRepo = new ttts.repository.Order(mongoose.connection);
             const performanceRepo = new ttts.repository.Performance(mongoose.connection);
             const taskRepo = new ttts.repository.Task(mongoose.connection);
-            const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
             const taskAttribute = {
                 name: ttts.factory.taskName.CreateReturnOrderReport,
                 project: { typeOf: order.project.typeOf, id: order.project.id },
@@ -114,10 +112,8 @@ webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(this, void 0
                 }
             };
             yield taskRepo.save(taskAttribute);
-            yield ttts.service.performance.onOrderReturned({ orderNumber: order.orderNumber })({
-                order: orderRepo,
-                performance: performanceRepo,
-                transaction: transactionRepo
+            yield ttts.service.performance.onOrderReturned(order)({
+                performance: performanceRepo
             });
         }
         res.status(http_status_1.NO_CONTENT)
