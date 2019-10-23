@@ -13,12 +13,14 @@
 
 | Name                             | Required | Value      | Purpose                                        |
 | -------------------------------- | -------- | ---------- | ---------------------------------------------- |
-| `ADMINS_USER_POOL_ID`            | true     |            | 管理者ユーザープールID                         |
-| `AWS_ACCESS_KEY_ID`              | true     |            | AWSリソースアクセスキー                        |
-| `AWS_SECRET_ACCESS_KEY`          | true     |            | AWSリソースアクセスシークレット                |
+| `ADMINS_USER_POOL_ID`            | true     |            | Admin userpool ID                              |
+| `AWS_ACCESS_KEY_ID`              | true     |            | AWS credentials                                |
+| `AWS_SECRET_ACCESS_KEY`          | true     |            | AWS credentials                                |
 | `CHEVRE_AUTHORIZE_SERVER_DOMAIN` | true     |            | Chevre API Settings                            |
 | `CHEVRE_CLIENT_ID`               | true     |            | Chevre API Settings                            |
 | `CHEVRE_CLIENT_SECRET`           | true     |            | Chevre API Settings                            |
+| `CINERINO_API_AUTHORIZE_DOMAIN`  | true     |            | Cinerino API Settings                          |
+| `CINERINO_API_ENDPOINT`          | true     |            | Cinerino API Settings                          |
 | `COA_ENDPOINT`                   | true     |            | COA credentilas                                |
 | `COA_REFRESH_TOKEN`              | true     |            | credentilas                                    |
 | `CINERINO_API_ENDPOINT`          | true     |            | Cinerino API endpoint                          |
