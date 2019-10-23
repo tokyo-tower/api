@@ -29,7 +29,7 @@ returnOrderTransactionsRouter.use(authentication);
  */
 returnOrderTransactionsRouter.post(
     '/confirm',
-    permitScopes(['pos']),
+    permitScopes(['pos', 'transactions']),
     (req, __, next) => {
         req.checkBody('performance_day', 'invalid performance_day')
             .notEmpty()

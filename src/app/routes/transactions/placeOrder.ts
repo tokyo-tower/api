@@ -35,7 +35,7 @@ placeOrderTransactionsRouter.use(authentication);
 
 placeOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['pos']),
+    permitScopes(['pos', 'transactions']),
     (req, _, next) => {
         req.checkBody('expires', 'invalid expires')
             .notEmpty()
@@ -125,7 +125,7 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.put(
     '/:transactionId/customerContact',
-    permitScopes(['pos']),
+    permitScopes(['pos', 'transactions']),
     (req, _, next) => {
         req.checkBody('last_name')
             .notEmpty()
@@ -196,7 +196,7 @@ placeOrderTransactionsRouter.put(
  */
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/seatReservation',
-    permitScopes(['pos']),
+    permitScopes(['pos', 'transactions']),
     validator,
     async (req, res, next) => {
         try {
@@ -252,7 +252,7 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.delete(
     '/:transactionId/actions/authorize/seatReservation/:actionId',
-    permitScopes(['pos']),
+    permitScopes(['pos', 'transactions']),
     validator,
     async (req, res, next) => {
         try {
@@ -290,7 +290,7 @@ placeOrderTransactionsRouter.delete(
 
 placeOrderTransactionsRouter.post(
     '/:transactionId/confirm',
-    permitScopes(['pos']),
+    permitScopes(['pos', 'transactions']),
     validator,
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
