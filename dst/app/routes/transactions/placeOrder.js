@@ -187,7 +187,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
                 additionalProperty: [],
                 amount: authorizeSeatReservationResult.price
             },
-            purpose: { typeOf: ttts.factory.transactionType.PlaceOrder, id: req.params.transactionId }
+            purpose: { typeOf: cinerinoapi.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         });
         const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`;
         const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationConfirmed`;
@@ -224,15 +224,17 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
 function getTmpReservations(params) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
         const authorizeActions = yield repos.action.searchByPurpose({
-            typeOf: ttts.factory.actionType.AuthorizeAction,
+            typeOf: cinerinoapi.factory.actionType.AuthorizeAction,
             purpose: {
-                typeOf: ttts.factory.transactionType.PlaceOrder,
+                typeOf: cinerinoapi.factory.transactionType.PlaceOrder,
                 id: params.transaction.id
             }
         });
-        const seatReservationAuthorizeAction = authorizeActions
-            .filter((a) => a.actionStatus === ttts.factory.actionStatusType.CompletedActionStatus)
-            .find((a) => a.object.typeOf === ttts.factory.action.authorize.seatReservation.ObjectType.SeatReservation);
+        const seatReservationAuthorizeAction 
+        // tslint:disable-next-line:max-line-length
+        = authorizeActions
+            .filter((a) => a.actionStatus === cinerinoapi.factory.actionStatusType.CompletedActionStatus)
+            .find((a) => a.object.typeOf === cinerinoapi.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
         if (seatReservationAuthorizeAction === undefined || seatReservationAuthorizeAction.result === undefined) {
             throw new ttts.factory.errors.Argument('Transaction', 'Seat reservation authorize action required');
         }

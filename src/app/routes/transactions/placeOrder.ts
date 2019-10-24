@@ -242,7 +242,7 @@ placeOrderTransactionsRouter.post(
                     additionalProperty: [],
                     amount: authorizeSeatReservationResult.price
                 },
-                purpose: { typeOf: ttts.factory.transactionType.PlaceOrder, id: req.params.transactionId }
+                purpose: { typeOf: cinerinoapi.factory.transactionType.PlaceOrder, id: req.params.transactionId }
             });
 
             const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`;
@@ -266,7 +266,7 @@ placeOrderTransactionsRouter.post(
                     eventReservations: (transactionResult !== undefined)
                         ? transactionResult.order.acceptedOffers
                             .map((o) => {
-                                const r = <ttts.factory.order.IReservation>o.itemOffered;
+                                const r = <cinerinoapi.factory.order.IReservation>o.itemOffered;
 
                                 return {
                                     qr_str: r.id,
@@ -288,18 +288,21 @@ function getTmpReservations(params: {
 }) {
     return async (repos: {
         action: ttts.repository.Action;
-    }): Promise<ttts.factory.action.authorize.seatReservation.IResult> => {
+        // tslint:disable-next-line:max-line-length
+    }): Promise<cinerinoapi.factory.action.authorize.offer.seatReservation.IResult<cinerinoapi.factory.service.webAPI.Identifier.Chevre>> => {
         const authorizeActions = await repos.action.searchByPurpose({
-            typeOf: ttts.factory.actionType.AuthorizeAction,
+            typeOf: cinerinoapi.factory.actionType.AuthorizeAction,
             purpose: {
-                typeOf: ttts.factory.transactionType.PlaceOrder,
+                typeOf: cinerinoapi.factory.transactionType.PlaceOrder,
                 id: params.transaction.id
             }
         });
-        const seatReservationAuthorizeAction = <ttts.factory.action.authorize.seatReservation.IAction | undefined>
+        const seatReservationAuthorizeAction
+            // tslint:disable-next-line:max-line-length
+            = <cinerinoapi.factory.action.authorize.offer.seatReservation.IAction<cinerinoapi.factory.service.webAPI.Identifier.Chevre> | undefined>
             authorizeActions
-                .filter((a) => a.actionStatus === ttts.factory.actionStatusType.CompletedActionStatus)
-                .find((a) => a.object.typeOf === ttts.factory.action.authorize.seatReservation.ObjectType.SeatReservation);
+                .filter((a) => a.actionStatus === cinerinoapi.factory.actionStatusType.CompletedActionStatus)
+                .find((a) => a.object.typeOf === cinerinoapi.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
         if (seatReservationAuthorizeAction === undefined || seatReservationAuthorizeAction.result === undefined) {
             throw new ttts.factory.errors.Argument('Transaction', 'Seat reservation authorize action required');
         }

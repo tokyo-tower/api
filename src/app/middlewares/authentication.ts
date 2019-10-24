@@ -1,7 +1,7 @@
 /**
- * OAuthミドルウェア
- * @see https://aws.amazon.com/blogs/mobile/integrating-amazon-cognito-user-pools-with-api-gateway/
+ * 認証ミドルウェア
  */
+import * as cinerinoapi from '@cinerino/api-nodejs-client';
 import * as ttts from '@tokyotower/domain';
 
 import { cognitoAuth } from '@motionpicture/express-middleware';
@@ -48,14 +48,14 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                     // no op
                 }
 
-                let programMembership: ttts.factory.cinerino.programMembership.IProgramMembership | undefined;
+                let programMembership: cinerinoapi.factory.programMembership.IProgramMembership | undefined;
                 if (user.username !== undefined) {
                     programMembership = {
                         award: [],
                         membershipNumber: user.username,
                         programName: 'Amazon Cognito',
                         project: req.project,
-                        typeOf: <ttts.factory.cinerino.programMembership.ProgramMembershipType>'ProgramMembership',
+                        typeOf: cinerinoapi.factory.programMembership.ProgramMembershipType.ProgramMembership,
                         url: user.iss
                     };
                 }

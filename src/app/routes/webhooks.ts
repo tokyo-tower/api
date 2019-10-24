@@ -1,6 +1,7 @@
 /**
  * ウェブフックルーター
  */
+import * as cinerinoapi from '@cinerino/api-nodejs-client';
 import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
 import * as moment from 'moment';
@@ -24,20 +25,20 @@ webhooksRouter.post(
     '/onTransactionStatusChanged',
     async (req, res, next) => {
         try {
-            const transaction = <ttts.factory.transaction.ITransaction<ttts.factory.transactionType>>req.body.data;
+            const transaction = <cinerinoapi.factory.transaction.ITransaction<cinerinoapi.factory.transactionType>>req.body.data;
 
             if (transaction !== undefined && transaction !== null) {
-                if (transaction.typeOf === ttts.factory.transactionType.PlaceOrder && typeof transaction.id === 'string') {
+                if (transaction.typeOf === cinerinoapi.factory.transactionType.PlaceOrder && typeof transaction.id === 'string') {
                     const actionRepo = new ttts.repository.Action(mongoose.connection);
                     const taskRepo = new ttts.repository.Task(mongoose.connection);
                     const ticketTypeCategoryRateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
 
                     switch (transaction.status) {
-                        case ttts.factory.transactionStatusType.Confirmed:
+                        case cinerinoapi.factory.transactionStatusType.Confirmed:
                             break;
 
-                        case ttts.factory.transactionStatusType.Canceled:
-                        case ttts.factory.transactionStatusType.Expired:
+                        case cinerinoapi.factory.transactionStatusType.Canceled:
+                        case cinerinoapi.factory.transactionStatusType.Expired:
                             // 取引が成立しなかった場合の処理
                             await ttts.service.stock.onTransactionVoided({
                                 project: { id: transaction.project.id },
