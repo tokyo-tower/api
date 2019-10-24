@@ -19,53 +19,6 @@ const redisClient = ttts.redis.createClient({
 });
 
 /**
- * 取引ステータス変更イベント
- */
-webhooksRouter.post(
-    '/onTransactionStatusChanged',
-    async (req, res, next) => {
-        try {
-            const transaction = <cinerinoapi.factory.transaction.ITransaction<cinerinoapi.factory.transactionType>>req.body.data;
-
-            if (transaction !== undefined && transaction !== null) {
-                if (transaction.typeOf === cinerinoapi.factory.transactionType.PlaceOrder && typeof transaction.id === 'string') {
-                    const actionRepo = new ttts.repository.Action(mongoose.connection);
-                    const taskRepo = new ttts.repository.Task(mongoose.connection);
-                    const ticketTypeCategoryRateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
-
-                    switch (transaction.status) {
-                        case cinerinoapi.factory.transactionStatusType.Confirmed:
-                            break;
-
-                        case cinerinoapi.factory.transactionStatusType.Canceled:
-                        case cinerinoapi.factory.transactionStatusType.Expired:
-                            // 取引が成立しなかった場合の処理
-                            await ttts.service.stock.onTransactionVoided({
-                                project: { id: transaction.project.id },
-                                typeOf: transaction.typeOf,
-                                id: transaction.id
-                            })({
-                                action: actionRepo,
-                                task: taskRepo,
-                                ticketTypeCategoryRateLimit: ticketTypeCategoryRateLimitRepo
-                            });
-
-                            break;
-
-                        default:
-                    }
-                }
-            }
-
-            res.status(NO_CONTENT)
-                .end();
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-/**
  * 注文イベント
  */
 webhooksRouter.post(
@@ -238,6 +191,62 @@ webhooksRouter.post(
                         ticketTypeCategoryRateLimit: new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
                         project: new ttts.repository.Project(mongoose.connection)
                     });
+                }
+            }
+
+            res.status(NO_CONTENT)
+                .end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 予約ステータス変更イベント
+ */
+webhooksRouter.post(
+    '/onReservationStatusChanged',
+    async (req, res, next) => {
+        try {
+            const reservation
+                = <ttts.factory.chevre.reservation.IReservation<ttts.factory.chevre.reservationType.EventReservation>>req.body.data;
+
+            if (reservation !== undefined
+                && reservation !== null
+                && typeof reservation.id === 'string'
+                && typeof reservation.reservationNumber === 'string') {
+                // 余分確保分を除く
+                let extraProperty: ttts.factory.propertyValue.IPropertyValue<string> | undefined;
+                if (reservation.additionalProperty !== undefined) {
+                    extraProperty = reservation.additionalProperty.find((p) => p.name === 'extra');
+                }
+                const isExtra = extraProperty !== undefined && extraProperty.value === '1';
+
+                if (!isExtra) {
+                    const taskRepo = new ttts.repository.Task(mongoose.connection);
+                    const ticketTypeCategoryRateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
+
+                    switch (reservation.reservationStatus) {
+                        case cinerinoapi.factory.chevre.reservationStatusType.ReservationCancelled:
+                            await ttts.service.reserve.onReservationCancelled(reservation)({
+                                task: taskRepo,
+                                ticketTypeCategoryRateLimit: ticketTypeCategoryRateLimitRepo
+                            });
+
+                            break;
+
+                        case cinerinoapi.factory.chevre.reservationStatusType.ReservationConfirmed:
+                            break;
+
+                        case cinerinoapi.factory.chevre.reservationStatusType.ReservationHold:
+                            break;
+
+                        case cinerinoapi.factory.chevre.reservationStatusType.ReservationPending:
+                            break;
+
+                        default:
+                    }
                 }
             }
 
