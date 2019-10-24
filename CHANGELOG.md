@@ -10,12 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- POS注文取引をCinerino SDKで再構築
-- POS注文返品取引をCinerino SDKで再構築
-- 返品レポート作成時の手数料を注文データから取得するように調整
-- 注文返品時のイベント情報連携処理から注文リポジトリと取引リポジトリを削除
-- イベントに対する全注文返品処理をCinerino SDKで再構築
-
 ### Deprecated
 
 ### Removed
@@ -23,6 +17,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v27.0.0 - 2019-10-24
+
+### Changed
+
+- POS注文取引をCinerino SDKで再構築
+- POS注文返品取引をCinerino SDKで再構築
+- 返品レポート作成時の手数料を注文データから取得するように調整
+- 注文返品時のイベント情報連携処理から注文リポジトリと取引リポジトリを削除
+- イベントに対する全注文返品処理をCinerino SDKで再構築
 
 ## v26.0.0 - 2019-10-21
 
