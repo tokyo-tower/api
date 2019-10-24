@@ -11,6 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * ウェブフックルーター
  */
+const cinerinoapi = require("@cinerino/api-nodejs-client");
 const ttts = require("@tokyotower/domain");
 const express = require("express");
 const moment = require("moment");
@@ -30,15 +31,15 @@ webhooksRouter.post('/onTransactionStatusChanged', (req, res, next) => __awaiter
     try {
         const transaction = req.body.data;
         if (transaction !== undefined && transaction !== null) {
-            if (transaction.typeOf === ttts.factory.transactionType.PlaceOrder && typeof transaction.id === 'string') {
+            if (transaction.typeOf === cinerinoapi.factory.transactionType.PlaceOrder && typeof transaction.id === 'string') {
                 const actionRepo = new ttts.repository.Action(mongoose.connection);
                 const taskRepo = new ttts.repository.Task(mongoose.connection);
                 const ticketTypeCategoryRateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
                 switch (transaction.status) {
-                    case ttts.factory.transactionStatusType.Confirmed:
+                    case cinerinoapi.factory.transactionStatusType.Confirmed:
                         break;
-                    case ttts.factory.transactionStatusType.Canceled:
-                    case ttts.factory.transactionStatusType.Expired:
+                    case cinerinoapi.factory.transactionStatusType.Canceled:
+                    case cinerinoapi.factory.transactionStatusType.Expired:
                         // 取引が成立しなかった場合の処理
                         yield ttts.service.stock.onTransactionVoided({
                             project: { id: transaction.project.id },
@@ -97,10 +98,8 @@ webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(this, void 0
     try {
         const order = req.body.data;
         if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
-            const orderRepo = new ttts.repository.Order(mongoose.connection);
             const performanceRepo = new ttts.repository.Performance(mongoose.connection);
             const taskRepo = new ttts.repository.Task(mongoose.connection);
-            const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
             const taskAttribute = {
                 name: ttts.factory.taskName.CreateReturnOrderReport,
                 project: { typeOf: order.project.typeOf, id: order.project.id },
@@ -114,10 +113,8 @@ webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(this, void 0
                 }
             };
             yield taskRepo.save(taskAttribute);
-            yield ttts.service.performance.onOrderReturned({ orderNumber: order.orderNumber })({
-                order: orderRepo,
-                performance: performanceRepo,
-                transaction: transactionRepo
+            yield ttts.service.performance.onOrderReturned(order)({
+                performance: performanceRepo
             });
         }
         res.status(http_status_1.NO_CONTENT)

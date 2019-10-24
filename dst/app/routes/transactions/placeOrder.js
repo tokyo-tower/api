@@ -11,22 +11,24 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 注文取引ルーター(POS専用)
  */
+const cinerinoapi = require("@cinerino/api-nodejs-client");
 const ttts = require("@tokyotower/domain");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 const mongoose = require("mongoose");
+const request = require("request-promise-native");
+const auth = new cinerinoapi.auth.ClientCredentials({
+    domain: '',
+    clientId: '',
+    clientSecret: '',
+    scopes: [],
+    state: ''
+});
 const placeOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
-// 車椅子レート制限のためのRedis接続クライアント
-const redisClient = ttts.redis.createClient({
-    host: process.env.REDIS_HOST,
-    port: Number(process.env.REDIS_PORT),
-    password: process.env.REDIS_KEY,
-    tls: { servername: process.env.REDIS_HOST }
-});
 placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos', 'transactions']), (req, _, next) => {
     req.checkBody('expires', 'invalid expires')
@@ -39,31 +41,25 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos', 'tran
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
-        const sellerRepo = new ttts.repository.Seller(mongoose.connection);
-        const doc = yield sellerRepo.organizationModel.findOne({
-            identifier: req.body.seller_identifier
+        const sellerIdentifier = 'TokyoTower';
+        // WAITER許可証を取得
+        const scope = 'placeOrderTransaction.TokyoTower.POS';
+        const { token } = yield request.post(`${process.env.WAITER_ENDPOINT}/projects/${process.env.PROJECT_ID}/passports`, {
+            json: true,
+            body: { scope: scope }
         })
-            .exec();
-        if (doc === null) {
-            throw new ttts.factory.errors.NotFound('Seller');
-        }
-        const seller = doc.toObject();
-        const transaction = yield ttts.service.transaction.placeOrderInProgress.start({
-            project: req.project,
-            expires: moment(req.body.expires)
-                .toDate(),
-            agent: Object.assign({}, req.agent, { identifier: [
-                    ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
-                    ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
-                ] }),
-            seller: { typeOf: seller.typeOf, id: seller.id },
-            object: {
-                clientUser: req.user
-            }
-        })({
-            seller: sellerRepo,
-            transaction: transactionRepo
+            .then((body) => body);
+        const expires = moment(req.body.expires)
+            .toDate();
+        auth.setCredentials({ access_token: req.accessToken });
+        const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
+            auth: auth,
+            endpoint: process.env.CINERINO_API_ENDPOINT
+        });
+        const transaction = yield placeOrderService.start({
+            expires: expires,
+            sellerIdentifier: sellerIdentifier,
+            passportToken: token
         });
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
@@ -94,16 +90,14 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const profile = yield ttts.service.transaction.placeOrderInProgress.updateAgent({
-            id: req.params.transactionId,
-            agent: Object.assign({}, req.body, { id: req.user.sub, 
-                // address: (typeof req.body.address === 'string') ? req.body.address : '',
-                // age: (typeof req.body.age === 'string') ? req.body.age : '',
-                // email: (typeof req.body.email === 'string') ? req.body.email : '',
-                // gender: (typeof req.body.gender === 'string') ? req.body.gender : '',
-                givenName: (typeof req.body.first_name === 'string') ? req.body.first_name : '', familyName: (typeof req.body.last_name === 'string') ? req.body.last_name : '', telephone: (typeof req.body.tel === 'string') ? req.body.tel : '', telephoneRegion: (typeof req.body.address === 'string') ? req.body.address : '' })
-        })({
-            transaction: new ttts.repository.Transaction(mongoose.connection)
+        auth.setCredentials({ access_token: req.accessToken });
+        const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
+            auth: auth,
+            endpoint: process.env.CINERINO_API_ENDPOINT
+        });
+        const profile = yield placeOrderService.setCustomerContact({
+            transactionId: req.params.transactionId,
+            contact: Object.assign({}, req.body, { id: req.user.sub, givenName: (typeof req.body.first_name === 'string') ? req.body.first_name : '', familyName: (typeof req.body.last_name === 'string') ? req.body.last_name : '', telephone: (typeof req.body.tel === 'string') ? req.body.tel : '', telephoneRegion: (typeof req.body.address === 'string') ? req.body.address : '' })
         });
         res.status(http_status_1.CREATED)
             .json(Object.assign({}, profile, { 
@@ -123,20 +117,16 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
             req.body.offers = [];
         }
         const performanceId = req.body.performance_id;
-        const action = yield ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create({
-            project: req.project,
-            agent: { id: req.user.sub },
-            transaction: { id: req.params.transactionId },
-            object: {
-                event: { id: performanceId },
-                acceptedOffers: req.body.offers.map((offer) => {
-                    return {
-                        ticket_type: offer.ticket_type,
-                        watcher_name: offer.watcher_name
-                    };
-                })
-            }
-        })(new ttts.repository.Transaction(mongoose.connection), new ttts.repository.Action(mongoose.connection), new ttts.repository.rateLimit.TicketTypeCategory(redisClient), new ttts.repository.Task(mongoose.connection), new ttts.repository.Project(mongoose.connection));
+        auth.setCredentials({ access_token: req.accessToken });
+        const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
+            auth: auth,
+            endpoint: process.env.CINERINO_API_ENDPOINT
+        });
+        const action = yield placeOrderService.createSeatReservationAuthorization({
+            transactionId: req.params.transactionId,
+            performanceId: performanceId,
+            offers: req.body.offers
+        });
         res.status(http_status_1.CREATED)
             .json(action);
     }
@@ -149,12 +139,15 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
  */
 placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['pos', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield ttts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.cancel({
-            project: req.project,
-            agent: { id: req.user.sub },
-            transaction: { id: req.params.transactionId },
-            id: req.params.actionId
-        })(new ttts.repository.Transaction(mongoose.connection), new ttts.repository.Action(mongoose.connection), new ttts.repository.rateLimit.TicketTypeCategory(redisClient), new ttts.repository.Task(mongoose.connection), new ttts.repository.Project(mongoose.connection));
+        auth.setCredentials({ access_token: req.accessToken });
+        const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
+            auth: auth,
+            endpoint: process.env.CINERINO_API_ENDPOINT
+        });
+        yield placeOrderService.cancelSeatReservationAuthorization({
+            transactionId: req.params.transactionId,
+            actionId: req.params.actionId
+        });
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
@@ -162,155 +155,51 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
         next(error);
     }
 }));
-placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['pos', 'transactions']), validator_1.default, 
-// tslint:disable-next-line:max-func-body-length
-(req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['pos', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const paymentMethodType = req.body.payment_method;
         const actionRepo = new ttts.repository.Action(mongoose.connection);
-        const orderNumberRepo = new ttts.repository.OrderNumber(redisClient);
-        const paymentNoRepo = new ttts.repository.PaymentNo(redisClient);
-        const sellerRepo = new ttts.repository.Seller(mongoose.connection);
-        const tokenRepo = new ttts.repository.Token(redisClient);
-        const transactionRepo = new ttts.repository.Transaction(mongoose.connection);
-        const transaction = yield transactionRepo.findInProgressById({
-            typeOf: ttts.factory.transactionType.PlaceOrder,
-            id: req.params.transactionId
-        });
         const authorizeSeatReservationResult = yield getTmpReservations({
             transaction: { id: req.params.transactionId }
         })({
             action: actionRepo
         });
-        const acceptedOffers = (Array.isArray(authorizeSeatReservationResult.acceptedOffers))
-            ? authorizeSeatReservationResult.acceptedOffers
-            : [];
-        const reserveTransaction = authorizeSeatReservationResult.responseBody;
-        if (reserveTransaction === undefined) {
-            throw new ttts.factory.errors.Argument('Transaction', 'Reserve trasaction required');
+        // クライアントがPOSの場合、決済方法承認アクションを自動生成
+        let authorizingPaymentMethodType;
+        switch (paymentMethodType) {
+            case cinerinoapi.factory.paymentMethodType.Cash:
+            case cinerinoapi.factory.paymentMethodType.CreditCard:
+                authorizingPaymentMethodType = paymentMethodType;
+                break;
+            default:
+                // その他の決済方法を認められるのは代理予約だけ
+                throw new ttts.factory.errors.Argument('paymentMethod', `Invalid payment method for the client`);
         }
-        const chevreReservations = (Array.isArray(reserveTransaction.object.reservations))
-            ? reserveTransaction.object.reservations
-            : [];
-        const event = reserveTransaction.object.reservationFor;
-        if (event === undefined || event === null) {
-            throw new ttts.factory.errors.Argument('Transaction', 'Event required');
-        }
-        // クライアントがPOSあるいは内部予約の場合、決済方法承認アクションを自動生成
-        const authorizePaymentMethodAction = yield authorizeOtherPayment({
-            agent: { id: req.user.sub },
-            paymentMethodType: paymentMethodType,
-            amount: authorizeSeatReservationResult.price,
-            transaction: { id: req.params.transactionId }
-        })({
-            action: actionRepo,
-            seller: sellerRepo,
-            transaction: transactionRepo
+        auth.setCredentials({ access_token: req.accessToken });
+        const paymentService = new cinerinoapi.service.Payment({
+            auth: auth,
+            endpoint: process.env.CINERINO_API_ENDPOINT
         });
-        const authorizePaymentMethodActionResult = authorizePaymentMethodAction.result;
-        // 確認番号を事前生成
-        const eventStartDateStr = moment(event.startDate)
-            .tz('Asia/Tokyo')
-            .format('YYYYMMDD');
-        const paymentNo = yield paymentNoRepo.publish(eventStartDateStr);
-        const confirmationNumber = `${eventStartDateStr}${paymentNo}`;
+        yield paymentService.authorizeAnyPayment({
+            object: {
+                typeOf: authorizingPaymentMethodType,
+                name: paymentMethodType,
+                additionalProperty: [],
+                amount: authorizeSeatReservationResult.price
+            },
+            purpose: { typeOf: cinerinoapi.factory.transactionType.PlaceOrder, id: req.params.transactionId }
+        });
         const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`;
         const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationConfirmed`;
-        // 予約確定パラメータを生成
-        const eventReservations = acceptedOffers.map((acceptedOffer, index) => {
-            const reservation = acceptedOffer.itemOffered;
-            const chevreReservation = chevreReservations.find((r) => r.id === reservation.id);
-            if (chevreReservation === undefined) {
-                throw new ttts.factory.errors.Argument('Transaction', `Unexpected temporary reservation: ${reservation.id}`);
-            }
-            return temporaryReservation2confirmed({
-                reservation: reservation,
-                chevreReservation: chevreReservation,
-                transaction: transaction,
-                paymentNo: paymentNo,
-                gmoOrderId: authorizePaymentMethodActionResult.paymentMethodId,
-                paymentSeatIndex: index.toString(),
-                paymentMethodName: authorizePaymentMethodActionResult.name
-            });
+        const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
+            auth: auth,
+            endpoint: process.env.CINERINO_API_ENDPOINT
         });
-        const confirmReservationParams = [];
-        confirmReservationParams.push({
-            object: {
-                typeOf: reserveTransaction.typeOf,
-                id: reserveTransaction.id,
-                object: {
-                    reservations: [
-                        ...eventReservations.map((r) => {
-                            // プロジェクト固有の値を連携
-                            return {
-                                id: r.id,
-                                additionalTicketText: r.additionalTicketText,
-                                underName: r.underName,
-                                additionalProperty: r.additionalProperty
-                            };
-                        }),
-                        // 余分確保分の予約にもextraプロパティを連携
-                        ...chevreReservations.filter((r) => {
-                            // 注文アイテムに存在しない予約(余分確保分)にフィルタリング
-                            const orderItem = eventReservations.find((eventReservation) => eventReservation.id === r.id);
-                            return orderItem === undefined;
-                        })
-                            .map((r) => {
-                            return {
-                                id: r.id,
-                                additionalProperty: [
-                                    { name: 'extra', value: '1' }
-                                ]
-                            };
-                        })
-                    ]
-                },
-                potentialActions: {
-                    reserve: {
-                        potentialActions: {
-                            informReservation: [
-                                { recipient: { url: informReservationUrl } }
-                            ]
-                        }
-                    }
-                }
-            }
-        });
-        // 注文通知パラメータを生成
-        const informOrderParams = [
-            { recipient: { url: informOrderUrl } }
-        ];
-        // 決済承認後に注文日時を確定しなければ、取引条件を満たさないので注意
-        const orderDate = new Date();
-        // 印刷トークンを事前に発行
-        const printToken = yield tokenRepo.createPrintToken(acceptedOffers.map((o) => o.itemOffered.id));
-        const transactionResult = yield ttts.service.transaction.placeOrderInProgress.confirm({
-            project: req.project,
-            agent: { id: req.user.sub },
-            id: req.params.transactionId,
-            potentialActions: {
-                order: {
-                    potentialActions: {
-                        sendOrder: {
-                            potentialActions: {
-                                confirmReservation: confirmReservationParams
-                            }
-                        },
-                        informOrder: informOrderParams
-                    }
-                }
-            },
-            result: {
-                order: {
-                    orderDate: orderDate,
-                    confirmationNumber: confirmationNumber
-                }
-            }
-        })({
-            action: actionRepo,
-            orderNumber: orderNumberRepo,
-            seller: sellerRepo,
-            transaction: transactionRepo
+        const transactionResult = yield placeOrderService.confirm({
+            transactionId: req.params.transactionId,
+            paymentMethod: paymentMethodType,
+            informOrderUrl: informOrderUrl,
+            informReservationUrl: informReservationUrl
         });
         res.status(http_status_1.CREATED)
             .json(Object.assign({}, transactionResult, { 
@@ -321,13 +210,12 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
                     const r = o.itemOffered;
                     return {
                         qr_str: r.id,
-                        payment_no: paymentNo,
+                        // tslint:disable-next-line:no-magic-numbers
+                        payment_no: transactionResult.order.confirmationNumber.slice(-6),
                         performance: r.reservationFor.id
                     };
                 })
-                : [], 
-            // 印刷トークン情報を追加
-            printToken: printToken }));
+                : [] }));
     }
     catch (error) {
         next(error);
@@ -336,117 +224,21 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
 function getTmpReservations(params) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
         const authorizeActions = yield repos.action.searchByPurpose({
-            typeOf: ttts.factory.actionType.AuthorizeAction,
+            typeOf: cinerinoapi.factory.actionType.AuthorizeAction,
             purpose: {
-                typeOf: ttts.factory.transactionType.PlaceOrder,
+                typeOf: cinerinoapi.factory.transactionType.PlaceOrder,
                 id: params.transaction.id
             }
         });
-        const seatReservationAuthorizeAction = authorizeActions
-            .filter((a) => a.actionStatus === ttts.factory.actionStatusType.CompletedActionStatus)
-            .find((a) => a.object.typeOf === ttts.factory.action.authorize.seatReservation.ObjectType.SeatReservation);
+        const seatReservationAuthorizeAction 
+        // tslint:disable-next-line:max-line-length
+        = authorizeActions
+            .filter((a) => a.actionStatus === cinerinoapi.factory.actionStatusType.CompletedActionStatus)
+            .find((a) => a.object.typeOf === cinerinoapi.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
         if (seatReservationAuthorizeAction === undefined || seatReservationAuthorizeAction.result === undefined) {
             throw new ttts.factory.errors.Argument('Transaction', 'Seat reservation authorize action required');
         }
         return seatReservationAuthorizeAction.result;
     });
 }
-function authorizeOtherPayment(params) {
-    return (repos) => __awaiter(this, void 0, void 0, function* () {
-        let authorizePaymentMethodAction;
-        // クライアントがPOSの場合、決済方法承認アクションを自動生成
-        let authorizingPaymentMethodType;
-        switch (params.paymentMethodType) {
-            case ttts.factory.cinerino.paymentMethodType.Cash:
-            case ttts.factory.cinerino.paymentMethodType.CreditCard:
-                authorizingPaymentMethodType = params.paymentMethodType;
-                break;
-            default:
-                // その他の決済方法を認められるのは代理予約だけ
-                throw new ttts.factory.errors.Argument('paymentMethod', `Invalid payment method for the client`);
-        }
-        authorizePaymentMethodAction = yield ttts.service.payment.any.authorize({
-            agent: { id: params.agent.id },
-            object: {
-                typeOf: authorizingPaymentMethodType,
-                name: params.paymentMethodType,
-                additionalProperty: [],
-                amount: params.amount
-            },
-            purpose: { typeOf: ttts.factory.transactionType.PlaceOrder, id: params.transaction.id }
-        })(repos);
-        return authorizePaymentMethodAction;
-    });
-}
-/**
- * 仮予約から確定予約を生成する
- */
-function temporaryReservation2confirmed(params) {
-    const customer = params.transaction.agent;
-    const underName = Object.assign({ typeOf: ttts.factory.personType.Person, id: customer.id, name: `${customer.givenName} ${customer.familyName}`, familyName: customer.familyName, givenName: customer.givenName, email: customer.email, telephone: customer.telephone, gender: customer.gender, identifier: [
-            { name: 'paymentNo', value: params.paymentNo },
-            { name: 'transaction', value: params.transaction.id },
-            { name: 'gmoOrderId', value: params.gmoOrderId },
-            ...(typeof customer.age === 'string')
-                ? [{ name: 'age', value: customer.age }]
-                : [],
-            ...(customer.identifier !== undefined) ? customer.identifier : [],
-            ...(customer.memberOf !== undefined && customer.memberOf.membershipNumber !== undefined)
-                ? [{ name: 'username', value: customer.memberOf.membershipNumber }]
-                : [],
-            ...(params.paymentMethodName !== undefined)
-                ? [{ name: 'paymentMethod', value: params.paymentMethodName }]
-                : []
-        ] }, { address: customer.address });
-    return Object.assign({}, params.chevreReservation, { underName: underName, additionalProperty: [
-            ...(Array.isArray(params.reservation.additionalProperty)) ? params.reservation.additionalProperty : [],
-            { name: 'paymentSeatIndex', value: params.paymentSeatIndex }
-        ], additionalTicketText: params.reservation.additionalTicketText });
-}
-placeOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification', permitScopes_1.default(['transactions']), (req, __2, next) => {
-    req.checkBody('sender.name', 'invalid sender')
-        .notEmpty()
-        .withMessage('sender.name is required');
-    req.checkBody('sender.email', 'invalid sender')
-        .notEmpty()
-        .withMessage('sender.email is required');
-    req.checkBody('toRecipient.name', 'invalid toRecipient')
-        .notEmpty()
-        .withMessage('toRecipient.name is required');
-    req.checkBody('toRecipient.email', 'invalid toRecipient')
-        .notEmpty()
-        .withMessage('toRecipient.email is required')
-        .isEmail();
-    req.checkBody('about', 'invalid about')
-        .notEmpty()
-        .withMessage('about is required');
-    req.checkBody('text', 'invalid text')
-        .notEmpty()
-        .withMessage('text is required');
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    try {
-        const task = yield ttts.service.transaction.placeOrder.sendEmail(req.params.transactionId, {
-            typeOf: ttts.factory.creativeWorkType.EmailMessage,
-            sender: {
-                name: req.body.sender.name,
-                email: req.body.sender.email
-            },
-            toRecipient: {
-                name: req.body.toRecipient.name,
-                email: req.body.toRecipient.email
-            },
-            about: req.body.about,
-            text: req.body.text
-        })({
-            task: new ttts.repository.Task(mongoose.connection),
-            transaction: new ttts.repository.Transaction(mongoose.connection)
-        });
-        res.status(http_status_1.CREATED)
-            .json(task);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
 exports.default = placeOrderTransactionsRouter;

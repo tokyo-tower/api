@@ -9,9 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * OAuthミドルウェア
- * @see https://aws.amazon.com/blogs/mobile/integrating-amazon-cognito-user-pools-with-api-gateway/
+ * 認証ミドルウェア
  */
+const cinerinoapi = require("@cinerino/api-nodejs-client");
 const ttts = require("@tokyotower/domain");
 const express_middleware_1 = require("@motionpicture/express-middleware");
 // 許可発行者リスト
@@ -59,7 +59,7 @@ exports.default = (req, res, next) => __awaiter(this, void 0, void 0, function* 
                         membershipNumber: user.username,
                         programName: 'Amazon Cognito',
                         project: req.project,
-                        typeOf: 'ProgramMembership',
+                        typeOf: cinerinoapi.factory.programMembership.ProgramMembershipType.ProgramMembership,
                         url: user.iss
                     };
                 }

@@ -9,8 +9,9 @@
     }
   ],
   "dependencies": {
+    "@cinerino/api-nodejs-client": "2.0.0-alpha.33",
     "@motionpicture/express-middleware": "^0.1.1",
-    "@tokyotower/domain": "^35.1.0",
+    "@tokyotower/domain": "^37.0.0",
     "basic-auth": "^2.0.0",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
@@ -25,7 +26,9 @@
     "iconv-lite": "^0.5.0",
     "moment": "^2.20.1",
     "moment-timezone": "^0.5.25",
-    "mongoose": "5.6.7"
+    "mongoose": "5.6.7",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.7"
   },
   "description": "TTTS API Application",
   "devDependencies": {
@@ -44,6 +47,7 @@
     "@types/mocha": "^2.2.46",
     "@types/moment-timezone": "^0.5.12",
     "@types/mongoose": "5.5.11",
+    "@types/request-promise-native": "^1.0.17",
     "mocha": "^3.5.3",
     "nyc": "^11.4.1",
     "rimraf": "^2.6.2",
@@ -77,5 +81,5 @@
     "version": "git add -A",
     "postversion": "git push origin --tags"
   },
-  "version": "26.0.0"
+  "version": "27.0.0"
 }
