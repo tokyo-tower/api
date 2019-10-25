@@ -6,7 +6,6 @@ import * as ttts from '@tokyotower/domain';
 import { Router } from 'express';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as moment from 'moment-timezone';
-import * as mongoose from 'mongoose';
 import * as request from 'request-promise-native';
 
 const auth = new cinerinoapi.auth.ClientCredentials({
@@ -22,6 +21,16 @@ const placeOrderTransactionsRouter = Router();
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
+
+const TRANSACTION_AMOUNT_TTL = 3600;
+const TRANSACTION_AMOUNT_KEY_PREFIX = 'placeOrderTransactionAmount.';
+
+const redisClient = ttts.redis.createClient({
+    host: <string>process.env.REDIS_HOST,
+    port: Number(<string>process.env.REDIS_PORT),
+    password: <string>process.env.REDIS_KEY,
+    tls: { servername: <string>process.env.REDIS_HOST }
+});
 
 placeOrderTransactionsRouter.use(authentication);
 
@@ -165,6 +174,24 @@ placeOrderTransactionsRouter.post(
                 offers: req.body.offers
             });
 
+            // 金額保管
+            if (action.result !== undefined) {
+                const key = `${TRANSACTION_AMOUNT_KEY_PREFIX}${req.params.transactionId}`;
+                const amount = action.result.price;
+                await new Promise((resolve, reject) => {
+                    redisClient.multi()
+                        .set(key, amount.toString())
+                        .expire(key, TRANSACTION_AMOUNT_TTL)
+                        .exec((err) => {
+                            if (err !== null) {
+                                reject(err);
+                            } else {
+                                resolve();
+                            }
+                        });
+                });
+            }
+
             res.status(CREATED)
                 .json(action);
         } catch (error) {
@@ -193,6 +220,21 @@ placeOrderTransactionsRouter.delete(
                 actionId: req.params.actionId
             });
 
+            // 金額リセット
+            const key = `${TRANSACTION_AMOUNT_KEY_PREFIX}${req.params.transactionId}`;
+            await new Promise((resolve, reject) => {
+                redisClient.multi()
+                    .set(key, '0')
+                    .expire(key, TRANSACTION_AMOUNT_TTL)
+                    .exec((err) => {
+                        if (err !== null) {
+                            reject(err);
+                        } else {
+                            resolve();
+                        }
+                    });
+            });
+
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {
@@ -208,13 +250,6 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             const paymentMethodType = req.body.payment_method;
-
-            const actionRepo = new ttts.repository.Action(mongoose.connection);
-            const authorizeSeatReservationResult = await getTmpReservations({
-                transaction: { id: req.params.transactionId }
-            })({
-                action: actionRepo
-            });
 
             // クライアントがPOSの場合、決済方法承認アクションを自動生成
             let authorizingPaymentMethodType: string;
@@ -235,12 +270,24 @@ placeOrderTransactionsRouter.post(
                 endpoint: <string>process.env.CINERINO_API_ENDPOINT
             });
 
+            // 金額取得
+            const key = `${TRANSACTION_AMOUNT_KEY_PREFIX}${req.params.transactionId}`;
+            const amount = await new Promise<number>((resolve, reject) => {
+                redisClient.get(key, (err, result) => {
+                    if (err !== null) {
+                        reject(err);
+                    } else {
+                        resolve(Number(result));
+                    }
+                });
+            });
+
             await paymentService.authorizeAnyPayment({
                 object: {
                     typeOf: authorizingPaymentMethodType,
                     name: paymentMethodType,
                     additionalProperty: [],
-                    amount: authorizeSeatReservationResult.price
+                    amount: amount
                 },
                 purpose: { typeOf: cinerinoapi.factory.transactionType.PlaceOrder, id: req.params.transactionId }
             });
@@ -282,33 +329,5 @@ placeOrderTransactionsRouter.post(
         }
     }
 );
-
-function getTmpReservations(params: {
-    transaction: { id: string };
-}) {
-    return async (repos: {
-        action: ttts.repository.Action;
-        // tslint:disable-next-line:max-line-length
-    }): Promise<cinerinoapi.factory.action.authorize.offer.seatReservation.IResult<cinerinoapi.factory.service.webAPI.Identifier.Chevre>> => {
-        const authorizeActions = await repos.action.searchByPurpose({
-            typeOf: cinerinoapi.factory.actionType.AuthorizeAction,
-            purpose: {
-                typeOf: cinerinoapi.factory.transactionType.PlaceOrder,
-                id: params.transaction.id
-            }
-        });
-        const seatReservationAuthorizeAction
-            // tslint:disable-next-line:max-line-length
-            = <cinerinoapi.factory.action.authorize.offer.seatReservation.IAction<cinerinoapi.factory.service.webAPI.Identifier.Chevre> | undefined>
-            authorizeActions
-                .filter((a) => a.actionStatus === cinerinoapi.factory.actionStatusType.CompletedActionStatus)
-                .find((a) => a.object.typeOf === cinerinoapi.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
-        if (seatReservationAuthorizeAction === undefined || seatReservationAuthorizeAction.result === undefined) {
-            throw new ttts.factory.errors.Argument('Transaction', 'Seat reservation authorize action required');
-        }
-
-        return seatReservationAuthorizeAction.result;
-    };
-}
 
 export default placeOrderTransactionsRouter;
