@@ -42,9 +42,6 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos', 'tran
         .notEmpty()
         .withMessage('expires is required')
         .isISO8601();
-    req.checkBody('seller_identifier', 'invalid seller_identifier')
-        .notEmpty()
-        .withMessage('seller_identifier is required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {

@@ -42,9 +42,6 @@ placeOrderTransactionsRouter.post(
             .notEmpty()
             .withMessage('expires is required')
             .isISO8601();
-        req.checkBody('seller_identifier', 'invalid seller_identifier')
-            .notEmpty()
-            .withMessage('seller_identifier is required');
 
         next();
     },

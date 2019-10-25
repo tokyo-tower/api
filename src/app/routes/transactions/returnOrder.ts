@@ -34,10 +34,6 @@ returnOrderTransactionsRouter.post(
         req.checkBody('payment_no', 'invalid payment_no')
             .notEmpty()
             .withMessage('payment_no is required');
-        req.checkBody('cancellation_fee', 'invalid cancellation_fee')
-            .notEmpty()
-            .withMessage('cancellation_fee is required')
-            .isInt();
 
         next();
     },
@@ -54,7 +50,7 @@ returnOrderTransactionsRouter.post(
             const returnOrderTransaction = await returnOrderService.confirm({
                 performanceDay: req.body.performance_day,
                 paymentNo: req.body.payment_no,
-                cancellationFee: Number(req.body.cancellation_fee),
+                cancellationFee: 0,
                 reason: cinerinoapi.factory.transaction.returnOrder.Reason.Customer,
                 // informOrderUrl?: string;
                 informReservationUrl: informReservationUrl
