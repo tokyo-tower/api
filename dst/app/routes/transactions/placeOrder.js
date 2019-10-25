@@ -16,7 +16,6 @@ const ttts = require("@tokyotower/domain");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
-const mongoose = require("mongoose");
 const request = require("request-promise-native");
 const auth = new cinerinoapi.auth.ClientCredentials({
     domain: '',
@@ -29,15 +28,20 @@ const placeOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
+const TRANSACTION_AMOUNT_TTL = 3600;
+const TRANSACTION_AMOUNT_KEY_PREFIX = 'placeOrderTransactionAmount.';
+const redisClient = ttts.redis.createClient({
+    host: process.env.REDIS_HOST,
+    port: Number(process.env.REDIS_PORT),
+    password: process.env.REDIS_KEY,
+    tls: { servername: process.env.REDIS_HOST }
+});
 placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos', 'transactions']), (req, _, next) => {
     req.checkBody('expires', 'invalid expires')
         .notEmpty()
         .withMessage('expires is required')
         .isISO8601();
-    req.checkBody('seller_identifier', 'invalid seller_identifier')
-        .notEmpty()
-        .withMessage('seller_identifier is required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -127,6 +131,24 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
             performanceId: performanceId,
             offers: req.body.offers
         });
+        // 金額保管
+        if (action.result !== undefined) {
+            const key = `${TRANSACTION_AMOUNT_KEY_PREFIX}${req.params.transactionId}`;
+            const amount = action.result.price;
+            yield new Promise((resolve, reject) => {
+                redisClient.multi()
+                    .set(key, amount.toString())
+                    .expire(key, TRANSACTION_AMOUNT_TTL)
+                    .exec((err) => {
+                    if (err !== null) {
+                        reject(err);
+                    }
+                    else {
+                        resolve();
+                    }
+                });
+            });
+        }
         res.status(http_status_1.CREATED)
             .json(action);
     }
@@ -148,6 +170,21 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
             transactionId: req.params.transactionId,
             actionId: req.params.actionId
         });
+        // 金額リセット
+        const key = `${TRANSACTION_AMOUNT_KEY_PREFIX}${req.params.transactionId}`;
+        yield new Promise((resolve, reject) => {
+            redisClient.multi()
+                .set(key, '0')
+                .expire(key, TRANSACTION_AMOUNT_TTL)
+                .exec((err) => {
+                if (err !== null) {
+                    reject(err);
+                }
+                else {
+                    resolve();
+                }
+            });
+        });
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
@@ -158,12 +195,6 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
 placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['pos', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const paymentMethodType = req.body.payment_method;
-        const actionRepo = new ttts.repository.Action(mongoose.connection);
-        const authorizeSeatReservationResult = yield getTmpReservations({
-            transaction: { id: req.params.transactionId }
-        })({
-            action: actionRepo
-        });
         // クライアントがPOSの場合、決済方法承認アクションを自動生成
         let authorizingPaymentMethodType;
         switch (paymentMethodType) {
@@ -180,12 +211,24 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             auth: auth,
             endpoint: process.env.CINERINO_API_ENDPOINT
         });
+        // 金額取得
+        const key = `${TRANSACTION_AMOUNT_KEY_PREFIX}${req.params.transactionId}`;
+        const amount = yield new Promise((resolve, reject) => {
+            redisClient.get(key, (err, result) => {
+                if (err !== null) {
+                    reject(err);
+                }
+                else {
+                    resolve(Number(result));
+                }
+            });
+        });
         yield paymentService.authorizeAnyPayment({
             object: {
                 typeOf: authorizingPaymentMethodType,
                 name: paymentMethodType,
                 additionalProperty: [],
-                amount: authorizeSeatReservationResult.price
+                amount: amount
             },
             purpose: { typeOf: cinerinoapi.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         });
@@ -221,24 +264,4 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         next(error);
     }
 }));
-function getTmpReservations(params) {
-    return (repos) => __awaiter(this, void 0, void 0, function* () {
-        const authorizeActions = yield repos.action.searchByPurpose({
-            typeOf: cinerinoapi.factory.actionType.AuthorizeAction,
-            purpose: {
-                typeOf: cinerinoapi.factory.transactionType.PlaceOrder,
-                id: params.transaction.id
-            }
-        });
-        const seatReservationAuthorizeAction 
-        // tslint:disable-next-line:max-line-length
-        = authorizeActions
-            .filter((a) => a.actionStatus === cinerinoapi.factory.actionStatusType.CompletedActionStatus)
-            .find((a) => a.object.typeOf === cinerinoapi.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
-        if (seatReservationAuthorizeAction === undefined || seatReservationAuthorizeAction.result === undefined) {
-            throw new ttts.factory.errors.Argument('Transaction', 'Seat reservation authorize action required');
-        }
-        return seatReservationAuthorizeAction.result;
-    });
-}
 exports.default = placeOrderTransactionsRouter;
