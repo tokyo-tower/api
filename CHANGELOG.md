@@ -10,10 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- イベントに対する全注文返品処理からアクションリポジトリを削除
-- 取引失効時処理を予約取消時処理へ変更
-- POS進行中注文取引金額を保管するように調整
-
 ### Deprecated
 
 ### Removed
@@ -21,6 +17,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v28.0.0 - 2019-10-25
+
+### Changed
+
+- イベントに対する全注文返品処理からアクションリポジトリを削除
+- 取引失効時処理を予約取消時処理へ変更
+- POS進行中注文取引金額を保管するように調整
 
 ## v27.0.0 - 2019-10-24
 
