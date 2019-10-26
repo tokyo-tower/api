@@ -11,10 +11,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * ウェブフックルーター
  */
-const cinerinoapi = require("@cinerino/api-nodejs-client");
 const ttts = require("@tokyotower/domain");
 const express = require("express");
-const moment = require("moment");
 const mongoose = require("mongoose");
 const webhooksRouter = express.Router();
 const http_status_1 = require("http-status");
@@ -98,36 +96,12 @@ webhooksRouter.post('/onReservationConfirmed', (req, res, next) => __awaiter(thi
             && typeof reservation.reservationNumber === 'string') {
             const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
             const taskRepo = new ttts.repository.Task(mongoose.connection);
-            // 余分確保分を除く
-            let extraProperty;
-            if (reservation.additionalProperty !== undefined) {
-                extraProperty = reservation.additionalProperty.find((p) => p.name === 'extra');
-            }
-            const isExtra = extraProperty !== undefined && extraProperty.value === '1';
-            if (!isExtra) {
-                // 余分確保分でなければ予約データを作成する
-                const tttsResevation = Object.assign({}, reservation, { reservationFor: Object.assign({}, reservation.reservationFor, { doorTime: (reservation.reservationFor.doorTime !== undefined)
-                            ? moment(reservation.reservationFor.doorTime)
-                                .toDate()
-                            : undefined, endDate: moment(reservation.reservationFor.endDate)
-                            .toDate(), startDate: moment(reservation.reservationFor.startDate)
-                            .toDate() }), checkins: [] });
-                yield reservationRepo.saveEventReservation(tttsResevation);
-                // 集計タスク作成
-                const task = {
-                    name: ttts.factory.taskName.AggregateEventReservations,
-                    project: { typeOf: reservation.project.typeOf, id: reservation.project.id },
-                    status: ttts.factory.taskStatus.Ready,
-                    runsAt: new Date(),
-                    remainingNumberOfTries: 3,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        id: reservation.reservationFor.id
-                    }
-                };
-                yield taskRepo.save(task);
-            }
+            const ticketTypeCategoryRateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
+            yield ttts.service.reserve.onReservationStatusChanged(reservation)({
+                reservation: reservationRepo,
+                task: taskRepo,
+                ticketTypeCategoryRateLimit: ticketTypeCategoryRateLimitRepo
+            });
         }
         res.status(http_status_1.NO_CONTENT)
             .end();
@@ -178,31 +152,14 @@ webhooksRouter.post('/onReservationStatusChanged', (req, res, next) => __awaiter
             && reservation !== null
             && typeof reservation.id === 'string'
             && typeof reservation.reservationNumber === 'string') {
-            // 余分確保分を除く
-            let extraProperty;
-            if (reservation.additionalProperty !== undefined) {
-                extraProperty = reservation.additionalProperty.find((p) => p.name === 'extra');
-            }
-            const isExtra = extraProperty !== undefined && extraProperty.value === '1';
-            if (!isExtra) {
-                const taskRepo = new ttts.repository.Task(mongoose.connection);
-                const ticketTypeCategoryRateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
-                switch (reservation.reservationStatus) {
-                    case cinerinoapi.factory.chevre.reservationStatusType.ReservationCancelled:
-                        yield ttts.service.reserve.onReservationCancelled(reservation)({
-                            task: taskRepo,
-                            ticketTypeCategoryRateLimit: ticketTypeCategoryRateLimitRepo
-                        });
-                        break;
-                    case cinerinoapi.factory.chevre.reservationStatusType.ReservationConfirmed:
-                        break;
-                    case cinerinoapi.factory.chevre.reservationStatusType.ReservationHold:
-                        break;
-                    case cinerinoapi.factory.chevre.reservationStatusType.ReservationPending:
-                        break;
-                    default:
-                }
-            }
+            const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
+            const taskRepo = new ttts.repository.Task(mongoose.connection);
+            const ticketTypeCategoryRateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
+            yield ttts.service.reserve.onReservationStatusChanged(reservation)({
+                reservation: reservationRepo,
+                task: taskRepo,
+                ticketTypeCategoryRateLimit: ticketTypeCategoryRateLimitRepo
+            });
         }
         res.status(http_status_1.NO_CONTENT)
             .end();
