@@ -87,22 +87,23 @@ webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(this, void 0
 /**
  * 予約確定イベント
  */
-webhooksRouter.post('/onReservationConfirmed', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+webhooksRouter.post('/onReservationConfirmed', (_, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const reservation = req.body.data;
-        if (reservation !== undefined
-            && reservation !== null
-            && typeof reservation.id === 'string'
-            && typeof reservation.reservationNumber === 'string') {
-            const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
-            const taskRepo = new ttts.repository.Task(mongoose.connection);
-            const ticketTypeCategoryRateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
-            yield ttts.service.reserve.onReservationStatusChanged(reservation)({
-                reservation: reservationRepo,
-                task: taskRepo,
-                ticketTypeCategoryRateLimit: ticketTypeCategoryRateLimitRepo
-            });
-        }
+        // const reservation
+        //     = <ttts.factory.chevre.reservation.IReservation<ttts.factory.chevre.reservationType.EventReservation>>req.body.data;
+        // if (reservation !== undefined
+        //     && reservation !== null
+        //     && typeof reservation.id === 'string'
+        //     && typeof reservation.reservationNumber === 'string') {
+        //     const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
+        //     const taskRepo = new ttts.repository.Task(mongoose.connection);
+        //     const ticketTypeCategoryRateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
+        //     await ttts.service.reserve.onReservationStatusChanged(reservation)({
+        //         reservation: reservationRepo,
+        //         task: taskRepo,
+        //         ticketTypeCategoryRateLimit: ticketTypeCategoryRateLimitRepo
+        //     });
+        // }
         res.status(http_status_1.NO_CONTENT)
             .end();
     }

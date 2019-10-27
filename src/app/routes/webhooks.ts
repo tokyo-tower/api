@@ -98,25 +98,25 @@ webhooksRouter.post(
  */
 webhooksRouter.post(
     '/onReservationConfirmed',
-    async (req, res, next) => {
+    async (_, res, next) => {
         try {
-            const reservation
-                = <ttts.factory.chevre.reservation.IReservation<ttts.factory.chevre.reservationType.EventReservation>>req.body.data;
+            // const reservation
+            //     = <ttts.factory.chevre.reservation.IReservation<ttts.factory.chevre.reservationType.EventReservation>>req.body.data;
 
-            if (reservation !== undefined
-                && reservation !== null
-                && typeof reservation.id === 'string'
-                && typeof reservation.reservationNumber === 'string') {
-                const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
-                const taskRepo = new ttts.repository.Task(mongoose.connection);
-                const ticketTypeCategoryRateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
+            // if (reservation !== undefined
+            //     && reservation !== null
+            //     && typeof reservation.id === 'string'
+            //     && typeof reservation.reservationNumber === 'string') {
+            //     const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
+            //     const taskRepo = new ttts.repository.Task(mongoose.connection);
+            //     const ticketTypeCategoryRateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
 
-                await ttts.service.reserve.onReservationStatusChanged(reservation)({
-                    reservation: reservationRepo,
-                    task: taskRepo,
-                    ticketTypeCategoryRateLimit: ticketTypeCategoryRateLimitRepo
-                });
-            }
+            //     await ttts.service.reserve.onReservationStatusChanged(reservation)({
+            //         reservation: reservationRepo,
+            //         task: taskRepo,
+            //         ticketTypeCategoryRateLimit: ticketTypeCategoryRateLimitRepo
+            //     });
+            // }
 
             res.status(NO_CONTENT)
                 .end();
