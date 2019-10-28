@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 予約ステータス変更時イベントを最適化
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v28.1.0 - 2019-10-28
+
+### Changed
+
+- 予約ステータス変更時イベントを最適化
 
 ## v28.0.0 - 2019-10-25
 
