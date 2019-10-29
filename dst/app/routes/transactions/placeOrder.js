@@ -233,7 +233,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             purpose: { typeOf: cinerinoapi.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         });
         const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`;
-        // const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationConfirmed`;
+        const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationConfirmed`;
         const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
             auth: auth,
             endpoint: process.env.CINERINO_API_ENDPOINT
@@ -241,8 +241,8 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         const transactionResult = yield placeOrderService.confirm({
             transactionId: req.params.transactionId,
             paymentMethod: paymentMethodType,
-            informOrderUrl: informOrderUrl
-            // informReservationUrl: informReservationUrl
+            informOrderUrl: informOrderUrl,
+            informReservationUrl: informReservationUrl
         });
         res.status(http_status_1.CREATED)
             .json(Object.assign({}, transactionResult, { 
