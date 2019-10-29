@@ -194,18 +194,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
 }));
 placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['pos', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const paymentMethodType = req.body.payment_method;
         // クライアントがPOSの場合、決済方法承認アクションを自動生成
-        let authorizingPaymentMethodType;
-        switch (paymentMethodType) {
-            case cinerinoapi.factory.paymentMethodType.Cash:
-            case cinerinoapi.factory.paymentMethodType.CreditCard:
-                authorizingPaymentMethodType = paymentMethodType;
-                break;
-            default:
-                // その他の決済方法を認められるのは代理予約だけ
-                throw new ttts.factory.errors.Argument('paymentMethod', `Invalid payment method for the client`);
-        }
         auth.setCredentials({ access_token: req.accessToken });
         const paymentService = new cinerinoapi.service.Payment({
             auth: auth,
@@ -225,8 +214,8 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         });
         yield paymentService.authorizeAnyPayment({
             object: {
-                typeOf: authorizingPaymentMethodType,
-                name: paymentMethodType,
+                typeOf: cinerinoapi.factory.paymentMethodType.Cash,
+                name: cinerinoapi.factory.paymentMethodType.Cash,
                 additionalProperty: [],
                 amount: amount
             },
@@ -240,7 +229,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         });
         const transactionResult = yield placeOrderService.confirm({
             transactionId: req.params.transactionId,
-            paymentMethod: paymentMethodType,
+            paymentMethod: cinerinoapi.factory.paymentMethodType.Cash,
             informOrderUrl: informOrderUrl,
             informReservationUrl: informReservationUrl
         });

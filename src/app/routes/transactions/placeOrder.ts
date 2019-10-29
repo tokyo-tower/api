@@ -246,21 +246,7 @@ placeOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const paymentMethodType = req.body.payment_method;
-
             // クライアントがPOSの場合、決済方法承認アクションを自動生成
-            let authorizingPaymentMethodType: string;
-            switch (paymentMethodType) {
-                case cinerinoapi.factory.paymentMethodType.Cash:
-                case cinerinoapi.factory.paymentMethodType.CreditCard:
-                    authorizingPaymentMethodType = paymentMethodType;
-                    break;
-
-                default:
-                    // その他の決済方法を認められるのは代理予約だけ
-                    throw new ttts.factory.errors.Argument('paymentMethod', `Invalid payment method for the client`);
-            }
-
             auth.setCredentials({ access_token: req.accessToken });
             const paymentService = new cinerinoapi.service.Payment({
                 auth: auth,
@@ -281,8 +267,8 @@ placeOrderTransactionsRouter.post(
 
             await paymentService.authorizeAnyPayment({
                 object: {
-                    typeOf: authorizingPaymentMethodType,
-                    name: paymentMethodType,
+                    typeOf: cinerinoapi.factory.paymentMethodType.Cash,
+                    name: cinerinoapi.factory.paymentMethodType.Cash,
                     additionalProperty: [],
                     amount: amount
                 },
@@ -298,7 +284,7 @@ placeOrderTransactionsRouter.post(
             });
             const transactionResult = await placeOrderService.confirm({
                 transactionId: req.params.transactionId,
-                paymentMethod: paymentMethodType,
+                paymentMethod: cinerinoapi.factory.paymentMethodType.Cash,
                 informOrderUrl: informOrderUrl,
                 informReservationUrl: informReservationUrl
             });

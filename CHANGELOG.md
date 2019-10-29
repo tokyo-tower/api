@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- POS注文取引確定時の決済方法指定を削除
+
 ### Deprecated
 
 ### Removed
