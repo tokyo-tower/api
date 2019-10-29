@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - POS注文取引確定時の決済方法指定を削除
+- 注文取引開始時の販売者をIDで指定するように調整
 
 ### Deprecated
 

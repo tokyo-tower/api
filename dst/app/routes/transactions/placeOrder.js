@@ -45,7 +45,23 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos', 'tran
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        auth.setCredentials({ access_token: req.accessToken });
+        const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
+            auth: auth,
+            endpoint: process.env.CINERINO_API_ENDPOINT
+        });
+        const sellerService = new cinerinoapi.service.Seller({
+            auth: auth,
+            endpoint: process.env.CINERINO_API_ENDPOINT
+        });
         const sellerIdentifier = 'TokyoTower';
+        const searchSellersResult = yield sellerService.search({
+            limit: 1
+        });
+        const seller = searchSellersResult.data.shift();
+        if (seller === undefined) {
+            throw new Error('Seller not found');
+        }
         // WAITER許可証を取得
         const scope = 'placeOrderTransaction.TokyoTower.POS';
         const { token } = yield request.post(`${process.env.WAITER_ENDPOINT}/projects/${process.env.PROJECT_ID}/passports`, {
@@ -55,16 +71,12 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos', 'tran
             .then((body) => body);
         const expires = moment(req.body.expires)
             .toDate();
-        auth.setCredentials({ access_token: req.accessToken });
-        const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
-            auth: auth,
-            endpoint: process.env.CINERINO_API_ENDPOINT
-        });
-        const transaction = yield placeOrderService.start({
-            expires: expires,
-            sellerIdentifier: sellerIdentifier,
-            passportToken: token
-        });
+        const transaction = yield placeOrderService.start(Object.assign({ expires: expires, sellerIdentifier: sellerIdentifier, passportToken: token }, {
+            seller: {
+                typeOf: seller.typeOf,
+                id: seller.id
+            }
+        }));
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
         // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
