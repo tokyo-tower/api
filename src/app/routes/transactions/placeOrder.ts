@@ -86,6 +86,7 @@ placeOrderTransactionsRouter.post(
                 sellerIdentifier: sellerIdentifier, // 電波塔さんの組織識別子(現時点で固定)
                 passportToken: token,
                 ...{
+                    agent: { identifier: [{ name: 'scope', value: String(req.user.scope) }] },
                     seller: {
                         typeOf: seller.typeOf,
                         id: seller.id

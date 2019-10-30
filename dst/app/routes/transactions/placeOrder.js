@@ -72,6 +72,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos', 'tran
         const expires = moment(req.body.expires)
             .toDate();
         const transaction = yield placeOrderService.start(Object.assign({ expires: expires, sellerIdentifier: sellerIdentifier, passportToken: token }, {
+            agent: { identifier: [{ name: 'scope', value: String(req.user.scope) }] },
             seller: {
                 typeOf: seller.typeOf,
                 id: seller.id
