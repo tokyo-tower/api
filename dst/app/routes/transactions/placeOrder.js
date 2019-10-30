@@ -54,7 +54,6 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos', 'tran
             auth: auth,
             endpoint: process.env.CINERINO_API_ENDPOINT
         });
-        const sellerIdentifier = 'TokyoTower';
         const searchSellersResult = yield sellerService.search({
             limit: 1
         });
@@ -71,12 +70,16 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos', 'tran
             .then((body) => body);
         const expires = moment(req.body.expires)
             .toDate();
-        const transaction = yield placeOrderService.start(Object.assign({ expires: expires, sellerIdentifier: sellerIdentifier, passportToken: token }, {
+        const transaction = yield placeOrderService.start({
+            expires: expires,
+            object: {
+                passport: { token }
+            },
             seller: {
                 typeOf: seller.typeOf,
                 id: seller.id
             }
-        }));
+        });
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
         // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
@@ -112,8 +115,10 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
             endpoint: process.env.CINERINO_API_ENDPOINT
         });
         const profile = yield placeOrderService.setCustomerContact({
-            transactionId: req.params.transactionId,
-            contact: Object.assign({}, req.body, { id: req.user.sub, givenName: (typeof req.body.first_name === 'string') ? req.body.first_name : '', familyName: (typeof req.body.last_name === 'string') ? req.body.last_name : '', telephone: (typeof req.body.tel === 'string') ? req.body.tel : '', telephoneRegion: (typeof req.body.address === 'string') ? req.body.address : '' })
+            id: req.params.transactionId,
+            object: {
+                customerContact: Object.assign({}, req.body, { id: req.user.sub, givenName: (typeof req.body.first_name === 'string') ? req.body.first_name : '', familyName: (typeof req.body.last_name === 'string') ? req.body.last_name : '', telephone: (typeof req.body.tel === 'string') ? req.body.tel : '', telephoneRegion: (typeof req.body.address === 'string') ? req.body.address : '' })
+            }
         });
         res.status(http_status_1.CREATED)
             .json(Object.assign({}, profile, { 
@@ -234,16 +239,14 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             purpose: { typeOf: cinerinoapi.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         });
         const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`;
-        const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationConfirmed`;
         const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
             auth: auth,
             endpoint: process.env.CINERINO_API_ENDPOINT
         });
         const transactionResult = yield placeOrderService.confirm({
-            transactionId: req.params.transactionId,
+            id: req.params.transactionId,
             paymentMethod: cinerinoapi.factory.paymentMethodType.Cash,
-            informOrderUrl: informOrderUrl,
-            informReservationUrl: informReservationUrl
+            informOrderUrl: informOrderUrl
         });
         res.status(http_status_1.CREATED)
             .json(Object.assign({}, transactionResult, { 

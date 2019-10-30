@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - POS注文取引確定時の決済方法指定を削除
 - 注文取引開始時の販売者をIDで指定するように調整
+- @cinerino/api-nodejs-client@2.0.0-alpha.35で再構築
 
 ### Deprecated
 

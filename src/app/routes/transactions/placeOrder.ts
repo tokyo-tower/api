@@ -58,7 +58,6 @@ placeOrderTransactionsRouter.post(
                 endpoint: <string>process.env.CINERINO_API_ENDPOINT
             });
 
-            const sellerIdentifier = 'TokyoTower';
             const searchSellersResult = await sellerService.search({
                 limit: 1
             });
@@ -83,13 +82,12 @@ placeOrderTransactionsRouter.post(
 
             const transaction = await placeOrderService.start({
                 expires: expires,
-                sellerIdentifier: sellerIdentifier, // 電波塔さんの組織識別子(現時点で固定)
-                passportToken: token,
-                ...{
-                    seller: {
-                        typeOf: seller.typeOf,
-                        id: seller.id
-                    }
+                object: {
+                    passport: { token }
+                },
+                seller: {
+                    typeOf: seller.typeOf,
+                    id: seller.id
                 }
             });
 
@@ -136,14 +134,16 @@ placeOrderTransactionsRouter.put(
             });
 
             const profile = await placeOrderService.setCustomerContact({
-                transactionId: req.params.transactionId,
-                contact: {
-                    ...req.body,
-                    id: req.user.sub,
-                    givenName: (typeof req.body.first_name === 'string') ? req.body.first_name : '',
-                    familyName: (typeof req.body.last_name === 'string') ? req.body.last_name : '',
-                    telephone: (typeof req.body.tel === 'string') ? req.body.tel : '',
-                    telephoneRegion: (typeof req.body.address === 'string') ? req.body.address : ''
+                id: req.params.transactionId,
+                object: {
+                    customerContact: {
+                        ...req.body,
+                        id: req.user.sub,
+                        givenName: (typeof req.body.first_name === 'string') ? req.body.first_name : '',
+                        familyName: (typeof req.body.last_name === 'string') ? req.body.last_name : '',
+                        telephone: (typeof req.body.tel === 'string') ? req.body.tel : '',
+                        telephoneRegion: (typeof req.body.address === 'string') ? req.body.address : ''
+                    }
                 }
             });
 
@@ -293,17 +293,15 @@ placeOrderTransactionsRouter.post(
             });
 
             const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`;
-            const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationConfirmed`;
 
             const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
                 auth: auth,
                 endpoint: <string>process.env.CINERINO_API_ENDPOINT
             });
             const transactionResult = await placeOrderService.confirm({
-                transactionId: req.params.transactionId,
+                id: req.params.transactionId,
                 paymentMethod: cinerinoapi.factory.paymentMethodType.Cash,
-                informOrderUrl: informOrderUrl,
-                informReservationUrl: informReservationUrl
+                informOrderUrl: informOrderUrl
             });
 
             res.status(CREATED)
