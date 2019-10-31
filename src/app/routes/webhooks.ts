@@ -1,6 +1,7 @@
 /**
  * ウェブフックルーター
  */
+import * as cinerinoapi from '@cinerino/api-nodejs-client';
 import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
 import * as mongoose from 'mongoose';
@@ -23,7 +24,7 @@ webhooksRouter.post(
     '/onPlaceOrder',
     async (req, res, next) => {
         try {
-            const order = req.body.data;
+            const order = <cinerinoapi.factory.order.IOrder>req.body.data;
 
             if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
                 const taskRepo = new ttts.repository.Task(mongoose.connection);
@@ -59,7 +60,7 @@ webhooksRouter.post(
     '/onReturnOrder',
     async (req, res, next) => {
         try {
-            const order = req.body.data;
+            const order = <cinerinoapi.factory.order.IOrder>req.body.data;
 
             if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
                 const performanceRepo = new ttts.repository.Performance(mongoose.connection);
@@ -99,13 +100,9 @@ webhooksRouter.post(
  */
 webhooksRouter.post(
     '/onReservationConfirmed',
-    async (_, res, next) => {
-        try {
-            res.status(NO_CONTENT)
-                .end();
-        } catch (error) {
-            next(error);
-        }
+    (_, res) => {
+        res.status(NO_CONTENT)
+            .end();
     }
 );
 
@@ -115,13 +112,9 @@ webhooksRouter.post(
  */
 webhooksRouter.post(
     '/onReservationCancelled',
-    async (_, res, next) => {
-        try {
-            res.status(NO_CONTENT)
-                .end();
-        } catch (error) {
-            next(error);
-        }
+    (_, res) => {
+        res.status(NO_CONTENT)
+            .end();
     }
 );
 
