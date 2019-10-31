@@ -10,11 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- POS注文取引確定時の決済方法指定を削除
-- 注文取引開始時の販売者をIDで指定するように調整
-- @cinerino/api-nodejs-client@2.0.0-alpha.35で再構築
-- POS使用サービスにposスコープを許可
-
 ### Deprecated
 
 ### Removed
@@ -22,6 +17,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v29.0.0 - 2019-10-31
+
+### Changed
+
+- POS注文取引確定時の決済方法指定を削除
+- 注文取引開始時の販売者をIDで指定するように調整
+- @cinerino/api-nodejs-client@2.0.0-alpha.35で再構築
+- POS使用サービスにposスコープを許可
 
 ## v28.1.1 - 2019-10-29
 
