@@ -37,12 +37,10 @@ const redisClient = ttts.redis.createClient({
     tls: { servername: process.env.REDIS_HOST }
 });
 placeOrderTransactionsRouter.use(authentication_1.default);
-placeOrderTransactionsRouter.post('/start', 
-// permitScopes(['pos', 'transactions']),
-permitScopes_1.default(['pos']), (req, _, next) => {
-    req.checkBody('expires', 'invalid expires')
+placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos']), (req, _, next) => {
+    req.checkBody('expires')
         .notEmpty()
-        .withMessage('expires is required')
+        .withMessage('required')
         .isISO8601();
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -95,9 +93,7 @@ permitScopes_1.default(['pos']), (req, _, next) => {
 /**
  * 購入者情報を変更する
  */
-placeOrderTransactionsRouter.put('/:transactionId/customerContact', 
-// permitScopes(['pos', 'transactions']),
-permitScopes_1.default(['pos']), (req, _, next) => {
+placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['pos']), (req, _, next) => {
     req.checkBody('last_name')
         .notEmpty()
         .withMessage('required');
@@ -136,9 +132,7 @@ permitScopes_1.default(['pos']), (req, _, next) => {
 /**
  * 座席仮予約
  */
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', 
-// permitScopes(['pos', 'transactions']),
-permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         if (!Array.isArray(req.body.offers)) {
             req.body.offers = [];
@@ -182,9 +176,7 @@ permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awai
 /**
  * 座席仮予約削除
  */
-placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', 
-// permitScopes(['pos', 'transactions']),
-permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         auth.setCredentials({ access_token: req.accessToken });
         const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
@@ -217,9 +209,7 @@ permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awai
         next(error);
     }
 }));
-placeOrderTransactionsRouter.post('/:transactionId/confirm', 
-// permitScopes(['pos', 'transactions']),
-permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // クライアントがPOSの場合、決済方法承認アクションを自動生成
         auth.setCredentials({ access_token: req.accessToken });

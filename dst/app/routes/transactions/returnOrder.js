@@ -29,15 +29,13 @@ returnOrderTransactionsRouter.use(authentication_1.default);
 /**
  * 上映日と購入番号で返品
  */
-returnOrderTransactionsRouter.post('/confirm', 
-// permitScopes(['pos', 'transactions']),
-permitScopes_1.default(['pos']), (req, __, next) => {
-    req.checkBody('performance_day', 'invalid performance_day')
+returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['pos']), (req, _, next) => {
+    req.checkBody('performance_day')
         .notEmpty()
-        .withMessage('performance_day is required');
-    req.checkBody('payment_no', 'invalid payment_no')
+        .withMessage('required');
+    req.checkBody('payment_no')
         .notEmpty()
-        .withMessage('payment_no is required');
+        .withMessage('required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {

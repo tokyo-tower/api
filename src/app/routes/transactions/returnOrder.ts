@@ -26,15 +26,14 @@ returnOrderTransactionsRouter.use(authentication);
  */
 returnOrderTransactionsRouter.post(
     '/confirm',
-    // permitScopes(['pos', 'transactions']),
     permitScopes(['pos']),
-    (req, __, next) => {
-        req.checkBody('performance_day', 'invalid performance_day')
+    (req, _, next) => {
+        req.checkBody('performance_day')
             .notEmpty()
-            .withMessage('performance_day is required');
-        req.checkBody('payment_no', 'invalid payment_no')
+            .withMessage('required');
+        req.checkBody('payment_no')
             .notEmpty()
-            .withMessage('payment_no is required');
+            .withMessage('required');
 
         next();
     },
