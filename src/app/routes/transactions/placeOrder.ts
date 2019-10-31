@@ -36,11 +36,11 @@ placeOrderTransactionsRouter.use(authentication);
 
 placeOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['pos', 'transactions']),
+    permitScopes(['pos']),
     (req, _, next) => {
-        req.checkBody('expires', 'invalid expires')
+        req.checkBody('expires')
             .notEmpty()
-            .withMessage('expires is required')
+            .withMessage('required')
             .isISO8601();
 
         next();
@@ -48,7 +48,23 @@ placeOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const sellerIdentifier = 'TokyoTower';
+            auth.setCredentials({ access_token: req.accessToken });
+            const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
+                auth: auth,
+                endpoint: <string>process.env.CINERINO_API_ENDPOINT
+            });
+            const sellerService = new cinerinoapi.service.Seller({
+                auth: auth,
+                endpoint: <string>process.env.CINERINO_API_ENDPOINT
+            });
+
+            const searchSellersResult = await sellerService.search({
+                limit: 1
+            });
+            const seller = searchSellersResult.data.shift();
+            if (seller === undefined) {
+                throw new Error('Seller not found');
+            }
 
             // WAITER許可証を取得
             const scope = 'placeOrderTransaction.TokyoTower.POS';
@@ -64,16 +80,15 @@ placeOrderTransactionsRouter.post(
             const expires = moment(req.body.expires)
                 .toDate();
 
-            auth.setCredentials({ access_token: req.accessToken });
-            const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
-                auth: auth,
-                endpoint: <string>process.env.CINERINO_API_ENDPOINT
-            });
-
             const transaction = await placeOrderService.start({
                 expires: expires,
-                sellerIdentifier: sellerIdentifier, // 電波塔さんの組織識別子(現時点で固定)
-                passportToken: token
+                object: {
+                    passport: { token }
+                },
+                seller: {
+                    typeOf: seller.typeOf,
+                    id: seller.id
+                }
             });
 
             // tslint:disable-next-line:no-string-literal
@@ -92,7 +107,7 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.put(
     '/:transactionId/customerContact',
-    permitScopes(['pos', 'transactions']),
+    permitScopes(['pos']),
     (req, _, next) => {
         req.checkBody('last_name')
             .notEmpty()
@@ -119,14 +134,16 @@ placeOrderTransactionsRouter.put(
             });
 
             const profile = await placeOrderService.setCustomerContact({
-                transactionId: req.params.transactionId,
-                contact: {
-                    ...req.body,
-                    id: req.user.sub,
-                    givenName: (typeof req.body.first_name === 'string') ? req.body.first_name : '',
-                    familyName: (typeof req.body.last_name === 'string') ? req.body.last_name : '',
-                    telephone: (typeof req.body.tel === 'string') ? req.body.tel : '',
-                    telephoneRegion: (typeof req.body.address === 'string') ? req.body.address : ''
+                id: req.params.transactionId,
+                object: {
+                    customerContact: {
+                        ...req.body,
+                        id: req.user.sub,
+                        givenName: (typeof req.body.first_name === 'string') ? req.body.first_name : '',
+                        familyName: (typeof req.body.last_name === 'string') ? req.body.last_name : '',
+                        telephone: (typeof req.body.tel === 'string') ? req.body.tel : '',
+                        telephoneRegion: (typeof req.body.address === 'string') ? req.body.address : ''
+                    }
                 }
             });
 
@@ -149,7 +166,7 @@ placeOrderTransactionsRouter.put(
  */
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/seatReservation',
-    permitScopes(['pos', 'transactions']),
+    permitScopes(['pos']),
     validator,
     async (req, res, next) => {
         try {
@@ -202,7 +219,7 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.delete(
     '/:transactionId/actions/authorize/seatReservation/:actionId',
-    permitScopes(['pos', 'transactions']),
+    permitScopes(['pos']),
     validator,
     async (req, res, next) => {
         try {
@@ -242,25 +259,11 @@ placeOrderTransactionsRouter.delete(
 
 placeOrderTransactionsRouter.post(
     '/:transactionId/confirm',
-    permitScopes(['pos', 'transactions']),
+    permitScopes(['pos']),
     validator,
     async (req, res, next) => {
         try {
-            const paymentMethodType = req.body.payment_method;
-
             // クライアントがPOSの場合、決済方法承認アクションを自動生成
-            let authorizingPaymentMethodType: string;
-            switch (paymentMethodType) {
-                case cinerinoapi.factory.paymentMethodType.Cash:
-                case cinerinoapi.factory.paymentMethodType.CreditCard:
-                    authorizingPaymentMethodType = paymentMethodType;
-                    break;
-
-                default:
-                    // その他の決済方法を認められるのは代理予約だけ
-                    throw new ttts.factory.errors.Argument('paymentMethod', `Invalid payment method for the client`);
-            }
-
             auth.setCredentials({ access_token: req.accessToken });
             const paymentService = new cinerinoapi.service.Payment({
                 auth: auth,
@@ -281,8 +284,8 @@ placeOrderTransactionsRouter.post(
 
             await paymentService.authorizeAnyPayment({
                 object: {
-                    typeOf: authorizingPaymentMethodType,
-                    name: paymentMethodType,
+                    typeOf: cinerinoapi.factory.paymentMethodType.Cash,
+                    name: cinerinoapi.factory.paymentMethodType.Cash,
                     additionalProperty: [],
                     amount: amount
                 },
@@ -290,17 +293,15 @@ placeOrderTransactionsRouter.post(
             });
 
             const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`;
-            const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationConfirmed`;
 
             const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
                 auth: auth,
                 endpoint: <string>process.env.CINERINO_API_ENDPOINT
             });
             const transactionResult = await placeOrderService.confirm({
-                transactionId: req.params.transactionId,
-                paymentMethod: paymentMethodType,
-                informOrderUrl: informOrderUrl,
-                informReservationUrl: informReservationUrl
+                id: req.params.transactionId,
+                paymentMethod: cinerinoapi.factory.paymentMethodType.Cash,
+                informOrderUrl: informOrderUrl
             });
 
             res.status(CREATED)

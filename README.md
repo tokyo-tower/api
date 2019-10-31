@@ -36,7 +36,6 @@
 | `REDIS_KEY`                      | true     |            | redis key                                      |
 | `RESOURECE_SERVER_IDENTIFIER`    | true     |            | リソースサーバー識別子                         |
 | `TOKEN_ISSUERS`                  | true     |            | トークン発行者リスト(コンマつなぎ)             |
-| `TRANSACTION_WEBHOOK_URL`        | true     |            | 取引ウェブフックURL                            |
 | `TTTS_TOKEN_SECRET`              | true     |            | 一時的なトークンを発行する際の検証シークレット |
 | `WAITER_ENDPOINT`                | true     |            | Waiter endpoint                                |
 

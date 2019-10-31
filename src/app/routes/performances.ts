@@ -29,7 +29,7 @@ performanceRouter.use(authentication);
  */
 performanceRouter.get(
     '/:id',
-    permitScopes(['performances', 'performances.read-only']),
+    permitScopes(['pos', 'performances', 'performances.read-only']),
     async (req, res, next) => {
         try {
             const repo = new ttts.repository.Performance(mongoose.connection);
@@ -46,7 +46,7 @@ performanceRouter.get(
  */
 performanceRouter.get(
     '',
-    permitScopes(['performances', 'performances.read-only']),
+    permitScopes(['pos', 'performances', 'performances.read-only']),
     ...[
         query('startFrom')
             .optional()

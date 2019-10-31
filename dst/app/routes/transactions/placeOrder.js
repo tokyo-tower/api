@@ -37,15 +37,30 @@ const redisClient = ttts.redis.createClient({
     tls: { servername: process.env.REDIS_HOST }
 });
 placeOrderTransactionsRouter.use(authentication_1.default);
-placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos', 'transactions']), (req, _, next) => {
-    req.checkBody('expires', 'invalid expires')
+placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos']), (req, _, next) => {
+    req.checkBody('expires')
         .notEmpty()
-        .withMessage('expires is required')
+        .withMessage('required')
         .isISO8601();
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const sellerIdentifier = 'TokyoTower';
+        auth.setCredentials({ access_token: req.accessToken });
+        const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
+            auth: auth,
+            endpoint: process.env.CINERINO_API_ENDPOINT
+        });
+        const sellerService = new cinerinoapi.service.Seller({
+            auth: auth,
+            endpoint: process.env.CINERINO_API_ENDPOINT
+        });
+        const searchSellersResult = yield sellerService.search({
+            limit: 1
+        });
+        const seller = searchSellersResult.data.shift();
+        if (seller === undefined) {
+            throw new Error('Seller not found');
+        }
         // WAITER許可証を取得
         const scope = 'placeOrderTransaction.TokyoTower.POS';
         const { token } = yield request.post(`${process.env.WAITER_ENDPOINT}/projects/${process.env.PROJECT_ID}/passports`, {
@@ -55,15 +70,15 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos', 'tran
             .then((body) => body);
         const expires = moment(req.body.expires)
             .toDate();
-        auth.setCredentials({ access_token: req.accessToken });
-        const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
-            auth: auth,
-            endpoint: process.env.CINERINO_API_ENDPOINT
-        });
         const transaction = yield placeOrderService.start({
             expires: expires,
-            sellerIdentifier: sellerIdentifier,
-            passportToken: token
+            object: {
+                passport: { token }
+            },
+            seller: {
+                typeOf: seller.typeOf,
+                id: seller.id
+            }
         });
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
@@ -78,7 +93,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos', 'tran
 /**
  * 購入者情報を変更する
  */
-placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['pos', 'transactions']), (req, _, next) => {
+placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['pos']), (req, _, next) => {
     req.checkBody('last_name')
         .notEmpty()
         .withMessage('required');
@@ -100,8 +115,10 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
             endpoint: process.env.CINERINO_API_ENDPOINT
         });
         const profile = yield placeOrderService.setCustomerContact({
-            transactionId: req.params.transactionId,
-            contact: Object.assign({}, req.body, { id: req.user.sub, givenName: (typeof req.body.first_name === 'string') ? req.body.first_name : '', familyName: (typeof req.body.last_name === 'string') ? req.body.last_name : '', telephone: (typeof req.body.tel === 'string') ? req.body.tel : '', telephoneRegion: (typeof req.body.address === 'string') ? req.body.address : '' })
+            id: req.params.transactionId,
+            object: {
+                customerContact: Object.assign({}, req.body, { id: req.user.sub, givenName: (typeof req.body.first_name === 'string') ? req.body.first_name : '', familyName: (typeof req.body.last_name === 'string') ? req.body.last_name : '', telephone: (typeof req.body.tel === 'string') ? req.body.tel : '', telephoneRegion: (typeof req.body.address === 'string') ? req.body.address : '' })
+            }
         });
         res.status(http_status_1.CREATED)
             .json(Object.assign({}, profile, { 
@@ -115,7 +132,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
 /**
  * 座席仮予約
  */
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['pos', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         if (!Array.isArray(req.body.offers)) {
             req.body.offers = [];
@@ -159,7 +176,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
 /**
  * 座席仮予約削除
  */
-placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['pos', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         auth.setCredentials({ access_token: req.accessToken });
         const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
@@ -192,20 +209,9 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
         next(error);
     }
 }));
-placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['pos', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const paymentMethodType = req.body.payment_method;
         // クライアントがPOSの場合、決済方法承認アクションを自動生成
-        let authorizingPaymentMethodType;
-        switch (paymentMethodType) {
-            case cinerinoapi.factory.paymentMethodType.Cash:
-            case cinerinoapi.factory.paymentMethodType.CreditCard:
-                authorizingPaymentMethodType = paymentMethodType;
-                break;
-            default:
-                // その他の決済方法を認められるのは代理予約だけ
-                throw new ttts.factory.errors.Argument('paymentMethod', `Invalid payment method for the client`);
-        }
         auth.setCredentials({ access_token: req.accessToken });
         const paymentService = new cinerinoapi.service.Payment({
             auth: auth,
@@ -225,24 +231,22 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         });
         yield paymentService.authorizeAnyPayment({
             object: {
-                typeOf: authorizingPaymentMethodType,
-                name: paymentMethodType,
+                typeOf: cinerinoapi.factory.paymentMethodType.Cash,
+                name: cinerinoapi.factory.paymentMethodType.Cash,
                 additionalProperty: [],
                 amount: amount
             },
             purpose: { typeOf: cinerinoapi.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         });
         const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`;
-        const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationConfirmed`;
         const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
             auth: auth,
             endpoint: process.env.CINERINO_API_ENDPOINT
         });
         const transactionResult = yield placeOrderService.confirm({
-            transactionId: req.params.transactionId,
-            paymentMethod: paymentMethodType,
-            informOrderUrl: informOrderUrl,
-            informReservationUrl: informReservationUrl
+            id: req.params.transactionId,
+            paymentMethod: cinerinoapi.factory.paymentMethodType.Cash,
+            informOrderUrl: informOrderUrl
         });
         res.status(http_status_1.CREATED)
             .json(Object.assign({}, transactionResult, { 
