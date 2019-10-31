@@ -36,7 +36,8 @@ placeOrderTransactionsRouter.use(authentication);
 
 placeOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['pos', 'transactions']),
+    // permitScopes(['pos', 'transactions']),
+    permitScopes(['pos']),
     (req, _, next) => {
         req.checkBody('expires', 'invalid expires')
             .notEmpty()
@@ -107,7 +108,8 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.put(
     '/:transactionId/customerContact',
-    permitScopes(['pos', 'transactions']),
+    // permitScopes(['pos', 'transactions']),
+    permitScopes(['pos']),
     (req, _, next) => {
         req.checkBody('last_name')
             .notEmpty()
@@ -166,7 +168,8 @@ placeOrderTransactionsRouter.put(
  */
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/seatReservation',
-    permitScopes(['pos', 'transactions']),
+    // permitScopes(['pos', 'transactions']),
+    permitScopes(['pos']),
     validator,
     async (req, res, next) => {
         try {
@@ -219,7 +222,8 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.delete(
     '/:transactionId/actions/authorize/seatReservation/:actionId',
-    permitScopes(['pos', 'transactions']),
+    // permitScopes(['pos', 'transactions']),
+    permitScopes(['pos']),
     validator,
     async (req, res, next) => {
         try {
@@ -259,7 +263,8 @@ placeOrderTransactionsRouter.delete(
 
 placeOrderTransactionsRouter.post(
     '/:transactionId/confirm',
-    permitScopes(['pos', 'transactions']),
+    // permitScopes(['pos', 'transactions']),
+    permitScopes(['pos']),
     validator,
     async (req, res, next) => {
         try {

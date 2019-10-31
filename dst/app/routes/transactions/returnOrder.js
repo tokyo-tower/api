@@ -29,7 +29,9 @@ returnOrderTransactionsRouter.use(authentication_1.default);
 /**
  * 上映日と購入番号で返品
  */
-returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['pos', 'transactions']), (req, __, next) => {
+returnOrderTransactionsRouter.post('/confirm', 
+// permitScopes(['pos', 'transactions']),
+permitScopes_1.default(['pos']), (req, __, next) => {
     req.checkBody('performance_day', 'invalid performance_day')
         .notEmpty()
         .withMessage('performance_day is required');
