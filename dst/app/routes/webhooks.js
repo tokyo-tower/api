@@ -86,6 +86,7 @@ webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(this, void 0
 }));
 /**
  * 予約確定イベント
+ * @deprecated Use /onReservationStatusChanged
  */
 webhooksRouter.post('/onReservationConfirmed', (_, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -98,29 +99,10 @@ webhooksRouter.post('/onReservationConfirmed', (_, res, next) => __awaiter(this,
 }));
 /**
  * 予約取消イベント
+ * @deprecated Use /onReservationStatusChanged
  */
-webhooksRouter.post('/onReservationCancelled', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+webhooksRouter.post('/onReservationCancelled', (_, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const reservation = req.body.data;
-        if (reservation !== undefined
-            && reservation !== null
-            && typeof reservation.id === 'string'
-            && typeof reservation.reservationNumber === 'string') {
-            // 余分確保分を除く
-            let extraProperty;
-            if (reservation.additionalProperty !== undefined) {
-                extraProperty = reservation.additionalProperty.find((p) => p.name === 'extra');
-            }
-            const isExtra = extraProperty !== undefined && extraProperty.value === '1';
-            if (!isExtra) {
-                yield ttts.service.reserve.cancelReservation({ id: reservation.id })({
-                    reservation: new ttts.repository.Reservation(mongoose.connection),
-                    task: new ttts.repository.Task(mongoose.connection),
-                    ticketTypeCategoryRateLimit: new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
-                    project: new ttts.repository.Project(mongoose.connection)
-                });
-            }
-        }
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
