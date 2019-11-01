@@ -1,6 +1,7 @@
 /**
  * ウェブフックルーター
  */
+import * as cinerinoapi from '@cinerino/api-nodejs-client';
 import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
 import * as mongoose from 'mongoose';
@@ -23,7 +24,7 @@ webhooksRouter.post(
     '/onPlaceOrder',
     async (req, res, next) => {
         try {
-            const order = req.body.data;
+            const order = <cinerinoapi.factory.order.IOrder>req.body.data;
 
             if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
                 const taskRepo = new ttts.repository.Task(mongoose.connection);
@@ -59,7 +60,7 @@ webhooksRouter.post(
     '/onReturnOrder',
     async (req, res, next) => {
         try {
-            const order = req.body.data;
+            const order = <cinerinoapi.factory.order.IOrder>req.body.data;
 
             if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
                 const performanceRepo = new ttts.repository.Performance(mongoose.connection);
@@ -95,55 +96,25 @@ webhooksRouter.post(
 
 /**
  * 予約確定イベント
+ * @deprecated Use /onReservationStatusChanged
  */
 webhooksRouter.post(
     '/onReservationConfirmed',
-    async (_, res, next) => {
-        try {
-            res.status(NO_CONTENT)
-                .end();
-        } catch (error) {
-            next(error);
-        }
+    (_, res) => {
+        res.status(NO_CONTENT)
+            .end();
     }
 );
 
 /**
  * 予約取消イベント
+ * @deprecated Use /onReservationStatusChanged
  */
 webhooksRouter.post(
     '/onReservationCancelled',
-    async (req, res, next) => {
-        try {
-            const reservation =
-                <ttts.factory.chevre.reservation.IReservation<ttts.factory.chevre.reservationType.EventReservation>>req.body.data;
-
-            if (reservation !== undefined
-                && reservation !== null
-                && typeof reservation.id === 'string'
-                && typeof reservation.reservationNumber === 'string') {
-                // 余分確保分を除く
-                let extraProperty: ttts.factory.propertyValue.IPropertyValue<string> | undefined;
-                if (reservation.additionalProperty !== undefined) {
-                    extraProperty = reservation.additionalProperty.find((p) => p.name === 'extra');
-                }
-                const isExtra = extraProperty !== undefined && extraProperty.value === '1';
-
-                if (!isExtra) {
-                    await ttts.service.reserve.cancelReservation({ id: reservation.id })({
-                        reservation: new ttts.repository.Reservation(mongoose.connection),
-                        task: new ttts.repository.Task(mongoose.connection),
-                        ticketTypeCategoryRateLimit: new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
-                        project: new ttts.repository.Project(mongoose.connection)
-                    });
-                }
-            }
-
-            res.status(NO_CONTENT)
-                .end();
-        } catch (error) {
-            next(error);
-        }
+    (_, res) => {
+        res.status(NO_CONTENT)
+            .end();
     }
 );
 
