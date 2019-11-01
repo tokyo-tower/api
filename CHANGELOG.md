@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 予約確定イベントと予約取消イベントの受信エンドポイントを予約ステータス変更イベントに統合
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v30.0.0 - 2019-11-01
+
+### Changed
+
+- 予約確定イベントと予約取消イベントの受信エンドポイントを予約ステータス変更イベントに統合
 
 ## v29.0.0 - 2019-10-31
 
