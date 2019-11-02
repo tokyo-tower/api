@@ -39,7 +39,6 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['pos']), 
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationCancelled`;
         auth.setCredentials({ access_token: req.accessToken });
         const returnOrderService = new cinerinoapi.service.transaction.ReturnOrder4ttts({
             auth: auth,
@@ -49,9 +48,7 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['pos']), 
             performanceDay: req.body.performance_day,
             paymentNo: req.body.payment_no,
             cancellationFee: 0,
-            reason: cinerinoapi.factory.transaction.returnOrder.Reason.Customer,
-            // informOrderUrl?: string;
-            informReservationUrl: informReservationUrl
+            reason: cinerinoapi.factory.transaction.returnOrder.Reason.Customer
         });
         res.status(http_status_1.CREATED)
             .json({
