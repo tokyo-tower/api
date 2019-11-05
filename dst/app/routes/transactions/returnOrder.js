@@ -12,8 +12,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * 注文返品取引ルーター(POS専用)
  */
 const cinerinoapi = require("@cinerino/api-nodejs-client");
+const ttts = require("@tokyotower/domain");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
+const moment = require("moment");
+const ORDERS_KEY_PREFIX = 'orders.';
+const redisClient = ttts.redis.createClient({
+    host: process.env.REDIS_HOST,
+    port: Number(process.env.REDIS_PORT),
+    password: process.env.REDIS_KEY,
+    tls: { servername: process.env.REDIS_HOST }
+});
 const auth = new cinerinoapi.auth.ClientCredentials({
     domain: '',
     clientId: '',
@@ -40,16 +49,45 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['pos']), 
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         auth.setCredentials({ access_token: req.accessToken });
-        const returnOrderService = new cinerinoapi.service.transaction.ReturnOrder4ttts({
+        const returnOrderService = new cinerinoapi.service.transaction.ReturnOrder({
             auth: auth,
             endpoint: process.env.CINERINO_API_ENDPOINT
         });
-        const returnOrderTransaction = yield returnOrderService.confirm({
-            performanceDay: req.body.performance_day,
-            paymentNo: req.body.payment_no,
-            cancellationFee: 0,
-            reason: cinerinoapi.factory.transaction.returnOrder.Reason.Customer
+        // const returnOrderService = new cinerinoapi.service.transaction.ReturnOrder4ttts({
+        //     auth: auth,
+        //     endpoint: <string>process.env.CINERINO_API_ENDPOINT
+        // });
+        // 注文取得
+        const confirmationNumber = `${req.body.performance_day}${req.body.payment_no}`;
+        const key = `${ORDERS_KEY_PREFIX}${confirmationNumber}`;
+        const order = yield new Promise((resolve, reject) => {
+            redisClient.get(key, (err, result) => {
+                if (err !== null) {
+                    reject(err);
+                }
+                else {
+                    resolve(JSON.parse(result));
+                }
+            });
         });
+        const returnOrderTransaction = yield returnOrderService.start({
+            expires: moment()
+                .add(1, 'minute')
+                .toDate(),
+            object: {
+                order: {
+                    orderNumber: order.orderNumber,
+                    customer: { telephone: order.customer.telephone }
+                }
+            }
+        });
+        yield returnOrderService.confirm({ id: returnOrderTransaction.id });
+        // const returnOrderTransaction = await returnOrderService.confirm({
+        //     performanceDay: req.body.performance_day,
+        //     paymentNo: req.body.payment_no,
+        //     cancellationFee: 0,
+        //     reason: cinerinoapi.factory.transaction.returnOrder.Reason.Customer
+        // });
         res.status(http_status_1.CREATED)
             .json({
             id: returnOrderTransaction.id
