@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- POSによる注文返品取引をCinerinoで再構築
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v30.2.0 - 2019-11-06
+
+### Changed
+
+- POSによる注文返品取引をCinerinoで再構築
 
 ## v30.1.0 - 2019-11-02
 
