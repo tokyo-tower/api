@@ -30,6 +30,8 @@ const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
 const TRANSACTION_AMOUNT_TTL = 3600;
 const TRANSACTION_AMOUNT_KEY_PREFIX = 'placeOrderTransactionAmount.';
+const ORDERS_TTL = 86400;
+const ORDERS_KEY_PREFIX = 'orders.';
 const redisClient = ttts.redis.createClient({
     host: process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT),
@@ -247,6 +249,21 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             id: req.params.transactionId,
             paymentMethod: cinerinoapi.factory.paymentMethodType.Cash,
             informOrderUrl: informOrderUrl
+        });
+        // 返品できるようにしばし注文情報を保管
+        const orderKey = `${ORDERS_KEY_PREFIX}${transactionResult.order.confirmationNumber}`;
+        yield new Promise((resolve, reject) => {
+            redisClient.multi()
+                .set(orderKey, JSON.stringify(transactionResult.order))
+                .expire(orderKey, ORDERS_TTL)
+                .exec((err) => {
+                if (err !== null) {
+                    reject(err);
+                }
+                else {
+                    resolve();
+                }
+            });
         });
         res.status(http_status_1.CREATED)
             .json(Object.assign({}, transactionResult, { 
