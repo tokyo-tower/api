@@ -28,8 +28,14 @@ const placeOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
+const TRANSACTION_AGENT_TTL = 3600;
+const TRANSACTION_AGENT_KEY_PREFIX = 'placeOrderTransactionAgent.';
 const TRANSACTION_AMOUNT_TTL = 3600;
 const TRANSACTION_AMOUNT_KEY_PREFIX = 'placeOrderTransactionAmount.';
+const AUTHORIZE_SEAT_RESERVATION_RESULT_TTL = 3600;
+const AUTHORIZE_SEAT_RESERVATION_RESULT_KEY_PREFIX = 'authorizeSeatReservationResult.';
+const CUSTOMER_PROFILE_TTL = 3600;
+const CUSTOMER_PROFILE_KEY_PREFIX = 'customerProfile.';
 const ORDERS_TTL = 86400;
 const ORDERS_KEY_PREFIX = 'orders.';
 const redisClient = ttts.redis.createClient({
@@ -82,6 +88,21 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos']), (re
                 id: seller.id
             }
         });
+        // 取引エージェント保管
+        const transactionAgentKey = `${TRANSACTION_AGENT_KEY_PREFIX}${req.params.transactionId}`;
+        yield new Promise((resolve, reject) => {
+            redisClient.multi()
+                .set(transactionAgentKey, JSON.stringify(transaction.agent))
+                .expire(transactionAgentKey, TRANSACTION_AGENT_TTL)
+                .exec((err) => {
+                if (err !== null) {
+                    reject(err);
+                }
+                else {
+                    resolve();
+                }
+            });
+        });
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
         // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
@@ -122,6 +143,21 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
                 customerContact: Object.assign({}, req.body, { id: req.user.sub, givenName: (typeof req.body.first_name === 'string') ? req.body.first_name : '', familyName: (typeof req.body.last_name === 'string') ? req.body.last_name : '', telephone: (typeof req.body.tel === 'string') ? req.body.tel : '', telephoneRegion: (typeof req.body.address === 'string') ? req.body.address : '' })
             }
         });
+        // プロフィール保管
+        const customerProfileKey = `${CUSTOMER_PROFILE_KEY_PREFIX}${req.params.transactionId}`;
+        yield new Promise((resolve, reject) => {
+            redisClient.multi()
+                .set(customerProfileKey, JSON.stringify(profile))
+                .expire(customerProfileKey, CUSTOMER_PROFILE_TTL)
+                .exec((err) => {
+                if (err !== null) {
+                    reject(err);
+                }
+                else {
+                    resolve();
+                }
+            });
+        });
         res.status(http_status_1.CREATED)
             .json(Object.assign({}, profile, { 
             // POSへの互換性維持のために値補完
@@ -150,14 +186,29 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
             performanceId: performanceId,
             offers: req.body.offers
         });
-        // 金額保管
         if (action.result !== undefined) {
-            const key = `${TRANSACTION_AMOUNT_KEY_PREFIX}${req.params.transactionId}`;
+            // 金額保管
+            const amountKey = `${TRANSACTION_AMOUNT_KEY_PREFIX}${req.params.transactionId}`;
             const amount = action.result.price;
             yield new Promise((resolve, reject) => {
                 redisClient.multi()
-                    .set(key, amount.toString())
-                    .expire(key, TRANSACTION_AMOUNT_TTL)
+                    .set(amountKey, amount.toString())
+                    .expire(amountKey, TRANSACTION_AMOUNT_TTL)
+                    .exec((err) => {
+                    if (err !== null) {
+                        reject(err);
+                    }
+                    else {
+                        resolve();
+                    }
+                });
+            });
+            // 承認結果保管
+            const authorizeSeatReservationResultKey = `${AUTHORIZE_SEAT_RESERVATION_RESULT_KEY_PREFIX}${req.params.transactionId}`;
+            yield new Promise((resolve, reject) => {
+                redisClient.multi()
+                    .set(authorizeSeatReservationResultKey, JSON.stringify(action.result))
+                    .expire(authorizeSeatReservationResultKey, AUTHORIZE_SEAT_RESERVATION_RESULT_TTL)
                     .exec((err) => {
                     if (err !== null) {
                         reject(err);
@@ -190,11 +241,25 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
             actionId: req.params.actionId
         });
         // 金額リセット
-        const key = `${TRANSACTION_AMOUNT_KEY_PREFIX}${req.params.transactionId}`;
+        const amountKey = `${TRANSACTION_AMOUNT_KEY_PREFIX}${req.params.transactionId}`;
         yield new Promise((resolve, reject) => {
             redisClient.multi()
-                .set(key, '0')
-                .expire(key, TRANSACTION_AMOUNT_TTL)
+                .set(amountKey, '0')
+                .expire(amountKey, TRANSACTION_AMOUNT_TTL)
+                .exec((err) => {
+                if (err !== null) {
+                    reject(err);
+                }
+                else {
+                    resolve();
+                }
+            });
+        });
+        // 座席予約承認結果リセット
+        const authorizeSeatReservationResultKey = `${AUTHORIZE_SEAT_RESERVATION_RESULT_KEY_PREFIX}${req.params.transactionId}`;
+        yield new Promise((resolve, reject) => {
+            redisClient.multi()
+                .del(authorizeSeatReservationResultKey)
                 .exec((err) => {
                 if (err !== null) {
                     reject(err);
@@ -211,7 +276,9 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
         next(error);
     }
 }));
-placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['pos']), validator_1.default, 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // クライアントがPOSの場合、決済方法承認アクションを自動生成
         auth.setCredentials({ access_token: req.accessToken });
@@ -220,14 +287,50 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             endpoint: process.env.CINERINO_API_ENDPOINT
         });
         // 金額取得
-        const key = `${TRANSACTION_AMOUNT_KEY_PREFIX}${req.params.transactionId}`;
+        const amountKey = `${TRANSACTION_AMOUNT_KEY_PREFIX}${req.params.transactionId}`;
         const amount = yield new Promise((resolve, reject) => {
-            redisClient.get(key, (err, result) => {
+            redisClient.get(amountKey, (err, result) => {
                 if (err !== null) {
                     reject(err);
                 }
                 else {
                     resolve(Number(result));
+                }
+            });
+        });
+        // 取引エージェント取得
+        const transactionAgentKey = `${TRANSACTION_AGENT_KEY_PREFIX}${req.params.transactionId}`;
+        const transactionAgent = yield new Promise((resolve, reject) => {
+            redisClient.get(transactionAgentKey, (err, result) => {
+                if (err !== null) {
+                    reject(err);
+                }
+                else {
+                    resolve(JSON.parse(result));
+                }
+            });
+        });
+        // 購入者プロフィール取得
+        const customerProfileKey = `${CUSTOMER_PROFILE_KEY_PREFIX}${req.params.transactionId}`;
+        const customerProfile = yield new Promise((resolve, reject) => {
+            redisClient.get(customerProfileKey, (err, result) => {
+                if (err !== null) {
+                    reject(err);
+                }
+                else {
+                    resolve(JSON.parse(result));
+                }
+            });
+        });
+        // 座席予約承認結果取得
+        const authorizeSeatReservationResultKey = `${AUTHORIZE_SEAT_RESERVATION_RESULT_KEY_PREFIX}${req.params.transactionId}`;
+        const authorizeSeatReservationResult = yield new Promise((resolve, reject) => {
+            redisClient.get(authorizeSeatReservationResultKey, (err, result) => {
+                if (err !== null) {
+                    reject(err);
+                }
+                else {
+                    resolve(JSON.parse(result));
                 }
             });
         });
@@ -240,22 +343,21 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             },
             purpose: { typeOf: cinerinoapi.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         });
-        const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`;
         const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
             auth: auth,
             endpoint: process.env.CINERINO_API_ENDPOINT
         });
+        const potentialActions = createPotentialActions({
+            transactionId: req.params.transactionId,
+            authorizeSeatReservationResult: authorizeSeatReservationResult,
+            customer: transactionAgent,
+            profile: customerProfile,
+            informOrderUrl: `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`,
+            paymentMethodName: cinerinoapi.factory.paymentMethodType.Cash
+        });
         const transactionResult = yield placeOrderService.confirm({
             id: req.params.transactionId,
-            potentialActions: {
-                order: {
-                    potentialActions: {
-                        informOrder: [
-                            { recipient: { url: informOrderUrl } }
-                        ]
-                    }
-                }
-            }
+            potentialActions: potentialActions
         });
         // 返品できるようにしばし注文情報を保管
         const orderKey = `${ORDERS_KEY_PREFIX}${transactionResult.order.confirmationNumber}`;
@@ -292,4 +394,134 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         next(error);
     }
 }));
+// tslint:disable-next-line:max-func-body-length
+function createPotentialActions(params) {
+    // 予約連携パラメータ作成
+    const authorizeSeatReservationResult = params.authorizeSeatReservationResult;
+    if (authorizeSeatReservationResult === undefined) {
+        throw new Error('No Seat Reservation');
+    }
+    const acceptedOffers = (Array.isArray(authorizeSeatReservationResult.acceptedOffers))
+        ? authorizeSeatReservationResult.acceptedOffers
+        : [];
+    const reserveTransaction = authorizeSeatReservationResult.responseBody;
+    if (reserveTransaction === undefined) {
+        throw new cinerinoapi.factory.errors.Argument('Transaction', 'Reserve trasaction required');
+    }
+    const chevreReservations = (Array.isArray(reserveTransaction.object.reservations))
+        ? reserveTransaction.object.reservations
+        : [];
+    const event = reserveTransaction.object.reservationFor;
+    if (event === undefined || event === null) {
+        throw new cinerinoapi.factory.errors.Argument('Transaction', 'Event required');
+    }
+    let paymentNo;
+    if (chevreReservations[0].underName !== undefined && Array.isArray(chevreReservations[0].underName.identifier)) {
+        const paymentNoProperty = chevreReservations[0].underName.identifier.find((p) => p.name === 'paymentNo');
+        if (paymentNoProperty !== undefined) {
+            paymentNo = paymentNoProperty.value;
+        }
+    }
+    const transactionAgent = params.customer;
+    if (transactionAgent === undefined) {
+        throw new Error('No Transaction Agent');
+    }
+    const customerProfile = params.profile;
+    if (customerProfile === undefined) {
+        throw new Error('No Customer Profile');
+    }
+    // 予約確定パラメータを生成
+    const eventReservations = acceptedOffers.map((acceptedOffer, index) => {
+        const reservation = acceptedOffer.itemOffered;
+        const chevreReservation = chevreReservations.find((r) => r.id === reservation.id);
+        if (chevreReservation === undefined) {
+            throw new cinerinoapi.factory.errors.Argument('Transaction', `Unexpected temporary reservation: ${reservation.id}`);
+        }
+        return temporaryReservation2confirmed({
+            reservation: reservation,
+            chevreReservation: chevreReservation,
+            transactionId: params.transactionId,
+            customer: transactionAgent,
+            profile: customerProfile,
+            paymentNo: paymentNo,
+            gmoOrderId: '',
+            paymentSeatIndex: index.toString(),
+            paymentMethodName: params.paymentMethodName
+        });
+    });
+    const confirmReservationParams = [];
+    confirmReservationParams.push({
+        object: {
+            typeOf: reserveTransaction.typeOf,
+            id: reserveTransaction.id,
+            object: {
+                reservations: [
+                    ...eventReservations.map((r) => {
+                        // プロジェクト固有の値を連携
+                        return {
+                            id: r.id,
+                            additionalTicketText: r.additionalTicketText,
+                            underName: r.underName,
+                            additionalProperty: r.additionalProperty
+                        };
+                    }),
+                    // 余分確保分の予約にもextraプロパティを連携
+                    ...chevreReservations.filter((r) => {
+                        // 注文アイテムに存在しない予約(余分確保分)にフィルタリング
+                        const orderItem = eventReservations.find((eventReservation) => eventReservation.id === r.id);
+                        return orderItem === undefined;
+                    })
+                        .map((r) => {
+                        return {
+                            id: r.id,
+                            additionalProperty: [
+                                { name: 'extra', value: '1' }
+                            ]
+                        };
+                    })
+                ]
+            }
+        }
+    });
+    return {
+        order: {
+            potentialActions: {
+                sendOrder: {
+                    potentialActions: {
+                        confirmReservation: confirmReservationParams
+                    }
+                },
+                informOrder: [
+                    { recipient: { url: params.informOrderUrl } }
+                ]
+            }
+        }
+    };
+}
+/**
+ * 仮予約から確定予約を生成する
+ */
+function temporaryReservation2confirmed(params) {
+    const customer = params.customer;
+    const underName = Object.assign({}, params.profile, { typeOf: cinerinoapi.factory.personType.Person, id: customer.id, name: `${params.profile.givenName} ${params.profile.familyName}`, identifier: [
+            { name: 'customerGroup', value: 'Customer' },
+            { name: 'paymentNo', value: params.paymentNo },
+            { name: 'transaction', value: params.transactionId },
+            { name: 'gmoOrderId', value: params.gmoOrderId },
+            ...(typeof params.profile.age === 'string')
+                ? [{ name: 'age', value: params.profile.age }]
+                : [],
+            ...(Array.isArray(customer.identifier)) ? customer.identifier : [],
+            ...(customer.memberOf !== undefined && customer.memberOf.membershipNumber !== undefined)
+                ? [{ name: 'username', value: customer.memberOf.membershipNumber }]
+                : [],
+            ...(params.paymentMethodName !== undefined)
+                ? [{ name: 'paymentMethod', value: params.paymentMethodName }]
+                : []
+        ] });
+    return Object.assign({}, params.chevreReservation, { underName: underName, additionalProperty: [
+            ...(Array.isArray(params.reservation.additionalProperty)) ? params.reservation.additionalProperty : [],
+            { name: 'paymentSeatIndex', value: params.paymentSeatIndex }
+        ], additionalTicketText: params.reservation.additionalTicketText });
+}
 exports.default = placeOrderTransactionsRouter;
