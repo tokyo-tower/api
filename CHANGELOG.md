@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 注文取引確定時の予約連携指定をCinerino化
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v30.4.0 - 2019-11-07
+
+### Changed
+
+- 注文取引確定時の予約連携指定をCinerino化
 
 ## v30.3.0 - 2019-11-07
 
