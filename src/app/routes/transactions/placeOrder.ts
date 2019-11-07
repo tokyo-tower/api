@@ -22,16 +22,19 @@ import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
 
-const TRANSACTION_AGENT_TTL = 3600;
-const TRANSACTION_AGENT_KEY_PREFIX = 'ttts-api:placeOrder:agent:';
-const TRANSACTION_AMOUNT_TTL = 3600;
-const TRANSACTION_AMOUNT_KEY_PREFIX = 'ttts-api:placeOrder:amount:';
-const AUTHORIZE_SEAT_RESERVATION_RESULT_TTL = 3600;
-const AUTHORIZE_SEAT_RESERVATION_RESULT_KEY_PREFIX = 'ttts-api:placeOrder:authorizeSeatReservationResult:';
-const CUSTOMER_PROFILE_TTL = 3600;
-const CUSTOMER_PROFILE_KEY_PREFIX = 'ttts-api:placeOrder:customerProfile:';
+const TRANSACTION_TTL = 3600;
+const TRANSACTION_KEY_PREFIX = 'ttts-api:placeOrder:';
+const TRANSACTION_AGENT_TTL = TRANSACTION_TTL;
+const TRANSACTION_AGENT_KEY_PREFIX = `${TRANSACTION_KEY_PREFIX}agent:`;
+const TRANSACTION_AMOUNT_TTL = TRANSACTION_TTL;
+const TRANSACTION_AMOUNT_KEY_PREFIX = `${TRANSACTION_KEY_PREFIX}amount:`;
+const AUTHORIZE_SEAT_RESERVATION_RESULT_TTL = TRANSACTION_TTL;
+const AUTHORIZE_SEAT_RESERVATION_RESULT_KEY_PREFIX = `${TRANSACTION_KEY_PREFIX}authorizeSeatReservationResult:`;
+const CUSTOMER_PROFILE_TTL = TRANSACTION_TTL;
+const CUSTOMER_PROFILE_KEY_PREFIX = `${TRANSACTION_KEY_PREFIX}customerProfile:`;
+
 const ORDERS_TTL = 86400;
-const ORDERS_KEY_PREFIX = 'ttts-api:orders:';
+export const ORDERS_KEY_PREFIX = 'ttts-api:orders:';
 
 const redisClient = ttts.redis.createClient({
     host: <string>process.env.REDIS_HOST,

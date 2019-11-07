@@ -28,16 +28,18 @@ const placeOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
-const TRANSACTION_AGENT_TTL = 3600;
-const TRANSACTION_AGENT_KEY_PREFIX = 'ttts-api:placeOrder:agent:';
-const TRANSACTION_AMOUNT_TTL = 3600;
-const TRANSACTION_AMOUNT_KEY_PREFIX = 'ttts-api:placeOrder:amount:';
-const AUTHORIZE_SEAT_RESERVATION_RESULT_TTL = 3600;
-const AUTHORIZE_SEAT_RESERVATION_RESULT_KEY_PREFIX = 'ttts-api:placeOrder:authorizeSeatReservationResult:';
-const CUSTOMER_PROFILE_TTL = 3600;
-const CUSTOMER_PROFILE_KEY_PREFIX = 'ttts-api:placeOrder:customerProfile:';
+const TRANSACTION_TTL = 3600;
+const TRANSACTION_KEY_PREFIX = 'ttts-api:placeOrder:';
+const TRANSACTION_AGENT_TTL = TRANSACTION_TTL;
+const TRANSACTION_AGENT_KEY_PREFIX = `${TRANSACTION_KEY_PREFIX}agent:`;
+const TRANSACTION_AMOUNT_TTL = TRANSACTION_TTL;
+const TRANSACTION_AMOUNT_KEY_PREFIX = `${TRANSACTION_KEY_PREFIX}amount:`;
+const AUTHORIZE_SEAT_RESERVATION_RESULT_TTL = TRANSACTION_TTL;
+const AUTHORIZE_SEAT_RESERVATION_RESULT_KEY_PREFIX = `${TRANSACTION_KEY_PREFIX}authorizeSeatReservationResult:`;
+const CUSTOMER_PROFILE_TTL = TRANSACTION_TTL;
+const CUSTOMER_PROFILE_KEY_PREFIX = `${TRANSACTION_KEY_PREFIX}customerProfile:`;
 const ORDERS_TTL = 86400;
-const ORDERS_KEY_PREFIX = 'ttts-api:orders:';
+exports.ORDERS_KEY_PREFIX = 'ttts-api:orders:';
 const redisClient = ttts.redis.createClient({
     host: process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT),
@@ -360,7 +362,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             potentialActions: potentialActions
         });
         // 返品できるようにしばし注文情報を保管
-        const orderKey = `${ORDERS_KEY_PREFIX}${transactionResult.order.confirmationNumber}`;
+        const orderKey = `${exports.ORDERS_KEY_PREFIX}${transactionResult.order.confirmationNumber}`;
         yield new Promise((resolve, reject) => {
             redisClient.multi()
                 .set(orderKey, JSON.stringify(transactionResult.order))
