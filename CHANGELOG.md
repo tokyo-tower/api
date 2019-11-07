@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v30.3.0 - 2019-11-07
+
+### Changed
+
+- 注文取引確定時の注文通知先指定をCinerino化
+
 ## v30.2.0 - 2019-11-06
 
 ### Changed

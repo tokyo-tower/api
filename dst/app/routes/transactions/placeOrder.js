@@ -247,8 +247,15 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         });
         const transactionResult = yield placeOrderService.confirm({
             id: req.params.transactionId,
-            paymentMethod: cinerinoapi.factory.paymentMethodType.Cash,
-            informOrderUrl: informOrderUrl
+            potentialActions: {
+                order: {
+                    potentialActions: {
+                        informOrder: [
+                            { recipient: { url: informOrderUrl } }
+                        ]
+                    }
+                }
+            }
         });
         // 返品できるようにしばし注文情報を保管
         const orderKey = `${ORDERS_KEY_PREFIX}${transactionResult.order.confirmationNumber}`;
