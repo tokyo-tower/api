@@ -7,7 +7,7 @@ import { Router } from 'express';
 import { CREATED } from 'http-status';
 import * as moment from 'moment';
 
-const ORDERS_KEY_PREFIX = 'orders:';
+const ORDERS_KEY_PREFIX = 'ttts-api:orders:';
 
 const redisClient = ttts.redis.createClient({
     host: <string>process.env.REDIS_HOST,

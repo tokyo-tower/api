@@ -29,15 +29,15 @@ const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
 const TRANSACTION_AGENT_TTL = 3600;
-const TRANSACTION_AGENT_KEY_PREFIX = 'placeOrderTransactionAgent:';
+const TRANSACTION_AGENT_KEY_PREFIX = 'ttts-api:placeOrderTransactionAgent:';
 const TRANSACTION_AMOUNT_TTL = 3600;
-const TRANSACTION_AMOUNT_KEY_PREFIX = 'placeOrderTransactionAmount:';
+const TRANSACTION_AMOUNT_KEY_PREFIX = 'ttts-api:placeOrderTransactionAmount:';
 const AUTHORIZE_SEAT_RESERVATION_RESULT_TTL = 3600;
-const AUTHORIZE_SEAT_RESERVATION_RESULT_KEY_PREFIX = 'authorizeSeatReservationResult:';
+const AUTHORIZE_SEAT_RESERVATION_RESULT_KEY_PREFIX = 'ttts-api:authorizeSeatReservationResult:';
 const CUSTOMER_PROFILE_TTL = 3600;
-const CUSTOMER_PROFILE_KEY_PREFIX = 'customerProfile:';
+const CUSTOMER_PROFILE_KEY_PREFIX = 'ttts-api:customerProfile:';
 const ORDERS_TTL = 86400;
-const ORDERS_KEY_PREFIX = 'orders:';
+const ORDERS_KEY_PREFIX = 'ttts-api:orders:';
 const redisClient = ttts.redis.createClient({
     host: process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT),
