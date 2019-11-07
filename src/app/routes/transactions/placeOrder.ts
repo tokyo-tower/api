@@ -23,13 +23,13 @@ import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
 
 const TRANSACTION_AGENT_TTL = 3600;
-const TRANSACTION_AGENT_KEY_PREFIX = 'ttts-api:placeOrderTransactionAgent:';
+const TRANSACTION_AGENT_KEY_PREFIX = 'ttts-api:placeOrder:agent:';
 const TRANSACTION_AMOUNT_TTL = 3600;
-const TRANSACTION_AMOUNT_KEY_PREFIX = 'ttts-api:placeOrderTransactionAmount:';
+const TRANSACTION_AMOUNT_KEY_PREFIX = 'ttts-api:placeOrder:amount:';
 const AUTHORIZE_SEAT_RESERVATION_RESULT_TTL = 3600;
-const AUTHORIZE_SEAT_RESERVATION_RESULT_KEY_PREFIX = 'ttts-api:authorizeSeatReservationResult:';
+const AUTHORIZE_SEAT_RESERVATION_RESULT_KEY_PREFIX = 'ttts-api:placeOrder:authorizeSeatReservationResult:';
 const CUSTOMER_PROFILE_TTL = 3600;
-const CUSTOMER_PROFILE_KEY_PREFIX = 'ttts-api:customerProfile:';
+const CUSTOMER_PROFILE_KEY_PREFIX = 'ttts-api:placeOrder:customerProfile:';
 const ORDERS_TTL = 86400;
 const ORDERS_KEY_PREFIX = 'ttts-api:orders:';
 
@@ -100,7 +100,7 @@ placeOrderTransactionsRouter.post(
             });
 
             // 取引エージェント保管
-            const transactionAgentKey = `${TRANSACTION_AGENT_KEY_PREFIX}${req.params.transactionId}`;
+            const transactionAgentKey = `${TRANSACTION_AGENT_KEY_PREFIX}${transaction.id}`;
             await new Promise((resolve, reject) => {
                 redisClient.multi()
                     .set(transactionAgentKey, JSON.stringify(transaction.agent))
