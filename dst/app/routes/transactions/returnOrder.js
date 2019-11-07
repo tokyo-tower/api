@@ -16,7 +16,7 @@ const ttts = require("@tokyotower/domain");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
 const moment = require("moment");
-const ORDERS_KEY_PREFIX = 'orders.';
+const ORDERS_KEY_PREFIX = 'orders:';
 const redisClient = ttts.redis.createClient({
     host: process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT),
