@@ -7,7 +7,7 @@ import { Router } from 'express';
 import { CREATED } from 'http-status';
 import * as moment from 'moment';
 
-const ORDERS_KEY_PREFIX = 'orders.';
+import { ORDERS_KEY_PREFIX } from './placeOrder';
 
 const redisClient = ttts.redis.createClient({
     host: <string>process.env.REDIS_HOST,
@@ -56,10 +56,6 @@ returnOrderTransactionsRouter.post(
                 auth: auth,
                 endpoint: <string>process.env.CINERINO_API_ENDPOINT
             });
-            // const returnOrderService = new cinerinoapi.service.transaction.ReturnOrder4ttts({
-            //     auth: auth,
-            //     endpoint: <string>process.env.CINERINO_API_ENDPOINT
-            // });
 
             // 注文取得
             const confirmationNumber = `${req.body.performance_day}${req.body.payment_no}`;
@@ -87,13 +83,6 @@ returnOrderTransactionsRouter.post(
             });
 
             await returnOrderService.confirm({ id: returnOrderTransaction.id });
-
-            // const returnOrderTransaction = await returnOrderService.confirm({
-            //     performanceDay: req.body.performance_day,
-            //     paymentNo: req.body.payment_no,
-            //     cancellationFee: 0,
-            //     reason: cinerinoapi.factory.transaction.returnOrder.Reason.Customer
-            // });
 
             res.status(CREATED)
                 .json({

@@ -16,7 +16,7 @@ const ttts = require("@tokyotower/domain");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
 const moment = require("moment");
-const ORDERS_KEY_PREFIX = 'orders.';
+const placeOrder_1 = require("./placeOrder");
 const redisClient = ttts.redis.createClient({
     host: process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT),
@@ -53,13 +53,9 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['pos']), 
             auth: auth,
             endpoint: process.env.CINERINO_API_ENDPOINT
         });
-        // const returnOrderService = new cinerinoapi.service.transaction.ReturnOrder4ttts({
-        //     auth: auth,
-        //     endpoint: <string>process.env.CINERINO_API_ENDPOINT
-        // });
         // 注文取得
         const confirmationNumber = `${req.body.performance_day}${req.body.payment_no}`;
-        const key = `${ORDERS_KEY_PREFIX}${confirmationNumber}`;
+        const key = `${placeOrder_1.ORDERS_KEY_PREFIX}${confirmationNumber}`;
         const order = yield new Promise((resolve, reject) => {
             redisClient.get(key, (err, result) => {
                 if (err !== null) {
@@ -82,12 +78,6 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['pos']), 
             }
         });
         yield returnOrderService.confirm({ id: returnOrderTransaction.id });
-        // const returnOrderTransaction = await returnOrderService.confirm({
-        //     performanceDay: req.body.performance_day,
-        //     paymentNo: req.body.payment_no,
-        //     cancellationFee: 0,
-        //     reason: cinerinoapi.factory.transaction.returnOrder.Reason.Customer
-        // });
         res.status(http_status_1.CREATED)
             .json({
             id: returnOrderTransaction.id
