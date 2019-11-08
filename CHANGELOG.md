@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v30.5.0 - 2019-11-08
+
+### Changed
+
+- 注文取引確定サービスをCinerino本家へ変更
+
 ## v30.4.0 - 2019-11-07
 
 ### Changed
