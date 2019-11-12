@@ -38,6 +38,30 @@ const chevreAuthClient = new ttts.chevre.auth.ClientCredentials({
 const reservationsRouter = express.Router();
 reservationsRouter.use(authentication_1.default);
 /**
+ * イベント指定で購入番号を発行する
+ */
+reservationsRouter.post('/publishPaymentNo', permitScopes_1.default(['admin', 'pos', 'transactions']), ...[
+    check_1.body('event.id')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString()
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const performanceRepo = new ttts.repository.Performance(mongoose.connection);
+        const paymentNoRepo = new ttts.repository.PaymentNo(redisClient);
+        const event = yield performanceRepo.findById(req.body.event.id);
+        const eventStartDateStr = moment(event.startDate)
+            .tz('Asia/Tokyo')
+            .format('YYYYMMDD');
+        const paymentNo = yield paymentNoRepo.publish(eventStartDateStr);
+        res.json({ paymentNo });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
  * distinct検索
  */
 reservationsRouter.get('/distinct/:field', permitScopes_1.default(['admin']), ...[
