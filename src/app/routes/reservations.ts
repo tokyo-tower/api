@@ -2,11 +2,10 @@
  * 予約ルーター
  */
 import * as ttts from '@tokyotower/domain';
-import * as createDebug from 'debug';
 import * as express from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { query } from 'express-validator/check';
-import { CREATED, NO_CONTENT } from 'http-status';
+import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
@@ -15,8 +14,6 @@ import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
 import { tttsReservation2chevre } from '../util/reservation';
-
-const debug = createDebug('ttts-api:routes:reservations');
 
 const redisClient = ttts.redis.createClient({
     host: <string>process.env.REDIS_HOST,
@@ -36,27 +33,6 @@ const chevreAuthClient = new ttts.chevre.auth.ClientCredentials({
 const reservationsRouter = express.Router();
 
 reservationsRouter.use(authentication);
-
-/**
- * 印刷トークン発行
- */
-reservationsRouter.post(
-    '/print/token',
-    permitScopes(['admin']),
-    validator,
-    async (req, res, next) => {
-        try {
-            const tokenRepo = new ttts.repository.Token(redisClient);
-            const token = await tokenRepo.createPrintToken(req.body.ids);
-            debug('printToken created.');
-
-            res.status(CREATED)
-                .json({ token });
-        } catch (error) {
-            next(error);
-        }
-    }
-);
 
 /**
  * distinct検索
@@ -103,7 +79,6 @@ reservationsRouter.get(
             };
 
             // 予約を検索
-            debug('searching reservations...', conditions);
             const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
             const results = await reservationRepo.distinct(req.params.field, conditions);
 
@@ -124,7 +99,6 @@ reservationsRouter.get(
     async (req, res, next) => {
         try {
             // 予約を検索
-            debug('searching reservation by id...', req.params.id);
             const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
             const reservation = await reservationRepo.findById({ id: req.params.id });
 
@@ -189,7 +163,6 @@ reservationsRouter.get(
             };
 
             // 予約を検索
-            debug('searching reservations...', conditions);
             const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
             const count = await reservationRepo.count(conditions);
             const reservations = await reservationRepo.search(conditions);

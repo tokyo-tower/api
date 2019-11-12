@@ -12,7 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * 予約ルーター
  */
 const ttts = require("@tokyotower/domain");
-const createDebug = require("debug");
 const express = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
@@ -23,7 +22,6 @@ const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const reservation_1 = require("../util/reservation");
-const debug = createDebug('ttts-api:routes:reservations');
 const redisClient = ttts.redis.createClient({
     host: process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT),
@@ -39,21 +37,6 @@ const chevreAuthClient = new ttts.chevre.auth.ClientCredentials({
 });
 const reservationsRouter = express.Router();
 reservationsRouter.use(authentication_1.default);
-/**
- * 印刷トークン発行
- */
-reservationsRouter.post('/print/token', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    try {
-        const tokenRepo = new ttts.repository.Token(redisClient);
-        const token = yield tokenRepo.createPrintToken(req.body.ids);
-        debug('printToken created.');
-        res.status(http_status_1.CREATED)
-            .json({ token });
-    }
-    catch (error) {
-        next(error);
-    }
-}));
 /**
  * distinct検索
  */
@@ -92,7 +75,6 @@ reservationsRouter.get('/distinct/:field', permitScopes_1.default(['admin']), ..
         // sort: (req.query.sort !== undefined) ? req.query.sort : undefined,
         );
         // 予約を検索
-        debug('searching reservations...', conditions);
         const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
         const results = yield reservationRepo.distinct(req.params.field, conditions);
         res.json(results);
@@ -107,7 +89,6 @@ reservationsRouter.get('/distinct/:field', permitScopes_1.default(['admin']), ..
 reservationsRouter.get('/:id', permitScopes_1.default(['reservations.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // 予約を検索
-        debug('searching reservation by id...', req.params.id);
         const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
         const reservation = yield reservationRepo.findById({ id: req.params.id });
         res.json(reservation_1.tttsReservation2chevre(reservation));
@@ -159,7 +140,6 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), .
                 $nin: [{ name: 'extra', value: '1' }]
             } });
         // 予約を検索
-        debug('searching reservations...', conditions);
         const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
         const count = yield reservationRepo.count(conditions);
         const reservations = yield reservationRepo.search(conditions);
