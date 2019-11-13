@@ -291,48 +291,48 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         // 金額取得
         const amountKey = `${TRANSACTION_AMOUNT_KEY_PREFIX}${req.params.transactionId}`;
         const amount = yield new Promise((resolve, reject) => {
-            redisClient.get(amountKey, (err, result) => {
+            redisClient.get(amountKey, (err, reply) => {
                 if (err !== null) {
                     reject(err);
                 }
                 else {
-                    resolve(Number(result));
+                    resolve(Number(reply));
                 }
             });
         });
         // 取引エージェント取得
         const transactionAgentKey = `${TRANSACTION_AGENT_KEY_PREFIX}${req.params.transactionId}`;
         const transactionAgent = yield new Promise((resolve, reject) => {
-            redisClient.get(transactionAgentKey, (err, result) => {
+            redisClient.get(transactionAgentKey, (err, reply) => {
                 if (err !== null) {
                     reject(err);
                 }
                 else {
-                    resolve(JSON.parse(result));
+                    resolve(JSON.parse(reply));
                 }
             });
         });
         // 購入者プロフィール取得
         const customerProfileKey = `${CUSTOMER_PROFILE_KEY_PREFIX}${req.params.transactionId}`;
         const customerProfile = yield new Promise((resolve, reject) => {
-            redisClient.get(customerProfileKey, (err, result) => {
+            redisClient.get(customerProfileKey, (err, reply) => {
                 if (err !== null) {
                     reject(err);
                 }
                 else {
-                    resolve(JSON.parse(result));
+                    resolve(JSON.parse(reply));
                 }
             });
         });
         // 座席予約承認結果取得
         const authorizeSeatReservationResultKey = `${AUTHORIZE_SEAT_RESERVATION_RESULT_KEY_PREFIX}${req.params.transactionId}`;
         const authorizeSeatReservationResult = yield new Promise((resolve, reject) => {
-            redisClient.get(authorizeSeatReservationResultKey, (err, result) => {
+            redisClient.get(authorizeSeatReservationResultKey, (err, reply) => {
                 if (err !== null) {
                     reject(err);
                 }
                 else {
-                    resolve(JSON.parse(result));
+                    resolve(JSON.parse(reply));
                 }
             });
         });
@@ -349,20 +349,36 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             auth: auth,
             endpoint: process.env.CINERINO_API_ENDPOINT
         });
-        const potentialActions = createPotentialActions({
+        // 購入番号発行
+        const paymentNoRepo = new ttts.repository.PaymentNo(redisClient);
+        const reserveTransaction = authorizeSeatReservationResult.responseBody;
+        if (reserveTransaction === undefined) {
+            throw new cinerinoapi.factory.errors.Argument('Transaction', 'Reserve trasaction required');
+        }
+        const event = reserveTransaction.object.reservationFor;
+        if (event === undefined || event === null) {
+            throw new cinerinoapi.factory.errors.Argument('Transaction', 'Event required');
+        }
+        const eventStartDateStr = moment(event.startDate)
+            .tz('Asia/Tokyo')
+            .format('YYYYMMDD');
+        const paymentNo = yield paymentNoRepo.publish(eventStartDateStr);
+        const { potentialActions, result } = createPotentialActions({
             transactionId: req.params.transactionId,
             authorizeSeatReservationResult: authorizeSeatReservationResult,
             customer: transactionAgent,
             profile: customerProfile,
             informOrderUrl: `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`,
-            paymentMethodName: cinerinoapi.factory.paymentMethodType.Cash
+            paymentMethodName: cinerinoapi.factory.paymentMethodType.Cash,
+            paymentNo: paymentNo
         });
         const transactionResult = yield placeOrderService.confirm({
             id: req.params.transactionId,
-            potentialActions: potentialActions
+            potentialActions: potentialActions,
+            result: result
         });
         // 返品できるようにしばし注文情報を保管
-        const orderKey = `${exports.ORDERS_KEY_PREFIX}${transactionResult.order.confirmationNumber}`;
+        const orderKey = `${exports.ORDERS_KEY_PREFIX}${eventStartDateStr}${paymentNo}`;
         yield new Promise((resolve, reject) => {
             redisClient.multi()
                 .set(orderKey, JSON.stringify(transactionResult.order))
@@ -385,8 +401,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
                     const r = o.itemOffered;
                     return {
                         qr_str: r.id,
-                        // tslint:disable-next-line:no-magic-numbers
-                        payment_no: transactionResult.order.confirmationNumber.slice(-6),
+                        payment_no: paymentNo,
                         performance: r.reservationFor.id
                     };
                 })
@@ -398,6 +413,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
 }));
 // tslint:disable-next-line:max-func-body-length
 function createPotentialActions(params) {
+    // 予約連携パラメータ作成
     // 予約連携パラメータ作成
     const authorizeSeatReservationResult = params.authorizeSeatReservationResult;
     if (authorizeSeatReservationResult === undefined) {
@@ -416,13 +432,6 @@ function createPotentialActions(params) {
     const event = reserveTransaction.object.reservationFor;
     if (event === undefined || event === null) {
         throw new cinerinoapi.factory.errors.Argument('Transaction', 'Event required');
-    }
-    let paymentNo;
-    if (chevreReservations[0].underName !== undefined && Array.isArray(chevreReservations[0].underName.identifier)) {
-        const paymentNoProperty = chevreReservations[0].underName.identifier.find((p) => p.name === 'paymentNo');
-        if (paymentNoProperty !== undefined) {
-            paymentNo = paymentNoProperty.value;
-        }
     }
     const transactionAgent = params.customer;
     if (transactionAgent === undefined) {
@@ -445,7 +454,7 @@ function createPotentialActions(params) {
             transactionId: params.transactionId,
             customer: transactionAgent,
             profile: customerProfile,
-            paymentNo: paymentNo,
+            paymentNo: params.paymentNo,
             gmoOrderId: '',
             paymentSeatIndex: index.toString(),
             paymentMethodName: params.paymentMethodName
@@ -485,16 +494,34 @@ function createPotentialActions(params) {
             }
         }
     });
+    const eventStartDateStr = moment(event.startDate)
+        .tz('Asia/Tokyo')
+        .format('YYYYMMDD');
+    const confirmationNumber = `${eventStartDateStr}${params.paymentNo}`;
+    const confirmationPass = (typeof customerProfile.telephone === 'string')
+        // tslint:disable-next-line:no-magic-numbers
+        ? customerProfile.telephone.slice(-4)
+        : '9999';
     return {
-        order: {
-            potentialActions: {
-                sendOrder: {
-                    potentialActions: {
-                        confirmReservation: confirmReservationParams
-                    }
-                },
-                informOrder: [
-                    { recipient: { url: params.informOrderUrl } }
+        potentialActions: {
+            order: {
+                potentialActions: {
+                    sendOrder: {
+                        potentialActions: {
+                            confirmReservation: confirmReservationParams
+                        }
+                    },
+                    informOrder: [
+                        { recipient: { url: params.informOrderUrl } }
+                    ]
+                }
+            }
+        },
+        result: {
+            order: {
+                identifier: [
+                    { name: 'confirmationNumber', value: confirmationNumber },
+                    { name: 'confirmationPass', value: confirmationPass }
                 ]
             }
         }
