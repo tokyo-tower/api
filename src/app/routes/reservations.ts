@@ -4,7 +4,7 @@
 import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
 // tslint:disable-next-line:no-submodule-imports
-import { query } from 'express-validator/check';
+import { body, query } from 'express-validator/check';
 import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
@@ -33,6 +33,38 @@ const chevreAuthClient = new ttts.chevre.auth.ClientCredentials({
 const reservationsRouter = express.Router();
 
 reservationsRouter.use(authentication);
+
+/**
+ * イベント指定で購入番号を発行する
+ */
+reservationsRouter.post(
+    '/publishPaymentNo',
+    permitScopes(['admin', 'pos', 'transactions']),
+    ...[
+        body('event.id')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+            .isString()
+    ],
+    validator,
+    async (req, res, next) => {
+        try {
+            const performanceRepo = new ttts.repository.Performance(mongoose.connection);
+            const paymentNoRepo = new ttts.repository.PaymentNo(redisClient);
+
+            const event = await performanceRepo.findById(<string>req.body.event.id);
+            const eventStartDateStr = moment(event.startDate)
+                .tz('Asia/Tokyo')
+                .format('YYYYMMDD');
+            const paymentNo = await paymentNoRepo.publish(eventStartDateStr);
+
+            res.json({ paymentNo });
+        } catch (error) {
+            next(error);
+        }
+    }
+);
 
 /**
  * distinct検索
