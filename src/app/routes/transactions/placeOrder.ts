@@ -404,13 +404,29 @@ placeOrderTransactionsRouter.post(
                 endpoint: <string>process.env.CINERINO_API_ENDPOINT
             });
 
+            // 購入番号発行
+            const paymentNoRepo = new ttts.repository.PaymentNo(redisClient);
+            const reserveTransaction = authorizeSeatReservationResult.responseBody;
+            if (reserveTransaction === undefined) {
+                throw new cinerinoapi.factory.errors.Argument('Transaction', 'Reserve trasaction required');
+            }
+            const event = reserveTransaction.object.reservationFor;
+            if (event === undefined || event === null) {
+                throw new cinerinoapi.factory.errors.Argument('Transaction', 'Event required');
+            }
+            const eventStartDateStr = moment(event.startDate)
+                .tz('Asia/Tokyo')
+                .format('YYYYMMDD');
+            const paymentNo = await paymentNoRepo.publish(eventStartDateStr);
+
             const potentialActions = createPotentialActions({
                 transactionId: req.params.transactionId,
                 authorizeSeatReservationResult: authorizeSeatReservationResult,
                 customer: transactionAgent,
                 profile: customerProfile,
                 informOrderUrl: `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`,
-                paymentMethodName: cinerinoapi.factory.paymentMethodType.Cash
+                paymentMethodName: cinerinoapi.factory.paymentMethodType.Cash,
+                paymentNo: paymentNo
             });
 
             const transactionResult = await placeOrderService.confirm({
@@ -419,7 +435,7 @@ placeOrderTransactionsRouter.post(
             });
 
             // 返品できるようにしばし注文情報を保管
-            const orderKey = `${ORDERS_KEY_PREFIX}${transactionResult.order.confirmationNumber}`;
+            const orderKey = `${ORDERS_KEY_PREFIX}${eventStartDateStr}${paymentNo}`;
             await new Promise((resolve, reject) => {
                 redisClient.multi()
                     .set(orderKey, JSON.stringify(transactionResult.order))
@@ -444,8 +460,7 @@ placeOrderTransactionsRouter.post(
 
                                 return {
                                     qr_str: r.id,
-                                    // tslint:disable-next-line:no-magic-numbers
-                                    payment_no: transactionResult.order.confirmationNumber.slice(-6),
+                                    payment_no: paymentNo,
                                     performance: r.reservationFor.id
                                 };
                             })
@@ -466,6 +481,7 @@ function createPotentialActions(params: {
     profile: cinerinoapi.factory.person.IProfile;
     informOrderUrl: string;
     paymentMethodName: string;
+    paymentNo: string;
 }): cinerinoapi.factory.transaction.placeOrder.IPotentialActionsParams {
     // 予約連携パラメータ作成
     const authorizeSeatReservationResult = params.authorizeSeatReservationResult;
@@ -485,14 +501,6 @@ function createPotentialActions(params: {
     const event = reserveTransaction.object.reservationFor;
     if (event === undefined || event === null) {
         throw new cinerinoapi.factory.errors.Argument('Transaction', 'Event required');
-    }
-
-    let paymentNo: string | undefined;
-    if (chevreReservations[0].underName !== undefined && Array.isArray(chevreReservations[0].underName.identifier)) {
-        const paymentNoProperty = chevreReservations[0].underName.identifier.find((p) => p.name === 'paymentNo');
-        if (paymentNoProperty !== undefined) {
-            paymentNo = paymentNoProperty.value;
-        }
     }
 
     const transactionAgent = params.customer;
@@ -520,7 +528,7 @@ function createPotentialActions(params: {
             transactionId: params.transactionId,
             customer: transactionAgent,
             profile: customerProfile,
-            paymentNo: <string>paymentNo,
+            paymentNo: params.paymentNo,
             gmoOrderId: '',
             paymentSeatIndex: index.toString(),
             paymentMethodName: params.paymentMethodName
