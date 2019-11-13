@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 購入番号をフロントで発行するように調整
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v31.2.0 - 2019-11-13
+
+### Changed
+
+- 購入番号をフロントで発行するように調整
 
 ## v31.1.0 - 2019-11-13
 
