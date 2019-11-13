@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - 購入番号発行サービスを追加
+- 購入番号を注文識別子から取得するように調整
 
 ### Changed
 
