@@ -344,11 +344,11 @@ placeOrderTransactionsRouter.post(
             // 金額取得
             const amountKey = `${TRANSACTION_AMOUNT_KEY_PREFIX}${req.params.transactionId}`;
             const amount = await new Promise<number>((resolve, reject) => {
-                redisClient.get(amountKey, (err, result) => {
+                redisClient.get(amountKey, (err, reply) => {
                     if (err !== null) {
                         reject(err);
                     } else {
-                        resolve(Number(result));
+                        resolve(Number(reply));
                     }
                 });
             });
@@ -356,11 +356,11 @@ placeOrderTransactionsRouter.post(
             // 取引エージェント取得
             const transactionAgentKey = `${TRANSACTION_AGENT_KEY_PREFIX}${req.params.transactionId}`;
             const transactionAgent = await new Promise<any>((resolve, reject) => {
-                redisClient.get(transactionAgentKey, (err, result) => {
+                redisClient.get(transactionAgentKey, (err, reply) => {
                     if (err !== null) {
                         reject(err);
                     } else {
-                        resolve(JSON.parse(result));
+                        resolve(JSON.parse(reply));
                     }
                 });
             });
@@ -368,11 +368,11 @@ placeOrderTransactionsRouter.post(
             // 購入者プロフィール取得
             const customerProfileKey = `${CUSTOMER_PROFILE_KEY_PREFIX}${req.params.transactionId}`;
             const customerProfile = await new Promise<any>((resolve, reject) => {
-                redisClient.get(customerProfileKey, (err, result) => {
+                redisClient.get(customerProfileKey, (err, reply) => {
                     if (err !== null) {
                         reject(err);
                     } else {
-                        resolve(JSON.parse(result));
+                        resolve(JSON.parse(reply));
                     }
                 });
             });
@@ -380,11 +380,11 @@ placeOrderTransactionsRouter.post(
             // 座席予約承認結果取得
             const authorizeSeatReservationResultKey = `${AUTHORIZE_SEAT_RESERVATION_RESULT_KEY_PREFIX}${req.params.transactionId}`;
             const authorizeSeatReservationResult = await new Promise<any>((resolve, reject) => {
-                redisClient.get(authorizeSeatReservationResultKey, (err, result) => {
+                redisClient.get(authorizeSeatReservationResultKey, (err, reply) => {
                     if (err !== null) {
                         reject(err);
                     } else {
-                        resolve(JSON.parse(result));
+                        resolve(JSON.parse(reply));
                     }
                 });
             });
@@ -419,7 +419,7 @@ placeOrderTransactionsRouter.post(
                 .format('YYYYMMDD');
             const paymentNo = await paymentNoRepo.publish(eventStartDateStr);
 
-            const potentialActions = createPotentialActions({
+            const { potentialActions, result } = createPotentialActions({
                 transactionId: req.params.transactionId,
                 authorizeSeatReservationResult: authorizeSeatReservationResult,
                 customer: transactionAgent,
@@ -431,7 +431,8 @@ placeOrderTransactionsRouter.post(
 
             const transactionResult = await placeOrderService.confirm({
                 id: req.params.transactionId,
-                potentialActions: potentialActions
+                potentialActions: potentialActions,
+                result: result
             });
 
             // 返品できるようにしばし注文情報を保管
@@ -482,7 +483,11 @@ function createPotentialActions(params: {
     informOrderUrl: string;
     paymentMethodName: string;
     paymentNo: string;
-}): cinerinoapi.factory.transaction.placeOrder.IPotentialActionsParams {
+}): {
+    potentialActions: cinerinoapi.factory.transaction.placeOrder.IPotentialActionsParams;
+    result: cinerinoapi.factory.transaction.placeOrder.IResultParams;
+} {
+    // 予約連携パラメータ作成
     // 予約連携パラメータ作成
     const authorizeSeatReservationResult = params.authorizeSeatReservationResult;
     if (authorizeSeatReservationResult === undefined) {
@@ -573,16 +578,35 @@ function createPotentialActions(params: {
         }
     });
 
+    const eventStartDateStr = moment(event.startDate)
+        .tz('Asia/Tokyo')
+        .format('YYYYMMDD');
+    const confirmationNumber = `${eventStartDateStr}${params.paymentNo}`;
+    const confirmationPass = (typeof customerProfile.telephone === 'string')
+        // tslint:disable-next-line:no-magic-numbers
+        ? customerProfile.telephone.slice(-4)
+        : '9999';
+
     return {
-        order: {
-            potentialActions: {
-                sendOrder: {
-                    potentialActions: {
-                        confirmReservation: confirmReservationParams
-                    }
-                },
-                informOrder: [
-                    { recipient: { url: params.informOrderUrl } }
+        potentialActions: {
+            order: {
+                potentialActions: {
+                    sendOrder: {
+                        potentialActions: {
+                            confirmReservation: confirmReservationParams
+                        }
+                    },
+                    informOrder: [
+                        { recipient: { url: params.informOrderUrl } }
+                    ]
+                }
+            }
+        },
+        result: {
+            order: {
+                identifier: [
+                    { name: 'confirmationNumber', value: confirmationNumber },
+                    { name: 'confirmationPass', value: confirmationPass }
                 ]
             }
         }
