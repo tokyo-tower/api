@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v31.3.0 - 2019-11-18
+
+### Changed
+
+- イベント予約集計時に、車椅子残席数が受けるイベントに関しても同時に集計するように調整
+
 ## v31.2.0 - 2019-11-13
 
 ### Changed
