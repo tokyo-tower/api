@@ -54,7 +54,8 @@ webhooksRouter.post(
 );
 
 /**
- * 注文返品イベント
+ * 注文返金イベント
+ * 購入者による手数料あり返品の場合に発生
  */
 webhooksRouter.post(
     '/onReturnOrder',
@@ -63,7 +64,6 @@ webhooksRouter.post(
             const order = <cinerinoapi.factory.order.IOrder>req.body.data;
 
             if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
-                const performanceRepo = new ttts.repository.Performance(mongoose.connection);
                 const taskRepo = new ttts.repository.Task(mongoose.connection);
 
                 const taskAttribute: ttts.factory.task.createReturnOrderReport.IAttributes = {
@@ -80,10 +80,89 @@ webhooksRouter.post(
                 };
 
                 await taskRepo.save(<any>taskAttribute);
+            }
 
-                await ttts.service.performance.onOrderReturned(order)({
-                    performance: performanceRepo
-                });
+            res.status(NO_CONTENT)
+                .end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 注文ステータス変更イベント
+ */
+webhooksRouter.post(
+    '/onOrderStatusChanged',
+    async (req, res, next) => {
+        try {
+            const order = <cinerinoapi.factory.order.IOrder>req.body.data;
+
+            const taskRepo = new ttts.repository.Task(mongoose.connection);
+            const performanceRepo = new ttts.repository.Performance(mongoose.connection);
+
+            if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
+                switch (order.orderStatus) {
+                    case cinerinoapi.factory.orderStatus.OrderProcessing:
+                        const createPlaceOrderReportTask: ttts.factory.task.createPlaceOrderReport.IAttributes = {
+                            name: <any>ttts.factory.taskName.CreatePlaceOrderReport,
+                            project: { typeOf: order.project.typeOf, id: order.project.id },
+                            status: ttts.factory.taskStatus.Ready,
+                            runsAt: new Date(), // なるはやで実行
+                            remainingNumberOfTries: 10,
+                            numberOfTried: 0,
+                            executionResults: [],
+                            data: {
+                                order: order
+                            }
+                        };
+
+                        await taskRepo.save(<any>createPlaceOrderReportTask);
+
+                        break;
+
+                    case cinerinoapi.factory.orderStatus.OrderDelivered:
+                        break;
+
+                    case cinerinoapi.factory.orderStatus.OrderReturned:
+                        // 手数料なしの返品であればレポート作成
+                        let cancellationFee = 0;
+                        if (order.returner !== undefined && order.returner !== null) {
+                            const returner = order.returner;
+                            if (Array.isArray(returner.identifier)) {
+                                const cancellationFeeProperty = returner.identifier.find((p: any) => p.name === 'cancellationFee');
+                                if (cancellationFeeProperty !== undefined) {
+                                    cancellationFee = Number(cancellationFeeProperty.value);
+                                }
+                            }
+                        }
+
+                        if (cancellationFee === 0) {
+                            const createReturnOrderReportTask: ttts.factory.task.createReturnOrderReport.IAttributes = {
+                                name: <any>ttts.factory.taskName.CreateReturnOrderReport,
+                                project: { typeOf: order.project.typeOf, id: order.project.id },
+                                status: ttts.factory.taskStatus.Ready,
+                                runsAt: new Date(), // なるはやで実行
+                                remainingNumberOfTries: 10,
+                                numberOfTried: 0,
+                                executionResults: [],
+                                data: {
+                                    order: order
+                                }
+                            };
+
+                            await taskRepo.save(<any>createReturnOrderReportTask);
+                        }
+
+                        await ttts.service.performance.onOrderReturned(order)({
+                            performance: performanceRepo
+                        });
+
+                        break;
+
+                    default:
+                }
             }
 
             res.status(NO_CONTENT)

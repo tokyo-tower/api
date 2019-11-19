@@ -8,6 +8,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * ウェブフックルーター
+ */
+const cinerinoapi = require("@cinerino/api-nodejs-client");
 const ttts = require("@tokyotower/domain");
 const express = require("express");
 const mongoose = require("mongoose");
@@ -49,13 +53,13 @@ webhooksRouter.post('/onPlaceOrder', (req, res, next) => __awaiter(this, void 0,
     }
 }));
 /**
- * 注文返品イベント
+ * 注文返金イベント
+ * 購入者による手数料あり返品の場合に発生
  */
 webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const order = req.body.data;
         if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
-            const performanceRepo = new ttts.repository.Performance(mongoose.connection);
             const taskRepo = new ttts.repository.Task(mongoose.connection);
             const taskAttribute = {
                 name: ttts.factory.taskName.CreateReturnOrderReport,
@@ -70,9 +74,74 @@ webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(this, void 0
                 }
             };
             yield taskRepo.save(taskAttribute);
-            yield ttts.service.performance.onOrderReturned(order)({
-                performance: performanceRepo
-            });
+        }
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 注文ステータス変更イベント
+ */
+webhooksRouter.post('/onOrderStatusChanged', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const order = req.body.data;
+        const taskRepo = new ttts.repository.Task(mongoose.connection);
+        const performanceRepo = new ttts.repository.Performance(mongoose.connection);
+        if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
+            switch (order.orderStatus) {
+                case cinerinoapi.factory.orderStatus.OrderProcessing:
+                    const createPlaceOrderReportTask = {
+                        name: ttts.factory.taskName.CreatePlaceOrderReport,
+                        project: { typeOf: order.project.typeOf, id: order.project.id },
+                        status: ttts.factory.taskStatus.Ready,
+                        runsAt: new Date(),
+                        remainingNumberOfTries: 10,
+                        numberOfTried: 0,
+                        executionResults: [],
+                        data: {
+                            order: order
+                        }
+                    };
+                    yield taskRepo.save(createPlaceOrderReportTask);
+                    break;
+                case cinerinoapi.factory.orderStatus.OrderDelivered:
+                    break;
+                case cinerinoapi.factory.orderStatus.OrderReturned:
+                    // 手数料なしの返品であればレポート作成
+                    let cancellationFee = 0;
+                    if (order.returner !== undefined && order.returner !== null) {
+                        const returner = order.returner;
+                        if (Array.isArray(returner.identifier)) {
+                            const cancellationFeeProperty = returner.identifier.find((p) => p.name === 'cancellationFee');
+                            if (cancellationFeeProperty !== undefined) {
+                                cancellationFee = Number(cancellationFeeProperty.value);
+                            }
+                        }
+                    }
+                    if (cancellationFee === 0) {
+                        const createReturnOrderReportTask = {
+                            name: ttts.factory.taskName.CreateReturnOrderReport,
+                            project: { typeOf: order.project.typeOf, id: order.project.id },
+                            status: ttts.factory.taskStatus.Ready,
+                            runsAt: new Date(),
+                            remainingNumberOfTries: 10,
+                            numberOfTried: 0,
+                            executionResults: [],
+                            data: {
+                                order: order
+                            }
+                        };
+                        yield taskRepo.save(createReturnOrderReportTask);
+                    }
+                    yield ttts.service.performance.onOrderReturned(order)({
+                        performance: performanceRepo
+                    });
+                    break;
+                default:
+            }
         }
         res.status(http_status_1.NO_CONTENT)
             .end();
