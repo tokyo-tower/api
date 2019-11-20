@@ -8,12 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- 注文ステータス変更イベント受信エンドポイント追加
-
 ### Changed
-
-- 注文返品レポート作成処理と返品手数料レポート作成処理を分離
-- 注文通知設定をCinerinoプロジェクト設定で移行
 
 ### Deprecated
 
@@ -22,6 +17,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v31.4.0 - 2019-11-20
+
+### Added
+
+- 注文ステータス変更イベント受信エンドポイント追加
+
+### Changed
+
+- 注文返品レポート作成処理と返品手数料レポート作成処理を分離
+- 注文通知設定をCinerinoプロジェクト設定で移行
 
 ## v31.3.0 - 2019-11-18
 
