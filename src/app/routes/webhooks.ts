@@ -64,22 +64,11 @@ webhooksRouter.post(
             const order = <cinerinoapi.factory.order.IOrder>req.body.data;
 
             if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
-                const taskRepo = new ttts.repository.Task(mongoose.connection);
+                const aggregateSalesRepo = new ttts.repository.AggregateSale(mongoose.connection);
 
-                const taskAttribute: ttts.factory.task.createReturnOrderReport.IAttributes = {
-                    name: <any>ttts.factory.taskName.CreateReturnOrderReport,
-                    project: { typeOf: order.project.typeOf, id: order.project.id },
-                    status: ttts.factory.taskStatus.Ready,
-                    runsAt: new Date(), // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        order: order
-                    }
-                };
-
-                await taskRepo.save(<any>taskAttribute);
+                await ttts.service.aggregate.report4sales.createRefundOrderReport({
+                    order: order
+                })(aggregateSalesRepo);
             }
 
             res.status(NO_CONTENT)
@@ -126,34 +115,21 @@ webhooksRouter.post(
                         break;
 
                     case cinerinoapi.factory.orderStatus.OrderReturned:
-                        // 手数料なしの返品であればレポート作成
-                        let cancellationFee = 0;
-                        if (order.returner !== undefined && order.returner !== null) {
-                            const returner = order.returner;
-                            if (Array.isArray(returner.identifier)) {
-                                const cancellationFeeProperty = returner.identifier.find((p: any) => p.name === 'cancellationFee');
-                                if (cancellationFeeProperty !== undefined) {
-                                    cancellationFee = Number(cancellationFeeProperty.value);
-                                }
+                        // 返品レポート作成
+                        const createReturnOrderReportTask: ttts.factory.task.createReturnOrderReport.IAttributes = {
+                            name: <any>ttts.factory.taskName.CreateReturnOrderReport,
+                            project: { typeOf: order.project.typeOf, id: order.project.id },
+                            status: ttts.factory.taskStatus.Ready,
+                            runsAt: new Date(), // なるはやで実行
+                            remainingNumberOfTries: 10,
+                            numberOfTried: 0,
+                            executionResults: [],
+                            data: {
+                                order: order
                             }
-                        }
+                        };
 
-                        if (cancellationFee === 0) {
-                            const createReturnOrderReportTask: ttts.factory.task.createReturnOrderReport.IAttributes = {
-                                name: <any>ttts.factory.taskName.CreateReturnOrderReport,
-                                project: { typeOf: order.project.typeOf, id: order.project.id },
-                                status: ttts.factory.taskStatus.Ready,
-                                runsAt: new Date(), // なるはやで実行
-                                remainingNumberOfTries: 10,
-                                numberOfTried: 0,
-                                executionResults: [],
-                                data: {
-                                    order: order
-                                }
-                            };
-
-                            await taskRepo.save(<any>createReturnOrderReportTask);
-                        }
+                        await taskRepo.save(<any>createReturnOrderReportTask);
 
                         await ttts.service.performance.onOrderReturned(order)({
                             performance: performanceRepo
