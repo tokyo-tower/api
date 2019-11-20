@@ -424,7 +424,6 @@ placeOrderTransactionsRouter.post(
                 authorizeSeatReservationResult: authorizeSeatReservationResult,
                 customer: transactionAgent,
                 profile: customerProfile,
-                informOrderUrl: `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`,
                 paymentMethodName: cinerinoapi.factory.paymentMethodType.Cash,
                 paymentNo: paymentNo
             });
@@ -480,7 +479,6 @@ function createPotentialActions(params: {
     cinerinoapi.factory.action.authorize.offer.seatReservation.IResult<cinerinoapi.factory.service.webAPI.Identifier.Chevre>;
     customer: cinerinoapi.factory.transaction.placeOrder.IAgent;
     profile: cinerinoapi.factory.person.IProfile;
-    informOrderUrl: string;
     paymentMethodName: string;
     paymentNo: string;
 }): {
@@ -595,10 +593,7 @@ function createPotentialActions(params: {
                         potentialActions: {
                             confirmReservation: confirmReservationParams
                         }
-                    },
-                    informOrder: [
-                        { recipient: { url: params.informOrderUrl } }
-                    ]
+                    }
                 }
             }
         },
