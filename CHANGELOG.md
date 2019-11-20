@@ -14,6 +14,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
+- 旧注文イベント受信エンドポイントを削除
+- 旧予約確定イベント受信エンドポイントを削除
+- 旧予約取消イベント受信エンドポイントを削除
+
 ### Fixed
 
 ### Security
