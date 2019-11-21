@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -53,7 +54,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos']), (re
         .withMessage('required')
         .isISO8601();
     next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         auth.setCredentials({ access_token: req.accessToken });
         const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
@@ -132,7 +133,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
         .notEmpty()
         .withMessage('required');
     next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         auth.setCredentials({ access_token: req.accessToken });
         const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
@@ -142,7 +143,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
         const profile = yield placeOrderService.setCustomerContact({
             id: req.params.transactionId,
             object: {
-                customerContact: Object.assign({}, req.body, { id: req.user.sub, givenName: (typeof req.body.first_name === 'string') ? req.body.first_name : '', familyName: (typeof req.body.last_name === 'string') ? req.body.last_name : '', telephone: (typeof req.body.tel === 'string') ? req.body.tel : '', telephoneRegion: (typeof req.body.address === 'string') ? req.body.address : '' })
+                customerContact: Object.assign(Object.assign({}, req.body), { id: req.user.sub, givenName: (typeof req.body.first_name === 'string') ? req.body.first_name : '', familyName: (typeof req.body.last_name === 'string') ? req.body.last_name : '', telephone: (typeof req.body.tel === 'string') ? req.body.tel : '', telephoneRegion: (typeof req.body.address === 'string') ? req.body.address : '' })
             }
         });
         // プロフィール保管
@@ -161,7 +162,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
             });
         });
         res.status(http_status_1.CREATED)
-            .json(Object.assign({}, profile, { 
+            .json(Object.assign(Object.assign({}, profile), { 
             // POSへの互換性維持のために値補完
             last_name: profile.familyName, first_name: profile.givenName, tel: profile.telephone }));
     }
@@ -172,7 +173,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
 /**
  * 座席仮予約
  */
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (!Array.isArray(req.body.offers)) {
             req.body.offers = [];
@@ -231,7 +232,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
 /**
  * 座席仮予約削除
  */
-placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         auth.setCredentials({ access_token: req.accessToken });
         const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
@@ -280,7 +281,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
 }));
 placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['pos']), validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
-(req, res, next) => __awaiter(this, void 0, void 0, function* () {
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // クライアントがPOSの場合、決済方法承認アクションを自動生成
         auth.setCredentials({ access_token: req.accessToken });
@@ -392,7 +393,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             });
         });
         res.status(http_status_1.CREATED)
-            .json(Object.assign({}, transactionResult, { 
+            .json(Object.assign(Object.assign({}, transactionResult), { 
             // POSへ互換性維持のためにeventReservations属性を生成
             eventReservations: (transactionResult !== undefined)
                 ? transactionResult.order.acceptedOffers
@@ -412,7 +413,6 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
 }));
 // tslint:disable-next-line:max-func-body-length
 function createPotentialActions(params) {
-    // 予約連携パラメータ作成
     // 予約連携パラメータ作成
     const authorizeSeatReservationResult = params.authorizeSeatReservationResult;
     if (authorizeSeatReservationResult === undefined) {
@@ -528,7 +528,7 @@ function createPotentialActions(params) {
  */
 function temporaryReservation2confirmed(params) {
     const customer = params.customer;
-    const underName = Object.assign({}, params.profile, { typeOf: cinerinoapi.factory.personType.Person, id: customer.id, name: `${params.profile.givenName} ${params.profile.familyName}`, identifier: [
+    const underName = Object.assign(Object.assign({}, params.profile), { typeOf: cinerinoapi.factory.personType.Person, id: customer.id, name: `${params.profile.givenName} ${params.profile.familyName}`, identifier: [
             { name: 'customerGroup', value: 'Customer' },
             { name: 'paymentNo', value: params.paymentNo },
             { name: 'transaction', value: params.transactionId },
@@ -544,7 +544,7 @@ function temporaryReservation2confirmed(params) {
                 ? [{ name: 'paymentMethod', value: params.paymentMethodName }]
                 : []
         ] });
-    return Object.assign({}, params.chevreReservation, { underName: underName, additionalProperty: [
+    return Object.assign(Object.assign({}, params.chevreReservation), { underName: underName, additionalProperty: [
             ...(Array.isArray(params.reservation.additionalProperty)) ? params.reservation.additionalProperty : [],
             { name: 'paymentSeatIndex', value: params.paymentSeatIndex }
         ], additionalTicketText: params.reservation.additionalTicketText });

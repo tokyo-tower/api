@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
+- Chevre予約に対する旧東京タワー予約の互換性維持対応を削除
+
 ### Fixed
 
 ### Security

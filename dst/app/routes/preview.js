@@ -4,10 +4,11 @@
  * @ignore
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -23,7 +24,7 @@ const redisClient = ttts.redis.createClient({
     tls: { servername: process.env.REDIS_HOST }
 });
 // 集計データーつきのパフォーマンス検索
-previewRouter.get('/performancesWithAggregation', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+previewRouter.get('/performancesWithAggregation', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const performanceWithAggregationRepo = new ttts.repository.EventWithAggregation(redisClient);
         let performancesWithAggregation = yield performanceWithAggregationRepo.findAll();
@@ -46,7 +47,7 @@ previewRouter.get('/performancesWithAggregation', (req, res, next) => __awaiter(
     }
 }));
 // 入場場所検索
-previewRouter.get('/places/checkinGate', (__, res, next) => __awaiter(this, void 0, void 0, function* () {
+previewRouter.get('/places/checkinGate', (__, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const checkinGateRepo = new ttts.repository.place.CheckinGate(redisClient);
         const checkinGates = yield checkinGateRepo.findAll();

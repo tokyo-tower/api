@@ -486,7 +486,6 @@ function createPotentialActions(params: {
     result: cinerinoapi.factory.transaction.placeOrder.IResultParams;
 } {
     // 予約連携パラメータ作成
-    // 予約連携パラメータ作成
     const authorizeSeatReservationResult = params.authorizeSeatReservationResult;
     if (authorizeSeatReservationResult === undefined) {
         throw new Error('No Seat Reservation');
