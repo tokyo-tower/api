@@ -18,6 +18,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v32.0.0 - 2019-11-21
+
+### Removed
+
+- 旧注文イベント受信エンドポイントを削除
+- 旧予約確定イベント受信エンドポイントを削除
+- 旧予約取消イベント受信エンドポイントを削除
+
 ## v31.4.0 - 2019-11-20
 
 ### Added
