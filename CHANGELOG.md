@@ -14,11 +14,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
-- Chevre予約に対する旧東京タワー予約の互換性維持対応を削除
-
 ### Fixed
 
 ### Security
+
+## v32.1.0 - 2019-11-22
+
+### Removed
+
+- Chevre予約に対する旧東京タワー予約の互換性維持対応を削除
 
 ## v32.0.0 - 2019-11-21
 
