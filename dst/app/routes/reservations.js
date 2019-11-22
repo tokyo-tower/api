@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -46,7 +47,7 @@ reservationsRouter.post('/publishPaymentNo', permitScopes_1.default(['admin', 'p
         .isEmpty()
         .withMessage(() => 'required')
         .isString()
-], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const performanceRepo = new ttts.repository.Performance(mongoose.connection);
         const paymentNoRepo = new ttts.repository.PaymentNo(redisClient);
@@ -89,7 +90,7 @@ reservationsRouter.get('/distinct/:field', permitScopes_1.default(['admin']), ..
         .optional()
         .isISO8601()
         .toDate()
-], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // 予約検索条件
         const conditions = Object.assign({}, req.query
@@ -110,7 +111,7 @@ reservationsRouter.get('/distinct/:field', permitScopes_1.default(['admin']), ..
 /**
  * IDで予約取得
  */
-reservationsRouter.get('/:id', permitScopes_1.default(['reservations.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+reservationsRouter.get('/:id', permitScopes_1.default(['reservations.read-only']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // 予約を検索
         const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
@@ -149,14 +150,14 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), .
         .optional()
         .isISO8601()
         .toDate()
-], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // POSに対する互換性維持のため
         if (typeof req.query.performanceId === 'string' && req.query.performanceId !== '') {
             req.query.performance = req.query.performanceId;
         }
         // 予約検索条件
-        const conditions = Object.assign({}, req.query, { 
+        const conditions = Object.assign(Object.assign({}, req.query), { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : undefined, 
             // デフォルトで余分確保分を除く
@@ -183,7 +184,7 @@ reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.c
         .withMessage('when is required')
         .isISO8601();
     next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new ttts.repository.Project(mongoose.connection);
         const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
@@ -253,7 +254,7 @@ reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.c
  * 入場取消
  * 入場日時がid
  */
-reservationsRouter.delete('/:id/checkins/:when', permitScopes_1.default(['reservations.checkins']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+reservationsRouter.delete('/:id/checkins/:when', permitScopes_1.default(['reservations.checkins']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
         const taskRepo = new ttts.repository.Task(mongoose.connection);
@@ -301,7 +302,7 @@ reservationsRouter.delete('/:id/checkins/:when', permitScopes_1.default(['reserv
 /**
  * 予約キャンセル
  */
-reservationsRouter.put('/:id/cancel', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+reservationsRouter.put('/:id/cancel', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield ttts.service.reserve.cancelReservation({ id: req.params.id })({
             reservation: new ttts.repository.Reservation(mongoose.connection),

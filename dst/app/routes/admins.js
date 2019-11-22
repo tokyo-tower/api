@@ -4,10 +4,11 @@
  * @namespace routes.admins
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -22,7 +23,7 @@ adminsRouter.use(authentication_1.default);
 /**
  * ログイン中の管理者ユーザー情報を取得する
  */
-adminsRouter.get('/me', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+adminsRouter.get('/me', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const admin = yield ttts.service.admin.getUserByAccessToken(req.accessToken)();
         res.json(admin);
@@ -34,7 +35,7 @@ adminsRouter.get('/me', permitScopes_1.default(['aws.cognito.signin.user.admin']
 /**
  * ログイン中の管理者ユーザーのグループリストを取得する
  */
-adminsRouter.get('/me/groups', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+adminsRouter.get('/me/groups', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const admin = yield ttts.service.admin.getGroupsByUsername(process.env.AWS_ACCESS_KEY_ID, process.env.AWS_SECRET_ACCESS_KEY, process.env.ADMINS_USER_POOL_ID, req.user.username)();
         res.json(admin);
@@ -46,7 +47,7 @@ adminsRouter.get('/me/groups', permitScopes_1.default(['aws.cognito.signin.user.
 /**
  * 管理者リストを取得する
  */
-adminsRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+adminsRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let admins;
         if (typeof req.query.group === 'string') {

@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -24,41 +25,10 @@ const redisClient = ttts.redis.createClient({
     tls: { servername: process.env.REDIS_HOST }
 });
 /**
- * 注文イベント
- */
-// webhooksRouter.post(
-//     '/onPlaceOrder',
-//     async (req, res, next) => {
-//         try {
-//             const order = <cinerinoapi.factory.order.IOrder>req.body.data;
-//             if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
-//                 const taskRepo = new ttts.repository.Task(mongoose.connection);
-//                 const taskAttribute: ttts.factory.task.createPlaceOrderReport.IAttributes = {
-//                     name: <any>ttts.factory.taskName.CreatePlaceOrderReport,
-//                     project: { typeOf: order.project.typeOf, id: order.project.id },
-//                     status: ttts.factory.taskStatus.Ready,
-//                     runsAt: new Date(), // なるはやで実行
-//                     remainingNumberOfTries: 10,
-//                     numberOfTried: 0,
-//                     executionResults: [],
-//                     data: {
-//                         order: order
-//                     }
-//                 };
-//                 await taskRepo.save(<any>taskAttribute);
-//             }
-//             res.status(NO_CONTENT)
-//                 .end();
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
-/**
  * 注文返金イベント
  * 購入者による手数料あり返品の場合に発生
  */
-webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const order = req.body.data;
         if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
@@ -77,7 +47,7 @@ webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(this, void 0
 /**
  * 注文ステータス変更イベント
  */
-webhooksRouter.post('/onOrderStatusChanged', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+webhooksRouter.post('/onOrderStatusChanged', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const order = req.body.data;
         const taskRepo = new ttts.repository.Task(mongoose.connection);
@@ -131,31 +101,9 @@ webhooksRouter.post('/onOrderStatusChanged', (req, res, next) => __awaiter(this,
     }
 }));
 /**
- * 予約確定イベント
- * @deprecated Use /onReservationStatusChanged
- */
-// webhooksRouter.post(
-//     '/onReservationConfirmed',
-//     (_, res) => {
-//         res.status(NO_CONTENT)
-//             .end();
-//     }
-// );
-/**
- * 予約取消イベント
- * @deprecated Use /onReservationStatusChanged
- */
-// webhooksRouter.post(
-//     '/onReservationCancelled',
-//     (_, res) => {
-//         res.status(NO_CONTENT)
-//             .end();
-//     }
-// );
-/**
  * 予約ステータス変更イベント
  */
-webhooksRouter.post('/onReservationStatusChanged', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+webhooksRouter.post('/onReservationStatusChanged', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const reservation = req.body.data;
         if (reservation !== undefined
