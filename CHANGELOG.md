@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 券種カテゴリーレート制限ルーターを追加
+
 ### Changed
 
 ### Deprecated
