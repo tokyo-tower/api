@@ -26,7 +26,7 @@ const redisClient = ttts.redis.createClient({
     password: process.env.REDIS_KEY,
     tls: { servername: process.env.REDIS_HOST }
 });
-const WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS = 3600;
+exports.WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS = 3600;
 const ticketTypeCategoryRateLimitsRouter = express_1.Router();
 ticketTypeCategoryRateLimitsRouter.use(authentication_1.default);
 /**
@@ -53,7 +53,7 @@ ticketTypeCategoryRateLimitsRouter.post('/lock', permitScopes_1.default(['admin'
         const rateLimitKey = {
             ticketTypeCategory: req.body.ticketTypeCategory,
             performanceStartDate: req.body.performanceStartDate,
-            unitInSeconds: WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS
+            unitInSeconds: exports.WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS
         };
         yield rateLimitRepo.lock(rateLimitKey, req.body.holder);
         res.status(http_status_1.NO_CONTENT)
@@ -87,7 +87,7 @@ ticketTypeCategoryRateLimitsRouter.put('/unlock', permitScopes_1.default(['admin
         const rateLimitKey = {
             ticketTypeCategory: req.body.ticketTypeCategory,
             performanceStartDate: req.body.performanceStartDate,
-            unitInSeconds: WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS
+            unitInSeconds: exports.WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS
         };
         const holder = yield rateLimitRepo.getHolder(rateLimitKey);
         if (holder === req.body.holder) {

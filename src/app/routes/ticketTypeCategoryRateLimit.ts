@@ -18,7 +18,7 @@ const redisClient = ttts.redis.createClient({
     tls: { servername: <string>process.env.REDIS_HOST }
 });
 
-const WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS = 3600;
+export const WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS = 3600;
 
 const ticketTypeCategoryRateLimitsRouter = Router();
 ticketTypeCategoryRateLimitsRouter.use(authentication);
