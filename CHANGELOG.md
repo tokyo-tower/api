@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v32.2.0 - 2019-12-02
+
+### Added
+
+- 券種カテゴリーレート制限ルーターを追加
+
 ## v32.1.0 - 2019-11-22
 
 ### Removed
