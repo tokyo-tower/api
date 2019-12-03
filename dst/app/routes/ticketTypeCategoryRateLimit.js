@@ -40,7 +40,9 @@ ticketTypeCategoryRateLimitsRouter.post('/lock', permitScopes_1.default(['admin'
     check_1.body('performanceStartDate')
         .not()
         .isEmpty()
-        .withMessage(() => 'required'),
+        .withMessage(() => 'required')
+        .isISO8601()
+        .toDate(),
     check_1.body('holder')
         .not()
         .isEmpty()
@@ -72,7 +74,9 @@ ticketTypeCategoryRateLimitsRouter.post('/unlock', permitScopes_1.default(['admi
     check_1.body('performanceStartDate')
         .not()
         .isEmpty()
-        .withMessage(() => 'required'),
+        .withMessage(() => 'required')
+        .isISO8601()
+        .toDate(),
     check_1.body('holder')
         .not()
         .isEmpty()

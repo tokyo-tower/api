@@ -37,7 +37,9 @@ ticketTypeCategoryRateLimitsRouter.post(
         body('performanceStartDate')
             .not()
             .isEmpty()
-            .withMessage(() => 'required'),
+            .withMessage(() => 'required')
+            .isISO8601()
+            .toDate(),
         body('holder')
             .not()
             .isEmpty()
@@ -77,7 +79,9 @@ ticketTypeCategoryRateLimitsRouter.post(
         body('performanceStartDate')
             .not()
             .isEmpty()
-            .withMessage(() => 'required'),
+            .withMessage(() => 'required')
+            .isISO8601()
+            .toDate(),
         body('holder')
             .not()
             .isEmpty()
