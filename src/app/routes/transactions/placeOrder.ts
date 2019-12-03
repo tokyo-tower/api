@@ -220,6 +220,7 @@ placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/seatReservation',
     permitScopes(['pos']),
     validator,
+    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
             if (!Array.isArray(req.body.offers)) {
@@ -244,11 +245,7 @@ placeOrderTransactionsRouter.post(
             if (project.settings.chevre === undefined) {
                 throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
             }
-            // {
-            //     seat_code?: string;
-            //     ticket_type: string;
-            //     watcher_name: string;
-            // }
+
             const eventService = new ttts.chevre.service.Event({
                 endpoint: project.settings.chevre.endpoint,
                 auth: chevreAuthClient
@@ -256,48 +253,39 @@ placeOrderTransactionsRouter.post(
             const event = await eventService.findById<cinerinoapi.factory.chevre.eventType.ScreeningEvent>({ id: performanceId });
             const ticketOffers = await eventService.searchTicketOffers({ id: performanceId });
 
-            // tslint:disable-next-line:max-func-body-length
-            for (const offer of req.body.offers) {
-                // リクエストで指定されるのは、券種IDではなく券種コードなので要注意
-                const ticketOffer = ticketOffers.find((t) => t.identifier === offer.ticket_type);
-                if (ticketOffer === undefined) {
-                    throw new ttts.factory.errors.NotFound('Offer', `Offer ${offer.ticket_type} not found`);
-                }
-
-                let ticketTypeCategory = ttts.factory.ticketTypeCategory.Normal;
-                if (Array.isArray(ticketOffer.additionalProperty)) {
-                    const categoryProperty = ticketOffer.additionalProperty.find(
-                        (p) => p.name === 'category'
-                    );
-                    if (categoryProperty !== undefined) {
-                        ticketTypeCategory = <ttts.factory.ticketTypeCategory>categoryProperty.value;
-                    }
-                }
-
-                if (ticketTypeCategory === ttts.factory.ticketTypeCategory.Wheelchair) {
-                    wheelChairOfferExists = true;
-                    // 車椅子レート制限枠確保(取引IDを保持者に指定)
-                    // await ticketTypeCategoryRateLimitRepo.lock(
-                    //     {
-                    //         performanceStartDate: performanceStartDate,
-                    //         ticketTypeCategory: ticketTypeCategory,
-                    //         unitInSeconds: WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS
-                    //     },
-                    //     transaction.id
-                    // );
-                    // debug('wheelchair rate limit checked.');
-                }
-            }
-
             // tslint:disable-next-line:max-line-length
             let action: cinerinoapi.factory.action.authorize.offer.seatReservation.IAction<cinerinoapi.factory.service.webAPI.Identifier.Chevre> | undefined;
             try {
+                // 車椅子レート制限確認(取引IDを保持者に指定)
+                for (const offer of req.body.offers) {
+                    // リクエストで指定されるのは、券種IDではなく券種コードなので要注意
+                    const ticketOffer = ticketOffers.find((t) => t.identifier === offer.ticket_type);
+                    if (ticketOffer === undefined) {
+                        throw new ttts.factory.errors.NotFound('Offer', `Offer ${offer.ticket_type} not found`);
+                    }
+
+                    let ticketTypeCategory = ttts.factory.ticketTypeCategory.Normal;
+                    if (Array.isArray(ticketOffer.additionalProperty)) {
+                        const categoryProperty = ticketOffer.additionalProperty.find(
+                            (p) => p.name === 'category'
+                        );
+                        if (categoryProperty !== undefined) {
+                            ticketTypeCategory = <ttts.factory.ticketTypeCategory>categoryProperty.value;
+                        }
+                    }
+
+                    if (ticketTypeCategory === ttts.factory.ticketTypeCategory.Wheelchair) {
+                        wheelChairOfferExists = true;
+
+                        await processLockTicketTypeCategoryRateLimit(event, { id: req.params.transactionId });
+                    }
+                }
+
                 action = await placeOrderService.createSeatReservationAuthorization({
                     transactionId: req.params.transactionId,
                     performanceId: performanceId,
                     offers: req.body.offers
                 });
-
             } catch (error) {
                 if (wheelChairOfferExists) {
                     await processUnlockTicketTypeCategoryRateLimit(
@@ -777,6 +765,22 @@ function temporaryReservation2confirmed(params: {
         ],
         additionalTicketText: params.reservation.additionalTicketText
     };
+}
+
+async function processLockTicketTypeCategoryRateLimit(
+    event: cinerinoapi.factory.event.screeningEvent.IEvent,
+    transaction: { id: string }
+) {
+    const rateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
+
+    const rateLimitKey = {
+        performanceStartDate: moment(event.startDate)
+            .toDate(),
+        ticketTypeCategory: ttts.factory.ticketTypeCategory.Wheelchair,
+        unitInSeconds: WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS
+    };
+
+    await rateLimitRepo.lock(rateLimitKey, transaction.id);
 }
 
 async function processUnlockTicketTypeCategoryRateLimit(
