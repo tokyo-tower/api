@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 券種カテゴリーレート制限解除を実装
-- 予約ステータス変更時処理において、進行中の取引については券種カテゴリーレート制限を解除しないように調整
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v32.3.0 - 2019-12-03
+
+### Changed
+
+- 券種カテゴリーレート制限解除を実装
+- 予約ステータス変更時処理において、進行中の取引については券種カテゴリーレート制限を解除しないように調整
 
 ## v32.2.0 - 2019-12-02
 
