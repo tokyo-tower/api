@@ -66,7 +66,7 @@ ticketTypeCategoryRateLimitsRouter.post('/lock', permitScopes_1.default(['admin'
 /**
  * unlock
  */
-ticketTypeCategoryRateLimitsRouter.post('/unlock', permitScopes_1.default(['admin', 'pos', 'transactions']), ...[
+ticketTypeCategoryRateLimitsRouter.put('/unlock', permitScopes_1.default(['admin', 'pos', 'transactions']), ...[
     check_1.body('ticketTypeCategory')
         .not()
         .isEmpty()

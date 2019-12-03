@@ -68,7 +68,7 @@ ticketTypeCategoryRateLimitsRouter.post(
 /**
  * unlock
  */
-ticketTypeCategoryRateLimitsRouter.post(
+ticketTypeCategoryRateLimitsRouter.put(
     '/unlock',
     permitScopes(['admin', 'pos', 'transactions']),
     ...[
