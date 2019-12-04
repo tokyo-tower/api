@@ -182,7 +182,9 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
 /**
  * 座席仮予約
  */
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['pos']), validator_1.default, 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (!Array.isArray(req.body.offers)) {
             req.body.offers = [];
@@ -203,48 +205,34 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
         if (project.settings.chevre === undefined) {
             throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
         }
-        // {
-        //     seat_code?: string;
-        //     ticket_type: string;
-        //     watcher_name: string;
-        // }
         const eventService = new ttts.chevre.service.Event({
             endpoint: project.settings.chevre.endpoint,
             auth: chevreAuthClient
         });
         const event = yield eventService.findById({ id: performanceId });
         const ticketOffers = yield eventService.searchTicketOffers({ id: performanceId });
-        // tslint:disable-next-line:max-func-body-length
-        for (const offer of req.body.offers) {
-            // リクエストで指定されるのは、券種IDではなく券種コードなので要注意
-            const ticketOffer = ticketOffers.find((t) => t.identifier === offer.ticket_type);
-            if (ticketOffer === undefined) {
-                throw new ttts.factory.errors.NotFound('Offer', `Offer ${offer.ticket_type} not found`);
-            }
-            let ticketTypeCategory = ttts.factory.ticketTypeCategory.Normal;
-            if (Array.isArray(ticketOffer.additionalProperty)) {
-                const categoryProperty = ticketOffer.additionalProperty.find((p) => p.name === 'category');
-                if (categoryProperty !== undefined) {
-                    ticketTypeCategory = categoryProperty.value;
-                }
-            }
-            if (ticketTypeCategory === ttts.factory.ticketTypeCategory.Wheelchair) {
-                wheelChairOfferExists = true;
-                // 車椅子レート制限枠確保(取引IDを保持者に指定)
-                // await ticketTypeCategoryRateLimitRepo.lock(
-                //     {
-                //         performanceStartDate: performanceStartDate,
-                //         ticketTypeCategory: ticketTypeCategory,
-                //         unitInSeconds: WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS
-                //     },
-                //     transaction.id
-                // );
-                // debug('wheelchair rate limit checked.');
-            }
-        }
         // tslint:disable-next-line:max-line-length
         let action;
         try {
+            // 車椅子レート制限確認(取引IDを保持者に指定)
+            for (const offer of req.body.offers) {
+                // リクエストで指定されるのは、券種IDではなく券種コードなので要注意
+                const ticketOffer = ticketOffers.find((t) => t.identifier === offer.ticket_type);
+                if (ticketOffer === undefined) {
+                    throw new ttts.factory.errors.NotFound('Offer', `Offer ${offer.ticket_type} not found`);
+                }
+                let ticketTypeCategory = ttts.factory.ticketTypeCategory.Normal;
+                if (Array.isArray(ticketOffer.additionalProperty)) {
+                    const categoryProperty = ticketOffer.additionalProperty.find((p) => p.name === 'category');
+                    if (categoryProperty !== undefined) {
+                        ticketTypeCategory = categoryProperty.value;
+                    }
+                }
+                if (ticketTypeCategory === ttts.factory.ticketTypeCategory.Wheelchair) {
+                    wheelChairOfferExists = true;
+                    yield processLockTicketTypeCategoryRateLimit(event, { id: req.params.transactionId });
+                }
+            }
             action = yield placeOrderService.createSeatReservationAuthorization({
                 transactionId: req.params.transactionId,
                 performanceId: performanceId,
@@ -648,6 +636,18 @@ function temporaryReservation2confirmed(params) {
             ...(Array.isArray(params.reservation.additionalProperty)) ? params.reservation.additionalProperty : [],
             { name: 'paymentSeatIndex', value: params.paymentSeatIndex }
         ], additionalTicketText: params.reservation.additionalTicketText });
+}
+function processLockTicketTypeCategoryRateLimit(event, transaction) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const rateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
+        const rateLimitKey = {
+            performanceStartDate: moment(event.startDate)
+                .toDate(),
+            ticketTypeCategory: ttts.factory.ticketTypeCategory.Wheelchair,
+            unitInSeconds: ticketTypeCategoryRateLimit_1.WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS
+        };
+        yield rateLimitRepo.lock(rateLimitKey, transaction.id);
+    });
 }
 function processUnlockTicketTypeCategoryRateLimit(event, transaction) {
     return __awaiter(this, void 0, void 0, function* () {
