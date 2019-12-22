@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - transactionsスコープでパフォーマンス検索を実行できるように調整
+- transactionsスコープでIDでの予約検索を実行できるように調整
 
 ### Deprecated
 

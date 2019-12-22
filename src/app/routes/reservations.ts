@@ -126,7 +126,7 @@ reservationsRouter.get(
  */
 reservationsRouter.get(
     '/:id',
-    permitScopes(['reservations.read-only']),
+    permitScopes(['transactions', 'reservations.read-only']),
     validator,
     async (req, res, next) => {
         try {
