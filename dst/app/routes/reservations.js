@@ -111,7 +111,7 @@ reservationsRouter.get('/distinct/:field', permitScopes_1.default(['admin']), ..
 /**
  * IDで予約取得
  */
-reservationsRouter.get('/:id', permitScopes_1.default(['reservations.read-only']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+reservationsRouter.get('/:id', permitScopes_1.default(['transactions', 'reservations.read-only']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // 予約を検索
         const reservationRepo = new ttts.repository.Reservation(mongoose.connection);

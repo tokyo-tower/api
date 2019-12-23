@@ -33,7 +33,7 @@ performanceRouter.use(authentication_1.default);
 /**
  * IDでパフォーマンス検索
  */
-performanceRouter.get('/:id', permitScopes_1.default(['pos', 'performances', 'performances.read-only']), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+performanceRouter.get('/:id', permitScopes_1.default(['transactions', 'pos']), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const repo = new ttts.repository.Performance(mongoose.connection);
         const performance = yield repo.findById(req.params.id);
@@ -46,7 +46,7 @@ performanceRouter.get('/:id', permitScopes_1.default(['pos', 'performances', 'pe
 /**
  * パフォーマンス検索
  */
-performanceRouter.get('', permitScopes_1.default(['pos', 'performances', 'performances.read-only']), ...[
+performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
     check_1.query('startFrom')
         .optional()
         .isISO8601()
