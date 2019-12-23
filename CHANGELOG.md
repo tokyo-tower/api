@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- transactionsスコープでパフォーマンス検索を実行できるように調整
-- transactionsスコープでIDでの予約検索を実行できるように調整
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v32.5.0 - 2019-12-23
+
+### Changed
+
+- transactionsスコープでパフォーマンス検索を実行できるように調整
+- transactionsスコープでIDでの予約検索を実行できるように調整
 
 ## v32.4.0 - 2019-12-04
 
