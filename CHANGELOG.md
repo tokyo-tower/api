@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- イベントに対する全注文返品処理において、該当注文の検索を注文取引検索から注文検索へ変更
-- update @cinerino/factory
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v32.6.0 - 2020-01-07
+
+### Changed
+
+- イベントに対する全注文返品処理において、該当注文の検索を注文取引検索から注文検索へ変更
+- update @cinerino/factory
 
 ## v32.5.0 - 2019-12-23
 
