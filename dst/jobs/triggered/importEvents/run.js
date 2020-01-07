@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Chevreからイベントをインポート
  */
+const cinerinoapi = require("@cinerino/api-nodejs-client");
 const ttts = require("@tokyotower/domain");
 const cron_1 = require("cron");
 const createDebug = require("debug");
@@ -20,7 +21,7 @@ const moment = require("moment-timezone");
 const connectMongo_1 = require("../../../connectMongo");
 const singletonProcess = require("../../../singletonProcess");
 const debug = createDebug('ttts-api:jobs:importEvents');
-const project = { typeOf: 'Project', id: process.env.PROJECT_ID };
+const project = { typeOf: cinerinoapi.factory.organizationType.Project, id: process.env.PROJECT_ID };
 exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     let holdSingletonProcess = false;
     setInterval(() => __awaiter(void 0, void 0, void 0, function* () {

@@ -14,7 +14,7 @@ const ISSUERS = (<string>process.env.TOKEN_ISSUERS).split(',');
 /* istanbul ignore next */
 export default async (req: Request, res: Response, next: NextFunction) => {
     try {
-        req.project = { typeOf: 'Project', id: <string>process.env.PROJECT_ID };
+        req.project = { typeOf: cinerinoapi.factory.organizationType.Project, id: <string>process.env.PROJECT_ID };
 
         await cognitoAuth({
             issuers: ISSUERS,
@@ -54,7 +54,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                         award: [],
                         membershipNumber: user.username,
                         programName: 'Amazon Cognito',
-                        project: <any>req.project,
+                        project: req.project,
                         typeOf: cinerinoapi.factory.programMembership.ProgramMembershipType.ProgramMembership,
                         url: user.iss
                     };
@@ -65,7 +65,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                 req.agent = {
                     typeOf: ttts.factory.personType.Person,
                     id: user.sub,
-                    memberOf: <any>programMembership,
+                    memberOf: programMembership,
                     identifier: identifier
                 };
 

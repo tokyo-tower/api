@@ -9,6 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * 非同期ジョブ
+ */
+const cinerinoapi = require("@cinerino/api-nodejs-client");
 const run_1 = require("./continuous/abortTasks/run");
 const run_2 = require("./continuous/retryTasks/run");
 const run_3 = require("./continuous/aggregateEventReservations/run");
@@ -21,7 +25,7 @@ const run_9 = require("./triggered/importEvents/run");
 const run_10 = require("./triggered/makeAggregationsExpired/run");
 const run_11 = require("./triggered/syncCheckinGates/run");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-const project = { typeOf: 'Project', id: process.env.PROJECT_ID };
+const project = { typeOf: cinerinoapi.factory.organizationType.Project, id: process.env.PROJECT_ID };
 exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_1.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     yield run_2.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });

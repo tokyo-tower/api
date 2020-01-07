@@ -67,7 +67,7 @@ webhooksRouter.post(
                             numberOfTried: 0,
                             executionResults: [],
                             data: {
-                                order: <any>order
+                                order: order
                             }
                         };
 
@@ -89,7 +89,7 @@ webhooksRouter.post(
                             numberOfTried: 0,
                             executionResults: [],
                             data: {
-                                order: <any>order
+                                order: order
                             }
                         };
 
