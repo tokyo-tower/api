@@ -1,6 +1,7 @@
 /**
  * 非同期ジョブ
  */
+import * as cinerinoapi from '@cinerino/api-nodejs-client';
 import { factory } from '@tokyotower/domain';
 
 import abortTasks from './continuous/abortTasks/run';
@@ -18,7 +19,7 @@ import makeAggregationsExpired from './triggered/makeAggregationsExpired/run';
 import syncCheckinGates from './triggered/syncCheckinGates/run';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-const project: factory.project.IProject = { typeOf: 'Project', id: <string>process.env.PROJECT_ID };
+const project: factory.project.IProject = { typeOf: cinerinoapi.factory.organizationType.Project, id: <string>process.env.PROJECT_ID };
 
 export default async () => {
     await abortTasks({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });

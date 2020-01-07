@@ -1,6 +1,7 @@
 /**
  * Chevreからイベントをインポート
  */
+import * as cinerinoapi from '@cinerino/api-nodejs-client';
 import * as ttts from '@tokyotower/domain';
 import { CronJob } from 'cron';
 import * as createDebug from 'debug';
@@ -13,7 +14,7 @@ import * as singletonProcess from '../../../singletonProcess';
 
 const debug = createDebug('ttts-api:jobs:importEvents');
 
-const project = { typeOf: <'Project'>'Project', id: <string>process.env.PROJECT_ID };
+const project: ttts.factory.project.IProject = { typeOf: cinerinoapi.factory.organizationType.Project, id: <string>process.env.PROJECT_ID };
 
 export default async (params: {
     project?: ttts.factory.project.IProject;
