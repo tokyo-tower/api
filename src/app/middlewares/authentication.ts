@@ -54,7 +54,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                         award: [],
                         membershipNumber: user.username,
                         programName: 'Amazon Cognito',
-                        project: req.project,
+                        project: <any>req.project,
                         typeOf: cinerinoapi.factory.programMembership.ProgramMembershipType.ProgramMembership,
                         url: user.iss
                     };
@@ -65,7 +65,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                 req.agent = {
                     typeOf: ttts.factory.personType.Person,
                     id: user.sub,
-                    memberOf: programMembership,
+                    memberOf: <any>programMembership,
                     identifier: identifier
                 };
 
