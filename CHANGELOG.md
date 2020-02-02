@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- String型のseatingTypeに対応
+
 ### Deprecated
 
 ### Removed
