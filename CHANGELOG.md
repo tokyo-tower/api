@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- String型のseatingTypeに対応
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v32.7.0 - 2020-02-03
+
+### Changed
+
+- String型のseatingTypeに対応
 
 ## v32.6.0 - 2020-01-07
 
