@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v32.7.1 - 2020-02-04
+
+### Changed
+
+- String型のseatingTypeに対応
+
 ## v32.7.0 - 2020-02-03
 
 ### Changed
