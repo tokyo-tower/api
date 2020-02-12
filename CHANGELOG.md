@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 注文確定後の余分確保分予約へのextraプロパティ連携を削除
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v32.8.0 - 2020-02-12
+
+### Changed
+
+- 注文確定後の余分確保分予約へのextraプロパティ連携を削除
 
 ## v32.7.1 - 2020-02-04
 
