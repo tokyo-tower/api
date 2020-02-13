@@ -390,29 +390,27 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             });
         });
         // 取引エージェント取得
-        const transactionAgentKey = `${TRANSACTION_AGENT_KEY_PREFIX}${req.params.transactionId}`;
-        const transactionAgent = yield new Promise((resolve, reject) => {
-            redisClient.get(transactionAgentKey, (err, reply) => {
-                if (err !== null) {
-                    reject(err);
-                }
-                else {
-                    resolve(JSON.parse(reply));
-                }
-            });
-        });
+        // const transactionAgentKey = `${TRANSACTION_AGENT_KEY_PREFIX}${req.params.transactionId}`;
+        // const transactionAgent = await new Promise<any>((resolve, reject) => {
+        //     redisClient.get(transactionAgentKey, (err, reply) => {
+        //         if (err !== null) {
+        //             reject(err);
+        //         } else {
+        //             resolve(JSON.parse(reply));
+        //         }
+        //     });
+        // });
         // 購入者プロフィール取得
-        const customerProfileKey = `${CUSTOMER_PROFILE_KEY_PREFIX}${req.params.transactionId}`;
-        const customerProfile = yield new Promise((resolve, reject) => {
-            redisClient.get(customerProfileKey, (err, reply) => {
-                if (err !== null) {
-                    reject(err);
-                }
-                else {
-                    resolve(JSON.parse(reply));
-                }
-            });
-        });
+        // const customerProfileKey = `${CUSTOMER_PROFILE_KEY_PREFIX}${req.params.transactionId}`;
+        // const customerProfile = await new Promise<any>((resolve, reject) => {
+        //     redisClient.get(customerProfileKey, (err, reply) => {
+        //         if (err !== null) {
+        //             reject(err);
+        //         } else {
+        //             resolve(JSON.parse(reply));
+        //         }
+        //     });
+        // });
         // 座席予約承認結果取得
         const authorizeSeatReservationResultKey = `${AUTHORIZE_SEAT_RESERVATION_RESULT_KEY_PREFIX}${req.params.transactionId}`;
         const authorizeSeatReservationResult = yield new Promise((resolve, reject) => {
@@ -439,7 +437,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             endpoint: process.env.CINERINO_API_ENDPOINT
         });
         // 購入番号発行
-        const paymentNoRepo = new ttts.repository.PaymentNo(redisClient);
+        // const paymentNoRepo = new ttts.repository.PaymentNo(redisClient);
         const reserveTransaction = authorizeSeatReservationResult.responseBody;
         if (reserveTransaction === undefined) {
             throw new cinerinoapi.factory.errors.Argument('Transaction', 'Reserve trasaction required');
@@ -448,25 +446,45 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         if (event === undefined || event === null) {
             throw new cinerinoapi.factory.errors.Argument('Transaction', 'Event required');
         }
-        const eventStartDateStr = moment(event.startDate)
-            .tz('Asia/Tokyo')
-            .format('YYYYMMDD');
-        const paymentNo = yield paymentNoRepo.publish(eventStartDateStr);
-        const { potentialActions, result } = createPotentialActions({
-            transactionId: req.params.transactionId,
-            authorizeSeatReservationResult: authorizeSeatReservationResult,
-            customer: transactionAgent,
-            profile: customerProfile,
-            paymentMethodName: cinerinoapi.factory.paymentMethodType.Cash,
-            paymentNo: paymentNo
-        });
+        // const eventStartDateStr = moment(event.startDate)
+        //     .tz('Asia/Tokyo')
+        //     .format('YYYYMMDD');
+        // const paymentNo = await paymentNoRepo.publish(eventStartDateStr);
+        // const { potentialActions, result } = createPotentialActions({
+        //     transactionId: req.params.transactionId,
+        //     authorizeSeatReservationResult: authorizeSeatReservationResult,
+        //     customer: transactionAgent,
+        //     profile: customerProfile,
+        //     paymentMethodName: cinerinoapi.factory.paymentMethodType.Cash,
+        //     paymentNo: paymentNo
+        // });
         const transactionResult = yield placeOrderService.confirm({
-            id: req.params.transactionId,
-            potentialActions: potentialActions,
-            result: result
+            id: req.params.transactionId
+            // potentialActions: potentialActions,
+            // result: result
         });
+        let paymentNo;
+        if (Array.isArray(transactionResult.order.identifier)) {
+            const paymentNoProperty = transactionResult.order.identifier.find((p) => p.name === 'paymentNo');
+            if (paymentNoProperty !== undefined) {
+                paymentNo = paymentNoProperty.value;
+            }
+        }
+        if (paymentNo === undefined) {
+            throw new ttts.factory.errors.ServiceUnavailable('paymentNo not found');
+        }
+        let confirmationNumber;
+        if (Array.isArray(transactionResult.order.identifier)) {
+            const confirmationNumberProperty = transactionResult.order.identifier.find((p) => p.name === 'confirmationNumber');
+            if (confirmationNumberProperty !== undefined) {
+                confirmationNumber = confirmationNumberProperty.value;
+            }
+        }
+        if (confirmationNumber === undefined) {
+            throw new ttts.factory.errors.ServiceUnavailable('confirmationNumber not found');
+        }
         // 返品できるようにしばし注文情報を保管
-        const orderKey = `${exports.ORDERS_KEY_PREFIX}${eventStartDateStr}${paymentNo}`;
+        const orderKey = `${exports.ORDERS_KEY_PREFIX}${confirmationNumber}`;
         yield new Promise((resolve, reject) => {
             redisClient.multi()
                 .set(orderKey, JSON.stringify(transactionResult.order))
@@ -597,6 +615,7 @@ function createPotentialActions(params) {
         }
     };
 }
+exports.createPotentialActions = createPotentialActions;
 /**
  * 仮予約から確定予約を生成する
  */
