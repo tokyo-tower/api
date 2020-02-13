@@ -296,9 +296,9 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
             auth: auth,
             endpoint: process.env.CINERINO_API_ENDPOINT
         });
-        yield placeOrderService.cancelSeatReservationAuthorization({
-            transactionId: req.params.transactionId,
-            actionId: req.params.actionId
+        yield placeOrderService.voidSeatReservation({
+            id: req.params.actionId,
+            purpose: { typeOf: cinerinoapi.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         });
         // 金額リセット
         const amountKey = `${TRANSACTION_AMOUNT_KEY_PREFIX}${req.params.transactionId}`;
