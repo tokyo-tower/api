@@ -10,11 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 独自購入番号発行を削除
-- 注文取引確定後のアクションカスタムを削除
-- 注文識別子カスタムを削除
-- 新しい予約承認取消サービスを使用するように調整
-
 ### Deprecated
 
 ### Removed
@@ -22,6 +17,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v32.9.0 - 2020-02-14
+
+### Changed
+
+- 独自購入番号発行を削除
+- 注文取引確定後のアクションカスタムを削除
+- 注文識別子カスタムを削除
+- 新しい予約承認取消サービスを使用するように調整
 
 ## v32.8.0 - 2020-02-12
 
