@@ -1,7 +1,7 @@
 /**
  * タスクルーター
  */
-import * as ttts from '@tokyotower/domain';
+// import * as ttts from '@tokyotower/domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { body } from 'express-validator/check';
@@ -11,12 +11,12 @@ import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
-const redisClient = ttts.redis.createClient({
-    host: <string>process.env.REDIS_HOST,
-    port: Number(<string>process.env.REDIS_PORT),
-    password: <string>process.env.REDIS_KEY,
-    tls: { servername: <string>process.env.REDIS_HOST }
-});
+// const redisClient = ttts.redis.createClient({
+//     host: <string>process.env.REDIS_HOST,
+//     port: Number(<string>process.env.REDIS_PORT),
+//     password: <string>process.env.REDIS_KEY,
+//     tls: { servername: <string>process.env.REDIS_HOST }
+// });
 
 export const WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS = 3600;
 
@@ -46,16 +46,16 @@ ticketTypeCategoryRateLimitsRouter.post(
             .withMessage(() => 'required')
     ],
     validator,
-    async (req, res, next) => {
+    async (_, res, next) => {
         try {
-            const rateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
+            // const rateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
 
-            const rateLimitKey = {
-                ticketTypeCategory: req.body.ticketTypeCategory,
-                performanceStartDate: req.body.performanceStartDate,
-                unitInSeconds: WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS
-            };
-            await rateLimitRepo.lock(rateLimitKey, req.body.holder);
+            // const rateLimitKey = {
+            //     ticketTypeCategory: req.body.ticketTypeCategory,
+            //     performanceStartDate: req.body.performanceStartDate,
+            //     unitInSeconds: WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS
+            // };
+            // await rateLimitRepo.lock(rateLimitKey, req.body.holder);
 
             res.status(NO_CONTENT)
                 .end();
@@ -88,19 +88,19 @@ ticketTypeCategoryRateLimitsRouter.put(
             .withMessage(() => 'required')
     ],
     validator,
-    async (req, res, next) => {
+    async (_, res, next) => {
         try {
-            const rateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
+            // const rateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
 
-            const rateLimitKey = {
-                ticketTypeCategory: req.body.ticketTypeCategory,
-                performanceStartDate: req.body.performanceStartDate,
-                unitInSeconds: WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS
-            };
-            const holder = await rateLimitRepo.getHolder(rateLimitKey);
-            if (holder === req.body.holder) {
-                await rateLimitRepo.unlock(rateLimitKey);
-            }
+            // const rateLimitKey = {
+            //     ticketTypeCategory: req.body.ticketTypeCategory,
+            //     performanceStartDate: req.body.performanceStartDate,
+            //     unitInSeconds: WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS
+            // };
+            // const holder = await rateLimitRepo.getHolder(rateLimitKey);
+            // if (holder === req.body.holder) {
+            //     await rateLimitRepo.unlock(rateLimitKey);
+            // }
 
             res.status(NO_CONTENT)
                 .end();

@@ -19,7 +19,7 @@ const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 const mongoose = require("mongoose");
 const request = require("request-promise-native");
-const ticketTypeCategoryRateLimit_1 = require("../ticketTypeCategoryRateLimit");
+// import { WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS } from '../ticketTypeCategoryRateLimit';
 const auth = new cinerinoapi.auth.ClientCredentials({
     domain: '',
     clientId: '',
@@ -322,36 +322,43 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
         });
         // 座席予約承認結果取得
         const authorizeSeatReservationResultKey = `${AUTHORIZE_SEAT_RESERVATION_RESULT_KEY_PREFIX}${req.params.transactionId}`;
-        const authorizeSeatReservationResult = 
+        // const authorizeSeatReservationResult =
+        //     // tslint:disable-next-line:max-line-length
         // tslint:disable-next-line:max-line-length
-        yield new Promise((resolve, reject) => {
-            redisClient.get(authorizeSeatReservationResultKey, (err, reply) => {
-                if (err !== null) {
-                    reject(err);
-                }
-                else {
-                    resolve(JSON.parse(reply));
-                }
-            });
-        });
-        const event = authorizeSeatReservationResult.responseBody.object.reservationFor;
-        if (event !== undefined && event !== null) {
-            if (Array.isArray(authorizeSeatReservationResult.acceptedOffers)) {
-                yield Promise.all(authorizeSeatReservationResult.acceptedOffers.map((acceptedOffer) => __awaiter(void 0, void 0, void 0, function* () {
-                    const reservation = acceptedOffer.itemOffered;
-                    let ticketTypeCategory = ttts.factory.ticketTypeCategory.Normal;
-                    if (Array.isArray(reservation.reservedTicket.ticketType.additionalProperty)) {
-                        const categoryProperty = reservation.reservedTicket.ticketType.additionalProperty.find((p) => p.name === 'category');
-                        if (categoryProperty !== undefined) {
-                            ticketTypeCategory = categoryProperty.value;
-                        }
-                    }
-                    if (ticketTypeCategory === ttts.factory.ticketTypeCategory.Wheelchair) {
-                        yield processUnlockTicketTypeCategoryRateLimit(event, { id: req.params.transactionId });
-                    }
-                })));
-            }
-        }
+        //     await new Promise<cinerinoapi.factory.action.authorize.offer.seatReservation.IResult<cinerinoapi.factory.service.webAPI.Identifier.Chevre>>(
+        //         (resolve, reject) => {
+        //             redisClient.get(authorizeSeatReservationResultKey, (err, reply) => {
+        //                 if (err !== null) {
+        //                     reject(err);
+        //                 } else {
+        //                     resolve(JSON.parse(reply));
+        //                 }
+        //             });
+        //         }
+        //     );
+        // const event = authorizeSeatReservationResult.responseBody.object.reservationFor;
+        // if (event !== undefined && event !== null) {
+        //     if (Array.isArray(authorizeSeatReservationResult.acceptedOffers)) {
+        //         await Promise.all(authorizeSeatReservationResult.acceptedOffers.map(async (acceptedOffer) => {
+        //             const reservation = acceptedOffer.itemOffered;
+        //             let ticketTypeCategory = ttts.factory.ticketTypeCategory.Normal;
+        //             if (Array.isArray(reservation.reservedTicket.ticketType.additionalProperty)) {
+        //                 const categoryProperty = reservation.reservedTicket.ticketType.additionalProperty.find(
+        //                     (p) => p.name === 'category'
+        //                 );
+        //                 if (categoryProperty !== undefined) {
+        //                     ticketTypeCategory = <ttts.factory.ticketTypeCategory>categoryProperty.value;
+        //                 }
+        //             }
+        //             if (ticketTypeCategory === ttts.factory.ticketTypeCategory.Wheelchair) {
+        //                 await processUnlockTicketTypeCategoryRateLimit(
+        //                     event,
+        //                     { id: req.params.transactionId }
+        //                 );
+        //             }
+        //         }));
+        //     }
+        // }
         // 座席予約承認結果リセット
         yield new Promise((resolve, reject) => {
             redisClient.multi()
@@ -485,34 +492,35 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         next(error);
     }
 }));
-function processLockTicketTypeCategoryRateLimit(event, transaction) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const rateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
-        const rateLimitKey = {
-            performanceStartDate: moment(event.startDate)
-                .toDate(),
-            ticketTypeCategory: ttts.factory.ticketTypeCategory.Wheelchair,
-            unitInSeconds: ticketTypeCategoryRateLimit_1.WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS
-        };
-        yield rateLimitRepo.lock(rateLimitKey, transaction.id);
-    });
-}
-exports.processLockTicketTypeCategoryRateLimit = processLockTicketTypeCategoryRateLimit;
-function processUnlockTicketTypeCategoryRateLimit(event, transaction) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // レート制限があれば解除
-        const performanceStartDate = moment(event.startDate)
-            .toDate();
-        const rateLimitKey = {
-            performanceStartDate: performanceStartDate,
-            ticketTypeCategory: ttts.factory.ticketTypeCategory.Wheelchair,
-            unitInSeconds: ticketTypeCategoryRateLimit_1.WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS
-        };
-        const rateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
-        const holder = yield rateLimitRepo.getHolder(rateLimitKey);
-        if (holder === transaction.id) {
-            yield rateLimitRepo.unlock(rateLimitKey);
-        }
-    });
-}
+// export async function processLockTicketTypeCategoryRateLimit(
+//     event: cinerinoapi.factory.event.screeningEvent.IEvent,
+//     transaction: { id: string }
+// ) {
+//     const rateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
+//     const rateLimitKey = {
+//         performanceStartDate: moment(event.startDate)
+//             .toDate(),
+//         ticketTypeCategory: ttts.factory.ticketTypeCategory.Wheelchair,
+//         unitInSeconds: WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS
+//     };
+//     await rateLimitRepo.lock(rateLimitKey, transaction.id);
+// }
+// async function processUnlockTicketTypeCategoryRateLimit(
+//     event: cinerinoapi.factory.event.screeningEvent.IEvent,
+//     transaction: { id: string }
+// ) {
+//     // レート制限があれば解除
+//     const performanceStartDate = moment(event.startDate)
+//         .toDate();
+//     const rateLimitKey = {
+//         performanceStartDate: performanceStartDate,
+//         ticketTypeCategory: ttts.factory.ticketTypeCategory.Wheelchair,
+//         unitInSeconds: WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS
+//     };
+//     const rateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
+//     const holder = await rateLimitRepo.getHolder(rateLimitKey);
+//     if (holder === transaction.id) {
+//         await rateLimitRepo.unlock(rateLimitKey);
+//     }
+// }
 exports.default = placeOrderTransactionsRouter;
