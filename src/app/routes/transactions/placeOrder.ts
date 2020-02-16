@@ -19,13 +19,13 @@ const auth = new cinerinoapi.auth.ClientCredentials({
     state: ''
 });
 
-const chevreAuthClient = new ttts.chevre.auth.ClientCredentials({
-    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.CHEVRE_CLIENT_ID,
-    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
+// const chevreAuthClient = new ttts.chevre.auth.ClientCredentials({
+//     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+//     clientId: <string>process.env.CHEVRE_CLIENT_ID,
+//     clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+//     scopes: [],
+//     state: ''
+// });
 
 const placeOrderTransactionsRouter = Router();
 
@@ -236,7 +236,7 @@ placeOrderTransactionsRouter.post(
             });
 
             // 券種詳細取得
-            let wheelChairOfferExists = false;
+            // let wheelChairOfferExists = false;
             const projectRepo = new ttts.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
             if (project.settings === undefined) {
@@ -246,40 +246,40 @@ placeOrderTransactionsRouter.post(
                 throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
             }
 
-            const eventService = new ttts.chevre.service.Event({
-                endpoint: project.settings.chevre.endpoint,
-                auth: chevreAuthClient
-            });
-            const event = await eventService.findById<cinerinoapi.factory.chevre.eventType.ScreeningEvent>({ id: performanceId });
-            const ticketOffers = await eventService.searchTicketOffers({ id: performanceId });
+            // const eventService = new ttts.chevre.service.Event({
+            //     endpoint: project.settings.chevre.endpoint,
+            //     auth: chevreAuthClient
+            // });
+            // const event = await eventService.findById<cinerinoapi.factory.chevre.eventType.ScreeningEvent>({ id: performanceId });
+            // const ticketOffers = await eventService.searchTicketOffers({ id: performanceId });
 
             // tslint:disable-next-line:max-line-length
             let action: cinerinoapi.factory.action.authorize.offer.seatReservation.IAction<cinerinoapi.factory.service.webAPI.Identifier.Chevre> | undefined;
             try {
                 // 車椅子レート制限確認(取引IDを保持者に指定)
-                for (const offer of req.body.offers) {
-                    // リクエストで指定されるのは、券種IDではなく券種コードなので要注意
-                    const ticketOffer = ticketOffers.find((t) => t.identifier === offer.ticket_type);
-                    if (ticketOffer === undefined) {
-                        throw new ttts.factory.errors.NotFound('Offer', `Offer ${offer.ticket_type} not found`);
-                    }
+                // for (const offer of req.body.offers) {
+                //     // リクエストで指定されるのは、券種IDではなく券種コードなので要注意
+                //     const ticketOffer = ticketOffers.find((t) => t.identifier === offer.ticket_type);
+                //     if (ticketOffer === undefined) {
+                //         throw new ttts.factory.errors.NotFound('Offer', `Offer ${offer.ticket_type} not found`);
+                //     }
 
-                    let ticketTypeCategory = ttts.factory.ticketTypeCategory.Normal;
-                    if (Array.isArray(ticketOffer.additionalProperty)) {
-                        const categoryProperty = ticketOffer.additionalProperty.find(
-                            (p) => p.name === 'category'
-                        );
-                        if (categoryProperty !== undefined) {
-                            ticketTypeCategory = <ttts.factory.ticketTypeCategory>categoryProperty.value;
-                        }
-                    }
+                //     let ticketTypeCategory = ttts.factory.ticketTypeCategory.Normal;
+                //     if (Array.isArray(ticketOffer.additionalProperty)) {
+                //         const categoryProperty = ticketOffer.additionalProperty.find(
+                //             (p) => p.name === 'category'
+                //         );
+                //         if (categoryProperty !== undefined) {
+                //             ticketTypeCategory = <ttts.factory.ticketTypeCategory>categoryProperty.value;
+                //         }
+                //     }
 
-                    if (ticketTypeCategory === ttts.factory.ticketTypeCategory.Wheelchair) {
-                        wheelChairOfferExists = true;
+                //     if (ticketTypeCategory === ttts.factory.ticketTypeCategory.Wheelchair) {
+                //         wheelChairOfferExists = true;
 
-                        await processLockTicketTypeCategoryRateLimit(event, { id: req.params.transactionId });
-                    }
-                }
+                //         await processLockTicketTypeCategoryRateLimit(event, { id: req.params.transactionId });
+                //     }
+                // }
 
                 action = await placeOrderService.createSeatReservationAuthorization({
                     transactionId: req.params.transactionId,
@@ -287,12 +287,12 @@ placeOrderTransactionsRouter.post(
                     offers: req.body.offers
                 });
             } catch (error) {
-                if (wheelChairOfferExists) {
-                    await processUnlockTicketTypeCategoryRateLimit(
-                        event,
-                        { id: req.params.transactionId }
-                    );
-                }
+                // if (wheelChairOfferExists) {
+                //     await processUnlockTicketTypeCategoryRateLimit(
+                //         event,
+                //         { id: req.params.transactionId }
+                //     );
+                // }
 
                 throw error;
             }
@@ -564,7 +564,7 @@ placeOrderTransactionsRouter.post(
     }
 );
 
-async function processLockTicketTypeCategoryRateLimit(
+export async function processLockTicketTypeCategoryRateLimit(
     event: cinerinoapi.factory.event.screeningEvent.IEvent,
     transaction: { id: string }
 ) {
