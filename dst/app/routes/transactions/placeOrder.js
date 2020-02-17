@@ -19,7 +19,6 @@ const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 const mongoose = require("mongoose");
 const request = require("request-promise-native");
-// import { WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS } from '../ticketTypeCategoryRateLimit';
 const auth = new cinerinoapi.auth.ClientCredentials({
     domain: '',
     clientId: '',
@@ -27,27 +26,16 @@ const auth = new cinerinoapi.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
-// const chevreAuthClient = new ttts.chevre.auth.ClientCredentials({
-//     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-//     clientId: <string>process.env.CHEVRE_CLIENT_ID,
-//     clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
-//     scopes: [],
-//     state: ''
-// });
 const placeOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
 const TRANSACTION_TTL = 3600;
 const TRANSACTION_KEY_PREFIX = 'ttts-api:placeOrder:';
-const TRANSACTION_AGENT_TTL = TRANSACTION_TTL;
-const TRANSACTION_AGENT_KEY_PREFIX = `${TRANSACTION_KEY_PREFIX}agent:`;
 const TRANSACTION_AMOUNT_TTL = TRANSACTION_TTL;
 const TRANSACTION_AMOUNT_KEY_PREFIX = `${TRANSACTION_KEY_PREFIX}amount:`;
-const AUTHORIZE_SEAT_RESERVATION_RESULT_TTL = TRANSACTION_TTL;
-const AUTHORIZE_SEAT_RESERVATION_RESULT_KEY_PREFIX = `${TRANSACTION_KEY_PREFIX}authorizeSeatReservationResult:`;
-const CUSTOMER_PROFILE_TTL = TRANSACTION_TTL;
-const CUSTOMER_PROFILE_KEY_PREFIX = `${TRANSACTION_KEY_PREFIX}customerProfile:`;
+// const CUSTOMER_PROFILE_TTL = TRANSACTION_TTL;
+// const CUSTOMER_PROFILE_KEY_PREFIX = `${TRANSACTION_KEY_PREFIX}customerProfile:`;
 const ORDERS_TTL = 86400;
 exports.ORDERS_KEY_PREFIX = 'ttts-api:orders:';
 const redisClient = ttts.redis.createClient({
@@ -100,21 +88,6 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos']), (re
                 id: seller.id
             }
         });
-        // 取引エージェント保管
-        const transactionAgentKey = `${TRANSACTION_AGENT_KEY_PREFIX}${transaction.id}`;
-        yield new Promise((resolve, reject) => {
-            redisClient.multi()
-                .set(transactionAgentKey, JSON.stringify(transaction.agent))
-                .expire(transactionAgentKey, TRANSACTION_AGENT_TTL)
-                .exec((err) => {
-                if (err !== null) {
-                    reject(err);
-                }
-                else {
-                    resolve();
-                }
-            });
-        });
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
         // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
@@ -156,20 +129,19 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
             }
         });
         // プロフィール保管
-        const customerProfileKey = `${CUSTOMER_PROFILE_KEY_PREFIX}${req.params.transactionId}`;
-        yield new Promise((resolve, reject) => {
-            redisClient.multi()
-                .set(customerProfileKey, JSON.stringify(profile))
-                .expire(customerProfileKey, CUSTOMER_PROFILE_TTL)
-                .exec((err) => {
-                if (err !== null) {
-                    reject(err);
-                }
-                else {
-                    resolve();
-                }
-            });
-        });
+        // const customerProfileKey = `${CUSTOMER_PROFILE_KEY_PREFIX}${req.params.transactionId}`;
+        // await new Promise((resolve, reject) => {
+        //     redisClient.multi()
+        //         .set(customerProfileKey, JSON.stringify(profile))
+        //         .expire(customerProfileKey, CUSTOMER_PROFILE_TTL)
+        //         .exec((err) => {
+        //             if (err !== null) {
+        //                 reject(err);
+        //             } else {
+        //                 resolve();
+        //             }
+        //         });
+        // });
         res.status(http_status_1.CREATED)
             .json(Object.assign(Object.assign({}, profile), { 
             // POSへの互換性維持のために値補完
@@ -196,7 +168,6 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
             endpoint: process.env.CINERINO_API_ENDPOINT
         });
         // 券種詳細取得
-        // let wheelChairOfferExists = false;
         const projectRepo = new ttts.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
         if (project.settings === undefined) {
@@ -205,36 +176,9 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
         if (project.settings.chevre === undefined) {
             throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
         }
-        // const eventService = new ttts.chevre.service.Event({
-        //     endpoint: project.settings.chevre.endpoint,
-        //     auth: chevreAuthClient
-        // });
-        // const event = await eventService.findById<cinerinoapi.factory.chevre.eventType.ScreeningEvent>({ id: performanceId });
-        // const ticketOffers = await eventService.searchTicketOffers({ id: performanceId });
         // tslint:disable-next-line:max-line-length
         let action;
         try {
-            // 車椅子レート制限確認(取引IDを保持者に指定)
-            // for (const offer of req.body.offers) {
-            //     // リクエストで指定されるのは、券種IDではなく券種コードなので要注意
-            //     const ticketOffer = ticketOffers.find((t) => t.identifier === offer.ticket_type);
-            //     if (ticketOffer === undefined) {
-            //         throw new ttts.factory.errors.NotFound('Offer', `Offer ${offer.ticket_type} not found`);
-            //     }
-            //     let ticketTypeCategory = ttts.factory.ticketTypeCategory.Normal;
-            //     if (Array.isArray(ticketOffer.additionalProperty)) {
-            //         const categoryProperty = ticketOffer.additionalProperty.find(
-            //             (p) => p.name === 'category'
-            //         );
-            //         if (categoryProperty !== undefined) {
-            //             ticketTypeCategory = <ttts.factory.ticketTypeCategory>categoryProperty.value;
-            //         }
-            //     }
-            //     if (ticketTypeCategory === ttts.factory.ticketTypeCategory.Wheelchair) {
-            //         wheelChairOfferExists = true;
-            //         await processLockTicketTypeCategoryRateLimit(event, { id: req.params.transactionId });
-            //     }
-            // }
             action = yield placeOrderService.createSeatReservationAuthorization({
                 transactionId: req.params.transactionId,
                 performanceId: performanceId,
@@ -242,12 +186,6 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
             });
         }
         catch (error) {
-            // if (wheelChairOfferExists) {
-            //     await processUnlockTicketTypeCategoryRateLimit(
-            //         event,
-            //         { id: req.params.transactionId }
-            //     );
-            // }
             throw error;
         }
         const actionResult = action.result;
@@ -259,21 +197,6 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
                 redisClient.multi()
                     .set(amountKey, amount.toString())
                     .expire(amountKey, TRANSACTION_AMOUNT_TTL)
-                    .exec((err) => {
-                    if (err !== null) {
-                        reject(err);
-                    }
-                    else {
-                        resolve();
-                    }
-                });
-            });
-            // 承認結果保管
-            const authorizeSeatReservationResultKey = `${AUTHORIZE_SEAT_RESERVATION_RESULT_KEY_PREFIX}${req.params.transactionId}`;
-            yield new Promise((resolve, reject) => {
-                redisClient.multi()
-                    .set(authorizeSeatReservationResultKey, JSON.stringify(actionResult))
-                    .expire(authorizeSeatReservationResultKey, AUTHORIZE_SEAT_RESERVATION_RESULT_TTL)
                     .exec((err) => {
                     if (err !== null) {
                         reject(err);
@@ -320,58 +243,6 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
                 }
             });
         });
-        // 座席予約承認結果取得
-        const authorizeSeatReservationResultKey = `${AUTHORIZE_SEAT_RESERVATION_RESULT_KEY_PREFIX}${req.params.transactionId}`;
-        // const authorizeSeatReservationResult =
-        //     // tslint:disable-next-line:max-line-length
-        // tslint:disable-next-line:max-line-length
-        //     await new Promise<cinerinoapi.factory.action.authorize.offer.seatReservation.IResult<cinerinoapi.factory.service.webAPI.Identifier.Chevre>>(
-        //         (resolve, reject) => {
-        //             redisClient.get(authorizeSeatReservationResultKey, (err, reply) => {
-        //                 if (err !== null) {
-        //                     reject(err);
-        //                 } else {
-        //                     resolve(JSON.parse(reply));
-        //                 }
-        //             });
-        //         }
-        //     );
-        // const event = authorizeSeatReservationResult.responseBody.object.reservationFor;
-        // if (event !== undefined && event !== null) {
-        //     if (Array.isArray(authorizeSeatReservationResult.acceptedOffers)) {
-        //         await Promise.all(authorizeSeatReservationResult.acceptedOffers.map(async (acceptedOffer) => {
-        //             const reservation = acceptedOffer.itemOffered;
-        //             let ticketTypeCategory = ttts.factory.ticketTypeCategory.Normal;
-        //             if (Array.isArray(reservation.reservedTicket.ticketType.additionalProperty)) {
-        //                 const categoryProperty = reservation.reservedTicket.ticketType.additionalProperty.find(
-        //                     (p) => p.name === 'category'
-        //                 );
-        //                 if (categoryProperty !== undefined) {
-        //                     ticketTypeCategory = <ttts.factory.ticketTypeCategory>categoryProperty.value;
-        //                 }
-        //             }
-        //             if (ticketTypeCategory === ttts.factory.ticketTypeCategory.Wheelchair) {
-        //                 await processUnlockTicketTypeCategoryRateLimit(
-        //                     event,
-        //                     { id: req.params.transactionId }
-        //                 );
-        //             }
-        //         }));
-        //     }
-        // }
-        // 座席予約承認結果リセット
-        yield new Promise((resolve, reject) => {
-            redisClient.multi()
-                .del(authorizeSeatReservationResultKey)
-                .exec((err) => {
-                if (err !== null) {
-                    reject(err);
-                }
-                else {
-                    resolve();
-                }
-            });
-        });
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
@@ -401,18 +272,6 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
                 }
             });
         });
-        // 座席予約承認結果取得
-        const authorizeSeatReservationResultKey = `${AUTHORIZE_SEAT_RESERVATION_RESULT_KEY_PREFIX}${req.params.transactionId}`;
-        const authorizeSeatReservationResult = yield new Promise((resolve, reject) => {
-            redisClient.get(authorizeSeatReservationResultKey, (err, reply) => {
-                if (err !== null) {
-                    reject(err);
-                }
-                else {
-                    resolve(JSON.parse(reply));
-                }
-            });
-        });
         yield paymentService.authorizeAnyPayment({
             object: {
                 typeOf: cinerinoapi.factory.paymentMethodType.Cash,
@@ -426,15 +285,6 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             auth: auth,
             endpoint: process.env.CINERINO_API_ENDPOINT
         });
-        // 購入番号発行
-        const reserveTransaction = authorizeSeatReservationResult.responseBody;
-        if (reserveTransaction === undefined) {
-            throw new cinerinoapi.factory.errors.Argument('Transaction', 'Reserve trasaction required');
-        }
-        const event = reserveTransaction.object.reservationFor;
-        if (event === undefined || event === null) {
-            throw new cinerinoapi.factory.errors.Argument('Transaction', 'Event required');
-        }
         const transactionResult = yield placeOrderService.confirm({
             id: req.params.transactionId
         });
@@ -492,35 +342,4 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         next(error);
     }
 }));
-// export async function processLockTicketTypeCategoryRateLimit(
-//     event: cinerinoapi.factory.event.screeningEvent.IEvent,
-//     transaction: { id: string }
-// ) {
-//     const rateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
-//     const rateLimitKey = {
-//         performanceStartDate: moment(event.startDate)
-//             .toDate(),
-//         ticketTypeCategory: ttts.factory.ticketTypeCategory.Wheelchair,
-//         unitInSeconds: WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS
-//     };
-//     await rateLimitRepo.lock(rateLimitKey, transaction.id);
-// }
-// async function processUnlockTicketTypeCategoryRateLimit(
-//     event: cinerinoapi.factory.event.screeningEvent.IEvent,
-//     transaction: { id: string }
-// ) {
-//     // レート制限があれば解除
-//     const performanceStartDate = moment(event.startDate)
-//         .toDate();
-//     const rateLimitKey = {
-//         performanceStartDate: performanceStartDate,
-//         ticketTypeCategory: ttts.factory.ticketTypeCategory.Wheelchair,
-//         unitInSeconds: WHEEL_CHAIR_RATE_LIMIT_UNIT_IN_SECONDS
-//     };
-//     const rateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
-//     const holder = await rateLimitRepo.getHolder(rateLimitKey);
-//     if (holder === transaction.id) {
-//         await rateLimitRepo.unlock(rateLimitKey);
-//     }
-// }
 exports.default = placeOrderTransactionsRouter;
