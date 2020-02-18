@@ -23,12 +23,6 @@ const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const reservation_1 = require("../util/reservation");
-const redisClient = ttts.redis.createClient({
-    host: process.env.REDIS_HOST,
-    port: Number(process.env.REDIS_PORT),
-    password: process.env.REDIS_KEY,
-    tls: { servername: process.env.REDIS_HOST }
-});
 const chevreAuthClient = new ttts.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -38,30 +32,6 @@ const chevreAuthClient = new ttts.chevre.auth.ClientCredentials({
 });
 const reservationsRouter = express.Router();
 reservationsRouter.use(authentication_1.default);
-/**
- * イベント指定で購入番号を発行する
- */
-reservationsRouter.post('/publishPaymentNo', permitScopes_1.default(['admin', 'pos', 'transactions']), ...[
-    check_1.body('event.id')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required')
-        .isString()
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const performanceRepo = new ttts.repository.Performance(mongoose.connection);
-        const paymentNoRepo = new ttts.repository.PaymentNo(redisClient);
-        const event = yield performanceRepo.findById(req.body.event.id);
-        const eventStartDateStr = moment(event.startDate)
-            .tz('Asia/Tokyo')
-            .format('YYYYMMDD');
-        const paymentNo = yield paymentNoRepo.publish(eventStartDateStr);
-        res.json({ paymentNo });
-    }
-    catch (error) {
-        next(error);
-    }
-}));
 /**
  * distinct検索
  */
@@ -307,7 +277,7 @@ reservationsRouter.put('/:id/cancel', permitScopes_1.default(['admin']), validat
         yield ttts.service.reserve.cancelReservation({ id: req.params.id })({
             reservation: new ttts.repository.Reservation(mongoose.connection),
             task: new ttts.repository.Task(mongoose.connection),
-            ticketTypeCategoryRateLimit: new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
+            // ticketTypeCategoryRateLimit: new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
             project: new ttts.repository.Project(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT)

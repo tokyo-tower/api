@@ -10,12 +10,12 @@ const webhooksRouter = express.Router();
 
 import { NO_CONTENT } from 'http-status';
 
-const redisClient = ttts.redis.createClient({
-    host: <string>process.env.REDIS_HOST,
-    port: Number(<string>process.env.REDIS_PORT),
-    password: <string>process.env.REDIS_KEY,
-    tls: { servername: <string>process.env.REDIS_HOST }
-});
+// const redisClient = ttts.redis.createClient({
+//     host: <string>process.env.REDIS_HOST,
+//     port: Number(<string>process.env.REDIS_PORT),
+//     password: <string>process.env.REDIS_KEY,
+//     tls: { servername: <string>process.env.REDIS_HOST }
+// });
 
 /**
  * 注文返金イベント
@@ -129,12 +129,12 @@ webhooksRouter.post(
                 && typeof reservation.reservationNumber === 'string') {
                 const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
                 const taskRepo = new ttts.repository.Task(mongoose.connection);
-                const ticketTypeCategoryRateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
+                // const ticketTypeCategoryRateLimitRepo = new ttts.repository.rateLimit.TicketTypeCategory(redisClient);
 
                 await ttts.service.reserve.onReservationStatusChanged(reservation)({
                     reservation: reservationRepo,
-                    task: taskRepo,
-                    ticketTypeCategoryRateLimit: ticketTypeCategoryRateLimitRepo
+                    task: taskRepo
+                    // ticketTypeCategoryRateLimit: ticketTypeCategoryRateLimitRepo
                 });
             }
 

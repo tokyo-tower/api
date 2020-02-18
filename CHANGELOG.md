@@ -18,6 +18,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v33.0.0 - 2020-02-18
+
+### Changed
+
+- 車椅子レート制限をChevreへ移行
+- 注文取引中の不要なセッション管理を削除
+
+### Removed
+
+- 購入番号リポジトリを削除
+
 ## v32.9.0 - 2020-02-14
 
 ### Changed
