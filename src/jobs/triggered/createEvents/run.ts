@@ -91,6 +91,10 @@ export async function main(connection: mongoose.Connection): Promise<void> {
         endpoint: projectDetails.settings.chevre.endpoint,
         auth: authClient
     });
+    const offerCatalogService = new ttts.chevre.service.OfferCatalog({
+        endpoint: projectDetails.settings.chevre.endpoint,
+        auth: authClient
+    });
     const placeService = new ttts.chevre.service.Place({
         endpoint: projectDetails.settings.chevre.endpoint,
         auth: authClient
@@ -125,16 +129,17 @@ export async function main(connection: mongoose.Connection): Promise<void> {
 
     // 券種検索
     const ticketTypeGroupIdentifier = setting.ticket_type_group;
-    const searchTicketTypeGroupsResult = await offerService.searchTicketTypeGroups({
-        project: { ids: [project.id] },
-        identifier: `^${ticketTypeGroupIdentifier}$`
+    const searchTicketTypeGroupsResult = await offerCatalogService.search({
+        project: { id: { $eq: project.id } },
+        identifier: { $eq: ticketTypeGroupIdentifier }
     });
     const ticketTypeGroup = searchTicketTypeGroupsResult.data[0];
     debug('ticketTypeGroup:', ticketTypeGroup);
 
     const searchTicketTypesResult = await offerService.searchTicketTypes({
+        limit: 100,
         project: { ids: [project.id] },
-        ids: ticketTypeGroup.ticketTypes
+        ids: ticketTypeGroup.itemListElement.map((element) => element.id)
     });
     const ticketTypes = searchTicketTypesResult.data;
     debug('ticketTypes:', ticketTypes);
@@ -150,9 +155,10 @@ export async function main(connection: mongoose.Connection): Promise<void> {
         ].join('');
 
         const offers = {
-            id: ticketTypeGroup.id,
+            project: ticketTypeGroup.project,
+            id: <string>ticketTypeGroup.id,
             name: ticketTypeGroup.name,
-            typeOf: <'Offer'>'Offer',
+            typeOf: ttts.chevre.factory.offerType.Offer,
             priceCurrency: ttts.chevre.factory.priceCurrency.JPY,
             availabilityEnds: moment(performanceInfo.end_date)
                 .tz('Asia/Tokyo')
@@ -213,7 +219,7 @@ export async function main(connection: mongoose.Connection): Promise<void> {
                 typeOf: <ttts.chevre.factory.placeType.ScreeningRoom>screeningRoom.typeOf,
                 branchCode: screeningRoom.branchCode,
                 name: screeningRoom.name,
-                alternateName: screeningRoom.alternateName,
+                alternateName: <any>screeningRoom.alternateName,
                 address: screeningRoom.address
             },
             offers: offers,

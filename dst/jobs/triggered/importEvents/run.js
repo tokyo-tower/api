@@ -79,6 +79,10 @@ function main(connection) {
             endpoint: projectDetails.settings.chevre.endpoint,
             auth: authClient
         });
+        const offerCatalogService = new ttts.chevre.service.OfferCatalog({
+            endpoint: projectDetails.settings.chevre.endpoint,
+            auth: authClient
+        });
         const placeService = new ttts.chevre.service.Place({
             endpoint: projectDetails.settings.chevre.endpoint,
             auth: authClient
@@ -109,15 +113,16 @@ function main(connection) {
         debug('screeningEventSeries:', screeningEventSeries);
         // 券種検索
         const ticketTypeGroupIdentifier = setting.ticket_type_group;
-        const searchTicketTypeGroupsResult = yield offerService.searchTicketTypeGroups({
-            project: { ids: [project.id] },
-            identifier: `^${ticketTypeGroupIdentifier}$`
+        const searchTicketTypeGroupsResult = yield offerCatalogService.search({
+            project: { id: { $eq: project.id } },
+            identifier: { $eq: ticketTypeGroupIdentifier }
         });
         const ticketTypeGroup = searchTicketTypeGroupsResult.data[0];
         debug('ticketTypeGroup:', ticketTypeGroup);
         const searchTicketTypesResult = yield offerService.searchTicketTypes({
+            limit: 100,
             project: { ids: [project.id] },
-            ids: ticketTypeGroup.ticketTypes
+            ids: ticketTypeGroup.itemListElement.map((element) => element.id)
         });
         const ticketTypes = searchTicketTypesResult.data;
         debug('ticketTypes:', ticketTypes);
