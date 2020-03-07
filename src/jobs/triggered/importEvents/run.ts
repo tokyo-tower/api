@@ -89,6 +89,10 @@ export async function main(connection: mongoose.Connection): Promise<void> {
         endpoint: projectDetails.settings.chevre.endpoint,
         auth: authClient
     });
+    const offerCatalogService = new ttts.chevre.service.OfferCatalog({
+        endpoint: projectDetails.settings.chevre.endpoint,
+        auth: authClient
+    });
     const placeService = new ttts.chevre.service.Place({
         endpoint: projectDetails.settings.chevre.endpoint,
         auth: authClient
@@ -123,16 +127,17 @@ export async function main(connection: mongoose.Connection): Promise<void> {
 
     // 券種検索
     const ticketTypeGroupIdentifier = setting.ticket_type_group;
-    const searchTicketTypeGroupsResult = await offerService.searchTicketTypeGroups({
-        project: { ids: [project.id] },
-        identifier: `^${ticketTypeGroupIdentifier}$`
+    const searchTicketTypeGroupsResult = await offerCatalogService.search({
+        project: { id: { $eq: project.id } },
+        identifier: { $eq: ticketTypeGroupIdentifier }
     });
     const ticketTypeGroup = searchTicketTypeGroupsResult.data[0];
     debug('ticketTypeGroup:', ticketTypeGroup);
 
     const searchTicketTypesResult = await offerService.searchTicketTypes({
+        limit: 100,
         project: { ids: [project.id] },
-        ids: ticketTypeGroup.ticketTypes
+        ids: ticketTypeGroup.itemListElement.map((element) => element.id)
     });
     const ticketTypes = searchTicketTypesResult.data;
     debug('ticketTypes:', ticketTypes);
@@ -187,7 +192,7 @@ export async function main(connection: mongoose.Connection): Promise<void> {
                     location: {
                         id: <string>screeningRoom.id,
                         branchCode: screeningRoom.branchCode,
-                        name: screeningRoom.name
+                        name: <any>screeningRoom.name
                     },
                     additionalProperty: e.additionalProperty,
                     ttts_extension: {
@@ -203,7 +208,7 @@ export async function main(connection: mongoose.Connection): Promise<void> {
                     ticket_type_group: {
                         id: offers.id,
                         ticket_types: ticketTypes,
-                        name: offers.name
+                        name: <any>offers.name
                     }
                 };
 
