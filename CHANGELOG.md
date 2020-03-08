@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- イベント情報に取り込むオファーコードを限定するように設定追加
+
 ### Deprecated
 
 ### Removed

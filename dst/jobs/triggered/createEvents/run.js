@@ -77,10 +77,6 @@ function main(connection) {
             scopes: [],
             state: ''
         });
-        const offerService = new ttts.chevre.service.Offer({
-            endpoint: projectDetails.settings.chevre.endpoint,
-            auth: authClient
-        });
         const offerCatalogService = new ttts.chevre.service.OfferCatalog({
             endpoint: projectDetails.settings.chevre.endpoint,
             auth: authClient
@@ -113,21 +109,15 @@ function main(connection) {
         });
         const screeningEventSeries = searchScreeningEventSeriesResult.data[0];
         debug('screeningEventSeries:', screeningEventSeries);
-        // 券種検索
-        const ticketTypeGroupIdentifier = setting.ticket_type_group;
-        const searchTicketTypeGroupsResult = yield offerCatalogService.search({
+        // オファーカタログ検索
+        const offerCatalogCode = setting.ticket_type_group;
+        const searchOfferCatalogsResult = yield offerCatalogService.search({
+            limit: 1,
             project: { id: { $eq: project.id } },
-            identifier: { $eq: ticketTypeGroupIdentifier }
+            identifier: { $eq: offerCatalogCode }
         });
-        const ticketTypeGroup = searchTicketTypeGroupsResult.data[0];
-        debug('ticketTypeGroup:', ticketTypeGroup);
-        const searchTicketTypesResult = yield offerService.searchTicketTypes({
-            limit: 100,
-            project: { ids: [project.id] },
-            ids: ticketTypeGroup.itemListElement.map((element) => element.id)
-        });
-        const ticketTypes = searchTicketTypesResult.data;
-        debug('ticketTypes:', ticketTypes);
+        const offerCatalog = searchOfferCatalogsResult.data[0];
+        debug('offerCatalog:', offerCatalog);
         for (const performanceInfo of targetInfo) {
             const id = [
                 // tslint:disable-next-line:no-magic-numbers
@@ -138,9 +128,9 @@ function main(connection) {
                 performanceInfo.start_time
             ].join('');
             const offers = {
-                project: ticketTypeGroup.project,
-                id: ticketTypeGroup.id,
-                name: ticketTypeGroup.name,
+                project: offerCatalog.project,
+                id: offerCatalog.id,
+                name: offerCatalog.name,
                 typeOf: ttts.chevre.factory.offerType.Offer,
                 priceCurrency: ttts.chevre.factory.priceCurrency.JPY,
                 availabilityEnds: moment(performanceInfo.end_date)
