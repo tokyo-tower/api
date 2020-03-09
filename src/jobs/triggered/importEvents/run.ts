@@ -141,9 +141,9 @@ export async function main(connection: mongoose.Connection): Promise<void> {
     // 特定のコードの券種しか取り込まない
     const searchTicketTypesResult = await offerService.searchTicketTypes({
         limit: 100,
-        project: { ids: [project.id] },
-        ids: offerCatalog.itemListElement.map((element) => element.id),
-        identifiers: offerCodes
+        project: { id: { $eq: project.id } },
+        id: { $in: offerCatalog.itemListElement.map((element) => element.id) },
+        identifier: { $in: offerCodes }
     });
     const ticketTypes = searchTicketTypesResult.data;
     debug(ticketTypes.length, 'ticketTypes found');
