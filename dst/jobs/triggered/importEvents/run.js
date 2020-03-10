@@ -100,7 +100,7 @@ function main(connection) {
             throw new Error('Movie Theater Not Found');
         }
         const movieTheater = yield placeService.findMovieTheaterById({ id: movieTheaterWithoutScreeningRoom.id });
-        debug('movieTheater:', movieTheater);
+        debug('movieTheater found', movieTheater.id);
         const screeningRoom = movieTheater.containsPlace[0];
         // 劇場作品検索
         const workPerformedIdentifier = setting.film;
@@ -110,22 +110,25 @@ function main(connection) {
             workPerformed: { identifiers: [workPerformedIdentifier] }
         });
         const screeningEventSeries = searchScreeningEventSeriesResult.data[0];
-        debug('screeningEventSeries:', screeningEventSeries);
+        debug('screeningEventSeries found', screeningEventSeries.id);
         // 券種検索
-        const ticketTypeGroupIdentifier = setting.ticket_type_group;
-        const searchTicketTypeGroupsResult = yield offerCatalogService.search({
+        const offerCatalogCode = setting.ticket_type_group;
+        const offerCodes = setting.offerCodes;
+        const searchOfferCatalogsResult = yield offerCatalogService.search({
+            limit: 1,
             project: { id: { $eq: project.id } },
-            identifier: { $eq: ticketTypeGroupIdentifier }
+            identifier: { $eq: offerCatalogCode }
         });
-        const ticketTypeGroup = searchTicketTypeGroupsResult.data[0];
-        debug('ticketTypeGroup:', ticketTypeGroup);
+        const offerCatalog = searchOfferCatalogsResult.data[0];
+        // 特定のコードの券種しか取り込まない
         const searchTicketTypesResult = yield offerService.searchTicketTypes({
             limit: 100,
-            project: { ids: [project.id] },
-            ids: ticketTypeGroup.itemListElement.map((element) => element.id)
+            project: { id: { $eq: project.id } },
+            id: { $in: offerCatalog.itemListElement.map((element) => element.id) },
+            identifier: { $in: offerCodes }
         });
         const ticketTypes = searchTicketTypesResult.data;
-        debug('ticketTypes:', ticketTypes);
+        debug(ticketTypes.length, 'ticketTypes found');
         // 上映スケジュール取得
         const limit = 100;
         let page = 0;
@@ -142,7 +145,6 @@ function main(connection) {
                 inSessionThrough: importThrough
             });
             numData = searchScreeningEventsResult.data.length;
-            debug('numData:', numData);
             events.push(...searchScreeningEventsResult.data);
         }
         const performanceRepo = new ttts.repository.Performance(connection);
@@ -192,9 +194,7 @@ function main(connection) {
                             name: offers.name
                         }
                     };
-                    debug('saving performance...', performance.id);
                     yield performanceRepo.saveIfNotExists(performance);
-                    debug('saved', performance.id);
                     // 集計タスク作成
                     const aggregateTask = {
                         name: ttts.factory.taskName.AggregateEventReservations,

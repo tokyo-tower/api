@@ -12,6 +12,8 @@ import * as mongoose from 'mongoose';
 import { connectMongo } from '../../../connectMongo';
 import * as singletonProcess from '../../../singletonProcess';
 
+import { ISetting } from '../../setting';
+
 const debug = createDebug('ttts-api:jobs:importEvents');
 
 const project: ttts.factory.project.IProject = { typeOf: cinerinoapi.factory.organizationType.Project, id: <string>process.env.PROJECT_ID };
@@ -61,7 +63,7 @@ export default async (params: {
 // tslint:disable-next-line:max-func-body-length
 export async function main(connection: mongoose.Connection): Promise<void> {
     // 作成情報取得
-    const setting: any = fs.readJsonSync(`${__dirname}/../../../../data/setting.json`);
+    const setting: ISetting = fs.readJsonSync(`${__dirname}/../../../../data/setting.json`);
     debug('setting:', setting);
 
     // 引数情報取得
@@ -111,7 +113,7 @@ export async function main(connection: mongoose.Connection): Promise<void> {
         throw new Error('Movie Theater Not Found');
     }
     const movieTheater = await placeService.findMovieTheaterById({ id: movieTheaterWithoutScreeningRoom.id });
-    debug('movieTheater:', movieTheater);
+    debug('movieTheater found', movieTheater.id);
 
     const screeningRoom = movieTheater.containsPlace[0];
 
@@ -123,24 +125,28 @@ export async function main(connection: mongoose.Connection): Promise<void> {
         workPerformed: { identifiers: [workPerformedIdentifier] }
     });
     const screeningEventSeries = searchScreeningEventSeriesResult.data[0];
-    debug('screeningEventSeries:', screeningEventSeries);
+    debug('screeningEventSeries found', screeningEventSeries.id);
 
     // 券種検索
-    const ticketTypeGroupIdentifier = setting.ticket_type_group;
-    const searchTicketTypeGroupsResult = await offerCatalogService.search({
-        project: { id: { $eq: project.id } },
-        identifier: { $eq: ticketTypeGroupIdentifier }
-    });
-    const ticketTypeGroup = searchTicketTypeGroupsResult.data[0];
-    debug('ticketTypeGroup:', ticketTypeGroup);
+    const offerCatalogCode = setting.ticket_type_group;
+    const offerCodes = setting.offerCodes;
 
+    const searchOfferCatalogsResult = await offerCatalogService.search({
+        limit: 1,
+        project: { id: { $eq: project.id } },
+        identifier: { $eq: offerCatalogCode }
+    });
+    const offerCatalog = searchOfferCatalogsResult.data[0];
+
+    // 特定のコードの券種しか取り込まない
     const searchTicketTypesResult = await offerService.searchTicketTypes({
         limit: 100,
-        project: { ids: [project.id] },
-        ids: ticketTypeGroup.itemListElement.map((element) => element.id)
+        project: { id: { $eq: project.id } },
+        id: { $in: offerCatalog.itemListElement.map((element) => element.id) },
+        identifier: { $in: offerCodes }
     });
     const ticketTypes = searchTicketTypesResult.data;
-    debug('ticketTypes:', ticketTypes);
+    debug(ticketTypes.length, 'ticketTypes found');
 
     // 上映スケジュール取得
     const limit = 100;
@@ -158,7 +164,6 @@ export async function main(connection: mongoose.Connection): Promise<void> {
             inSessionThrough: importThrough
         });
         numData = searchScreeningEventsResult.data.length;
-        debug('numData:', numData);
         events.push(...searchScreeningEventsResult.data);
     }
 
@@ -212,9 +217,7 @@ export async function main(connection: mongoose.Connection): Promise<void> {
                     }
                 };
 
-                debug('saving performance...', performance.id);
                 await performanceRepo.saveIfNotExists(performance);
-                debug('saved', performance.id);
 
                 // 集計タスク作成
                 const aggregateTask: ttts.factory.task.aggregateEventReservations.IAttributes = {

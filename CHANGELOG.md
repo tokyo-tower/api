@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v33.2.0 - 2020-03-10
+
+### Changed
+
+- イベント情報に取り込むオファーコードを限定するように設定追加
+- update @chevre/api-nodejs-client
+
 ## v33.1.0 - 2020-03-07
 
 ### Changed
