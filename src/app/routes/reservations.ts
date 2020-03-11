@@ -83,6 +83,35 @@ reservationsRouter.get(
 );
 
 /**
+ * 注文番号で予約検索
+ */
+reservationsRouter.get(
+    '/findByOrderNumber/:orderNumber',
+    permitScopes(['transactions', 'reservations.read-only']),
+    ...[],
+    validator,
+    async (req, res, next) => {
+        try {
+            // 予約検索条件
+            const conditions: ttts.factory.reservation.event.ISearchConditions = {
+                typeOf: ttts.factory.chevre.reservationType.EventReservation,
+                underName: {
+                    identifier: { $in: [{ name: 'orderNumber', value: req.params.orderNumber }] }
+                }
+            };
+
+            // 予約を検索
+            const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
+            const reservations = await reservationRepo.search(conditions);
+
+            res.json(reservations.map(tttsReservation2chevre));
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
  * IDで予約取得
  */
 reservationsRouter.get(
