@@ -79,6 +79,27 @@ reservationsRouter.get('/distinct/:field', permitScopes_1.default(['admin']), ..
     }
 }));
 /**
+ * 注文番号で予約検索
+ */
+reservationsRouter.get('/findByOrderNumber/:orderNumber', permitScopes_1.default(['transactions', 'reservations.read-only']), ...[], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // 予約検索条件
+        const conditions = {
+            typeOf: ttts.factory.chevre.reservationType.EventReservation,
+            underName: {
+                identifier: { $in: [{ name: 'orderNumber', value: req.params.orderNumber }] }
+            }
+        };
+        // 予約を検索
+        const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
+        const reservations = yield reservationRepo.search(conditions);
+        res.json(reservations.map(reservation_1.tttsReservation2chevre));
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
  * IDで予約取得
  */
 reservationsRouter.get('/:id', permitScopes_1.default(['transactions', 'reservations.read-only']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
