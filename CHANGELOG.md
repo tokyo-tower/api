@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- オファーカタログ設定を料金改定版に変更
+
 ### Deprecated
 
 ### Removed
