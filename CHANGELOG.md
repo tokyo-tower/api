@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- 注文番号での予約検索エンドポイントを追加
-
 ### Changed
 
 ### Deprecated
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v33.3.0 - 2020-03-11
+
+### Added
+
+- 注文番号での予約検索エンドポイントを追加
 
 ## v33.2.0 - 2020-03-10
 
