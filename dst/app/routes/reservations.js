@@ -83,6 +83,15 @@ reservationsRouter.get('/distinct/:field', permitScopes_1.default(['admin']), ..
  */
 reservationsRouter.get('/findByOrderNumber/:orderNumber', permitScopes_1.default(['transactions', 'reservations.read-only']), ...[], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const projectRepo = new ttts.repository.Project(mongoose.connection);
+        const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (project.settings === undefined) {
+            throw new ttts.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        if (project.settings.chevre === undefined) {
+            throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
+        }
         // 予約検索条件
         const conditions = {
             typeOf: ttts.factory.chevre.reservationType.EventReservation,
@@ -91,8 +100,19 @@ reservationsRouter.get('/findByOrderNumber/:orderNumber', permitScopes_1.default
             }
         };
         // 予約を検索
-        const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
         const reservations = yield reservationRepo.search(conditions);
+        // Chevreへチェックイン連携
+        try {
+            const reservationService = new ttts.chevre.service.Reservation({
+                endpoint: project.settings.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            yield reservationService.checkInScreeningEventReservations({ reservationNumber: reservations[0].reservationNumber });
+        }
+        catch (error) {
+            // tslint:disable-next-line:no-console
+            console.error('Chevre checkInScreeningEventReservations failed:', error);
+        }
         res.json(reservations.map(reservation_1.tttsReservation2chevre));
     }
     catch (error) {

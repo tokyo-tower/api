@@ -92,6 +92,17 @@ reservationsRouter.get(
     validator,
     async (req, res, next) => {
         try {
+            const projectRepo = new ttts.repository.Project(mongoose.connection);
+            const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
+
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined) {
+                throw new ttts.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+            if (project.settings.chevre === undefined) {
+                throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
+            }
+
             // 予約検索条件
             const conditions: ttts.factory.reservation.event.ISearchConditions = {
                 typeOf: ttts.factory.chevre.reservationType.EventReservation,
@@ -101,8 +112,19 @@ reservationsRouter.get(
             };
 
             // 予約を検索
-            const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
             const reservations = await reservationRepo.search(conditions);
+
+            // Chevreへチェックイン連携
+            try {
+                const reservationService = new ttts.chevre.service.Reservation({
+                    endpoint: project.settings.chevre.endpoint,
+                    auth: chevreAuthClient
+                });
+                await reservationService.checkInScreeningEventReservations({ reservationNumber: reservations[0].reservationNumber });
+            } catch (error) {
+                // tslint:disable-next-line:no-console
+                console.error('Chevre checkInScreeningEventReservations failed:', error);
+            }
 
             res.json(reservations.map(tttsReservation2chevre));
         } catch (error) {
