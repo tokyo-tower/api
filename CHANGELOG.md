@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- オファーカタログ設定を料金改定版に変更
-- 予約参照時にchevreへチェックイン連携するように調整
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v33.4.0 - 2020-03-12
+
+### Changed
+
+- オファーカタログ設定を料金改定版に変更
+- 予約参照時にchevreへチェックイン連携するように調整
 
 ## v33.3.0 - 2020-03-11
 
