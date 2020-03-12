@@ -121,7 +121,7 @@ function main(connection) {
         });
         const offerCatalog = searchOfferCatalogsResult.data[0];
         // 特定のコードの券種しか取り込まない
-        const searchTicketTypesResult = yield offerService.searchTicketTypes({
+        const searchTicketTypesResult = yield offerService.search({
             limit: 100,
             project: { id: { $eq: project.id } },
             id: { $in: offerCatalog.itemListElement.map((element) => element.id) },
