@@ -139,7 +139,7 @@ export async function main(connection: mongoose.Connection): Promise<void> {
     const offerCatalog = searchOfferCatalogsResult.data[0];
 
     // 特定のコードの券種しか取り込まない
-    const searchTicketTypesResult = await offerService.searchTicketTypes({
+    const searchTicketTypesResult = await offerService.search({
         limit: 100,
         project: { id: { $eq: project.id } },
         id: { $in: offerCatalog.itemListElement.map((element) => element.id) },
@@ -211,7 +211,7 @@ export async function main(connection: mongoose.Connection): Promise<void> {
                         refunded_count: 0
                     },
                     ticket_type_group: {
-                        id: offers.id,
+                        id: <string>offers.id,
                         ticket_types: ticketTypes,
                         name: <any>offers.name
                     }
