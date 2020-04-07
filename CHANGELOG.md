@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- Cinerinoサービス使用時にプロジェクトを指定するように調整
+- イベント作成時に販売者情報を追加するように調整
+
 ### Deprecated
 
 ### Removed

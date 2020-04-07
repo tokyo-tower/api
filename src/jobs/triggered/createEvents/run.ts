@@ -1,6 +1,7 @@
 /**
  * Chevreにイベントを作成する
  */
+import * as cinerinoapi from '@cinerino/api-nodejs-client';
 import * as ttts from '@tokyotower/domain';
 import { CronJob } from 'cron';
 import * as createDebug from 'debug';
@@ -16,6 +17,14 @@ import { ISetting } from '../../setting';
 const debug = createDebug('ttts-api:jobs');
 
 const project = { typeOf: <'Project'>'Project', id: <string>process.env.PROJECT_ID };
+
+const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 
 export default async (params: {
     project?: ttts.factory.project.IProject;
@@ -64,6 +73,20 @@ export default async (params: {
  */
 // tslint:disable-next-line:max-func-body-length
 export async function main(connection: mongoose.Connection): Promise<void> {
+    // 販売者をひとつ取得
+    const sellerService = new cinerinoapi.service.Seller({
+        auth: cinerinoAuthClient,
+        endpoint: <string>process.env.CINERINO_API_ENDPOINT,
+        project: { id: project.id }
+    });
+    const searchSellersResult = await sellerService.search({
+        limit: 1
+    });
+    const seller = searchSellersResult.data.shift();
+    if (seller === undefined) {
+        throw new Error('Seller not found');
+    }
+
     // 作成情報取得
     const setting: ISetting = fs.readJsonSync(`${__dirname}/../../../../data/setting.json`);
     debug('setting:', setting);
@@ -176,6 +199,11 @@ export async function main(connection: mongoose.Connection): Promise<void> {
                         ticketedSeat: { typeOf: <ttts.chevre.factory.placeType.Seat>ttts.chevre.factory.placeType.Seat }
                     }
                 }
+            },
+            seller: {
+                typeOf: seller.typeOf,
+                id: seller.id,
+                name: seller.name
             },
             validThrough: moment(performanceInfo.end_date)
                 .tz('Asia/Tokyo')

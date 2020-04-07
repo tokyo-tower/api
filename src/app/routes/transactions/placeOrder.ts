@@ -6,8 +6,10 @@ import * as ttts from '@tokyotower/domain';
 import { Router } from 'express';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as moment from 'moment-timezone';
-import * as mongoose from 'mongoose';
+// import * as mongoose from 'mongoose';
 import * as request from 'request-promise-native';
+
+const project = { typeOf: <'Project'>'Project', id: <string>process.env.PROJECT_ID };
 
 const auth = new cinerinoapi.auth.ClientCredentials({
     domain: '',
@@ -59,11 +61,13 @@ placeOrderTransactionsRouter.post(
             auth.setCredentials({ access_token: req.accessToken });
             const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
                 auth: auth,
-                endpoint: <string>process.env.CINERINO_API_ENDPOINT
+                endpoint: <string>process.env.CINERINO_API_ENDPOINT,
+                project: { id: project.id }
             });
             const sellerService = new cinerinoapi.service.Seller({
                 auth: auth,
-                endpoint: <string>process.env.CINERINO_API_ENDPOINT
+                endpoint: <string>process.env.CINERINO_API_ENDPOINT,
+                project: { id: project.id }
             });
 
             const searchSellersResult = await sellerService.search({
@@ -138,7 +142,8 @@ placeOrderTransactionsRouter.put(
             auth.setCredentials({ access_token: req.accessToken });
             const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
                 auth: auth,
-                endpoint: <string>process.env.CINERINO_API_ENDPOINT
+                endpoint: <string>process.env.CINERINO_API_ENDPOINT,
+                project: { id: project.id }
             });
 
             const profile = await placeOrderService.setCustomerContact({
@@ -203,18 +208,19 @@ placeOrderTransactionsRouter.post(
             auth.setCredentials({ access_token: req.accessToken });
             const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
                 auth: auth,
-                endpoint: <string>process.env.CINERINO_API_ENDPOINT
+                endpoint: <string>process.env.CINERINO_API_ENDPOINT,
+                project: { id: project.id }
             });
 
             // 券種詳細取得
-            const projectRepo = new ttts.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined) {
-                throw new ttts.factory.errors.ServiceUnavailable('Project settings undefined');
-            }
-            if (project.settings.chevre === undefined) {
-                throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
-            }
+            // const projectRepo = new ttts.repository.Project(mongoose.connection);
+            // const projectDetails = await projectRepo.findById({ id: req.project.id });
+            // if (projectDetails.settings === undefined) {
+            //     throw new ttts.factory.errors.ServiceUnavailable('Project settings undefined');
+            // }
+            // if (projectDetails.settings.chevre === undefined) {
+            //     throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
+            // }
 
             // tslint:disable-next-line:max-line-length
             let action: cinerinoapi.factory.action.authorize.offer.seatReservation.IAction<cinerinoapi.factory.service.webAPI.Identifier.Chevre> | undefined;
@@ -267,7 +273,8 @@ placeOrderTransactionsRouter.delete(
             auth.setCredentials({ access_token: req.accessToken });
             const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
                 auth: auth,
-                endpoint: <string>process.env.CINERINO_API_ENDPOINT
+                endpoint: <string>process.env.CINERINO_API_ENDPOINT,
+                project: { id: project.id }
             });
 
             await placeOrderService.voidSeatReservation({
@@ -309,7 +316,8 @@ placeOrderTransactionsRouter.post(
             auth.setCredentials({ access_token: req.accessToken });
             const paymentService = new cinerinoapi.service.Payment({
                 auth: auth,
-                endpoint: <string>process.env.CINERINO_API_ENDPOINT
+                endpoint: <string>process.env.CINERINO_API_ENDPOINT,
+                project: { id: project.id }
             });
 
             // 金額取得
@@ -336,7 +344,8 @@ placeOrderTransactionsRouter.post(
 
             const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
                 auth: auth,
-                endpoint: <string>process.env.CINERINO_API_ENDPOINT
+                endpoint: <string>process.env.CINERINO_API_ENDPOINT,
+                project: { id: project.id }
             });
 
             const transactionResult = await placeOrderService.confirm({

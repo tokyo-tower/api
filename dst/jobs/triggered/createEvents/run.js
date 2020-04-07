@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Chevreにイベントを作成する
  */
+const cinerinoapi = require("@cinerino/api-nodejs-client");
 const ttts = require("@tokyotower/domain");
 const cron_1 = require("cron");
 const createDebug = require("debug");
@@ -21,6 +22,13 @@ const connectMongo_1 = require("../../../connectMongo");
 const singletonProcess = require("../../../singletonProcess");
 const debug = createDebug('ttts-api:jobs');
 const project = { typeOf: 'Project', id: process.env.PROJECT_ID };
+const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     let holdSingletonProcess = false;
     setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
@@ -56,6 +64,19 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
 // tslint:disable-next-line:max-func-body-length
 function main(connection) {
     return __awaiter(this, void 0, void 0, function* () {
+        // 販売者をひとつ取得
+        const sellerService = new cinerinoapi.service.Seller({
+            auth: cinerinoAuthClient,
+            endpoint: process.env.CINERINO_API_ENDPOINT,
+            project: { id: project.id }
+        });
+        const searchSellersResult = yield sellerService.search({
+            limit: 1
+        });
+        const seller = searchSellersResult.data.shift();
+        if (seller === undefined) {
+            throw new Error('Seller not found');
+        }
         // 作成情報取得
         const setting = fs.readJsonSync(`${__dirname}/../../../../data/setting.json`);
         debug('setting:', setting);
@@ -158,6 +179,11 @@ function main(connection) {
                             ticketedSeat: { typeOf: ttts.chevre.factory.placeType.Seat }
                         }
                     }
+                },
+                seller: {
+                    typeOf: seller.typeOf,
+                    id: seller.id,
+                    name: seller.name
                 },
                 validThrough: moment(performanceInfo.end_date)
                     .tz('Asia/Tokyo')
