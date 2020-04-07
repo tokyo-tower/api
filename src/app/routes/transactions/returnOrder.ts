@@ -9,6 +9,8 @@ import * as moment from 'moment';
 
 import { ORDERS_KEY_PREFIX } from './placeOrder';
 
+const project = { typeOf: <'Project'>'Project', id: <string>process.env.PROJECT_ID };
+
 const redisClient = ttts.redis.createClient({
     host: <string>process.env.REDIS_HOST,
     port: Number(<string>process.env.REDIS_PORT),
@@ -54,7 +56,8 @@ returnOrderTransactionsRouter.post(
             auth.setCredentials({ access_token: req.accessToken });
             const returnOrderService = new cinerinoapi.service.transaction.ReturnOrder({
                 auth: auth,
-                endpoint: <string>process.env.CINERINO_API_ENDPOINT
+                endpoint: <string>process.env.CINERINO_API_ENDPOINT,
+                project: { id: project.id }
             });
 
             // 注文取得

@@ -18,6 +18,7 @@ const express_1 = require("express");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const placeOrder_1 = require("./placeOrder");
+const project = { typeOf: 'Project', id: process.env.PROJECT_ID };
 const redisClient = ttts.redis.createClient({
     host: process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT),
@@ -52,7 +53,8 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['pos']), 
         auth.setCredentials({ access_token: req.accessToken });
         const returnOrderService = new cinerinoapi.service.transaction.ReturnOrder({
             auth: auth,
-            endpoint: process.env.CINERINO_API_ENDPOINT
+            endpoint: process.env.CINERINO_API_ENDPOINT,
+            project: { id: project.id }
         });
         // 注文取得
         const confirmationNumber = `${req.body.performance_day}${req.body.payment_no}`;

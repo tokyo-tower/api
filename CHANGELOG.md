@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v33.6.0 - 2020-04-07
+
+### Changed
+
+- Cinerinoサービス使用時にプロジェクトを指定するように調整
+- イベント作成時に販売者情報を追加するように調整
+
 ## v33.5.0 - 2020-03-14
 
 ### Changed
