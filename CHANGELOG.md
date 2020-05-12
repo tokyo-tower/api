@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- プロジェクトリポジトリを@cinerino/domainから移行
-- タスクリポジトリを@cinerino/domainから移行
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v33.7.0 - 2020-05-12
+
+### Changed
+
+- プロジェクトリポジトリを@cinerino/domainから移行
+- タスクリポジトリを@cinerino/domainから移行
 
 ## v33.6.0 - 2020-04-07
 
