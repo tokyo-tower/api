@@ -11,7 +11,7 @@
   "dependencies": {
     "@cinerino/api-nodejs-client": "2.0.0-alpha.73",
     "@motionpicture/express-middleware": "^0.1.1",
-    "@tokyotower/domain": "^41.4.0",
+    "@tokyotower/domain": "^42.0.0",
     "basic-auth": "^2.0.0",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
@@ -82,5 +82,5 @@
     "version": "git add -A",
     "postversion": "git push origin --tags"
   },
-  "version": "33.6.0"
+  "version": "33.7.0"
 }

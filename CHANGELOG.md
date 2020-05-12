@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v33.7.0 - 2020-05-12
+
+### Changed
+
+- プロジェクトリポジトリを@cinerino/domainから移行
+- タスクリポジトリを@cinerino/domainから移行
+
 ## v33.6.0 - 2020-04-07
 
 ### Changed
