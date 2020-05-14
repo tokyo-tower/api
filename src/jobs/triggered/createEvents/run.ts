@@ -244,7 +244,13 @@ export async function main(connection: mongoose.Connection): Promise<void> {
             offers: offers,
             checkInCount: undefined,
             attendeeCount: undefined,
-            additionalProperty: [{ name: 'tourNumber', value: String(performanceInfo.tour_number) }]
+            additionalProperty: [{ name: 'tourNumber', value: String(performanceInfo.tour_number) }],
+            ...{
+                hasOfferCatalog: {
+                    typeOf: 'OfferCatalog',
+                    id: offerCatalog.id
+                }
+            }
         };
 
         debug('upserting event...', id);
