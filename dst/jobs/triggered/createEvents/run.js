@@ -202,29 +202,19 @@ function main(connection) {
                 ]
             };
             // パフォーマンス登録
-            const event = {
-                project: project,
-                typeOf: ttts.chevre.factory.eventType.ScreeningEvent,
-                eventStatus: ttts.chevre.factory.eventStatusType.EventScheduled,
-                name: screeningEventSeries.name,
-                doorTime: performanceInfo.door_time,
-                startDate: performanceInfo.start_date,
-                endDate: performanceInfo.end_date,
-                workPerformed: screeningEventSeries.workPerformed,
-                superEvent: screeningEventSeries,
-                location: {
+            const event = Object.assign({ project: project, typeOf: ttts.chevre.factory.eventType.ScreeningEvent, eventStatus: ttts.chevre.factory.eventStatusType.EventScheduled, name: screeningEventSeries.name, doorTime: performanceInfo.door_time, startDate: performanceInfo.start_date, endDate: performanceInfo.end_date, workPerformed: screeningEventSeries.workPerformed, superEvent: screeningEventSeries, location: {
                     project: project,
                     typeOf: screeningRoom.typeOf,
                     branchCode: screeningRoom.branchCode,
                     name: screeningRoom.name,
                     alternateName: screeningRoom.alternateName,
                     address: screeningRoom.address
-                },
-                offers: offers,
-                checkInCount: undefined,
-                attendeeCount: undefined,
-                additionalProperty: [{ name: 'tourNumber', value: String(performanceInfo.tour_number) }]
-            };
+                }, offers: offers, checkInCount: undefined, attendeeCount: undefined, additionalProperty: [{ name: 'tourNumber', value: String(performanceInfo.tour_number) }] }, {
+                hasOfferCatalog: {
+                    typeOf: 'OfferCatalog',
+                    id: offerCatalog.id
+                }
+            });
             debug('upserting event...', id);
             yield eventService.update({
                 id: id,

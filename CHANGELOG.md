@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v33.8.0 - 2020-05-14
+
+### Added
+
+- ChevreイベントにhasOfferCatalogを追加
+
 ## v33.7.0 - 2020-05-12
 
 ### Changed
