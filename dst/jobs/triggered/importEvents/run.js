@@ -159,55 +159,52 @@ function main(connection) {
                         tourNumber = tourNumberProperty.value;
                     }
                 }
-                const offers = e.offers;
-                if (offers !== undefined) {
-                    // パフォーマンス登録
-                    const performance = {
-                        id: e.id,
-                        doorTime: moment(e.doorTime)
-                            .toDate(),
-                        startDate: moment(e.startDate)
-                            .toDate(),
-                        endDate: moment(e.endDate)
-                            .toDate(),
-                        duration: e.superEvent.duration,
-                        superEvent: e.superEvent,
-                        location: {
-                            id: screeningRoom.id,
-                            branchCode: screeningRoom.branchCode,
-                            name: screeningRoom.name
-                        },
-                        additionalProperty: e.additionalProperty,
-                        ttts_extension: {
-                            tour_number: tourNumber,
-                            ev_service_status: ttts.factory.performance.EvServiceStatus.Normal,
-                            ev_service_update_user: '',
-                            online_sales_status: ttts.factory.performance.OnlineSalesStatus.Normal,
-                            online_sales_update_user: '',
-                            refund_status: ttts.factory.performance.RefundStatus.None,
-                            refund_update_user: '',
-                            refunded_count: 0
-                        },
-                        ticket_type_group: {
-                            id: offers.id,
-                            ticket_types: ticketTypes,
-                            name: offers.name
-                        }
-                    };
-                    yield performanceRepo.saveIfNotExists(performance);
-                    // 集計タスク作成
-                    const aggregateTask = {
-                        name: ttts.factory.taskName.AggregateEventReservations,
-                        project: project,
-                        status: ttts.factory.taskStatus.Ready,
-                        runsAt: new Date(),
-                        remainingNumberOfTries: 3,
-                        numberOfTried: 0,
-                        executionResults: [],
-                        data: { id: performance.id }
-                    };
-                    yield taskRepo.save(aggregateTask);
-                }
+                // パフォーマンス登録
+                const performance = {
+                    id: e.id,
+                    doorTime: moment(e.doorTime)
+                        .toDate(),
+                    startDate: moment(e.startDate)
+                        .toDate(),
+                    endDate: moment(e.endDate)
+                        .toDate(),
+                    duration: e.superEvent.duration,
+                    superEvent: e.superEvent,
+                    location: {
+                        id: screeningRoom.id,
+                        branchCode: screeningRoom.branchCode,
+                        name: screeningRoom.name
+                    },
+                    additionalProperty: e.additionalProperty,
+                    ttts_extension: {
+                        tour_number: tourNumber,
+                        ev_service_status: ttts.factory.performance.EvServiceStatus.Normal,
+                        ev_service_update_user: '',
+                        online_sales_status: ttts.factory.performance.OnlineSalesStatus.Normal,
+                        online_sales_update_user: '',
+                        refund_status: ttts.factory.performance.RefundStatus.None,
+                        refund_update_user: '',
+                        refunded_count: 0
+                    },
+                    ticket_type_group: {
+                        id: offerCatalogCode,
+                        ticket_types: ticketTypes,
+                        name: { ja: 'トップデッキツアー料金改定', en: 'Top Deck Tour' }
+                    }
+                };
+                yield performanceRepo.saveIfNotExists(performance);
+                // 集計タスク作成
+                const aggregateTask = {
+                    name: ttts.factory.taskName.AggregateEventReservations,
+                    project: project,
+                    status: ttts.factory.taskStatus.Ready,
+                    runsAt: new Date(),
+                    remainingNumberOfTries: 3,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: { id: performance.id }
+                };
+                yield taskRepo.save(aggregateTask);
             }
             catch (error) {
                 // tslint:disable-next-line:no-single-line-block-comment

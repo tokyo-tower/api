@@ -150,8 +150,8 @@ function main(connection) {
             ].join('');
             const offers = {
                 project: offerCatalog.project,
-                id: offerCatalog.id,
-                name: offerCatalog.name,
+                // id: <string>offerCatalog.id,
+                // name: offerCatalog.name,
                 typeOf: ttts.chevre.factory.offerType.Offer,
                 priceCurrency: ttts.chevre.factory.priceCurrency.JPY,
                 availabilityEnds: moment(performanceInfo.end_date)
