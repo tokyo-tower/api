@@ -170,8 +170,8 @@ export async function main(connection: mongoose.Connection): Promise<void> {
 
         const offers = {
             project: offerCatalog.project,
-            id: <string>offerCatalog.id,
-            name: offerCatalog.name,
+            // id: <string>offerCatalog.id,
+            // name: offerCatalog.name,
             typeOf: ttts.chevre.factory.offerType.Offer,
             priceCurrency: ttts.chevre.factory.priceCurrency.JPY,
             availabilityEnds: moment(performanceInfo.end_date)
