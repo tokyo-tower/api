@@ -14,11 +14,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
-- Chevreイベント作成タスクを削除
-
 ### Fixed
 
 ### Security
+
+## v34.0.0 - 2020-05-22
+
+### Removed
+
+- Chevreイベント作成タスクを削除
 
 ## v33.9.0 - 2020-05-20
 
