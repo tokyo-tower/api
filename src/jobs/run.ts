@@ -13,7 +13,7 @@ import createReturnOrderReport from './continuous/createReturnOrderReport/run';
 import returnOrdersByPerformance from './continuous/returnOrdersByPerformance/run';
 import updateOrderReportByReservation from './continuous/updateOrderReportByReservation/run';
 
-import createEvents from './triggered/createEvents/run';
+// import createEvents from './triggered/createEvents/run';
 import importEvents from './triggered/importEvents/run';
 import makeAggregationsExpired from './triggered/makeAggregationsExpired/run';
 import syncCheckinGates from './triggered/syncCheckinGates/run';
@@ -31,7 +31,7 @@ export default async () => {
     await returnOrdersByPerformance({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await updateOrderReportByReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
 
-    await createEvents({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    // await createEvents({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await importEvents({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await makeAggregationsExpired({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await syncCheckinGates({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
