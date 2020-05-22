@@ -20,10 +20,10 @@ const run_4 = require("./continuous/createPlaceOrderReport/run");
 const run_5 = require("./continuous/createReturnOrderReport/run");
 const run_6 = require("./continuous/returnOrdersByPerformance/run");
 const run_7 = require("./continuous/updateOrderReportByReservation/run");
-const run_8 = require("./triggered/createEvents/run");
-const run_9 = require("./triggered/importEvents/run");
-const run_10 = require("./triggered/makeAggregationsExpired/run");
-const run_11 = require("./triggered/syncCheckinGates/run");
+// import createEvents from './triggered/createEvents/run';
+const run_8 = require("./triggered/importEvents/run");
+const run_9 = require("./triggered/makeAggregationsExpired/run");
+const run_10 = require("./triggered/syncCheckinGates/run");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const project = { typeOf: cinerinoapi.factory.organizationType.Project, id: process.env.PROJECT_ID };
 exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
@@ -34,8 +34,8 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_5.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     yield run_6.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     yield run_7.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    // await createEvents({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     yield run_8.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     yield run_9.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     yield run_10.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    yield run_11.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
 });

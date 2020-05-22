@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
+- Chevreイベント作成タスクを削除
+
 ### Fixed
 
 ### Security
