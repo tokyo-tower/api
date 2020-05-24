@@ -22,7 +22,7 @@ const connectMongo_1 = require("../../../connectMongo");
 const singletonProcess = require("../../../singletonProcess");
 const debug = createDebug('ttts-api:jobs:importEvents');
 const project = { typeOf: cinerinoapi.factory.organizationType.Project, id: process.env.PROJECT_ID };
-const authClient = new ttts.chevre.auth.ClientCredentials({
+const authClient = new cinerinoapi.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
     clientSecret: process.env.CHEVRE_CLIENT_SECRET,
@@ -84,7 +84,7 @@ function main(connection) {
                 limit: limit,
                 page: page,
                 project: { ids: [project.id] },
-                typeOf: ttts.chevre.factory.eventType.ScreeningEvent,
+                typeOf: cinerinoapi.factory.chevre.eventType.ScreeningEvent,
                 inSessionFrom: importFrom,
                 inSessionThrough: importThrough
             });

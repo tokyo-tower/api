@@ -18,7 +18,7 @@ const debug = createDebug('ttts-api:jobs:importEvents');
 
 const project: ttts.factory.project.IProject = { typeOf: cinerinoapi.factory.organizationType.Project, id: <string>process.env.PROJECT_ID };
 
-const authClient = new ttts.chevre.auth.ClientCredentials({
+const authClient = new cinerinoapi.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.CHEVRE_CLIENT_ID,
     clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
@@ -90,14 +90,14 @@ export async function main(connection: mongoose.Connection): Promise<void> {
     const limit = 100;
     let page = 0;
     let numData: number = limit;
-    const events: ttts.chevre.factory.event.IEvent<ttts.chevre.factory.eventType.ScreeningEvent>[] = [];
+    const events: cinerinoapi.factory.event.IEvent<cinerinoapi.factory.chevre.eventType.ScreeningEvent>[] = [];
     while (numData === limit) {
         page += 1;
-        const searchScreeningEventsResult = await eventService.search<ttts.chevre.factory.eventType.ScreeningEvent>({
+        const searchScreeningEventsResult = await eventService.search<cinerinoapi.factory.chevre.eventType.ScreeningEvent>({
             limit: limit,
             page: page,
             project: { ids: [project.id] },
-            typeOf: ttts.chevre.factory.eventType.ScreeningEvent,
+            typeOf: cinerinoapi.factory.chevre.eventType.ScreeningEvent,
             inSessionFrom: importFrom,
             inSessionThrough: importThrough
         });
@@ -118,12 +118,12 @@ export async function main(connection: mongoose.Connection): Promise<void> {
             }
         });
 
-        const unitPriceOffers: ttts.chevre.factory.offer.IUnitPriceOffer[] = offers
+        const unitPriceOffers: cinerinoapi.factory.chevre.offer.IUnitPriceOffer[] = offers
             // 指定のオファーコードに限定する
             .filter((o) => offerCodes.includes(o.identifier))
             .map((o) => {
                 // tslint:disable-next-line:max-line-length
-                const unitPriceSpec = <ttts.chevre.factory.priceSpecification.IPriceSpecification<ttts.chevre.factory.priceSpecificationType.UnitPriceSpecification>>
+                const unitPriceSpec = <cinerinoapi.factory.chevre.priceSpecification.IPriceSpecification<cinerinoapi.factory.chevre.priceSpecificationType.UnitPriceSpecification>>
                     o.priceSpecification.priceComponent.find(
                         (p) => p.typeOf === cinerinoapi.factory.chevre.priceSpecificationType.UnitPriceSpecification
                     );

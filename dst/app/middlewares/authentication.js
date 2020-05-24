@@ -56,9 +56,8 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                 let programMembership;
                 if (user.username !== undefined) {
                     programMembership = {
-                        award: [],
                         membershipNumber: user.username,
-                        programName: 'Amazon Cognito',
+                        programName: { en: 'Amazon Cognito', ja: 'Amazon Cognito' },
                         project: req.project,
                         typeOf: cinerinoapi.factory.programMembership.ProgramMembershipType.ProgramMembership,
                         url: user.iss
