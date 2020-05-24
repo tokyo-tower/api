@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * Chevreからイベントをインポート
+ * Cinerinoからイベントをインポート
  */
 const cinerinoapi = require("@cinerino/api-nodejs-client");
 const ttts = require("@tokyotower/domain");
@@ -67,31 +67,13 @@ function main(connection) {
         // 引数情報取得
         const { importFrom, importThrough } = getImportPeriod();
         debug(importFrom, importThrough);
-        const projectRepo = new ttts.repository.Project(connection);
-        const projectDetails = yield projectRepo.findById({ id: project.id });
-        if (projectDetails.settings === undefined) {
-            throw new ttts.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
-        if (projectDetails.settings.chevre === undefined) {
-            throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
-        }
         const eventService = new cinerinoapi.service.Event({
             endpoint: process.env.CINERINO_API_ENDPOINT,
             auth: authClient
         });
-        // 劇場作品検索
-        const workPerformedIdentifier = setting.film;
-        const searchScreeningEventSeriesResult = yield eventService.search({
-            project: { ids: [project.id] },
-            typeOf: ttts.chevre.factory.eventType.ScreeningEventSeries,
-            workPerformed: { identifiers: [workPerformedIdentifier] }
-        });
-        const screeningEventSeries = searchScreeningEventSeriesResult.data[0];
-        debug('screeningEventSeries found', screeningEventSeries.id);
-        // 券種検索
         const offerCatalogCode = setting.ticket_type_group;
         const offerCodes = setting.offerCodes;
-        // 上映スケジュール取得
+        // スケジュール検索
         const limit = 100;
         let page = 0;
         let numData = limit;

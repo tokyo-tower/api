@@ -1,5 +1,5 @@
 /**
- * Chevreからイベントをインポート
+ * Cinerinoからイベントをインポート
  */
 import * as cinerinoapi from '@cinerino/api-nodejs-client';
 import * as ttts from '@tokyotower/domain';
@@ -78,35 +78,15 @@ export async function main(connection: mongoose.Connection): Promise<void> {
     const { importFrom, importThrough } = getImportPeriod();
     debug(importFrom, importThrough);
 
-    const projectRepo = new ttts.repository.Project(connection);
-    const projectDetails = await projectRepo.findById({ id: project.id });
-    if (projectDetails.settings === undefined) {
-        throw new ttts.factory.errors.ServiceUnavailable('Project settings undefined');
-    }
-    if (projectDetails.settings.chevre === undefined) {
-        throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
-    }
-
     const eventService = new cinerinoapi.service.Event({
         endpoint: <string>process.env.CINERINO_API_ENDPOINT,
         auth: authClient
     });
 
-    // 劇場作品検索
-    const workPerformedIdentifier = setting.film;
-    const searchScreeningEventSeriesResult = await eventService.search<ttts.chevre.factory.eventType.ScreeningEventSeries>({
-        project: { ids: [project.id] },
-        typeOf: ttts.chevre.factory.eventType.ScreeningEventSeries,
-        workPerformed: { identifiers: [workPerformedIdentifier] }
-    });
-    const screeningEventSeries = searchScreeningEventSeriesResult.data[0];
-    debug('screeningEventSeries found', screeningEventSeries.id);
-
-    // 券種検索
     const offerCatalogCode = setting.ticket_type_group;
     const offerCodes = setting.offerCodes;
 
-    // 上映スケジュール取得
+    // スケジュール検索
     const limit = 100;
     let page = 0;
     let numData: number = limit;
