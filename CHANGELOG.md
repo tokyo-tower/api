@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- イベントインポート時の検索先をCinerinoへ変更
+
 ### Deprecated
 
 ### Removed

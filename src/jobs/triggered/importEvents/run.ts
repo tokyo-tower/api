@@ -18,6 +18,14 @@ const debug = createDebug('ttts-api:jobs:importEvents');
 
 const project: ttts.factory.project.IProject = { typeOf: cinerinoapi.factory.organizationType.Project, id: <string>process.env.PROJECT_ID };
 
+const authClient = new ttts.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
+
 export default async (params: {
     project?: ttts.factory.project.IProject;
 }) => {
@@ -79,43 +87,10 @@ export async function main(connection: mongoose.Connection): Promise<void> {
         throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
     }
 
-    const authClient = new ttts.chevre.auth.ClientCredentials({
-        domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-        clientId: <string>process.env.CHEVRE_CLIENT_ID,
-        clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
-        scopes: [],
-        state: ''
-    });
-
-    const offerService = new ttts.chevre.service.Offer({
-        endpoint: projectDetails.settings.chevre.endpoint,
+    const eventService = new cinerinoapi.service.Event({
+        endpoint: <string>process.env.CINERINO_API_ENDPOINT,
         auth: authClient
     });
-    const offerCatalogService = new ttts.chevre.service.OfferCatalog({
-        endpoint: projectDetails.settings.chevre.endpoint,
-        auth: authClient
-    });
-    const placeService = new ttts.chevre.service.Place({
-        endpoint: projectDetails.settings.chevre.endpoint,
-        auth: authClient
-    });
-    const eventService = new ttts.chevre.service.Event({
-        endpoint: projectDetails.settings.chevre.endpoint,
-        auth: authClient
-    });
-
-    // 劇場検索
-    const searchMovieTheatersResult = await placeService.searchMovieTheaters({
-        project: { ids: [project.id] }
-    });
-    const movieTheaterWithoutScreeningRoom = searchMovieTheatersResult.data.find((d) => d.branchCode === setting.theater);
-    if (movieTheaterWithoutScreeningRoom === undefined) {
-        throw new Error('Movie Theater Not Found');
-    }
-    const movieTheater = await placeService.findMovieTheaterById({ id: movieTheaterWithoutScreeningRoom.id });
-    debug('movieTheater found', movieTheater.id);
-
-    const screeningRoom = movieTheater.containsPlace[0];
 
     // 劇場作品検索
     const workPerformedIdentifier = setting.film;
@@ -130,23 +105,6 @@ export async function main(connection: mongoose.Connection): Promise<void> {
     // 券種検索
     const offerCatalogCode = setting.ticket_type_group;
     const offerCodes = setting.offerCodes;
-
-    const searchOfferCatalogsResult = await offerCatalogService.search({
-        limit: 1,
-        project: { id: { $eq: project.id } },
-        identifier: { $eq: offerCatalogCode }
-    });
-    const offerCatalog = searchOfferCatalogsResult.data[0];
-
-    // 特定のコードの券種しか取り込まない
-    const searchTicketTypesResult = await offerService.search({
-        limit: 100,
-        project: { id: { $eq: project.id } },
-        id: { $in: offerCatalog.itemListElement.map((element) => element.id) },
-        identifier: { $in: offerCodes }
-    });
-    const ticketTypes = searchTicketTypesResult.data;
-    debug(ticketTypes.length, 'ticketTypes found');
 
     // 上映スケジュール取得
     const limit = 100;
@@ -167,73 +125,103 @@ export async function main(connection: mongoose.Connection): Promise<void> {
         events.push(...searchScreeningEventsResult.data);
     }
 
-    const performanceRepo = new ttts.repository.Performance(connection);
-    const taskRepo = new ttts.repository.Task(connection);
-
-    // イベントごとに永続化トライ
-    for (const e of events) {
-        try {
-            let tourNumber = '';
-            if (Array.isArray(e.additionalProperty)) {
-                const tourNumberProperty = e.additionalProperty.find((p) => p.name === 'tourNumber');
-                if (tourNumberProperty !== undefined) {
-                    tourNumber = tourNumberProperty.value;
-                }
+    if (events.length > 0) {
+        // ひとつめのイベントのオファー検索
+        const offers = await eventService.searchTicketOffers({
+            event: { id: events[0].id },
+            seller: {
+                typeOf: (<any>events[0]).offers.seller.typeOf,
+                id: (<any>events[0]).offers.seller.id
+            },
+            store: {
+                id: <string>process.env.ST_POS_ID
             }
+        });
 
-            // パフォーマンス登録
-            const performance: ttts.factory.performance.IPerformance = {
-                id: e.id,
-                doorTime: moment(e.doorTime)
-                    .toDate(),
-                startDate: moment(e.startDate)
-                    .toDate(),
-                endDate: moment(e.endDate)
-                    .toDate(),
-                duration: <string>e.superEvent.duration,
-                superEvent: e.superEvent,
-                location: {
-                    id: <string>screeningRoom.id,
-                    branchCode: screeningRoom.branchCode,
-                    name: <any>screeningRoom.name
-                },
-                additionalProperty: e.additionalProperty,
-                ttts_extension: {
-                    tour_number: tourNumber,
-                    ev_service_status: ttts.factory.performance.EvServiceStatus.Normal,
-                    ev_service_update_user: '',
-                    online_sales_status: ttts.factory.performance.OnlineSalesStatus.Normal,
-                    online_sales_update_user: '',
-                    refund_status: ttts.factory.performance.RefundStatus.None,
-                    refund_update_user: '',
-                    refunded_count: 0
-                },
-                ticket_type_group: {
-                    id: offerCatalogCode,
-                    ticket_types: ticketTypes,
-                    name: { ja: 'トップデッキツアー料金改定', en: 'Top Deck Tour' }
+        const unitPriceOffers: ttts.chevre.factory.offer.IUnitPriceOffer[] = offers
+            // 指定のオファーコードに限定する
+            .filter((o) => offerCodes.includes(o.identifier))
+            .map((o) => {
+                // tslint:disable-next-line:max-line-length
+                const unitPriceSpec = <ttts.chevre.factory.priceSpecification.IPriceSpecification<ttts.chevre.factory.priceSpecificationType.UnitPriceSpecification>>
+                    o.priceSpecification.priceComponent.find(
+                        (p) => p.typeOf === cinerinoapi.factory.chevre.priceSpecificationType.UnitPriceSpecification
+                    );
+
+                return {
+                    ...o,
+                    priceSpecification: unitPriceSpec
+                };
+            });
+
+        const performanceRepo = new ttts.repository.Performance(connection);
+        const taskRepo = new ttts.repository.Task(connection);
+
+        // イベントごとに永続化トライ
+        for (const e of events) {
+            try {
+                let tourNumber = '';
+                if (Array.isArray(e.additionalProperty)) {
+                    const tourNumberProperty = e.additionalProperty.find((p) => p.name === 'tourNumber');
+                    if (tourNumberProperty !== undefined) {
+                        tourNumber = tourNumberProperty.value;
+                    }
                 }
-            };
 
-            await performanceRepo.saveIfNotExists(performance);
+                // パフォーマンス登録
+                const performance: ttts.factory.performance.IPerformance = {
+                    id: e.id,
+                    doorTime: moment(e.doorTime)
+                        .toDate(),
+                    startDate: moment(e.startDate)
+                        .toDate(),
+                    endDate: moment(e.endDate)
+                        .toDate(),
+                    duration: <string>e.superEvent.duration,
+                    superEvent: e.superEvent,
+                    location: {
+                        id: e.location.branchCode,
+                        branchCode: e.location.branchCode,
+                        name: <any>e.location.name
+                    },
+                    additionalProperty: e.additionalProperty,
+                    ttts_extension: {
+                        tour_number: tourNumber,
+                        ev_service_status: ttts.factory.performance.EvServiceStatus.Normal,
+                        ev_service_update_user: '',
+                        online_sales_status: ttts.factory.performance.OnlineSalesStatus.Normal,
+                        online_sales_update_user: '',
+                        refund_status: ttts.factory.performance.RefundStatus.None,
+                        refund_update_user: '',
+                        refunded_count: 0
+                    },
+                    ticket_type_group: {
+                        id: offerCatalogCode,
+                        ticket_types: unitPriceOffers,
+                        name: { ja: 'トップデッキツアー料金改定', en: 'Top Deck Tour' }
+                    }
+                };
 
-            // 集計タスク作成
-            const aggregateTask: ttts.factory.task.aggregateEventReservations.IAttributes = {
-                name: <any>ttts.factory.taskName.AggregateEventReservations,
-                project: project,
-                status: ttts.factory.taskStatus.Ready,
-                runsAt: new Date(),
-                remainingNumberOfTries: 3,
-                numberOfTried: 0,
-                executionResults: [],
-                data: { id: performance.id }
-            };
-            await taskRepo.save(<any>aggregateTask);
-        } catch (error) {
-            // tslint:disable-next-line:no-single-line-block-comment
-            /* istanbul ignore next */
-            // tslint:disable-next-line:no-console
-            console.error(error);
+                await performanceRepo.saveIfNotExists(performance);
+
+                // 集計タスク作成
+                const aggregateTask: ttts.factory.task.aggregateEventReservations.IAttributes = {
+                    name: <any>ttts.factory.taskName.AggregateEventReservations,
+                    project: project,
+                    status: ttts.factory.taskStatus.Ready,
+                    runsAt: new Date(),
+                    remainingNumberOfTries: 3,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: { id: performance.id }
+                };
+                await taskRepo.save(<any>aggregateTask);
+            } catch (error) {
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore next */
+                // tslint:disable-next-line:no-console
+                console.error(error);
+            }
         }
     }
 }
