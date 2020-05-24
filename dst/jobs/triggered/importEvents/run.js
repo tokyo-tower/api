@@ -69,7 +69,8 @@ function main(connection) {
         debug(importFrom, importThrough);
         const eventService = new cinerinoapi.service.Event({
             endpoint: process.env.CINERINO_API_ENDPOINT,
-            auth: authClient
+            auth: authClient,
+            project: { id: project.id }
         });
         const offerCatalogCode = setting.ticket_type_group;
         const offerCodes = setting.offerCodes;

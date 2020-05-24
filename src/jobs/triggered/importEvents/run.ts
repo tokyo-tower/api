@@ -80,7 +80,8 @@ export async function main(connection: mongoose.Connection): Promise<void> {
 
     const eventService = new cinerinoapi.service.Event({
         endpoint: <string>process.env.CINERINO_API_ENDPOINT,
-        auth: authClient
+        auth: authClient,
+        project: { id: project.id }
     });
 
     const offerCatalogCode = setting.ticket_type_group;
