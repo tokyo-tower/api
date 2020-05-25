@@ -24,7 +24,6 @@ const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
-const reservation_1 = require("../util/reservation");
 const project = { typeOf: 'Project', id: process.env.PROJECT_ID };
 const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
@@ -109,7 +108,7 @@ reservationsRouter.get('/findByOrderNumber/:orderNumber', permitScopes_1.default
             // tslint:disable-next-line:no-console
             console.error('Chevre checkInScreeningEventReservations failed:', error);
         }
-        res.json(reservations.map(reservation_1.tttsReservation2chevre));
+        res.json(reservations);
     }
     catch (error) {
         next(error);
@@ -136,7 +135,7 @@ reservationsRouter.get('/:id', permitScopes_1.default(['transactions', 'reservat
             // tslint:disable-next-line:no-console
             console.error('Chevre checkInScreeningEventReservations failed:', error);
         }
-        res.json(reservation_1.tttsReservation2chevre(reservation));
+        res.json(reservation);
     }
     catch (error) {
         next(error);
@@ -189,7 +188,7 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), .
         const count = yield reservationRepo.count(conditions);
         const reservations = yield reservationRepo.search(conditions);
         res.set('X-Total-Count', count.toString())
-            .json(reservations.map(reservation_1.tttsReservation2chevre));
+            .json(reservations);
     }
     catch (error) {
         next(error);
@@ -347,33 +346,35 @@ function cancelReservation(params) {
             endpoint: projectDetails.settings.chevre.endpoint,
             auth: cinerinoAuthClient
         });
-        const reservationService = new chevre.service.Reservation({
-            endpoint: projectDetails.settings.chevre.endpoint,
-            auth: cinerinoAuthClient
-        });
+        // const reservationService = new chevre.service.Reservation({
+        //     endpoint: projectDetails.settings.chevre.endpoint,
+        //     auth: cinerinoAuthClient
+        // });
         const reservation = yield repos.reservation.findById(params);
-        let extraReservations = [];
+        // let extraReservations: chevre.factory.reservation.IReservation<ttts.factory.chevre.reservationType.EventReservation>[] = [];
         // 車椅子余分確保があればそちらもキャンセル
-        if (reservation.additionalProperty !== undefined) {
-            const extraSeatNumbersProperty = reservation.additionalProperty.find((p) => p.name === 'extraSeatNumbers');
-            if (extraSeatNumbersProperty !== undefined) {
-                const extraSeatNumbers = JSON.parse(extraSeatNumbersProperty.value);
-                // このイベントの予約から余分確保分を検索
-                if (Array.isArray(extraSeatNumbers) && extraSeatNumbers.length > 0) {
-                    const searchExtraReservationsResult = yield reservationService.search({
-                        limit: 100,
-                        typeOf: ttts.factory.chevre.reservationType.EventReservation,
-                        reservationFor: { id: reservation.reservationFor.id },
-                        reservationNumbers: [reservation.reservationNumber],
-                        reservedTicket: {
-                            ticketedSeat: { seatNumbers: extraSeatNumbers }
-                        }
-                    });
-                    extraReservations = searchExtraReservationsResult.data;
-                }
-            }
-        }
-        const targetReservations = [reservation, ...extraReservations];
+        // if (reservation.additionalProperty !== undefined) {
+        //     const extraSeatNumbersProperty = reservation.additionalProperty.find((p) => p.name === 'extraSeatNumbers');
+        //     if (extraSeatNumbersProperty !== undefined) {
+        //         const extraSeatNumbers = JSON.parse(extraSeatNumbersProperty.value);
+        //         // このイベントの予約から余分確保分を検索
+        //         if (Array.isArray(extraSeatNumbers) && extraSeatNumbers.length > 0) {
+        //             const searchExtraReservationsResult =
+        //                 await reservationService.search<ttts.factory.chevre.reservationType.EventReservation>({
+        //                     limit: 100,
+        //                     typeOf: ttts.factory.chevre.reservationType.EventReservation,
+        //                     reservationFor: { id: reservation.reservationFor.id },
+        //                     reservationNumbers: [reservation.reservationNumber],
+        //                     reservedTicket: {
+        //                         ticketedSeat: { seatNumbers: extraSeatNumbers }
+        //                     }
+        //                 });
+        //             extraReservations = searchExtraReservationsResult.data;
+        //         }
+        //     }
+        // }
+        // const targetReservations = [reservation, ...extraReservations];
+        const targetReservations = [reservation];
         yield Promise.all(targetReservations.map((r) => __awaiter(this, void 0, void 0, function* () {
             const cancelReservationTransaction = yield cancelReservationService.start({
                 project: project,
