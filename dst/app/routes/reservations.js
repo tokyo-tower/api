@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.cancelReservation = void 0;
 /**
  * 予約ルーター
  */
@@ -335,12 +336,10 @@ exports.default = reservationsRouter;
  */
 function cancelReservation(params) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
+        var _a, _b;
         const projectDetails = yield repos.project.findById({ id: project.id });
-        if (projectDetails.settings === undefined) {
-            throw new ttts.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
-        if (projectDetails.settings.chevre === undefined) {
-            throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
+        if (typeof ((_b = (_a = projectDetails.settings) === null || _a === void 0 ? void 0 : _a.chevre) === null || _b === void 0 ? void 0 : _b.endpoint) !== 'string') {
+            throw new ttts.factory.errors.ServiceUnavailable('Project settings not satisfied');
         }
         const cancelReservationService = new chevre.service.transaction.CancelReservation({
             endpoint: projectDetails.settings.chevre.endpoint,
@@ -392,7 +391,7 @@ function cancelReservation(params) {
                     .add(1, 'minutes')
                     .toDate()
             });
-            yield cancelReservationService.confirm(cancelReservationTransaction);
+            yield cancelReservationService.confirm({ id: cancelReservationTransaction.id });
             // 東京タワーDB側の予約もステータス変更
             yield repos.reservation.cancel({ id: r.id });
         })));

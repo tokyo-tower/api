@@ -54,9 +54,9 @@
     "nyc": "^11.4.1",
     "rimraf": "^2.6.2",
     "ts-node": "^8.3.0",
-    "tslint": "^5.18.0",
+    "tslint": "^6.1.2",
     "tslint-microsoft-contrib": "^6.2.0",
-    "typescript": "3.6.4"
+    "typescript": "^3.9.3"
   },
   "engines": {
     "node": "8.9.0",

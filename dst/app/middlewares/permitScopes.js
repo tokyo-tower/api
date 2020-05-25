@@ -5,6 +5,7 @@
  * @module middlewares/permitScopes
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.isScopesPermitted = void 0;
 const ttts = require("@tokyotower/domain");
 const createDebug = require("debug");
 const debug = createDebug('ttts-api:middlewares:permitScopes');

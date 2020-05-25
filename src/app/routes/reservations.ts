@@ -400,11 +400,8 @@ export function cancelReservation(params: { id: string }) {
         task: ttts.repository.Task;
     }) => {
         const projectDetails = await repos.project.findById({ id: project.id });
-        if (projectDetails.settings === undefined) {
-            throw new ttts.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
-        if (projectDetails.settings.chevre === undefined) {
-            throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
+        if (typeof projectDetails.settings?.chevre?.endpoint !== 'string') {
+            throw new ttts.factory.errors.ServiceUnavailable('Project settings not satisfied');
         }
 
         const cancelReservationService = new chevre.service.transaction.CancelReservation({
@@ -464,7 +461,7 @@ export function cancelReservation(params: { id: string }) {
                     .toDate()
             });
 
-            await cancelReservationService.confirm(cancelReservationTransaction);
+            await cancelReservationService.confirm({ id: cancelReservationTransaction.id });
 
             // 東京タワーDB側の予約もステータス変更
             await repos.reservation.cancel({ id: r.id });
