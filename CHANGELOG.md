@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - イベントインポート時の検索先をCinerinoへ変更
 - 予約の発券&入場処理をCinerinoへ移行
+- 予約集計処理をCinerino使用へ変更
 
 ### Deprecated
 
