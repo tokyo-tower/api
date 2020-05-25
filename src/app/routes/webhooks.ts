@@ -146,4 +146,25 @@ webhooksRouter.post(
     }
 );
 
+/**
+ * イベント変更イベント
+ */
+webhooksRouter.post(
+    '/onEventChanged',
+    async (req, res, next) => {
+        try {
+            const event = <ttts.factory.chevre.event.IEvent<ttts.factory.chevre.eventType.ScreeningEvent>>req.body.data;
+
+            if (typeof event.id === 'string' && typeof event.eventStatus === 'string') {
+                // イベント更新処理
+            }
+
+            res.status(NO_CONTENT)
+                .end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 export default webhooksRouter;

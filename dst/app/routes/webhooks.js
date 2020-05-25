@@ -126,4 +126,20 @@ webhooksRouter.post('/onReservationStatusChanged', (req, res, next) => __awaiter
         next(error);
     }
 }));
+/**
+ * イベント変更イベント
+ */
+webhooksRouter.post('/onEventChanged', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const event = req.body.data;
+        if (typeof event.id === 'string' && typeof event.eventStatus === 'string') {
+            // イベント更新処理
+        }
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 exports.default = webhooksRouter;
