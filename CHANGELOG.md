@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - イベント変更イベント受信エンドポイントを追加
+- Cinerinoイベントインポートタスクを追加
 
 ### Changed
 

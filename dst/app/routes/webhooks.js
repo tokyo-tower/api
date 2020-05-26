@@ -132,8 +132,20 @@ webhooksRouter.post('/onReservationStatusChanged', (req, res, next) => __awaiter
 webhooksRouter.post('/onEventChanged', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const event = req.body.data;
+        // const taskRepo = new ttts.repository.Task(mongoose.connection);
         if (typeof event.id === 'string' && typeof event.eventStatus === 'string') {
             // イベント更新処理
+            // const task: ttts.factory.task.IAttributes<any> = {
+            //     name: <any>'importEvent',
+            //     project: { typeOf: cinerinoapi.factory.organizationType.Project, id: event.project.id },
+            //     status: ttts.factory.taskStatus.Ready,
+            //     runsAt: new Date(), // なるはやで実行
+            //     remainingNumberOfTries: 10,
+            //     numberOfTried: 0,
+            //     executionResults: [],
+            //     data: event
+            // };
+            // await taskRepo.save(task);
         }
         res.status(http_status_1.NO_CONTENT)
             .end();
