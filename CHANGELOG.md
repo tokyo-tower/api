@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- イベントインポート処理をイベント変更時処理へ移行
+
 ### Deprecated
 
 ### Removed

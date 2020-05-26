@@ -376,7 +376,6 @@ reservationsRouter.put(
             await cancelReservation({ id: req.params.id })({
                 reservation: new ttts.repository.Reservation(mongoose.connection),
                 task: new ttts.repository.Task(mongoose.connection),
-                // ticketTypeCategoryRateLimit: new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
                 project: new ttts.repository.Project(mongoose.connection)
             });
 
@@ -409,62 +408,28 @@ export function cancelReservation(params: { id: string }) {
             auth: cinerinoAuthClient
         });
 
-        // const reservationService = new chevre.service.Reservation({
-        //     endpoint: projectDetails.settings.chevre.endpoint,
-        //     auth: cinerinoAuthClient
-        // });
-
         const reservation = await repos.reservation.findById(params);
-        // let extraReservations: chevre.factory.reservation.IReservation<ttts.factory.chevre.reservationType.EventReservation>[] = [];
 
-        // 車椅子余分確保があればそちらもキャンセル
-        // if (reservation.additionalProperty !== undefined) {
-        //     const extraSeatNumbersProperty = reservation.additionalProperty.find((p) => p.name === 'extraSeatNumbers');
-        //     if (extraSeatNumbersProperty !== undefined) {
-        //         const extraSeatNumbers = JSON.parse(extraSeatNumbersProperty.value);
+        const cancelReservationTransaction = await cancelReservationService.start({
+            project: project,
+            typeOf: ttts.factory.chevre.transactionType.CancelReservation,
+            agent: {
+                typeOf: ttts.factory.personType.Person,
+                id: 'tokyotower',
+                name: '@tokyotower/domain'
+            },
+            object: {
+                reservation: { id: reservation.id }
+            },
+            expires: moment()
+                // tslint:disable-next-line:no-magic-numbers
+                .add(1, 'minutes')
+                .toDate()
+        });
 
-        //         // このイベントの予約から余分確保分を検索
-        //         if (Array.isArray(extraSeatNumbers) && extraSeatNumbers.length > 0) {
-        //             const searchExtraReservationsResult =
-        //                 await reservationService.search<ttts.factory.chevre.reservationType.EventReservation>({
-        //                     limit: 100,
-        //                     typeOf: ttts.factory.chevre.reservationType.EventReservation,
-        //                     reservationFor: { id: reservation.reservationFor.id },
-        //                     reservationNumbers: [reservation.reservationNumber],
-        //                     reservedTicket: {
-        //                         ticketedSeat: { seatNumbers: extraSeatNumbers }
-        //                     }
-        //                 });
-        //             extraReservations = searchExtraReservationsResult.data;
-        //         }
-        //     }
-        // }
+        await cancelReservationService.confirm({ id: cancelReservationTransaction.id });
 
-        // const targetReservations = [reservation, ...extraReservations];
-        const targetReservations = [reservation];
-
-        await Promise.all(targetReservations.map(async (r) => {
-            const cancelReservationTransaction = await cancelReservationService.start({
-                project: project,
-                typeOf: ttts.factory.chevre.transactionType.CancelReservation,
-                agent: {
-                    typeOf: ttts.factory.personType.Person,
-                    id: 'tokyotower',
-                    name: '@tokyotower/domain'
-                },
-                object: {
-                    reservation: { id: r.id }
-                },
-                expires: moment()
-                    // tslint:disable-next-line:no-magic-numbers
-                    .add(1, 'minutes')
-                    .toDate()
-            });
-
-            await cancelReservationService.confirm({ id: cancelReservationTransaction.id });
-
-            // 東京タワーDB側の予約もステータス変更
-            await repos.reservation.cancel({ id: r.id });
-        }));
+        // 東京タワーDB側の予約もステータス変更
+        await repos.reservation.cancel({ id: reservation.id });
     };
 }
