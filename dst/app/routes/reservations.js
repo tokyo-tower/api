@@ -344,8 +344,7 @@ function cancelReservation(params) {
             endpoint: projectDetails.settings.chevre.endpoint,
             auth: cinerinoAuthClient
         });
-        const reservation = yield repos.reservation.findById(params);
-        const cancelReservationTransaction = yield cancelReservationService.start({
+        yield cancelReservationService.startAndConfirm({
             project: project,
             typeOf: ttts.factory.chevre.transactionType.CancelReservation,
             agent: {
@@ -354,16 +353,16 @@ function cancelReservation(params) {
                 name: '@tokyotower/domain'
             },
             object: {
-                reservation: { id: reservation.id }
+                reservation: { id: params.id }
             },
             expires: moment()
                 // tslint:disable-next-line:no-magic-numbers
                 .add(1, 'minutes')
                 .toDate()
         });
-        yield cancelReservationService.confirm({ id: cancelReservationTransaction.id });
+        // await cancelReservationService.confirm({ id: cancelReservationTransaction.id });
         // 東京タワーDB側の予約もステータス変更
-        yield repos.reservation.cancel({ id: reservation.id });
+        yield repos.reservation.cancel({ id: params.id });
     });
 }
 exports.cancelReservation = cancelReservation;
