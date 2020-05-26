@@ -51,9 +51,8 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                 let programMembership: cinerinoapi.factory.programMembership.IProgramMembership | undefined;
                 if (user.username !== undefined) {
                     programMembership = {
-                        award: [],
                         membershipNumber: user.username,
-                        programName: 'Amazon Cognito',
+                        programName: { en: 'Amazon Cognito', ja: 'Amazon Cognito' },
                         project: req.project,
                         typeOf: cinerinoapi.factory.programMembership.ProgramMembershipType.ProgramMembership,
                         url: user.iss

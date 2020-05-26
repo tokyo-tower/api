@@ -18,6 +18,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v34.1.0 - 2020-05-26
+
+### Added
+
+- イベント変更イベント受信エンドポイントを追加
+- Cinerinoイベントインポートタスクを追加
+
+### Changed
+
+- イベントインポート時の検索先をCinerinoへ変更
+- 予約の発券&入場処理をCinerinoへ移行
+- 予約集計処理をCinerino使用へ変更
+
 ## v34.0.0 - 2020-05-22
 
 ### Removed

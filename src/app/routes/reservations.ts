@@ -1,6 +1,8 @@
 /**
  * 予約ルーター
  */
+import * as chevre from '@chevre/api-nodejs-client';
+import * as cinerinoapi from '@cinerino/api-nodejs-client';
 import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
 // tslint:disable-next-line:no-submodule-imports
@@ -13,9 +15,9 @@ import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
-import { tttsReservation2chevre } from '../util/reservation';
+const project = { typeOf: <'Project'>'Project', id: <string>process.env.PROJECT_ID };
 
-const chevreAuthClient = new ttts.chevre.auth.ClientCredentials({
+const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.CHEVRE_CLIENT_ID,
     clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
@@ -92,16 +94,7 @@ reservationsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new ttts.repository.Project(mongoose.connection);
             const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
-
-            const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined) {
-                throw new ttts.factory.errors.ServiceUnavailable('Project settings undefined');
-            }
-            if (project.settings.chevre === undefined) {
-                throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
-            }
 
             // 予約検索条件
             const conditions: ttts.factory.reservation.event.ISearchConditions = {
@@ -116,17 +109,18 @@ reservationsRouter.get(
 
             // Chevreへチェックイン連携
             try {
-                const reservationService = new ttts.chevre.service.Reservation({
-                    endpoint: project.settings.chevre.endpoint,
-                    auth: chevreAuthClient
+                const reservationService = new cinerinoapi.service.Reservation({
+                    auth: cinerinoAuthClient,
+                    endpoint: <string>process.env.CINERINO_API_ENDPOINT,
+                    project: { id: project.id }
                 });
-                await reservationService.checkInScreeningEventReservations({ reservationNumber: reservations[0].reservationNumber });
+                await reservationService.checkIn({ reservationNumber: reservations[0].reservationNumber });
             } catch (error) {
                 // tslint:disable-next-line:no-console
                 console.error('Chevre checkInScreeningEventReservations failed:', error);
             }
 
-            res.json(reservations.map(tttsReservation2chevre));
+            res.json(reservations);
         } catch (error) {
             next(error);
         }
@@ -142,33 +136,25 @@ reservationsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new ttts.repository.Project(mongoose.connection);
             const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
-
-            const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined) {
-                throw new ttts.factory.errors.ServiceUnavailable('Project settings undefined');
-            }
-            if (project.settings.chevre === undefined) {
-                throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
-            }
 
             // 予約を検索
             const reservation = await reservationRepo.findById({ id: req.params.id });
 
             // Chevreへチェックイン連携
             try {
-                const reservationService = new ttts.chevre.service.Reservation({
-                    endpoint: project.settings.chevre.endpoint,
-                    auth: chevreAuthClient
+                const reservationService = new cinerinoapi.service.Reservation({
+                    auth: cinerinoAuthClient,
+                    endpoint: <string>process.env.CINERINO_API_ENDPOINT,
+                    project: { id: project.id }
                 });
-                await reservationService.checkInScreeningEventReservations({ id: reservation.id });
+                await reservationService.checkIn({ id: reservation.id });
             } catch (error) {
                 // tslint:disable-next-line:no-console
                 console.error('Chevre checkInScreeningEventReservations failed:', error);
             }
 
-            res.json(tttsReservation2chevre(reservation));
+            res.json(reservation);
         } catch (error) {
             next(error);
         }
@@ -234,7 +220,7 @@ reservationsRouter.get(
             const reservations = await reservationRepo.search(conditions);
 
             res.set('X-Total-Count', count.toString())
-                .json(reservations.map(tttsReservation2chevre));
+                .json(reservations);
         } catch (error) {
             next(error);
         }
@@ -258,17 +244,8 @@ reservationsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new ttts.repository.Project(mongoose.connection);
             const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
             const taskRepo = new ttts.repository.Task(mongoose.connection);
-
-            const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined) {
-                throw new ttts.factory.errors.ServiceUnavailable('Project settings undefined');
-            }
-            if (project.settings.chevre === undefined) {
-                throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
-            }
 
             const checkin: ttts.factory.reservation.event.ICheckin = {
                 when: moment(req.body.when)
@@ -310,14 +287,15 @@ reservationsRouter.post(
 
             // Chevreへ入場連携
             try {
-                const reservationService = new ttts.chevre.service.Reservation({
-                    endpoint: project.settings.chevre.endpoint,
-                    auth: chevreAuthClient
+                const reservationService = new cinerinoapi.service.Reservation({
+                    auth: cinerinoAuthClient,
+                    endpoint: <string>process.env.CINERINO_API_ENDPOINT,
+                    project: { id: project.id }
                 });
-                await reservationService.attendScreeningEvent(reservation);
+                await reservationService.attend({ id: reservation.id });
             } catch (error) {
                 // tslint:disable-next-line:no-console
-                console.error('Chevre attendScreeningEvent failed:', error);
+                console.error('Cinerino reservationService.attend failed:', error);
             }
 
             res.status(NO_CONTENT)
@@ -395,7 +373,7 @@ reservationsRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            await ttts.service.reserve.cancelReservation({ id: req.params.id })({
+            await cancelReservation({ id: req.params.id })({
                 reservation: new ttts.repository.Reservation(mongoose.connection),
                 task: new ttts.repository.Task(mongoose.connection),
                 // ticketTypeCategoryRateLimit: new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
@@ -411,3 +389,82 @@ reservationsRouter.put(
 );
 
 export default reservationsRouter;
+
+/**
+ * 予約をキャンセルする
+ */
+export function cancelReservation(params: { id: string }) {
+    return async (repos: {
+        project: ttts.repository.Project;
+        reservation: ttts.repository.Reservation;
+        task: ttts.repository.Task;
+    }) => {
+        const projectDetails = await repos.project.findById({ id: project.id });
+        if (typeof projectDetails.settings?.chevre?.endpoint !== 'string') {
+            throw new ttts.factory.errors.ServiceUnavailable('Project settings not satisfied');
+        }
+
+        const cancelReservationService = new chevre.service.transaction.CancelReservation({
+            endpoint: projectDetails.settings.chevre.endpoint,
+            auth: cinerinoAuthClient
+        });
+
+        // const reservationService = new chevre.service.Reservation({
+        //     endpoint: projectDetails.settings.chevre.endpoint,
+        //     auth: cinerinoAuthClient
+        // });
+
+        const reservation = await repos.reservation.findById(params);
+        // let extraReservations: chevre.factory.reservation.IReservation<ttts.factory.chevre.reservationType.EventReservation>[] = [];
+
+        // 車椅子余分確保があればそちらもキャンセル
+        // if (reservation.additionalProperty !== undefined) {
+        //     const extraSeatNumbersProperty = reservation.additionalProperty.find((p) => p.name === 'extraSeatNumbers');
+        //     if (extraSeatNumbersProperty !== undefined) {
+        //         const extraSeatNumbers = JSON.parse(extraSeatNumbersProperty.value);
+
+        //         // このイベントの予約から余分確保分を検索
+        //         if (Array.isArray(extraSeatNumbers) && extraSeatNumbers.length > 0) {
+        //             const searchExtraReservationsResult =
+        //                 await reservationService.search<ttts.factory.chevre.reservationType.EventReservation>({
+        //                     limit: 100,
+        //                     typeOf: ttts.factory.chevre.reservationType.EventReservation,
+        //                     reservationFor: { id: reservation.reservationFor.id },
+        //                     reservationNumbers: [reservation.reservationNumber],
+        //                     reservedTicket: {
+        //                         ticketedSeat: { seatNumbers: extraSeatNumbers }
+        //                     }
+        //                 });
+        //             extraReservations = searchExtraReservationsResult.data;
+        //         }
+        //     }
+        // }
+
+        // const targetReservations = [reservation, ...extraReservations];
+        const targetReservations = [reservation];
+
+        await Promise.all(targetReservations.map(async (r) => {
+            const cancelReservationTransaction = await cancelReservationService.start({
+                project: project,
+                typeOf: ttts.factory.chevre.transactionType.CancelReservation,
+                agent: {
+                    typeOf: ttts.factory.personType.Person,
+                    id: 'tokyotower',
+                    name: '@tokyotower/domain'
+                },
+                object: {
+                    reservation: { id: r.id }
+                },
+                expires: moment()
+                    // tslint:disable-next-line:no-magic-numbers
+                    .add(1, 'minutes')
+                    .toDate()
+            });
+
+            await cancelReservationService.confirm({ id: cancelReservationTransaction.id });
+
+            // 東京タワーDB側の予約もステータス変更
+            await repos.reservation.cancel({ id: r.id });
+        }));
+    };
+}

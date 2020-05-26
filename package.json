@@ -9,9 +9,10 @@
     }
   ],
   "dependencies": {
-    "@cinerino/api-nodejs-client": "2.0.0-alpha.73",
+    "@chevre/api-nodejs-client": "^3.9.0",
+    "@cinerino/api-nodejs-client": "2.0.0-alpha.91",
     "@motionpicture/express-middleware": "^0.1.1",
-    "@tokyotower/domain": "^42.0.0",
+    "@tokyotower/domain": "^43.0.0",
     "basic-auth": "^2.0.0",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
@@ -53,9 +54,9 @@
     "nyc": "^11.4.1",
     "rimraf": "^2.6.2",
     "ts-node": "^8.3.0",
-    "tslint": "^5.18.0",
+    "tslint": "^6.1.2",
     "tslint-microsoft-contrib": "^6.2.0",
-    "typescript": "3.6.4"
+    "typescript": "^3.9.3"
   },
   "engines": {
     "node": "8.9.0",
@@ -82,5 +83,5 @@
     "version": "git add -A",
     "postversion": "git push origin --tags"
   },
-  "version": "34.0.0"
+  "version": "34.1.0"
 }
