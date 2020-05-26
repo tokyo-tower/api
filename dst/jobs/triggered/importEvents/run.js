@@ -102,7 +102,7 @@ function main(connection) {
                     id: events[0].offers.seller.id
                 },
                 store: {
-                    id: process.env.ST_POS_ID
+                    id: process.env.CHEVRE_CLIENT_ID
                 }
             });
             const unitPriceOffers = offers

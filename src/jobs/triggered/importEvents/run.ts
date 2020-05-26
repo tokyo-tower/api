@@ -115,7 +115,7 @@ export async function main(connection: mongoose.Connection): Promise<void> {
                 id: (<any>events[0]).offers.seller.id
             },
             store: {
-                id: <string>process.env.ST_POS_ID
+                id: <string>process.env.CHEVRE_CLIENT_ID
             }
         });
 
