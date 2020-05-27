@@ -1,7 +1,6 @@
 /**
  * 予約ルーター
  */
-import * as chevre from '@chevre/api-nodejs-client';
 import * as cinerinoapi from '@cinerino/api-nodejs-client';
 import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
@@ -373,7 +372,10 @@ reservationsRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            await cancelReservation({ id: req.params.id })({
+            await cancelReservation({
+                req: req,
+                id: req.params.id
+            })({
                 reservation: new ttts.repository.Reservation(mongoose.connection),
                 task: new ttts.repository.Task(mongoose.connection),
                 project: new ttts.repository.Project(mongoose.connection)
@@ -392,23 +394,31 @@ export default reservationsRouter;
 /**
  * 予約をキャンセルする
  */
-export function cancelReservation(params: { id: string }) {
+export function cancelReservation(params: {
+    req: express.Request;
+    id: string;
+}) {
     return async (repos: {
         project: ttts.repository.Project;
         reservation: ttts.repository.Reservation;
         task: ttts.repository.Task;
     }) => {
-        const projectDetails = await repos.project.findById({ id: project.id });
-        if (typeof projectDetails.settings?.chevre?.endpoint !== 'string') {
-            throw new ttts.factory.errors.ServiceUnavailable('Project settings not satisfied');
-        }
+        const authClient = new cinerinoapi.auth.ClientCredentials({
+            domain: '',
+            clientId: '',
+            clientSecret: '',
+            scopes: [],
+            state: ''
+        });
+        authClient.setCredentials({ access_token: params.req.accessToken });
 
-        const cancelReservationService = new chevre.service.transaction.CancelReservation({
-            endpoint: projectDetails.settings.chevre.endpoint,
-            auth: cinerinoAuthClient
+        const reservationService = new cinerinoapi.service.Reservation({
+            auth: authClient,
+            endpoint: <string>process.env.CINERINO_API_ENDPOINT,
+            project: { id: project.id }
         });
 
-        await cancelReservationService.startAndConfirm({
+        await reservationService.cancel({
             project: project,
             typeOf: ttts.factory.chevre.transactionType.CancelReservation,
             agent: {
@@ -424,8 +434,6 @@ export function cancelReservation(params: { id: string }) {
                 .add(1, 'minutes')
                 .toDate()
         });
-
-        // await cancelReservationService.confirm({ id: cancelReservationTransaction.id });
 
         // 東京タワーDB側の予約もステータス変更
         await repos.reservation.cancel({ id: params.id });
