@@ -212,16 +212,6 @@ placeOrderTransactionsRouter.post(
                 project: { id: project.id }
             });
 
-            // 券種詳細取得
-            // const projectRepo = new ttts.repository.Project(mongoose.connection);
-            // const projectDetails = await projectRepo.findById({ id: req.project.id });
-            // if (projectDetails.settings === undefined) {
-            //     throw new ttts.factory.errors.ServiceUnavailable('Project settings undefined');
-            // }
-            // if (projectDetails.settings.chevre === undefined) {
-            //     throw new ttts.factory.errors.ServiceUnavailable('Project settings not found');
-            // }
-
             // tslint:disable-next-line:max-line-length
             let action: cinerinoapi.factory.action.authorize.offer.seatReservation.IAction<cinerinoapi.factory.service.webAPI.Identifier.Chevre> | undefined;
             try {

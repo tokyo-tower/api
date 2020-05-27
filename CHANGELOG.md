@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - イベントインポート処理をイベント変更時処理へ移行
 - Chevre予約取消をCinerinoで処理するように変更
+- 不要なイベント集計データ削除を集計処理後に実行するように調整
+- 入場ゲートリポジトリをプロセス起動時に初期化するように変更
 
 ### Deprecated
 
