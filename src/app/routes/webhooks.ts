@@ -155,22 +155,22 @@ webhooksRouter.post(
         try {
             const event = <ttts.factory.chevre.event.IEvent<ttts.factory.chevre.eventType.ScreeningEvent>>req.body.data;
 
-            // const taskRepo = new ttts.repository.Task(mongoose.connection);
+            const taskRepo = new ttts.repository.Task(mongoose.connection);
 
             if (typeof event.id === 'string' && typeof event.eventStatus === 'string') {
                 // イベント更新処理
-                // const task: ttts.factory.task.IAttributes<any> = {
-                //     name: <any>'importEvent',
-                //     project: { typeOf: cinerinoapi.factory.organizationType.Project, id: event.project.id },
-                //     status: ttts.factory.taskStatus.Ready,
-                //     runsAt: new Date(), // なるはやで実行
-                //     remainingNumberOfTries: 10,
-                //     numberOfTried: 0,
-                //     executionResults: [],
-                //     data: event
-                // };
+                const task: ttts.factory.task.IAttributes<any> = {
+                    name: <any>'importEvent',
+                    project: { typeOf: cinerinoapi.factory.organizationType.Project, id: event.project.id },
+                    status: ttts.factory.taskStatus.Ready,
+                    runsAt: new Date(),
+                    remainingNumberOfTries: 2,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: event
+                };
 
-                // await taskRepo.save(task);
+                await taskRepo.save(task);
             }
 
             res.status(NO_CONTENT)

@@ -1,7 +1,6 @@
 /**
  * 予約ルーター
  */
-import * as chevre from '@chevre/api-nodejs-client';
 import * as cinerinoapi from '@cinerino/api-nodejs-client';
 import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
@@ -373,10 +372,12 @@ reservationsRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            await cancelReservation({ id: req.params.id })({
+            await cancelReservation({
+                req: req,
+                id: req.params.id
+            })({
                 reservation: new ttts.repository.Reservation(mongoose.connection),
                 task: new ttts.repository.Task(mongoose.connection),
-                // ticketTypeCategoryRateLimit: new ttts.repository.rateLimit.TicketTypeCategory(redisClient),
                 project: new ttts.repository.Project(mongoose.connection)
             });
 
@@ -393,78 +394,48 @@ export default reservationsRouter;
 /**
  * 予約をキャンセルする
  */
-export function cancelReservation(params: { id: string }) {
+export function cancelReservation(params: {
+    req: express.Request;
+    id: string;
+}) {
     return async (repos: {
         project: ttts.repository.Project;
         reservation: ttts.repository.Reservation;
         task: ttts.repository.Task;
     }) => {
-        const projectDetails = await repos.project.findById({ id: project.id });
-        if (typeof projectDetails.settings?.chevre?.endpoint !== 'string') {
-            throw new ttts.factory.errors.ServiceUnavailable('Project settings not satisfied');
-        }
+        const authClient = new cinerinoapi.auth.ClientCredentials({
+            domain: '',
+            clientId: '',
+            clientSecret: '',
+            scopes: [],
+            state: ''
+        });
+        authClient.setCredentials({ access_token: params.req.accessToken });
 
-        const cancelReservationService = new chevre.service.transaction.CancelReservation({
-            endpoint: projectDetails.settings.chevre.endpoint,
-            auth: cinerinoAuthClient
+        const reservationService = new cinerinoapi.service.Reservation({
+            auth: authClient,
+            endpoint: <string>process.env.CINERINO_API_ENDPOINT,
+            project: { id: project.id }
         });
 
-        // const reservationService = new chevre.service.Reservation({
-        //     endpoint: projectDetails.settings.chevre.endpoint,
-        //     auth: cinerinoAuthClient
-        // });
+        await reservationService.cancel({
+            project: project,
+            typeOf: ttts.factory.chevre.transactionType.CancelReservation,
+            agent: {
+                typeOf: ttts.factory.personType.Person,
+                id: 'tokyotower',
+                name: '@tokyotower/domain'
+            },
+            object: {
+                reservation: { id: params.id }
+            },
+            expires: moment()
+                // tslint:disable-next-line:no-magic-numbers
+                .add(1, 'minutes')
+                .toDate()
+        });
 
-        const reservation = await repos.reservation.findById(params);
-        // let extraReservations: chevre.factory.reservation.IReservation<ttts.factory.chevre.reservationType.EventReservation>[] = [];
-
-        // 車椅子余分確保があればそちらもキャンセル
-        // if (reservation.additionalProperty !== undefined) {
-        //     const extraSeatNumbersProperty = reservation.additionalProperty.find((p) => p.name === 'extraSeatNumbers');
-        //     if (extraSeatNumbersProperty !== undefined) {
-        //         const extraSeatNumbers = JSON.parse(extraSeatNumbersProperty.value);
-
-        //         // このイベントの予約から余分確保分を検索
-        //         if (Array.isArray(extraSeatNumbers) && extraSeatNumbers.length > 0) {
-        //             const searchExtraReservationsResult =
-        //                 await reservationService.search<ttts.factory.chevre.reservationType.EventReservation>({
-        //                     limit: 100,
-        //                     typeOf: ttts.factory.chevre.reservationType.EventReservation,
-        //                     reservationFor: { id: reservation.reservationFor.id },
-        //                     reservationNumbers: [reservation.reservationNumber],
-        //                     reservedTicket: {
-        //                         ticketedSeat: { seatNumbers: extraSeatNumbers }
-        //                     }
-        //                 });
-        //             extraReservations = searchExtraReservationsResult.data;
-        //         }
-        //     }
-        // }
-
-        // const targetReservations = [reservation, ...extraReservations];
-        const targetReservations = [reservation];
-
-        await Promise.all(targetReservations.map(async (r) => {
-            const cancelReservationTransaction = await cancelReservationService.start({
-                project: project,
-                typeOf: ttts.factory.chevre.transactionType.CancelReservation,
-                agent: {
-                    typeOf: ttts.factory.personType.Person,
-                    id: 'tokyotower',
-                    name: '@tokyotower/domain'
-                },
-                object: {
-                    reservation: { id: r.id }
-                },
-                expires: moment()
-                    // tslint:disable-next-line:no-magic-numbers
-                    .add(1, 'minutes')
-                    .toDate()
-            });
-
-            await cancelReservationService.confirm({ id: cancelReservationTransaction.id });
-
-            // 東京タワーDB側の予約もステータス変更
-            await repos.reservation.cancel({ id: r.id });
-        }));
+        // 東京タワーDB側の予約もステータス変更
+        await repos.reservation.cancel({ id: params.id });
     };
 }
