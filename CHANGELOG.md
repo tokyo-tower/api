@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Chevre予約取消をCinerinoで処理するように変更
 - 不要なイベント集計データ削除を集計処理後に実行するように調整
 - 入場ゲートリポジトリをプロセス起動時に初期化するように変更
+- イベントに対する注文返品処理時の不要なパラメータ指定を削除
 
 ### Deprecated
 
