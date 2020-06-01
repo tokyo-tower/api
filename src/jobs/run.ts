@@ -12,6 +12,7 @@ import createPlaceOrderReport from './continuous/createPlaceOrderReport/run';
 import createReturnOrderReport from './continuous/createReturnOrderReport/run';
 import importEvent from './continuous/importEvent/run';
 import returnOrdersByPerformance from './continuous/returnOrdersByPerformance/run';
+import sendEmailMessage from './continuous/sendEmailMessage/run';
 import updateOrderReportByReservation from './continuous/updateOrderReportByReservation/run';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
@@ -26,5 +27,6 @@ export default async () => {
     await createReturnOrderReport({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await importEvent({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await returnOrdersByPerformance({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    await sendEmailMessage({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await updateOrderReportByReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
 };
