@@ -35,6 +35,7 @@
 | `REDIS_PORT`                     | true     |            | redis port                     |
 | `REDIS_KEY`                      | true     |            | redis key                      |
 | `RESOURECE_SERVER_IDENTIFIER`    | true     |            | Resource Server Identifier     |
+| `SENDGRID_API_KEY`               | true     |            | SendGrid API Key               |
 | `TOKEN_ISSUERS`                  | true     |            | Token issuers(Comma separated) |
 | `TTTS_TOKEN_SECRET`              | true     |            | Token verify secret            |
 | `WAITER_ENDPOINT`                | true     |            | Waiter endpoint                |
