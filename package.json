@@ -9,9 +9,9 @@
     }
   ],
   "dependencies": {
-    "@cinerino/api-nodejs-client": "2.0.0-alpha.92",
+    "@cinerino/api-nodejs-client": "2.0.0-alpha.93",
     "@motionpicture/express-middleware": "^0.1.1",
-    "@tokyotower/domain": "44.3.0-alpha.1",
+    "@tokyotower/domain": "44.3.0-alpha.2",
     "basic-auth": "^2.0.0",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
