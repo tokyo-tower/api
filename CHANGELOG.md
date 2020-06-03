@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v35.2.0 - 2020-06-03
+
+### Changed
+
+- イベントの注文返品をまとめて実行するように調整
+
 ## v35.1.0 - 2020-06-01
 
 ### Added
