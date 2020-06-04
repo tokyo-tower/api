@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- パフォーマンスの拡張属性更新値に返金済数と未返金数を追加
-
 ### Changed
 
 ### Deprecated
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v35.3.0 - 2020-06-03
+
+### Added
+
+- パフォーマンスの拡張属性更新値に返金済数と未返金数を追加
 
 ## v35.2.0 - 2020-06-03
 
