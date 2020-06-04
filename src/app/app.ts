@@ -12,7 +12,7 @@ import { connectMongo } from '../connectMongo';
 import errorHandler from './middlewares/errorHandler';
 import notFoundHandler from './middlewares/notFoundHandler';
 
-import adminsRouter from './routes/admins';
+// import adminsRouter from './routes/admins';
 import aggregateSalesRouter from './routes/aggregateSales';
 import healthRouter from './routes/health';
 import oauthRouter from './routes/oauth';
@@ -71,7 +71,7 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
 
 // ルーティング
-app.use('/admins', adminsRouter);
+// app.use('/admins', adminsRouter);
 app.use('/aggregateSales', aggregateSalesRouter);
 app.use('/health', healthRouter);
 app.use('/oauth', oauthRouter);

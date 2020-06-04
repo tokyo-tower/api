@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
+- 管理者サービスを削除
+
 ### Fixed
 
 ### Security
