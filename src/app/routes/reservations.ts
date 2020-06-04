@@ -17,9 +17,9 @@ import validator from '../middlewares/validator';
 const project = { typeOf: <'Project'>'Project', id: <string>process.env.PROJECT_ID };
 
 const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
-    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.CHEVRE_CLIENT_ID,
-    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    domain: <string>process.env.CINERINO_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CINERINO_CLIENT_ID,
+    clientSecret: <string>process.env.CINERINO_CLIENT_SECRET,
     scopes: [],
     state: ''
 });
