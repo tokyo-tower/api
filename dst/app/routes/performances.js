@@ -136,7 +136,7 @@ performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
 performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const performanceRepo = new ttts.repository.Performance(mongoose.connection);
-        yield performanceRepo.updateOne({ _id: req.params.id }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (req.body.reservationsAtLastUpdateDate !== undefined)
+        yield performanceRepo.updateOne({ _id: req.params.id }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (req.body.reservationsAtLastUpdateDate !== undefined)
             ? { 'ttts_extension.reservationsAtLastUpdateDate': req.body.reservationsAtLastUpdateDate }
             : undefined), (req.body.onlineSalesStatus !== undefined)
             ? { 'ttts_extension.online_sales_status': req.body.onlineSalesStatus }
@@ -156,6 +156,10 @@ performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']), (req,
                 'ttts_extension.ev_service_update_at': moment(req.body.evServiceStatusUpdateAt)
                     .toDate()
             }
+            : undefined), (typeof req.body.refundCount === 'number' || typeof req.body.refundCount === 'string')
+            ? { 'ttts_extension.refunded_count': Number(req.body.refundCount) }
+            : undefined), (typeof req.body.unrefundCount === 'number' || typeof req.body.unrefundCount === 'string')
+            ? { 'ttts_extension.unrefunded_count': Number(req.body.unrefundCount) }
             : undefined), (req.body.refundStatus !== undefined)
             ? { 'ttts_extension.refund_status': req.body.refundStatus }
             : undefined), (req.body.refundStatusUpdateUser !== undefined)

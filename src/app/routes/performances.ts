@@ -186,6 +186,13 @@ performanceRouter.put(
                                 .toDate()
                         }
                         : undefined,
+
+                    ...(typeof req.body.refundCount === 'number' || typeof req.body.refundCount === 'string')
+                        ? { 'ttts_extension.refunded_count': Number(req.body.refundCount) }
+                        : undefined,
+                    ...(typeof req.body.unrefundCount === 'number' || typeof req.body.unrefundCount === 'string')
+                        ? { 'ttts_extension.unrefunded_count': Number(req.body.unrefundCount) }
+                        : undefined,
                     ...(req.body.refundStatus !== undefined)
                         ? { 'ttts_extension.refund_status': req.body.refundStatus }
                         : undefined,
