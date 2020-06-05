@@ -10,18 +10,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- イベントに対する注文返品タスクを削除
-- Chevre認証情報をCinerinoに変更
-
 ### Deprecated
 
 ### Removed
 
-- 管理者サービスを削除
-
 ### Fixed
 
 ### Security
+
+## v36.0.0 - 2020-06-05
+
+### Changed
+
+- イベントに対する注文返品タスクを削除
+- Chevre認証情報をCinerinoに変更
+
+### Removed
+
+- 管理者サービスを削除
 
 ## v35.3.0 - 2020-06-03
 
