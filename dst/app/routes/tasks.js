@@ -14,8 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const ttts = require("@tokyotower/domain");
 const express_1 = require("express");
-// tslint:disable-next-line:no-submodule-imports
-const check_1 = require("express-validator/check");
+const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const mongoose = require("mongoose");
@@ -28,17 +27,17 @@ tasksRouter.use(authentication_1.default);
  * タスク作成
  */
 tasksRouter.post('/:name', permitScopes_1.default(['admin']), ...[
-    check_1.body('runsAt')
+    express_validator_1.body('runsAt')
         .not()
         .isEmpty()
         .withMessage((_, options) => `${options.path} is required`)
         .isISO8601(),
-    check_1.body('remainingNumberOfTries')
+    express_validator_1.body('remainingNumberOfTries')
         .not()
         .isEmpty()
         .withMessage((_, options) => `${options.path} is required`)
         .isInt(),
-    check_1.body('data')
+    express_validator_1.body('data')
         .not()
         .isEmpty()
         .withMessage((_, options) => `${options.path} is required`)
@@ -83,22 +82,22 @@ tasksRouter.get('/:name/:id', permitScopes_1.default(['admin']), validator_1.def
  * タスク検索
  */
 tasksRouter.get('', permitScopes_1.default(['admin']), ...[
-    check_1.query('runsFrom')
+    express_validator_1.query('runsFrom')
         .optional()
         .isISO8601()
         .withMessage((_, options) => `${options.path} must be ISO8601 timestamp`)
         .toDate(),
-    check_1.query('runsThrough')
+    express_validator_1.query('runsThrough')
         .optional()
         .isISO8601()
         .withMessage((_, options) => `${options.path} must be ISO8601 timestamp`)
         .toDate(),
-    check_1.query('lastTriedFrom')
+    express_validator_1.query('lastTriedFrom')
         .optional()
         .isISO8601()
         .withMessage((_, options) => `${options.path} must be ISO8601 timestamp`)
         .toDate(),
-    check_1.query('lastTriedThrough')
+    express_validator_1.query('lastTriedThrough')
         .optional()
         .isISO8601()
         .withMessage((_, options) => `${options.path} must be ISO8601 timestamp`)

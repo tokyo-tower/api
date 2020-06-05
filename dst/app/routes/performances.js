@@ -14,8 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const ttts = require("@tokyotower/domain");
 const express = require("express");
-// tslint:disable-next-line:no-submodule-imports
-const check_1 = require("express-validator/check");
+const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const mongoose = require("mongoose");
@@ -47,27 +46,27 @@ performanceRouter.get('/:id', permitScopes_1.default(['transactions', 'pos']), (
  * パフォーマンス検索
  */
 performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
-    check_1.query('startFrom')
+    express_validator_1.query('startFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('startThrough')
+    express_validator_1.query('startThrough')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('endFrom')
+    express_validator_1.query('endFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('endThrough')
+    express_validator_1.query('endThrough')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('ttts_extension.online_sales_update_at.$gte')
+    express_validator_1.query('ttts_extension.online_sales_update_at.$gte')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('ttts_extension.online_sales_update_at.$lt')
+    express_validator_1.query('ttts_extension.online_sales_update_at.$lt')
         .optional()
         .isISO8601()
         .toDate()

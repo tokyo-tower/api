@@ -3,8 +3,7 @@
  */
 import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
-// tslint:disable-next-line:no-submodule-imports
-import { query } from 'express-validator/check';
+import { query } from 'express-validator';
 import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';

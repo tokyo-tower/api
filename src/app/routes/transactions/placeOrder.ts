@@ -4,6 +4,7 @@
 import * as cinerinoapi from '@cinerino/api-nodejs-client';
 import * as ttts from '@tokyotower/domain';
 import { Router } from 'express';
+import { body } from 'express-validator';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as moment from 'moment-timezone';
 // import * as mongoose from 'mongoose';
@@ -47,14 +48,13 @@ placeOrderTransactionsRouter.use(authentication);
 placeOrderTransactionsRouter.post(
     '/start',
     permitScopes(['pos']),
-    (req, _, next) => {
-        req.checkBody('expires')
-            .notEmpty()
-            .withMessage('required')
-            .isISO8601();
-
-        next();
-    },
+    ...[
+        body('expires')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+            .isISO8601()
+    ],
     validator,
     async (req, res, next) => {
         try {
@@ -87,7 +87,7 @@ placeOrderTransactionsRouter.post(
                     body: { scope: scope }
                 }
             )
-                .then((body) => body);
+                .then((result) => result);
 
             const expires = moment(req.body.expires)
                 .toDate();
@@ -120,22 +120,24 @@ placeOrderTransactionsRouter.post(
 placeOrderTransactionsRouter.put(
     '/:transactionId/customerContact',
     permitScopes(['pos']),
-    (req, _, next) => {
-        req.checkBody('last_name')
-            .notEmpty()
-            .withMessage('required');
-        req.checkBody('first_name')
-            .notEmpty()
-            .withMessage('required');
-        req.checkBody('tel')
-            .notEmpty()
-            .withMessage('required');
-        req.checkBody('email')
-            .notEmpty()
-            .withMessage('required');
-
-        next();
-    },
+    ...[
+        body('last_name')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required'),
+        body('first_name')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required'),
+        body('tel')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required'),
+        body('email')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+    ],
     validator,
     async (req, res, next) => {
         try {

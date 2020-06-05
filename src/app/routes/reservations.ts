@@ -4,8 +4,7 @@
 import * as cinerinoapi from '@cinerino/api-nodejs-client';
 import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
-// tslint:disable-next-line:no-submodule-imports
-import { query } from 'express-validator/check';
+import { body, query } from 'express-validator';
 import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
@@ -232,14 +231,13 @@ reservationsRouter.get(
 reservationsRouter.post(
     '/:id/checkins',
     permitScopes(['reservations.checkins']),
-    (req, __, next) => {
-        req.checkBody('when', 'invalid when')
-            .notEmpty()
-            .withMessage('when is required')
-            .isISO8601();
-
-        next();
-    },
+    ...[
+        body('when')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+            .isISO8601()
+    ],
     validator,
     async (req, res, next) => {
         try {

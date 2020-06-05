@@ -17,8 +17,6 @@ const createDebug = require("debug");
 const express_1 = require("express");
 const fastCsv = require("fast-csv");
 const iconv = require("iconv-lite");
-// tslint:disable-next-line:no-submodule-imports
-// import { body, query } from 'express-validator/check';
 const moment = require("moment-timezone");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");

@@ -1,9 +1,6 @@
 /**
  * スコープ許可ミドルウェア
- *
- * @module middlewares/permitScopes
  */
-
 import * as ttts from '@tokyotower/domain';
 import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';

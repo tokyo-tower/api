@@ -5,15 +5,12 @@
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const express = require("express");
-const expressValidator = require("express-validator");
 const helmet = require("helmet");
 const connectMongo_1 = require("../connectMongo");
 const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
-// import adminsRouter from './routes/admins';
 const aggregateSales_1 = require("./routes/aggregateSales");
 const health_1 = require("./routes/health");
-const oauth_1 = require("./routes/oauth");
 const performances_1 = require("./routes/performances");
 const preview_1 = require("./routes/preview");
 const reservations_1 = require("./routes/reservations");
@@ -60,12 +57,9 @@ app.use(bodyParser.json({ limit: '50mb' }));
 // The extended option allows to choose between parsing the URL-encoded data
 // with the querystring library (when false) or the qs library (when true).
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
-app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
 // ルーティング
-// app.use('/admins', adminsRouter);
 app.use('/aggregateSales', aggregateSales_1.default);
 app.use('/health', health_1.default);
-app.use('/oauth', oauth_1.default);
 app.use('/preview', preview_1.default);
 app.use('/performances', performances_1.default);
 app.use('/reservations', reservations_1.default);

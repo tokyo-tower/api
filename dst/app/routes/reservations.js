@@ -16,8 +16,7 @@ exports.cancelReservation = void 0;
 const cinerinoapi = require("@cinerino/api-nodejs-client");
 const ttts = require("@tokyotower/domain");
 const express = require("express");
-// tslint:disable-next-line:no-submodule-imports
-const check_1 = require("express-validator/check");
+const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const mongoose = require("mongoose");
@@ -38,27 +37,27 @@ reservationsRouter.use(authentication_1.default);
  * distinct検索
  */
 reservationsRouter.get('/distinct/:field', permitScopes_1.default(['admin']), ...[
-    check_1.query('reservationFor.startFrom')
+    express_validator_1.query('reservationFor.startFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('reservationFor.startThrough')
+    express_validator_1.query('reservationFor.startThrough')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('reservationFor.endFrom')
+    express_validator_1.query('reservationFor.endFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('reservationFor.endThrough')
+    express_validator_1.query('reservationFor.endThrough')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('modifiedFrom')
+    express_validator_1.query('modifiedFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('modifiedThrough')
+    express_validator_1.query('modifiedThrough')
         .optional()
         .isISO8601()
         .toDate()
@@ -145,27 +144,27 @@ reservationsRouter.get('/:id', permitScopes_1.default(['transactions', 'reservat
  * 予約検索
  */
 reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), ...[
-    check_1.query('reservationFor.startFrom')
+    express_validator_1.query('reservationFor.startFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('reservationFor.startThrough')
+    express_validator_1.query('reservationFor.startThrough')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('reservationFor.endFrom')
+    express_validator_1.query('reservationFor.endFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('reservationFor.endThrough')
+    express_validator_1.query('reservationFor.endThrough')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('modifiedFrom')
+    express_validator_1.query('modifiedFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('modifiedThrough')
+    express_validator_1.query('modifiedThrough')
         .optional()
         .isISO8601()
         .toDate()
@@ -197,13 +196,13 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), .
 /**
  * 入場
  */
-reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.checkins']), (req, __, next) => {
-    req.checkBody('when', 'invalid when')
-        .notEmpty()
-        .withMessage('when is required')
-        .isISO8601();
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.checkins']), ...[
+    express_validator_1.body('when')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isISO8601()
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
         const taskRepo = new ttts.repository.Task(mongoose.connection);

@@ -20,8 +20,6 @@
 | `CINERINO_AUTHORIZE_SERVER_DOMAIN` | true     |            | Chevre API Settings            |
 | `CINERINO_CLIENT_ID`               | true     |            | Chevre API Settings            |
 | `CINERINO_CLIENT_SECRET`           | true     |            | Chevre API Settings            |
-| `COA_ENDPOINT`                     | true     |            | COA credentilas                |
-| `COA_REFRESH_TOKEN`                | true     |            | credentilas                    |
 | `DEBUG`                            | false    | ttts-api:* | Debug                          |
 | `JOBS_STOPPED`                     | false    | 1 or 0     | Asynchronous jobs stopped flag |
 | `LINE_NOTIFY_URL`                  | true     |            | LINE Notify URL                |

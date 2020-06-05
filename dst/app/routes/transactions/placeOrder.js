@@ -16,6 +16,7 @@ exports.ORDERS_KEY_PREFIX = void 0;
 const cinerinoapi = require("@cinerino/api-nodejs-client");
 const ttts = require("@tokyotower/domain");
 const express_1 = require("express");
+const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 // import * as mongoose from 'mongoose';
@@ -47,13 +48,13 @@ const redisClient = ttts.redis.createClient({
     tls: { servername: process.env.REDIS_HOST }
 });
 placeOrderTransactionsRouter.use(authentication_1.default);
-placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos']), (req, _, next) => {
-    req.checkBody('expires')
-        .notEmpty()
-        .withMessage('required')
-        .isISO8601();
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos']), ...[
+    express_validator_1.body('expires')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isISO8601()
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         auth.setCredentials({ access_token: req.accessToken });
         const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
@@ -79,7 +80,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos']), (re
             json: true,
             body: { scope: scope }
         })
-            .then((body) => body);
+            .then((result) => result);
         const expires = moment(req.body.expires)
             .toDate();
         const transaction = yield placeOrderService.start({
@@ -105,21 +106,24 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos']), (re
 /**
  * 購入者情報を変更する
  */
-placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['pos']), (req, _, next) => {
-    req.checkBody('last_name')
-        .notEmpty()
-        .withMessage('required');
-    req.checkBody('first_name')
-        .notEmpty()
-        .withMessage('required');
-    req.checkBody('tel')
-        .notEmpty()
-        .withMessage('required');
-    req.checkBody('email')
-        .notEmpty()
-        .withMessage('required');
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['pos']), ...[
+    express_validator_1.body('last_name')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required'),
+    express_validator_1.body('first_name')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required'),
+    express_validator_1.body('tel')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required'),
+    express_validator_1.body('email')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         auth.setCredentials({ access_token: req.accessToken });
         const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({

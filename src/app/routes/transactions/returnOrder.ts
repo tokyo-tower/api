@@ -4,6 +4,7 @@
 import * as cinerinoapi from '@cinerino/api-nodejs-client';
 import * as ttts from '@tokyotower/domain';
 import { Router } from 'express';
+import { body } from 'express-validator';
 import { CREATED } from 'http-status';
 import * as moment from 'moment';
 
@@ -40,16 +41,16 @@ returnOrderTransactionsRouter.use(authentication);
 returnOrderTransactionsRouter.post(
     '/confirm',
     permitScopes(['pos']),
-    (req, _, next) => {
-        req.checkBody('performance_day')
-            .notEmpty()
-            .withMessage('required');
-        req.checkBody('payment_no')
-            .notEmpty()
-            .withMessage('required');
-
-        next();
-    },
+    ...[
+        body('performance_day')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required'),
+        body('payment_no')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+    ],
     validator,
     async (req, res, next) => {
         try {

@@ -7,8 +7,6 @@ import * as createDebug from 'debug';
 import { Router } from 'express';
 import * as fastCsv from 'fast-csv';
 import * as iconv from 'iconv-lite';
-// tslint:disable-next-line:no-submodule-imports
-// import { body, query } from 'express-validator/check';
 import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 
