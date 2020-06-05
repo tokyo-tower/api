@@ -26,9 +26,9 @@ const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const project = { typeOf: 'Project', id: process.env.PROJECT_ID };
 const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
-    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.CHEVRE_CLIENT_ID,
-    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    domain: process.env.CINERINO_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CINERINO_CLIENT_ID,
+    clientSecret: process.env.CINERINO_CLIENT_SECRET,
     scopes: [],
     state: ''
 });
