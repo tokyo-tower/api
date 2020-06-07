@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- レート制限を追加
+
 ### Changed
 
 - update @cinerino/api-nodejs-client

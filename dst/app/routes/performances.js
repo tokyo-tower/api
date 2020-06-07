@@ -20,6 +20,7 @@ const moment = require("moment");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
+const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const performanceRouter = express.Router();
 const redisClient = ttts.redis.createClient({
@@ -29,6 +30,7 @@ const redisClient = ttts.redis.createClient({
     tls: { servername: process.env.REDIS_HOST }
 });
 performanceRouter.use(authentication_1.default);
+performanceRouter.use(rateLimit_1.default);
 /**
  * IDでパフォーマンス検索
  */

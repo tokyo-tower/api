@@ -12,6 +12,7 @@ import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
+import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 const debug = createDebug('ttts-api:router');
@@ -24,6 +25,7 @@ const CSV_LINE_ENDING: string = '\r\n';
 const aggregateSalesRouter = Router();
 
 aggregateSalesRouter.use(authentication);
+aggregateSalesRouter.use(rateLimit);
 
 /**
  * ストリーミング検索

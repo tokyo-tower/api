@@ -23,6 +23,7 @@ const placeOrderTransactionsRouter = Router();
 
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
+import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
 
 const TRANSACTION_TTL = 3600;
@@ -41,6 +42,7 @@ const redisClient = ttts.redis.createClient({
 });
 
 placeOrderTransactionsRouter.use(authentication);
+placeOrderTransactionsRouter.use(rateLimit);
 
 placeOrderTransactionsRouter.post(
     '/start',

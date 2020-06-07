@@ -22,6 +22,7 @@ const moment = require("moment");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
+const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const project = { typeOf: 'Project', id: process.env.PROJECT_ID };
 const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
@@ -33,6 +34,7 @@ const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
 });
 const reservationsRouter = express.Router();
 reservationsRouter.use(authentication_1.default);
+reservationsRouter.use(rateLimit_1.default);
 /**
  * distinct検索
  */

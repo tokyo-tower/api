@@ -10,10 +10,13 @@ import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
+import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 const tasksRouter = Router();
+
 tasksRouter.use(authentication);
+tasksRouter.use(rateLimit);
 
 /**
  * タスク作成

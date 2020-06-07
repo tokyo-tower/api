@@ -36,8 +36,10 @@ const auth = new cinerinoapi.auth.ClientCredentials({
 const returnOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
+const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
 returnOrderTransactionsRouter.use(authentication_1.default);
+returnOrderTransactionsRouter.use(rateLimit_1.default);
 /**
  * 上映日と購入番号で返品
  */

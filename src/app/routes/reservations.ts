@@ -11,6 +11,7 @@ import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
+import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 const project = { typeOf: <'Project'>'Project', id: <string>process.env.PROJECT_ID };
@@ -26,6 +27,7 @@ const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
 const reservationsRouter = express.Router();
 
 reservationsRouter.use(authentication);
+reservationsRouter.use(rateLimit);
 
 /**
  * distinct検索

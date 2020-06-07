@@ -31,9 +31,11 @@ const returnOrderTransactionsRouter = Router();
 
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
+import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
 
 returnOrderTransactionsRouter.use(authentication);
+returnOrderTransactionsRouter.use(rateLimit);
 
 /**
  * 上映日と購入番号で返品

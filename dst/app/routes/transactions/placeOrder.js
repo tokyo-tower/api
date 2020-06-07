@@ -31,6 +31,7 @@ const auth = new cinerinoapi.auth.ClientCredentials({
 const placeOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
+const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
 const TRANSACTION_TTL = 3600;
 const TRANSACTION_KEY_PREFIX = 'ttts-api:placeOrder:';
@@ -45,6 +46,7 @@ const redisClient = ttts.redis.createClient({
     tls: { servername: process.env.REDIS_HOST }
 });
 placeOrderTransactionsRouter.use(authentication_1.default);
+placeOrderTransactionsRouter.use(rateLimit_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos']), ...[
     express_validator_1.body('expires')
         .not()

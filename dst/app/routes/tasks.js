@@ -20,9 +20,11 @@ const moment = require("moment");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
+const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const tasksRouter = express_1.Router();
 tasksRouter.use(authentication_1.default);
+tasksRouter.use(rateLimit_1.default);
 /**
  * タスク作成
  */
