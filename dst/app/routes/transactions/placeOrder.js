@@ -19,7 +19,6 @@ const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
-// import * as mongoose from 'mongoose';
 const request = require("request-promise-native");
 const project = { typeOf: 'Project', id: process.env.PROJECT_ID };
 const auth = new cinerinoapi.auth.ClientCredentials({
@@ -37,8 +36,6 @@ const TRANSACTION_TTL = 3600;
 const TRANSACTION_KEY_PREFIX = 'ttts-api:placeOrder:';
 const TRANSACTION_AMOUNT_TTL = TRANSACTION_TTL;
 const TRANSACTION_AMOUNT_KEY_PREFIX = `${TRANSACTION_KEY_PREFIX}amount:`;
-// const CUSTOMER_PROFILE_TTL = TRANSACTION_TTL;
-// const CUSTOMER_PROFILE_KEY_PREFIX = `${TRANSACTION_KEY_PREFIX}customerProfile:`;
 const ORDERS_TTL = 86400;
 exports.ORDERS_KEY_PREFIX = 'ttts-api:orders:';
 const redisClient = ttts.redis.createClient({
@@ -57,7 +54,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos']), ...
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         auth.setCredentials({ access_token: req.accessToken });
-        const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
+        const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder({
             auth: auth,
             endpoint: process.env.CINERINO_API_ENDPOINT,
             project: { id: project.id }
@@ -93,9 +90,6 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos']), ...
                 id: seller.id
             }
         });
-        // tslint:disable-next-line:no-string-literal
-        // const host = req.headers['host'];
-        // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
         res.status(http_status_1.CREATED)
             .json(transaction);
     }
@@ -126,31 +120,16 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         auth.setCredentials({ access_token: req.accessToken });
-        const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
+        const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder({
             auth: auth,
             endpoint: process.env.CINERINO_API_ENDPOINT,
             project: { id: project.id }
         });
-        const profile = yield placeOrderService.setCustomerContact({
+        const profile = Object.assign(Object.assign({}, req.body), { id: req.user.sub, givenName: (typeof req.body.first_name === 'string') ? req.body.first_name : '', familyName: (typeof req.body.last_name === 'string') ? req.body.last_name : '', telephone: (typeof req.body.tel === 'string') ? req.body.tel : '', telephoneRegion: (typeof req.body.address === 'string') ? req.body.address : '' });
+        yield placeOrderService.setProfile({
             id: req.params.transactionId,
-            object: {
-                customerContact: Object.assign(Object.assign({}, req.body), { id: req.user.sub, givenName: (typeof req.body.first_name === 'string') ? req.body.first_name : '', familyName: (typeof req.body.last_name === 'string') ? req.body.last_name : '', telephone: (typeof req.body.tel === 'string') ? req.body.tel : '', telephoneRegion: (typeof req.body.address === 'string') ? req.body.address : '' })
-            }
+            agent: profile
         });
-        // プロフィール保管
-        // const customerProfileKey = `${CUSTOMER_PROFILE_KEY_PREFIX}${req.params.transactionId}`;
-        // await new Promise((resolve, reject) => {
-        //     redisClient.multi()
-        //         .set(customerProfileKey, JSON.stringify(profile))
-        //         .expire(customerProfileKey, CUSTOMER_PROFILE_TTL)
-        //         .exec((err) => {
-        //             if (err !== null) {
-        //                 reject(err);
-        //             } else {
-        //                 resolve();
-        //             }
-        //         });
-        // });
         res.status(http_status_1.CREATED)
             .json(Object.assign(Object.assign({}, profile), { 
             // POSへの互換性維持のために値補完
@@ -163,9 +142,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
 /**
  * 座席仮予約
  */
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['pos']), validator_1.default, 
-// tslint:disable-next-line:max-func-body-length
-(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (!Array.isArray(req.body.offers)) {
             req.body.offers = [];
@@ -177,18 +154,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
             endpoint: process.env.CINERINO_API_ENDPOINT,
             project: { id: project.id }
         });
-        // tslint:disable-next-line:max-line-length
-        let action;
-        try {
-            action = yield placeOrderService.createSeatReservationAuthorization({
-                transactionId: req.params.transactionId,
-                performanceId: performanceId,
-                offers: req.body.offers
-            });
-        }
-        catch (error) {
-            throw error;
-        }
+        const action = yield placeOrderService.createSeatReservationAuthorization({
+            transactionId: req.params.transactionId,
+            performanceId: performanceId,
+            offers: req.body.offers
+        });
         const actionResult = action.result;
         if (actionResult !== undefined) {
             // 金額保管
@@ -209,7 +179,8 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
             });
         }
         res.status(http_status_1.CREATED)
-            .json(action);
+            // responseはアクションIDのみで十分
+            .json({ id: action.id });
     }
     catch (error) {
         next(error);
@@ -221,7 +192,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
 placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         auth.setCredentials({ access_token: req.accessToken });
-        const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
+        const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder({
             auth: auth,
             endpoint: process.env.CINERINO_API_ENDPOINT,
             project: { id: project.id }
@@ -252,9 +223,8 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
         next(error);
     }
 }));
-placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['pos']), validator_1.default, 
-// tslint:disable-next-line:max-func-body-length
-(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d;
     try {
         // クライアントがPOSの場合、決済方法承認アクションを自動生成
         auth.setCredentials({ access_token: req.accessToken });
@@ -284,7 +254,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             },
             purpose: { typeOf: cinerinoapi.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         });
-        const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder4ttts({
+        const placeOrderService = new cinerinoapi.service.transaction.PlaceOrder({
             auth: auth,
             endpoint: process.env.CINERINO_API_ENDPOINT,
             project: { id: project.id }
@@ -292,23 +262,11 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         const transactionResult = yield placeOrderService.confirm({
             id: req.params.transactionId
         });
-        let paymentNo;
-        if (Array.isArray(transactionResult.order.identifier)) {
-            const paymentNoProperty = transactionResult.order.identifier.find((p) => p.name === 'paymentNo');
-            if (paymentNoProperty !== undefined) {
-                paymentNo = paymentNoProperty.value;
-            }
-        }
+        const paymentNo = (_b = (_a = transactionResult.order.identifier) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === 'paymentNo')) === null || _b === void 0 ? void 0 : _b.value;
         if (paymentNo === undefined) {
             throw new ttts.factory.errors.ServiceUnavailable('paymentNo not found');
         }
-        let confirmationNumber;
-        if (Array.isArray(transactionResult.order.identifier)) {
-            const confirmationNumberProperty = transactionResult.order.identifier.find((p) => p.name === 'confirmationNumber');
-            if (confirmationNumberProperty !== undefined) {
-                confirmationNumber = confirmationNumberProperty.value;
-            }
-        }
+        const confirmationNumber = (_d = (_c = transactionResult.order.identifier) === null || _c === void 0 ? void 0 : _c.find((p) => p.name === 'confirmationNumber')) === null || _d === void 0 ? void 0 : _d.value;
         if (confirmationNumber === undefined) {
             throw new ttts.factory.errors.ServiceUnavailable('confirmationNumber not found');
         }
@@ -328,19 +286,19 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             });
         });
         res.status(http_status_1.CREATED)
-            .json(Object.assign(Object.assign({}, transactionResult), { 
+            .json({
+            // ...transactionResult,
             // POSへ互換性維持のためにeventReservations属性を生成
-            eventReservations: (transactionResult !== undefined)
-                ? transactionResult.order.acceptedOffers
-                    .map((o) => {
-                    const r = o.itemOffered;
-                    return {
-                        qr_str: r.id,
-                        payment_no: paymentNo,
-                        performance: r.reservationFor.id
-                    };
-                })
-                : [] }));
+            eventReservations: transactionResult.order.acceptedOffers
+                .map((o) => {
+                const r = o.itemOffered;
+                return {
+                    qr_str: r.id,
+                    payment_no: paymentNo,
+                    performance: r.reservationFor.id
+                };
+            })
+        });
     }
     catch (error) {
         next(error);
