@@ -18,6 +18,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v37.0.0 - 2020-06-08
+
+### Added
+
+- レート制限を追加
+
+### Changed
+
+- update @cinerino/api-nodejs-client
+
+### Removed
+
+- ログインエンドポイントを削除
+
 ## v36.0.0 - 2020-06-05
 
 ### Changed

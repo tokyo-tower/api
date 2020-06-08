@@ -7,13 +7,12 @@ import * as createDebug from 'debug';
 import { Router } from 'express';
 import * as fastCsv from 'fast-csv';
 import * as iconv from 'iconv-lite';
-// tslint:disable-next-line:no-submodule-imports
-// import { body, query } from 'express-validator/check';
 import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
+import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 const debug = createDebug('ttts-api:router');
@@ -26,6 +25,7 @@ const CSV_LINE_ENDING: string = '\r\n';
 const aggregateSalesRouter = Router();
 
 aggregateSalesRouter.use(authentication);
+aggregateSalesRouter.use(rateLimit);
 
 /**
  * ストリーミング検索

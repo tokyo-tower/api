@@ -1,8 +1,6 @@
 /**
  * 404ハンドラーミドルウェア
- * @module middlewares.notFoundHandler
  */
-
 import * as ttts from '@tokyotower/domain';
 import { NextFunction, Request, Response } from 'express';
 

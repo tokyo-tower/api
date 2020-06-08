@@ -4,7 +4,6 @@
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import * as express from 'express';
-import * as expressValidator from 'express-validator';
 import * as helmet from 'helmet';
 
 import { connectMongo } from '../connectMongo';
@@ -12,10 +11,8 @@ import { connectMongo } from '../connectMongo';
 import errorHandler from './middlewares/errorHandler';
 import notFoundHandler from './middlewares/notFoundHandler';
 
-// import adminsRouter from './routes/admins';
 import aggregateSalesRouter from './routes/aggregateSales';
 import healthRouter from './routes/health';
-import oauthRouter from './routes/oauth';
 import performanceRouter from './routes/performances';
 import previewRouter from './routes/preview';
 import reservationsRouter from './routes/reservations';
@@ -68,13 +65,10 @@ app.use(bodyParser.json({ limit: '50mb' }));
 // The extended option allows to choose between parsing the URL-encoded data
 // with the querystring library (when false) or the qs library (when true).
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
-app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
 
 // ルーティング
-// app.use('/admins', adminsRouter);
 app.use('/aggregateSales', aggregateSalesRouter);
 app.use('/health', healthRouter);
-app.use('/oauth', oauthRouter);
 app.use('/preview', previewRouter);
 app.use('/performances', performanceRouter);
 app.use('/reservations', reservationsRouter);

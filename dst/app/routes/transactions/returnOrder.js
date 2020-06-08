@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerinoapi = require("@cinerino/api-nodejs-client");
 const ttts = require("@tokyotower/domain");
 const express_1 = require("express");
+const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const placeOrder_1 = require("./placeOrder");
@@ -35,20 +36,23 @@ const auth = new cinerinoapi.auth.ClientCredentials({
 const returnOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
+const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
 returnOrderTransactionsRouter.use(authentication_1.default);
+returnOrderTransactionsRouter.use(rateLimit_1.default);
 /**
  * 上映日と購入番号で返品
  */
-returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['pos']), (req, _, next) => {
-    req.checkBody('performance_day')
-        .notEmpty()
-        .withMessage('required');
-    req.checkBody('payment_no')
-        .notEmpty()
-        .withMessage('required');
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['pos']), ...[
+    express_validator_1.body('performance_day')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required'),
+    express_validator_1.body('payment_no')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         auth.setCredentials({ access_token: req.accessToken });
         const returnOrderService = new cinerinoapi.service.transaction.ReturnOrder({

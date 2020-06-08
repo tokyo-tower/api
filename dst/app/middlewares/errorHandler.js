@@ -1,10 +1,8 @@
 "use strict";
-/**
- * error handler
- * エラーハンドラーミドルウェア
- * @module middlewares.errorHandler
- */
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * エラーハンドラーミドルウェア
+ */
 const ttts = require("@tokyotower/domain");
 const createDebug = require("debug");
 const http_status_1 = require("http-status");

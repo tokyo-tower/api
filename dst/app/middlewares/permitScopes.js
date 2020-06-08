@@ -1,11 +1,9 @@
 "use strict";
-/**
- * スコープ許可ミドルウェア
- *
- * @module middlewares/permitScopes
- */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isScopesPermitted = void 0;
+/**
+ * スコープ許可ミドルウェア
+ */
 const ttts = require("@tokyotower/domain");
 const createDebug = require("debug");
 const debug = createDebug('ttts-api:middlewares:permitScopes');

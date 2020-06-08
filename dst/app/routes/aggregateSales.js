@@ -17,12 +17,11 @@ const createDebug = require("debug");
 const express_1 = require("express");
 const fastCsv = require("fast-csv");
 const iconv = require("iconv-lite");
-// tslint:disable-next-line:no-submodule-imports
-// import { body, query } from 'express-validator/check';
 const moment = require("moment-timezone");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
+const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const debug = createDebug('ttts-api:router');
 // カラム区切り(タブ)
@@ -31,6 +30,7 @@ const CSV_DELIMITER = '\t';
 const CSV_LINE_ENDING = '\r\n';
 const aggregateSalesRouter = express_1.Router();
 aggregateSalesRouter.use(authentication_1.default);
+aggregateSalesRouter.use(rateLimit_1.default);
 /**
  * ストリーミング検索
  */

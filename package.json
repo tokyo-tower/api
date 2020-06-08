@@ -9,21 +9,22 @@
     }
   ],
   "dependencies": {
-    "@cinerino/api-nodejs-client": "2.0.0-alpha.93",
+    "@cinerino/api-nodejs-client": "2.0.0-alpha.94",
     "@motionpicture/express-middleware": "^0.1.1",
-    "@tokyotower/domain": "^45.0.0",
+    "@tokyotower/domain": "^46.0.0",
     "basic-auth": "^2.0.0",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
     "cron": "^1.7.1",
     "debug": "^3.1.0",
     "express": "^4.16.2",
-    "express-validator": "^5.3.0",
+    "express-validator": "^6.5.0",
     "fast-csv": "^2.5.0",
     "fs-extra": "^8.1.0",
     "helmet": "^3.9.0",
     "http-status": "^1.2.0",
     "iconv-lite": "^0.5.0",
+    "ioredis": "^3.2.2",
     "moment": "^2.20.1",
     "moment-timezone": "^0.5.25",
     "mongoose": "5.6.7",
@@ -44,6 +45,7 @@
     "@types/helmet": "0.0.35",
     "@types/http-status": "^0.2.30",
     "@types/iconv-lite": "0.0.1",
+    "@types/ioredis": "^3.2.24",
     "@types/mocha": "^2.2.46",
     "@types/moment-timezone": "^0.5.12",
     "@types/mongoose": "5.5.11",
@@ -74,7 +76,6 @@
     "doc": "echo \"implementing...\" && exit 0",
     "mocha": "mocha",
     "coverage": "nyc mocha \"src/**/*.spec.ts\"",
-    "snyk": "snyk wizard",
     "start": "node dst/server.js",
     "test": "npm run check && mocha \"test/**/*.ts\"",
     "tslint": "tslint --project tsconfig.json -c tslint.json --exclude \"**/*.spec.ts\" \"src/**/*.ts\"",
@@ -82,5 +83,5 @@
     "version": "git add -A",
     "postversion": "git push origin --tags"
   },
-  "version": "36.0.0"
+  "version": "37.0.0"
 }
