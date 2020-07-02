@@ -347,8 +347,7 @@ placeOrderTransactionsRouter.post(
 
             res.status(CREATED)
                 .json({
-                    // ...transactionResult,
-                    // POSへ互換性維持のためにeventReservations属性を生成
+                    // POSへのレスポンスとしてeventReservations属性を生成
                     eventReservations: transactionResult.order.acceptedOffers
                         .map((o) => {
                             const r = <cinerinoapi.factory.order.IReservation>o.itemOffered;

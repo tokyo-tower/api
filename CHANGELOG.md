@@ -8,7 +8,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- タスク実行後にクリーンアップ処理を追加
+
 ### Changed
+
+- update @cinerino/api-nodejs-client
 
 ### Deprecated
 
