@@ -18,6 +18,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v37.1.0 - 2020-07-03
+
+### Added
+
+- タスク実行後にクリーンアップ処理を追加
+
+### Changed
+
+- update @cinerino/api-nodejs-client
+
 ## v37.0.0 - 2020-06-08
 
 ### Added

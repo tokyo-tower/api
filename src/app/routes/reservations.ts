@@ -422,7 +422,7 @@ export function cancelReservation(params: {
             project: project,
             typeOf: ttts.factory.chevre.transactionType.CancelReservation,
             agent: {
-                typeOf: ttts.factory.personType.Person,
+                typeOf: cinerinoapi.factory.personType.Person,
                 id: 'tokyotower',
                 name: '@tokyotower/domain'
             },

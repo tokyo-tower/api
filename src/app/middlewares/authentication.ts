@@ -19,7 +19,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
         await cognitoAuth({
             issuers: ISSUERS,
             authorizedHandler: async (user, token) => {
-                const identifier: ttts.factory.person.IIdentifier = [
+                const identifier: cinerinoapi.factory.person.IIdentifier = [
                     {
                         name: 'tokenIssuer',
                         value: user.iss
@@ -52,9 +52,8 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                 if (user.username !== undefined) {
                     programMembership = {
                         membershipNumber: user.username,
-                        programName: { en: 'Amazon Cognito', ja: 'Amazon Cognito' },
-                        project: req.project,
-                        typeOf: cinerinoapi.factory.programMembership.ProgramMembershipType.ProgramMembership,
+                        project: { typeOf: req.project.typeOf, id: req.project.id },
+                        typeOf: cinerinoapi.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership,
                         url: user.iss
                     };
                 }
@@ -62,7 +61,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                 req.user = user;
                 req.accessToken = token;
                 req.agent = {
-                    typeOf: ttts.factory.personType.Person,
+                    typeOf: cinerinoapi.factory.personType.Person,
                     id: user.sub,
                     memberOf: programMembership,
                     identifier: identifier

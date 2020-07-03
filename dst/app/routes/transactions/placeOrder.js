@@ -289,8 +289,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         });
         res.status(http_status_1.CREATED)
             .json({
-            // ...transactionResult,
-            // POSへ互換性維持のためにeventReservations属性を生成
+            // POSへのレスポンスとしてeventReservations属性を生成
             eventReservations: transactionResult.order.acceptedOffers
                 .map((o) => {
                 const r = o.itemOffered;

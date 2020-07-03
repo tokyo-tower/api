@@ -1,6 +1,7 @@
 /**
  * アプリケーション固有の型
  */
+import * as cinerinoapi from '@cinerino/api-nodejs-client';
 import * as ttts from '@tokyotower/domain';
 
 declare global {
@@ -22,7 +23,7 @@ declare global {
         // tslint:disable-next-line:interface-name
         export interface Request {
             project: ttts.factory.project.IProject;
-            agent: ttts.factory.person.IPerson;
+            agent: cinerinoapi.factory.person.IPerson;
             user: IUser;
             accessToken: string;
         }
