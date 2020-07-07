@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 非同期ジョブ
  */
-const cinerinoapi = require("@cinerino/api-nodejs-client");
+const cinerinoapi = require("@cinerino/sdk");
 const run_1 = require("./continuous/abortTasks/run");
 const run_2 = require("./continuous/retryTasks/run");
 const run_3 = require("./continuous/aggregateEventReservations/run");

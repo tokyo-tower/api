@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * ウェブフックルーター
  */
-const cinerinoapi = require("@cinerino/api-nodejs-client");
+const cinerinoapi = require("@cinerino/sdk");
 const ttts = require("@tokyotower/domain");
 const express = require("express");
 const mongoose = require("mongoose");

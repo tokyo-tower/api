@@ -1,7 +1,7 @@
 /**
  * 注文取引ルーター(POS専用)
  */
-import * as cinerinoapi from '@cinerino/api-nodejs-client';
+import * as cinerinoapi from '@cinerino/sdk';
 import * as ttts from '@tokyotower/domain';
 import { Router } from 'express';
 import { body } from 'express-validator';

@@ -13,7 +13,7 @@ exports.cancelReservation = void 0;
 /**
  * 予約ルーター
  */
-const cinerinoapi = require("@cinerino/api-nodejs-client");
+const cinerinoapi = require("@cinerino/sdk");
 const ttts = require("@tokyotower/domain");
 const express = require("express");
 const express_validator_1 = require("express-validator");

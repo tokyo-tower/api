@@ -13,7 +13,7 @@ exports.ORDERS_KEY_PREFIX = void 0;
 /**
  * 注文取引ルーター(POS専用)
  */
-const cinerinoapi = require("@cinerino/api-nodejs-client");
+const cinerinoapi = require("@cinerino/sdk");
 const ttts = require("@tokyotower/domain");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
