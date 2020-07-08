@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- install @cinerino/sdk
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v37.1.1 - 2020-07-08
+
+### Changed
+
+- install @cinerino/sdk
 
 ## v37.1.0 - 2020-07-03
 
