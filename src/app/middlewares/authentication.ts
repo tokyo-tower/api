@@ -1,7 +1,7 @@
 /**
  * 認証ミドルウェア
  */
-import * as cinerinoapi from '@cinerino/api-nodejs-client';
+import * as cinerinoapi from '@cinerino/sdk';
 import * as ttts from '@tokyotower/domain';
 
 import { cognitoAuth } from '@motionpicture/express-middleware';

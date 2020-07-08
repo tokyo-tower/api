@@ -1,7 +1,7 @@
 /**
  * 注文返品取引ルーター(POS専用)
  */
-import * as cinerinoapi from '@cinerino/api-nodejs-client';
+import * as cinerinoapi from '@cinerino/sdk';
 import * as ttts from '@tokyotower/domain';
 import { Router } from 'express';
 import { body } from 'express-validator';
@@ -71,7 +71,11 @@ returnOrderTransactionsRouter.post(
                     if (err !== null) {
                         reject(err);
                     } else {
-                        resolve(JSON.parse(result));
+                        if (typeof result === 'string') {
+                            resolve(JSON.parse(result));
+                        } else {
+                            reject(new ttts.factory.errors.NotFound('Order'));
+                        }
                     }
                 });
             });

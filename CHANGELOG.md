@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v37.1.1 - 2020-07-08
+
+### Changed
+
+- install @cinerino/sdk
+
 ## v37.1.0 - 2020-07-03
 
 ### Added

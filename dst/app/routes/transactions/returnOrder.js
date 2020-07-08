@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 注文返品取引ルーター(POS専用)
  */
-const cinerinoapi = require("@cinerino/api-nodejs-client");
+const cinerinoapi = require("@cinerino/sdk");
 const ttts = require("@tokyotower/domain");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
@@ -69,7 +69,12 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['pos']), 
                     reject(err);
                 }
                 else {
-                    resolve(JSON.parse(result));
+                    if (typeof result === 'string') {
+                        resolve(JSON.parse(result));
+                    }
+                    else {
+                        reject(new ttts.factory.errors.NotFound('Order'));
+                    }
                 }
             });
         });

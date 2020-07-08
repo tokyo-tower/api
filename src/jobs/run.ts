@@ -1,7 +1,7 @@
 /**
  * 非同期ジョブ
  */
-import * as cinerinoapi from '@cinerino/api-nodejs-client';
+import * as cinerinoapi from '@cinerino/sdk';
 import { factory } from '@tokyotower/domain';
 
 import abortTasks from './continuous/abortTasks/run';

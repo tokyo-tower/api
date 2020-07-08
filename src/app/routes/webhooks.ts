@@ -1,7 +1,7 @@
 /**
  * ウェブフックルーター
  */
-import * as cinerinoapi from '@cinerino/api-nodejs-client';
+import * as cinerinoapi from '@cinerino/sdk';
 import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
 import * as mongoose from 'mongoose';
