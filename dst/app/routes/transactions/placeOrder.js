@@ -226,7 +226,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
     }
 }));
 placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
+    var _a, _b;
     try {
         // クライアントがPOSの場合、決済方法承認アクションを自動生成
         auth.setCredentials({ access_token: req.accessToken });
@@ -264,11 +264,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         const transactionResult = yield placeOrderService.confirm({
             id: req.params.transactionId
         });
-        const paymentNo = (_b = (_a = transactionResult.order.identifier) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === 'paymentNo')) === null || _b === void 0 ? void 0 : _b.value;
-        if (paymentNo === undefined) {
-            throw new ttts.factory.errors.ServiceUnavailable('paymentNo not found');
-        }
-        const confirmationNumber = (_d = (_c = transactionResult.order.identifier) === null || _c === void 0 ? void 0 : _c.find((p) => p.name === 'confirmationNumber')) === null || _d === void 0 ? void 0 : _d.value;
+        const confirmationNumber = (_b = (_a = transactionResult.order.identifier) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === 'confirmationNumber')) === null || _b === void 0 ? void 0 : _b.value;
         if (confirmationNumber === undefined) {
             throw new ttts.factory.errors.ServiceUnavailable('confirmationNumber not found');
         }
@@ -295,7 +291,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
                 const r = o.itemOffered;
                 return {
                     qr_str: r.id,
-                    payment_no: paymentNo,
+                    payment_no: transactionResult.order.confirmationNumber,
                     performance: r.reservationFor.id
                 };
             })

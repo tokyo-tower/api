@@ -320,11 +320,6 @@ placeOrderTransactionsRouter.post(
                 id: req.params.transactionId
             });
 
-            const paymentNo = transactionResult.order.identifier?.find((p) => p.name === 'paymentNo')?.value;
-            if (paymentNo === undefined) {
-                throw new ttts.factory.errors.ServiceUnavailable('paymentNo not found');
-            }
-
             const confirmationNumber = transactionResult.order.identifier?.find((p) => p.name === 'confirmationNumber')?.value;
             if (confirmationNumber === undefined) {
                 throw new ttts.factory.errors.ServiceUnavailable('confirmationNumber not found');
@@ -354,7 +349,7 @@ placeOrderTransactionsRouter.post(
 
                             return {
                                 qr_str: r.id,
-                                payment_no: paymentNo,
+                                payment_no: transactionResult.order.confirmationNumber,
                                 performance: r.reservationFor.id
                             };
                         })
