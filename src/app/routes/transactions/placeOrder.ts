@@ -98,7 +98,7 @@ placeOrderTransactionsRouter.post(
                 },
                 seller: {
                     typeOf: seller.typeOf,
-                    id: seller.id
+                    id: String(seller.id)
                 }
             });
 
