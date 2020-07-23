@@ -24,7 +24,10 @@ const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
-const project = { typeOf: 'Project', id: process.env.PROJECT_ID };
+const project = {
+    typeOf: cinerinoapi.factory.chevre.organizationType.Project,
+    id: process.env.PROJECT_ID
+};
 const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
     domain: process.env.CINERINO_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CINERINO_CLIENT_ID,
@@ -322,8 +325,7 @@ reservationsRouter.put('/:id/cancel', permitScopes_1.default(['admin']), validat
             id: req.params.id
         })({
             reservation: new ttts.repository.Reservation(mongoose.connection),
-            task: new ttts.repository.Task(mongoose.connection),
-            project: new ttts.repository.Project(mongoose.connection)
+            task: new ttts.repository.Task(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT)
             .end();

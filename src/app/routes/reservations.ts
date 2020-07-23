@@ -14,7 +14,10 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-const project = { typeOf: <'Project'>'Project', id: <string>process.env.PROJECT_ID };
+const project = {
+    typeOf: <cinerinoapi.factory.chevre.organizationType.Project>cinerinoapi.factory.chevre.organizationType.Project,
+    id: <string>process.env.PROJECT_ID
+};
 
 const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
     domain: <string>process.env.CINERINO_AUTHORIZE_SERVER_DOMAIN,
@@ -377,8 +380,7 @@ reservationsRouter.put(
                 id: req.params.id
             })({
                 reservation: new ttts.repository.Reservation(mongoose.connection),
-                task: new ttts.repository.Task(mongoose.connection),
-                project: new ttts.repository.Project(mongoose.connection)
+                task: new ttts.repository.Task(mongoose.connection)
             });
 
             res.status(NO_CONTENT)
@@ -399,7 +401,6 @@ export function cancelReservation(params: {
     id: string;
 }) {
     return async (repos: {
-        project: ttts.repository.Project;
         reservation: ttts.repository.Reservation;
         task: ttts.repository.Task;
     }) => {

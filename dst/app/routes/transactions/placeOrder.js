@@ -89,7 +89,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['pos']), ...
             },
             seller: {
                 typeOf: seller.typeOf,
-                id: seller.id
+                id: String(seller.id)
             }
         });
         res.status(http_status_1.CREATED)
