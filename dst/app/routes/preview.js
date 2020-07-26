@@ -60,7 +60,7 @@ previewRouter.get('/performancesWithAggregation', (req, res, next) => __awaiter(
 // 入場場所検索
 previewRouter.get('/places/checkinGate', (__, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // TODO chevreで取得
+        // chevreで取得
         const placeService = new cinerinoapi.service.Place({
             auth: cinerinoAuthClient,
             endpoint: process.env.CINERINO_API_ENDPOINT,
