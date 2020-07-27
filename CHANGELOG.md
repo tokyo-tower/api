@@ -18,6 +18,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v37.3.0 - 2020-07-27
+
+### Added
+
+- 予約検索にnoTotalCountパラメータを追加
+
+### Changed
+
+- 入場ゲート管理をChevreへ移行
+
 ## v37.2.0 - 2020-07-23
 
 ### Changed

@@ -175,6 +175,7 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), .
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const noTotalCount = req.query.noTotalCount === '1';
         // POSに対する互換性維持のため
         if (typeof req.query.performanceId === 'string' && req.query.performanceId !== '') {
             req.query.performance = req.query.performanceId;
@@ -189,10 +190,15 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), .
             } });
         // 予約を検索
         const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
-        const count = yield reservationRepo.count(conditions);
+        let count;
+        if (!noTotalCount) {
+            count = yield reservationRepo.count(conditions);
+        }
         const reservations = yield reservationRepo.search(conditions);
-        res.set('X-Total-Count', count.toString())
-            .json(reservations);
+        if (typeof count === 'number') {
+            res.set('X-Total-Count', count.toString());
+        }
+        res.json(reservations);
     }
     catch (error) {
         next(error);
