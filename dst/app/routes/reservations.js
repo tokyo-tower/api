@@ -183,11 +183,7 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.read-only']), .
         // 予約検索条件
         const conditions = Object.assign(Object.assign({}, req.query), { 
             // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { modifiedTime: ttts.factory.sortType.Descending }, 
-            // デフォルトで余分確保分を除く
-            additionalProperty: {
-                $nin: [{ name: 'extra', value: '1' }]
-            } });
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { modifiedTime: ttts.factory.sortType.Descending } });
         // 予約を検索
         const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
         let count;
