@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v37.3.1 - 2020-07-27
+
+### Changed
+
+- 予約コレクションの不要なインデックスを削除
+
 ## v37.3.0 - 2020-07-27
 
 ### Added
