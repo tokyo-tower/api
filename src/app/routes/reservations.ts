@@ -199,6 +199,8 @@ reservationsRouter.get(
     validator,
     async (req, res, next) => {
         try {
+            const noTotalCount = req.query.noTotalCount === '1';
+
             // POSに対する互換性維持のため
             if (typeof req.query.performanceId === 'string' && req.query.performanceId !== '') {
                 req.query.performance = req.query.performanceId;
@@ -219,11 +221,19 @@ reservationsRouter.get(
 
             // 予約を検索
             const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
-            const count = await reservationRepo.count(conditions);
+
+            let count: number | undefined;
+            if (!noTotalCount) {
+                count = await reservationRepo.count(conditions);
+            }
+
             const reservations = await reservationRepo.search(conditions);
 
-            res.set('X-Total-Count', count.toString())
-                .json(reservations);
+            if (typeof count === 'number') {
+                res.set('X-Total-Count', count.toString());
+            }
+
+            res.json(reservations);
         } catch (error) {
             next(error);
         }

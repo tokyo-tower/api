@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 予約検索にnoTotalCountパラメータを追加
+
 ### Changed
 
 - 入場ゲート管理をChevreへ移行
