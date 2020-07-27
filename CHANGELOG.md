@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 予約検索時の余分確保分除外条件を削除
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v37.3.2 - 2020-07-27
+
+### Changed
+
+- 予約検索時の余分確保分除外条件を削除
 
 ## v37.3.1 - 2020-07-27
 
