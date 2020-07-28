@@ -15,13 +15,6 @@ import validator from '../middlewares/validator';
 
 const performanceRouter = express.Router();
 
-const redisClient = ttts.redis.createClient({
-    host: <string>process.env.REDIS_HOST,
-    port: Number(<string>process.env.REDIS_PORT),
-    password: <string>process.env.REDIS_KEY,
-    tls: { servername: <string>process.env.REDIS_HOST }
-});
-
 performanceRouter.use(authentication);
 performanceRouter.use(rateLimit);
 
@@ -129,8 +122,7 @@ performanceRouter.get(
             const performanceRepo = new ttts.repository.Performance(mongoose.connection);
 
             await ttts.service.performance.search(conditions)(
-                performanceRepo,
-                new ttts.repository.EventWithAggregation(redisClient)
+                performanceRepo
             )
                 .then((searchPerformanceResult) => {
                     res.set('X-Total-Count', searchPerformanceResult.numberOfPerformances.toString())

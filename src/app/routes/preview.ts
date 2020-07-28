@@ -7,21 +7,12 @@ import { Router } from 'express';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
-const USE_NEW_PERFORMANCES_WITH_AGGREGATION = process.env.USE_NEW_PERFORMANCES_WITH_AGGREGATION === '1';
-
 const project = {
     typeOf: <cinerinoapi.factory.chevre.organizationType.Project>cinerinoapi.factory.chevre.organizationType.Project,
     id: <string>process.env.PROJECT_ID
 };
 
 const previewRouter = Router();
-
-const redisClient = ttts.redis.createClient({
-    host: <string>process.env.REDIS_HOST,
-    port: Number(<string>process.env.REDIS_PORT),
-    password: <string>process.env.REDIS_KEY,
-    tls: { servername: <string>process.env.REDIS_HOST }
-});
 
 const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
     domain: <string>process.env.CINERINO_AUTHORIZE_SERVER_DOMAIN,
@@ -34,53 +25,27 @@ const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
 // 集計データーつきのパフォーマンス検索
 previewRouter.get('/performancesWithAggregation', async (req, res, next) => {
     try {
-        if (USE_NEW_PERFORMANCES_WITH_AGGREGATION) {
-            const conditions: ttts.factory.performance.ISearchConditions = {
-                // tslint:disable-next-line:no-magic-numbers
-                limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100,
-                page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1,
-                startFrom: (typeof req.query.startFrom === 'string')
-                    ? moment(req.query.startFrom)
-                        .toDate()
-                    : undefined,
-                startThrough: (typeof req.query.startThrough === 'string')
-                    ? moment(req.query.startThrough)
-                        .toDate()
-                    : undefined
-            };
+        const conditions: ttts.factory.performance.ISearchConditions = {
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100,
+            page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1,
+            startFrom: (typeof req.query.startFrom === 'string')
+                ? moment(req.query.startFrom)
+                    .toDate()
+                : undefined,
+            startThrough: (typeof req.query.startThrough === 'string')
+                ? moment(req.query.startThrough)
+                    .toDate()
+                : undefined
+        };
 
-            const performanceRepo = new ttts.repository.Performance(mongoose.connection);
+        const performanceRepo = new ttts.repository.Performance(mongoose.connection);
 
-            const searchPerformanceResult = await ttts.service.performance.search(conditions)(
-                performanceRepo,
-                new ttts.repository.EventWithAggregation(redisClient)
-            );
+        const searchPerformanceResult = await ttts.service.performance.search(conditions)(
+            performanceRepo
+        );
 
-            res.json(searchPerformanceResult.performances);
-        } else {
-            const performanceWithAggregationRepo = new ttts.repository.EventWithAggregation(redisClient);
-            let performancesWithAggregation = await performanceWithAggregationRepo.findAll();
-
-            if (req.query.startFrom !== undefined) {
-                const startFrom = moment(req.query.startFrom)
-                    .unix();
-                performancesWithAggregation = performancesWithAggregation.filter(
-                    (p) => moment(p.startDate)
-                        .unix() >= startFrom
-                );
-            }
-
-            if (req.query.startThrough !== undefined) {
-                const startThrough = moment(req.query.startThrough)
-                    .unix();
-                performancesWithAggregation = performancesWithAggregation.filter(
-                    (p) => moment(p.startDate)
-                        .unix() <= startThrough
-                );
-            }
-
-            res.json(performancesWithAggregation);
-        }
+        res.json(searchPerformanceResult.performances);
     } catch (error) {
         next(new ttts.factory.errors.ServiceUnavailable(error.message));
     }

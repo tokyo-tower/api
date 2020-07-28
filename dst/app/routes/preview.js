@@ -17,18 +17,11 @@ const ttts = require("@tokyotower/domain");
 const express_1 = require("express");
 const moment = require("moment");
 const mongoose = require("mongoose");
-const USE_NEW_PERFORMANCES_WITH_AGGREGATION = process.env.USE_NEW_PERFORMANCES_WITH_AGGREGATION === '1';
 const project = {
     typeOf: cinerinoapi.factory.chevre.organizationType.Project,
     id: process.env.PROJECT_ID
 };
 const previewRouter = express_1.Router();
-const redisClient = ttts.redis.createClient({
-    host: process.env.REDIS_HOST,
-    port: Number(process.env.REDIS_PORT),
-    password: process.env.REDIS_KEY,
-    tls: { servername: process.env.REDIS_HOST }
-});
 const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
     domain: process.env.CINERINO_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CINERINO_CLIENT_ID,
@@ -39,41 +32,22 @@ const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
 // 集計データーつきのパフォーマンス検索
 previewRouter.get('/performancesWithAggregation', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        if (USE_NEW_PERFORMANCES_WITH_AGGREGATION) {
-            const conditions = {
-                // tslint:disable-next-line:no-magic-numbers
-                limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100,
-                page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1,
-                startFrom: (typeof req.query.startFrom === 'string')
-                    ? moment(req.query.startFrom)
-                        .toDate()
-                    : undefined,
-                startThrough: (typeof req.query.startThrough === 'string')
-                    ? moment(req.query.startThrough)
-                        .toDate()
-                    : undefined
-            };
-            const performanceRepo = new ttts.repository.Performance(mongoose.connection);
-            const searchPerformanceResult = yield ttts.service.performance.search(conditions)(performanceRepo, new ttts.repository.EventWithAggregation(redisClient));
-            res.json(searchPerformanceResult.performances);
-        }
-        else {
-            const performanceWithAggregationRepo = new ttts.repository.EventWithAggregation(redisClient);
-            let performancesWithAggregation = yield performanceWithAggregationRepo.findAll();
-            if (req.query.startFrom !== undefined) {
-                const startFrom = moment(req.query.startFrom)
-                    .unix();
-                performancesWithAggregation = performancesWithAggregation.filter((p) => moment(p.startDate)
-                    .unix() >= startFrom);
-            }
-            if (req.query.startThrough !== undefined) {
-                const startThrough = moment(req.query.startThrough)
-                    .unix();
-                performancesWithAggregation = performancesWithAggregation.filter((p) => moment(p.startDate)
-                    .unix() <= startThrough);
-            }
-            res.json(performancesWithAggregation);
-        }
+        const conditions = {
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100,
+            page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1,
+            startFrom: (typeof req.query.startFrom === 'string')
+                ? moment(req.query.startFrom)
+                    .toDate()
+                : undefined,
+            startThrough: (typeof req.query.startThrough === 'string')
+                ? moment(req.query.startThrough)
+                    .toDate()
+                : undefined
+        };
+        const performanceRepo = new ttts.repository.Performance(mongoose.connection);
+        const searchPerformanceResult = yield ttts.service.performance.search(conditions)(performanceRepo);
+        res.json(searchPerformanceResult.performances);
     }
     catch (error) {
         next(new ttts.factory.errors.ServiceUnavailable(error.message));

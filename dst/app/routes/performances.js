@@ -23,12 +23,6 @@ const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const performanceRouter = express.Router();
-const redisClient = ttts.redis.createClient({
-    host: process.env.REDIS_HOST,
-    port: Number(process.env.REDIS_PORT),
-    password: process.env.REDIS_KEY,
-    tls: { servername: process.env.REDIS_HOST }
-});
 performanceRouter.use(authentication_1.default);
 performanceRouter.use(rateLimit_1.default);
 /**
@@ -115,7 +109,7 @@ performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
                 ? [String(req.query.performanceId)]
                 : undefined });
         const performanceRepo = new ttts.repository.Performance(mongoose.connection);
-        yield ttts.service.performance.search(conditions)(performanceRepo, new ttts.repository.EventWithAggregation(redisClient))
+        yield ttts.service.performance.search(conditions)(performanceRepo)
             .then((searchPerformanceResult) => {
             res.set('X-Total-Count', searchPerformanceResult.numberOfPerformances.toString())
                 .json({
