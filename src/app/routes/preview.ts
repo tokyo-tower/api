@@ -44,7 +44,7 @@ previewRouter.get('/performancesWithAggregation', async (req, res, next) => {
                         .toDate()
                     : undefined,
                 startThrough: (typeof req.query.startThrough === 'string')
-                    ? moment(req.query.startFrom)
+                    ? moment(req.query.startThrough)
                         .toDate()
                     : undefined
             };
