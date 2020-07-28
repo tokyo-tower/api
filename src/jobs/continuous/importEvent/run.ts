@@ -9,14 +9,6 @@ export default async (_: {
     project?: ttts.factory.project.IProject;
 }) => {
     const connection = await connectMongo({ defaultConnection: false });
-    const redisClient = ttts.redis.createClient(
-        {
-            host: <string>process.env.REDIS_HOST,
-            port: Number(<string>process.env.REDIS_PORT),
-            password: <string>process.env.REDIS_KEY,
-            tls: { servername: <string>process.env.REDIS_HOST }
-        }
-    );
 
     let count = 0;
 
@@ -35,8 +27,7 @@ export default async (_: {
                 await ttts.service.task.executeByName({
                     name: <any>'importEvent'
                 })({
-                    connection: connection,
-                    redisClient: redisClient
+                    connection: connection
                 });
             } catch (error) {
                 // tslint:disable-next-line:no-console

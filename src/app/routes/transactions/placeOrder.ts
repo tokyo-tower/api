@@ -7,6 +7,7 @@ import { Router } from 'express';
 import { body } from 'express-validator';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as moment from 'moment-timezone';
+import * as redis from 'redis';
 import * as request from 'request-promise-native';
 
 const project = { typeOf: <'Project'>'Project', id: <string>process.env.PROJECT_ID };
@@ -34,7 +35,7 @@ const TRANSACTION_AMOUNT_KEY_PREFIX = `${TRANSACTION_KEY_PREFIX}amount:`;
 const ORDERS_TTL = 86400;
 export const ORDERS_KEY_PREFIX = 'ttts-api:orders:';
 
-const redisClient = ttts.redis.createClient({
+const redisClient = redis.createClient({
     host: <string>process.env.REDIS_HOST,
     port: Number(<string>process.env.REDIS_PORT),
     password: <string>process.env.REDIS_KEY,

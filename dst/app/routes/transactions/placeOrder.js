@@ -19,6 +19,7 @@ const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
+const redis = require("redis");
 const request = require("request-promise-native");
 const project = { typeOf: 'Project', id: process.env.PROJECT_ID };
 const auth = new cinerinoapi.auth.ClientCredentials({
@@ -39,7 +40,7 @@ const TRANSACTION_AMOUNT_TTL = TRANSACTION_TTL;
 const TRANSACTION_AMOUNT_KEY_PREFIX = `${TRANSACTION_KEY_PREFIX}amount:`;
 const ORDERS_TTL = 86400;
 exports.ORDERS_KEY_PREFIX = 'ttts-api:orders:';
-const redisClient = ttts.redis.createClient({
+const redisClient = redis.createClient({
     host: process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT),
     password: process.env.REDIS_KEY,

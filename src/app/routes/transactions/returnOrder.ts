@@ -7,12 +7,13 @@ import { Router } from 'express';
 import { body } from 'express-validator';
 import { CREATED } from 'http-status';
 import * as moment from 'moment';
+import * as redis from 'redis';
 
 import { ORDERS_KEY_PREFIX } from './placeOrder';
 
 const project = { typeOf: <'Project'>'Project', id: <string>process.env.PROJECT_ID };
 
-const redisClient = ttts.redis.createClient({
+const redisClient = redis.createClient({
     host: <string>process.env.REDIS_HOST,
     port: Number(<string>process.env.REDIS_PORT),
     password: <string>process.env.REDIS_KEY,

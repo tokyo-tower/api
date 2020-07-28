@@ -12,47 +12,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * ヘルスチェックルーター
  */
-const ttts = require("@tokyotower/domain");
 const express = require("express");
 const mongoose = require("mongoose");
 const healthRouter = express.Router();
-const createDebug = require("debug");
 const http_status_1 = require("http-status");
-const redisClient = ttts.redis.createClient({
-    host: process.env.REDIS_HOST,
-    port: Number(process.env.REDIS_PORT),
-    password: process.env.REDIS_KEY,
-    tls: { servername: process.env.REDIS_HOST }
-});
-const debug = createDebug('cinerino-api:router');
-// 接続確認をあきらめる時間(ミリ秒)
-const TIMEOUT_GIVE_UP_CHECKING_IN_MILLISECONDS = 3000;
 healthRouter.get('', (_, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield mongoose.connection.db.admin()
             .ping();
-        yield new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
-            let givenUpChecking = false;
-            // redisサーバー接続が生きているかどうか確認
-            redisClient
-                .ping('wake up!', (err, reply) => {
-                debug('redis ping:', err, reply);
-                // すでにあきらめていたら何もしない
-                if (givenUpChecking) {
-                    return;
-                }
-                if (err instanceof Error) {
-                    reject(err);
-                }
-                else {
-                    resolve();
-                }
-            });
-            setTimeout(() => {
-                givenUpChecking = true;
-                reject(new Error('unable to check db connection'));
-            }, TIMEOUT_GIVE_UP_CHECKING_IN_MILLISECONDS);
-        }));
         res.status(http_status_1.OK)
             .send('healthy!');
     }
