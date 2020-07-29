@@ -10,18 +10,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 余分確保分予約を除外する処理を削除
-- イベント集計データをperformancesコレクションにも保管するように調整
-
 ### Deprecated
 
 ### Removed
 
-- 一時イベントリポジトリを削除
-
 ### Fixed
 
 ### Security
+
+## v37.3.3 - 2020-07-29
+
+### Changed
+
+- 余分確保分予約を除外する処理を削除
+- イベント集計データをperformancesコレクションにも保管するように調整
+
+### Removed
+
+- 一時イベントリポジトリを削除
 
 ## v37.3.2 - 2020-07-27
 
