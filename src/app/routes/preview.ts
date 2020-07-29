@@ -77,10 +77,6 @@ previewRouter.get('/places/checkinGate', async (__, res, next) => {
                 name: (typeof g.name === 'string') ? g.name : String(g.name?.ja)
             };
         }));
-
-        // const checkinGateRepo = new ttts.repository.place.CheckinGate(redisClient);
-        // const checkinGates = await checkinGateRepo.findAll();
-        // res.json(checkinGates);
     } catch (error) {
         next(new ttts.factory.errors.ServiceUnavailable(error.message));
     }

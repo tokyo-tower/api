@@ -75,9 +75,6 @@ previewRouter.get('/places/checkinGate', (__, res, next) => __awaiter(void 0, vo
             var _a;
             return Object.assign(Object.assign({}, g), { name: (typeof g.name === 'string') ? g.name : String((_a = g.name) === null || _a === void 0 ? void 0 : _a.ja) });
         }));
-        // const checkinGateRepo = new ttts.repository.place.CheckinGate(redisClient);
-        // const checkinGates = await checkinGateRepo.findAll();
-        // res.json(checkinGates);
     }
     catch (error) {
         next(new ttts.factory.errors.ServiceUnavailable(error.message));
