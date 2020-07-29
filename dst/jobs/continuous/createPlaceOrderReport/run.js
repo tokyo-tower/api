@@ -16,12 +16,6 @@ const ttts = require("@tokyotower/domain");
 const connectMongo_1 = require("../../../connectMongo");
 exports.default = (_) => __awaiter(void 0, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
-    const redisClient = ttts.redis.createClient({
-        host: process.env.REDIS_HOST,
-        port: Number(process.env.REDIS_PORT),
-        password: process.env.REDIS_KEY,
-        tls: { servername: process.env.REDIS_HOST }
-    });
     let count = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 100;
@@ -34,8 +28,7 @@ exports.default = (_) => __awaiter(void 0, void 0, void 0, function* () {
             yield ttts.service.task.executeByName({
                 name: ttts.factory.taskName.CreatePlaceOrderReport
             })({
-                connection: connection,
-                redisClient: redisClient
+                connection: connection
             });
         }
         catch (error) {

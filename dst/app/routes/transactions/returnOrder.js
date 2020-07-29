@@ -18,9 +18,10 @@ const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment");
+const redis = require("redis");
 const placeOrder_1 = require("./placeOrder");
 const project = { typeOf: 'Project', id: process.env.PROJECT_ID };
-const redisClient = ttts.redis.createClient({
+const redisClient = redis.createClient({
     host: process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT),
     password: process.env.REDIS_KEY,
