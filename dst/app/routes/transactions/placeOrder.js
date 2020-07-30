@@ -44,7 +44,7 @@ const redisClient = redis.createClient({
     host: process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT),
     password: process.env.REDIS_KEY,
-    tls: { servername: process.env.REDIS_HOST }
+    tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
 });
 placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.use(rateLimit_1.default);

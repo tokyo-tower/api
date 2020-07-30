@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v37.3.4 - 2020-07-30
+
+### Changed
+
+- RedisコネクションをGCP対応
+
 ## v37.3.3 - 2020-07-29
 
 ### Changed
