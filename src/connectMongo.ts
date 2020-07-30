@@ -5,7 +5,7 @@ import * as ttts from '@tokyotower/domain';
 import * as createDebug from 'debug';
 import * as mongoose from 'mongoose';
 
-const debug = createDebug('cinerino-api:connectMongo');
+const debug = createDebug('ttts-api:connectMongo');
 const PING_INTERVAL = 10000;
 const MONGOLAB_URI = <string>process.env.MONGOLAB_URI;
 

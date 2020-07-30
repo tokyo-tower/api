@@ -12,15 +12,15 @@ const redisClient = new ioredis({
     host: <string>process.env.REDIS_HOST,
     port: Number(<string>process.env.REDIS_PORT),
     password: <string>process.env.REDIS_KEY,
-    tls: { servername: <string>process.env.REDIS_HOST }
+    tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
 });
 
 export default async (req: Request, res: Response, next: NextFunction) => {
     try {
         const routeIdentifier = `${req.baseUrl}${req.path}`;
         const rateLimitScope = (req.project !== undefined && req.project !== null && typeof req.project.id === 'string')
-            ? `api:${req.project.id}:rateLimit:${routeIdentifier}:${req.method}`
-            : `api:rateLimit:${routeIdentifier}:${req.method}`;
+            ? `ttts-api:${req.project.id}:rateLimit:${routeIdentifier}:${req.method}`
+            : `ttts-api:rateLimit:${routeIdentifier}:${req.method}`;
 
         await middlewares.rateLimit({
             redisClient: redisClient,
