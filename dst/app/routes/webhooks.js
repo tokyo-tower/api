@@ -146,34 +146,4 @@ webhooksRouter.post('/onEventChanged', (req, res, next) => __awaiter(void 0, voi
         next(error);
     }
 }));
-/**
- * 返金イベント
- */
-webhooksRouter.post('/onRefunded', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const order = req.body.data;
-        // const taskRepo = new ttts.repository.Task(mongoose.connection);
-        if (typeof (order === null || order === void 0 ? void 0 : order.orderNumber) === 'string') {
-            // 返金メール送信タスク作成
-            // const createReturnOrderReportTask: ttts.factory.task.createReturnOrderReport.IAttributes = {
-            //     name: <any>ttts.factory.taskName.CreateReturnOrderReport,
-            //     project: { typeOf: order.project.typeOf, id: order.project.id },
-            //     status: ttts.factory.taskStatus.Ready,
-            //     runsAt: new Date(), // なるはやで実行
-            //     remainingNumberOfTries: 10,
-            //     numberOfTried: 0,
-            //     executionResults: [],
-            //     data: {
-            //         order: order
-            //     }
-            // };
-            // await taskRepo.save(<any>createReturnOrderReportTask);
-        }
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
 exports.default = webhooksRouter;

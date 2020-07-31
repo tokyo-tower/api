@@ -47,7 +47,7 @@ previewRouter.get('/performancesWithAggregation', (req, res, next) => __awaiter(
         };
         const performanceRepo = new ttts.repository.Performance(mongoose.connection);
         const searchPerformanceResult = yield ttts.service.performance.search(conditions)(performanceRepo);
-        res.json(searchPerformanceResult.performances);
+        res.json(searchPerformanceResult);
     }
     catch (error) {
         next(new ttts.factory.errors.ServiceUnavailable(error.message));
