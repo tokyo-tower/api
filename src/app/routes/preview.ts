@@ -29,6 +29,7 @@ previewRouter.get('/performancesWithAggregation', async (req, res, next) => {
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100,
             page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1,
+            sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: 1 },
             startFrom: (typeof req.query.startFrom === 'string')
                 ? moment(req.query.startFrom)
                     .toDate()
@@ -41,9 +42,7 @@ previewRouter.get('/performancesWithAggregation', async (req, res, next) => {
 
         const performanceRepo = new ttts.repository.Performance(mongoose.connection);
 
-        const searchPerformanceResult = await ttts.service.performance.search(conditions)(
-            performanceRepo
-        );
+        const searchPerformanceResult = await ttts.service.performance.search(conditions)({ performance: performanceRepo });
 
         res.json(searchPerformanceResult);
     } catch (error) {

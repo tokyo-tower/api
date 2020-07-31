@@ -104,17 +104,15 @@ performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
         }
         const conditions = Object.assign(Object.assign({}, req.query), { 
             // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100, page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1, 
+            limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100, page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: 1 }, 
             // POSへの互換性維持のためperformanceIdを補完
-            ids: (req.query.performanceId !== undefined)
-                ? [String(req.query.performanceId)]
-                : undefined });
+            ids: (typeof req.query.performanceId === 'string') ? [String(req.query.performanceId)] : undefined });
         const performanceRepo = new ttts.repository.Performance(mongoose.connection);
         let totalCount;
         if (!noTotalCount) {
             totalCount = yield performanceRepo.count(conditions);
         }
-        const searchPerformanceResult = yield ttts.service.performance.search(conditions)(performanceRepo);
+        const searchPerformanceResult = yield ttts.service.performance.search(conditions)({ performance: performanceRepo });
         if (typeof totalCount === 'number') {
             res.set('X-Total-Count', totalCount.toString());
         }
