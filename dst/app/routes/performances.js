@@ -118,13 +118,14 @@ performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
         if (typeof totalCount === 'number') {
             res.set('X-Total-Count', totalCount.toString());
         }
-        res.json({
-            meta: {
-                number_of_performances: (typeof totalCount === 'number') ? totalCount : searchPerformanceResult.length,
-                number_of_films: 1
-            },
-            data: searchPerformanceResult
-        });
+        res.json(Object.assign(Object.assign({}, (typeof totalCount === 'number')
+            ? {
+                meta: {
+                    number_of_performances: totalCount,
+                    number_of_films: 1
+                }
+            }
+            : undefined), { data: searchPerformanceResult }));
     }
     catch (error) {
         next(error);

@@ -135,10 +135,14 @@ performanceRouter.get(
             }
 
             res.json({
-                meta: {
-                    number_of_performances: (typeof totalCount === 'number') ? totalCount : searchPerformanceResult.length,
-                    number_of_films: 1
-                },
+                ...(typeof totalCount === 'number')
+                    ? {
+                        meta: {
+                            number_of_performances: totalCount,
+                            number_of_films: 1
+                        }
+                    }
+                    : undefined,
                 data: searchPerformanceResult
             });
         } catch (error) {
