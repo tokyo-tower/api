@@ -172,41 +172,4 @@ webhooksRouter.post(
     }
 );
 
-/**
- * 返金イベント
- */
-webhooksRouter.post(
-    '/onRefunded',
-    async (req, res, next) => {
-        try {
-            const order = <cinerinoapi.factory.order.IOrder>req.body.data;
-
-            // const taskRepo = new ttts.repository.Task(mongoose.connection);
-
-            if (typeof order?.orderNumber === 'string') {
-                // 返金メール送信タスク作成
-                // const createReturnOrderReportTask: ttts.factory.task.createReturnOrderReport.IAttributes = {
-                //     name: <any>ttts.factory.taskName.CreateReturnOrderReport,
-                //     project: { typeOf: order.project.typeOf, id: order.project.id },
-                //     status: ttts.factory.taskStatus.Ready,
-                //     runsAt: new Date(), // なるはやで実行
-                //     remainingNumberOfTries: 10,
-                //     numberOfTried: 0,
-                //     executionResults: [],
-                //     data: {
-                //         order: order
-                //     }
-                // };
-
-                // await taskRepo.save(<any>createReturnOrderReportTask);
-            }
-
-            res.status(NO_CONTENT)
-                .end();
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
 export default webhooksRouter;

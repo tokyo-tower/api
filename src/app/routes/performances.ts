@@ -70,6 +70,8 @@ performanceRouter.get(
     validator,
     async (req, res, next) => {
         try {
+            const noTotalCount = req.query.noTotalCount === '1';
+
             // 互換性維持のため
             if (typeof req.query.start_from === 'string' && req.query.start_from !== '') {
                 req.query.startFrom = moment(req.query.start_from)
@@ -121,19 +123,24 @@ performanceRouter.get(
 
             const performanceRepo = new ttts.repository.Performance(mongoose.connection);
 
-            await ttts.service.performance.search(conditions)(
-                performanceRepo
-            )
-                .then((searchPerformanceResult) => {
-                    res.set('X-Total-Count', searchPerformanceResult.numberOfPerformances.toString())
-                        .json({
-                            meta: {
-                                number_of_performances: searchPerformanceResult.numberOfPerformances,
-                                number_of_films: searchPerformanceResult.filmIds.length
-                            },
-                            data: searchPerformanceResult.performances
-                        });
-                });
+            let totalCount: number | undefined;
+            if (!noTotalCount) {
+                totalCount = await performanceRepo.count(conditions);
+            }
+
+            const searchPerformanceResult = await ttts.service.performance.search(conditions)(performanceRepo);
+
+            if (typeof totalCount === 'number') {
+                res.set('X-Total-Count', totalCount.toString());
+            }
+
+            res.json({
+                meta: {
+                    number_of_performances: (typeof totalCount === 'number') ? totalCount : searchPerformanceResult.length,
+                    number_of_films: 1
+                },
+                data: searchPerformanceResult
+            });
         } catch (error) {
             next(error);
         }

@@ -45,7 +45,7 @@ previewRouter.get('/performancesWithAggregation', async (req, res, next) => {
             performanceRepo
         );
 
-        res.json(searchPerformanceResult.performances);
+        res.json(searchPerformanceResult);
     } catch (error) {
         next(new ttts.factory.errors.ServiceUnavailable(error.message));
     }
