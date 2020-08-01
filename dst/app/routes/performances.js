@@ -68,7 +68,7 @@ performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const noTotalCount = req.query.noTotalCount === '1';
+        const countDocuments = req.query.countDocuments === '1';
         // 互換性維持のため
         if (typeof req.query.start_from === 'string' && req.query.start_from !== '') {
             req.query.startFrom = moment(req.query.start_from)
@@ -109,21 +109,14 @@ performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
             ids: (typeof req.query.performanceId === 'string') ? [String(req.query.performanceId)] : undefined });
         const performanceRepo = new ttts.repository.Performance(mongoose.connection);
         let totalCount;
-        if (!noTotalCount) {
+        if (countDocuments) {
             totalCount = yield performanceRepo.count(conditions);
         }
-        const searchPerformanceResult = yield ttts.service.performance.search(conditions)({ performance: performanceRepo });
+        const performances = yield ttts.service.performance.search(conditions)({ performance: performanceRepo });
         if (typeof totalCount === 'number') {
             res.set('X-Total-Count', totalCount.toString());
         }
-        res.json(Object.assign(Object.assign({}, (typeof totalCount === 'number')
-            ? {
-                meta: {
-                    number_of_performances: totalCount,
-                    number_of_films: 1
-                }
-            }
-            : undefined), { data: searchPerformanceResult }));
+        res.json({ data: performances });
     }
     catch (error) {
         next(error);

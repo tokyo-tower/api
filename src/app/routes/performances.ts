@@ -70,7 +70,7 @@ performanceRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const noTotalCount = req.query.noTotalCount === '1';
+            const countDocuments = req.query.countDocuments === '1';
 
             // 互換性維持のため
             if (typeof req.query.start_from === 'string' && req.query.start_from !== '') {
@@ -123,27 +123,17 @@ performanceRouter.get(
             const performanceRepo = new ttts.repository.Performance(mongoose.connection);
 
             let totalCount: number | undefined;
-            if (!noTotalCount) {
+            if (countDocuments) {
                 totalCount = await performanceRepo.count(conditions);
             }
 
-            const searchPerformanceResult = await ttts.service.performance.search(conditions)({ performance: performanceRepo });
+            const performances = await ttts.service.performance.search(conditions)({ performance: performanceRepo });
 
             if (typeof totalCount === 'number') {
                 res.set('X-Total-Count', totalCount.toString());
             }
 
-            res.json({
-                ...(typeof totalCount === 'number')
-                    ? {
-                        meta: {
-                            number_of_performances: totalCount,
-                            number_of_films: 1
-                        }
-                    }
-                    : undefined,
-                data: searchPerformanceResult
-            });
+            res.json({ data: performances });
         } catch (error) {
             next(error);
         }
