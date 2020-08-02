@@ -73,14 +73,14 @@ performanceRouter.get(
             const countDocuments = req.query.countDocuments === '1';
 
             // 互換性維持のため
-            if (typeof req.query.start_from === 'string' && req.query.start_from !== '') {
-                req.query.startFrom = moment(req.query.start_from)
-                    .toDate();
-            }
-            if (typeof req.query.start_through === 'string' && req.query.start_through !== '') {
-                req.query.startThrough = moment(req.query.start_through)
-                    .toDate();
-            }
+            // if (typeof req.query.start_from === 'string' && req.query.start_from !== '') {
+            //     req.query.startFrom = moment(req.query.start_from)
+            //         .toDate();
+            // }
+            // if (typeof req.query.start_through === 'string' && req.query.start_through !== '') {
+            //     req.query.startThrough = moment(req.query.start_through)
+            //         .toDate();
+            // }
 
             // POSへの互換性維持
             if (req.query.day !== undefined) {
