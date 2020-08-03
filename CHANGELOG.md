@@ -10,10 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- パフォーマンス検索を最適化
-- パフォーマンス検索時にcountDocuments指定時のみカウントするように調整
-- イベント予約集計処理を最適化
-
 ### Deprecated
 
 ### Removed
@@ -21,6 +17,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v38.0.0 - 2020-08-03
+
+### Changed
+
+- パフォーマンス検索を最適化
+- パフォーマンス検索時にcountDocuments指定時のみカウントするように調整
+- イベント予約集計処理を最適化
 
 ## v37.5.0 - 2020-07-31
 
