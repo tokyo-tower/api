@@ -70,17 +70,17 @@ performanceRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const noTotalCount = req.query.noTotalCount === '1';
+            const countDocuments = req.query.countDocuments === '1';
 
             // 互換性維持のため
-            if (typeof req.query.start_from === 'string' && req.query.start_from !== '') {
-                req.query.startFrom = moment(req.query.start_from)
-                    .toDate();
-            }
-            if (typeof req.query.start_through === 'string' && req.query.start_through !== '') {
-                req.query.startThrough = moment(req.query.start_through)
-                    .toDate();
-            }
+            // if (typeof req.query.start_from === 'string' && req.query.start_from !== '') {
+            //     req.query.startFrom = moment(req.query.start_from)
+            //         .toDate();
+            // }
+            // if (typeof req.query.start_through === 'string' && req.query.start_through !== '') {
+            //     req.query.startThrough = moment(req.query.start_through)
+            //         .toDate();
+            // }
 
             // POSへの互換性維持
             if (req.query.day !== undefined) {
@@ -115,36 +115,25 @@ performanceRouter.get(
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100,
                 page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1,
+                sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: 1 },
                 // POSへの互換性維持のためperformanceIdを補完
-                ids: (req.query.performanceId !== undefined)
-                    ? [String(req.query.performanceId)]
-                    : undefined
+                ids: (typeof req.query.performanceId === 'string') ? [String(req.query.performanceId)] : undefined
             };
 
             const performanceRepo = new ttts.repository.Performance(mongoose.connection);
 
             let totalCount: number | undefined;
-            if (!noTotalCount) {
+            if (countDocuments) {
                 totalCount = await performanceRepo.count(conditions);
             }
 
-            const searchPerformanceResult = await ttts.service.performance.search(conditions)(performanceRepo);
+            const performances = await ttts.service.performance.search(conditions)({ performance: performanceRepo });
 
             if (typeof totalCount === 'number') {
                 res.set('X-Total-Count', totalCount.toString());
             }
 
-            res.json({
-                ...(typeof totalCount === 'number')
-                    ? {
-                        meta: {
-                            number_of_performances: totalCount,
-                            number_of_films: 1
-                        }
-                    }
-                    : undefined,
-                data: searchPerformanceResult
-            });
+            res.json({ data: performances });
         } catch (error) {
             next(error);
         }
