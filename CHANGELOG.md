@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - パフォーマンス検索を最適化
 - パフォーマンス検索時にcountDocuments指定時のみカウントするように調整
+- イベント予約集計処理を最適化
 
 ### Deprecated
 
