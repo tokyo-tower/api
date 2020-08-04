@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.search = void 0;
 /**
  * パフォーマンスルーター
  */
@@ -16,12 +17,78 @@ const ttts = require("@tokyotower/domain");
 const express = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
-const moment = require("moment");
+const moment = require("moment-timezone");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
+/**
+ * 検索する
+ */
+function search(searchConditions) {
+    return (repos) => __awaiter(this, void 0, void 0, function* () {
+        const performances = yield repos.performance.search(searchConditions);
+        return performances.map(performance2result);
+    });
+}
+exports.search = search;
+function performance2result(performance) {
+    var _a, _b;
+    const ticketTypes = (performance.ticket_type_group !== undefined) ? performance.ticket_type_group.ticket_types : [];
+    const tourNumber = (_b = (_a = performance.additionalProperty) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === 'tourNumber')) === null || _b === void 0 ? void 0 : _b.value;
+    const attributes = {
+        day: moment(performance.startDate)
+            .tz('Asia/Tokyo')
+            .format('YYYYMMDD'),
+        open_time: moment(performance.doorTime)
+            .tz('Asia/Tokyo')
+            .format('HHmm'),
+        start_time: moment(performance.startDate)
+            .tz('Asia/Tokyo')
+            .format('HHmm'),
+        end_time: moment(performance.endDate)
+            .tz('Asia/Tokyo')
+            .format('HHmm'),
+        seat_status: (typeof performance.remainingAttendeeCapacity === 'number')
+            ? performance.remainingAttendeeCapacity
+            : undefined,
+        tour_number: tourNumber,
+        wheelchair_available: (typeof performance.remainingAttendeeCapacityForWheelchair === 'number')
+            ? performance.remainingAttendeeCapacityForWheelchair
+            : undefined,
+        ticket_types: ticketTypes.map((ticketType) => {
+            const offerAggregation = (Array.isArray(performance.offers))
+                ? performance.offers.find((o) => o.id === ticketType.id)
+                : undefined;
+            const unitPriceSpec = ticketType.priceSpecification;
+            return {
+                name: ticketType.name,
+                id: ticketType.identifier,
+                // POSに対するAPI互換性維持のため、charge属性追加
+                charge: (unitPriceSpec !== undefined) ? unitPriceSpec.price : undefined,
+                available_num: (offerAggregation !== undefined) ? offerAggregation.remainingAttendeeCapacity : undefined
+            };
+        }),
+        online_sales_status: (performance.ttts_extension !== undefined)
+            ? performance.ttts_extension.online_sales_status : ttts.factory.performance.OnlineSalesStatus.Normal
+        // 以下、テストで不要確認したら削除
+        // refunded_count: (performance.ttts_extension !== undefined)
+        //     ? performance.ttts_extension.refunded_count : undefined,
+        // refund_status: (performance.ttts_extension !== undefined)
+        //     ? performance.ttts_extension.refund_status : undefined,
+        // ev_service_status: (performance.ttts_extension !== undefined)
+        //     ? performance.ttts_extension.ev_service_status : undefined
+    };
+    return Object.assign(Object.assign(Object.assign({}, performance), { evServiceStatus: (performance.ttts_extension !== undefined)
+            ? performance.ttts_extension.ev_service_status
+            : ttts.factory.performance.EvServiceStatus.Normal, onlineSalesStatus: (performance.ttts_extension !== undefined)
+            ? performance.ttts_extension.online_sales_status
+            : ttts.factory.performance.OnlineSalesStatus.Normal, extension: performance.ttts_extension }), {
+        attributes: attributes,
+        tourNumber: tourNumber
+    });
+}
 const performanceRouter = express.Router();
 performanceRouter.use(authentication_1.default);
 performanceRouter.use(rateLimit_1.default);
@@ -69,15 +136,6 @@ performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const countDocuments = req.query.countDocuments === '1';
-        // 互換性維持のため
-        // if (typeof req.query.start_from === 'string' && req.query.start_from !== '') {
-        //     req.query.startFrom = moment(req.query.start_from)
-        //         .toDate();
-        // }
-        // if (typeof req.query.start_through === 'string' && req.query.start_through !== '') {
-        //     req.query.startThrough = moment(req.query.start_through)
-        //         .toDate();
-        // }
         // POSへの互換性維持
         if (req.query.day !== undefined) {
             if (typeof req.query.day === 'string' && req.query.day.length > 0) {
@@ -112,7 +170,7 @@ performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
         if (countDocuments) {
             totalCount = yield performanceRepo.count(conditions);
         }
-        const performances = yield ttts.service.performance.search(conditions)({ performance: performanceRepo });
+        const performances = yield search(conditions)({ performance: performanceRepo });
         if (typeof totalCount === 'number') {
             res.set('X-Total-Count', totalCount.toString());
         }

@@ -4,8 +4,10 @@
 import * as cinerinoapi from '@cinerino/sdk';
 import * as ttts from '@tokyotower/domain';
 import { Router } from 'express';
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
+
+import { search } from './performances';
 
 const project = {
     typeOf: <cinerinoapi.factory.chevre.organizationType.Project>cinerinoapi.factory.chevre.organizationType.Project,
@@ -42,7 +44,7 @@ previewRouter.get('/performancesWithAggregation', async (req, res, next) => {
 
         const performanceRepo = new ttts.repository.Performance(mongoose.connection);
 
-        const searchPerformanceResult = await ttts.service.performance.search(conditions)({ performance: performanceRepo });
+        const searchPerformanceResult = await search(conditions)({ performance: performanceRepo });
 
         res.json(searchPerformanceResult);
     } catch (error) {

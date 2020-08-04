@@ -5,13 +5,99 @@ import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
 import { query } from 'express-validator';
 import { NO_CONTENT } from 'http-status';
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
+
+export type ISearchResult = ttts.factory.performance.IPerformanceWithAvailability[];
+
+export type ISearchOperation<T> = (repos: {
+    performance: ttts.repository.Performance;
+}) => Promise<T>;
+
+/**
+ * 検索する
+ */
+export function search(searchConditions: ttts.factory.performance.ISearchConditions): ISearchOperation<ISearchResult> {
+    return async (repos: {
+        performance: ttts.repository.Performance;
+    }) => {
+        const performances = await repos.performance.search(searchConditions);
+
+        return performances.map(performance2result);
+    };
+}
+
+function performance2result(
+    performance: ttts.factory.performance.IPerformance & ttts.factory.performance.IPerformanceWithAggregation
+): ttts.factory.performance.IPerformanceWithAvailability {
+    const ticketTypes = (performance.ticket_type_group !== undefined) ? performance.ticket_type_group.ticket_types : [];
+    const tourNumber = performance.additionalProperty?.find((p) => p.name === 'tourNumber')?.value;
+    const attributes: any = {
+        day: moment(performance.startDate)
+            .tz('Asia/Tokyo')
+            .format('YYYYMMDD'),
+        open_time: moment(performance.doorTime)
+            .tz('Asia/Tokyo')
+            .format('HHmm'),
+        start_time: moment(performance.startDate)
+            .tz('Asia/Tokyo')
+            .format('HHmm'),
+        end_time: moment(performance.endDate)
+            .tz('Asia/Tokyo')
+            .format('HHmm'),
+        seat_status: (typeof performance.remainingAttendeeCapacity === 'number')
+            ? performance.remainingAttendeeCapacity
+            : undefined,
+        tour_number: tourNumber,
+        wheelchair_available: (typeof performance.remainingAttendeeCapacityForWheelchair === 'number')
+            ? performance.remainingAttendeeCapacityForWheelchair
+            : undefined,
+        ticket_types: ticketTypes.map((ticketType) => {
+            const offerAggregation = (Array.isArray(performance.offers))
+                ? performance.offers.find((o) => o.id === ticketType.id)
+                : undefined;
+
+            const unitPriceSpec = ticketType.priceSpecification;
+
+            return {
+                name: ticketType.name,
+                id: ticketType.identifier, // POSに受け渡すのは券種IDでなく券種コードなので要注意
+                // POSに対するAPI互換性維持のため、charge属性追加
+                charge: (unitPriceSpec !== undefined) ? unitPriceSpec.price : undefined,
+                available_num: (offerAggregation !== undefined) ? offerAggregation.remainingAttendeeCapacity : undefined
+            };
+        }),
+        online_sales_status: (performance.ttts_extension !== undefined)
+            ? performance.ttts_extension.online_sales_status : ttts.factory.performance.OnlineSalesStatus.Normal
+        // 以下、テストで不要確認したら削除
+        // refunded_count: (performance.ttts_extension !== undefined)
+        //     ? performance.ttts_extension.refunded_count : undefined,
+        // refund_status: (performance.ttts_extension !== undefined)
+        //     ? performance.ttts_extension.refund_status : undefined,
+        // ev_service_status: (performance.ttts_extension !== undefined)
+        //     ? performance.ttts_extension.ev_service_status : undefined
+    };
+
+    return {
+        ...performance,
+        evServiceStatus: (performance.ttts_extension !== undefined)
+            ? performance.ttts_extension.ev_service_status
+            : ttts.factory.performance.EvServiceStatus.Normal,
+        onlineSalesStatus: (performance.ttts_extension !== undefined)
+            ? performance.ttts_extension.online_sales_status
+            : ttts.factory.performance.OnlineSalesStatus.Normal,
+        extension: performance.ttts_extension,
+        ...{
+            attributes: attributes, // attributes属性は、POSに対するAPI互換性維持のため
+            tourNumber: tourNumber
+        }
+    };
+}
 
 const performanceRouter = express.Router();
 
@@ -72,16 +158,6 @@ performanceRouter.get(
         try {
             const countDocuments = req.query.countDocuments === '1';
 
-            // 互換性維持のため
-            // if (typeof req.query.start_from === 'string' && req.query.start_from !== '') {
-            //     req.query.startFrom = moment(req.query.start_from)
-            //         .toDate();
-            // }
-            // if (typeof req.query.start_through === 'string' && req.query.start_through !== '') {
-            //     req.query.startThrough = moment(req.query.start_through)
-            //         .toDate();
-            // }
-
             // POSへの互換性維持
             if (req.query.day !== undefined) {
                 if (typeof req.query.day === 'string' && req.query.day.length > 0) {
@@ -127,7 +203,7 @@ performanceRouter.get(
                 totalCount = await performanceRepo.count(conditions);
             }
 
-            const performances = await ttts.service.performance.search(conditions)({ performance: performanceRepo });
+            const performances = await search(conditions)({ performance: performanceRepo });
 
             if (typeof totalCount === 'number') {
                 res.set('X-Total-Count', totalCount.toString());
