@@ -1,6 +1,7 @@
 /**
  * パフォーマンスルーター
  */
+import * as cinerinoapi from '@cinerino/sdk';
 import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
 import { query } from 'express-validator';
@@ -13,11 +14,109 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
+export interface IPerformance4pos {
+    id: string;
+    atrributes: {
+        day: string;
+        open_time: string;
+        start_time: string;
+        end_time: string;
+        seat_status?: string;
+        tour_number?: string;
+        wheelchair_available?: number;
+        ticket_types: {
+            charge: number;
+            name: {
+                en: string;
+                ja: string;
+            };
+            id: string;
+            available_num: number;
+        }[];
+        online_sales_status: string;
+        //   "refunded_count": 1,
+        //   "refund_status": "None",
+        //   "ev_service_status": "Normal"
+    };
+}
+
 export type ISearchResult = ttts.factory.performance.IPerformanceWithAvailability[];
 
 export type ISearchOperation<T> = (repos: {
     performance: ttts.repository.Performance;
 }) => Promise<T>;
+
+const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
+    domain: <string>process.env.CINERINO_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CINERINO_CLIENT_ID,
+    clientSecret: <string>process.env.CINERINO_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
+
+const eventService = new cinerinoapi.service.Event({
+    endpoint: <string>process.env.CINERINO_API_ENDPOINT,
+    auth: cinerinoAuthClient
+});
+
+export function searchByChevre(
+    searchConditions: cinerinoapi.factory.chevre.event.screeningEvent.ISearchConditions
+) {
+    return async (): Promise<IPerformance4pos[]> => {
+        const searchResult = await eventService.search({
+            ...searchConditions,
+            typeOf: cinerinoapi.factory.chevre.eventType.ScreeningEvent,
+            ...{
+                $projection: { aggregateReservation: 0 }
+            }
+        });
+
+        return searchResult.data
+            .map((event) => {
+                // 一般座席の残席数
+                const seatStatus = event.aggregateOffer?.offers?.find((o) => o.identifier === '001')?.remainingAttendeeCapacity;
+                // 車椅子座席の残席数
+                const wheelchairAvailable = event.aggregateOffer?.offers?.find((o) => o.identifier === '004')?.remainingAttendeeCapacity;
+
+                const tourNumber = event.additionalProperty?.find((p) => p.name === 'tourNumber')?.value;
+
+                return {
+                    id: event.id,
+                    atrributes: {
+                        day: moment(event.startDate)
+                            .tz('Asia/Tokyo')
+                            .format('YYYYMMDD'),
+                        open_time: moment(event.startDate)
+                            .tz('Asia/Tokyo')
+                            .format('HHmm'),
+                        start_time: moment(event.startDate)
+                            .tz('Asia/Tokyo')
+                            .format('HHmm'),
+                        end_time: moment(event.endDate)
+                            .tz('Asia/Tokyo')
+                            .format('HHmm'),
+                        seat_status: (typeof seatStatus === 'number') ? String(seatStatus) : undefined,
+                        wheelchair_available: wheelchairAvailable,
+                        tour_number: tourNumber,
+                        ticket_types: [
+                            // {
+                            //     "charge": 1800,
+                            //     "name": {
+                            //         "en": "english name",
+                            //         "ja": "日本語名称"
+                            //     },
+                            //     "id": "001",
+                            //     "available_num": 1
+                            // }
+                        ],
+                        online_sales_status: (event.eventStatus === cinerinoapi.factory.chevre.eventStatusType.EventScheduled)
+                            ? 'Normal'
+                            : 'Suspended'
+                    }
+                };
+            });
+    };
+}
 
 /**
  * 検索する
@@ -50,26 +149,16 @@ function performance2result(
         end_time: moment(performance.endDate)
             .tz('Asia/Tokyo')
             .format('HHmm'),
-        seat_status: (typeof performance.remainingAttendeeCapacity === 'number')
-            ? performance.remainingAttendeeCapacity
-            : undefined,
+        seat_status: performance.remainingAttendeeCapacity,
         tour_number: tourNumber,
-        wheelchair_available: (typeof performance.remainingAttendeeCapacityForWheelchair === 'number')
-            ? performance.remainingAttendeeCapacityForWheelchair
-            : undefined,
+        wheelchair_available: performance.remainingAttendeeCapacityForWheelchair,
         ticket_types: ticketTypes.map((ticketType) => {
-            const offerAggregation = (Array.isArray(performance.offers))
-                ? performance.offers.find((o) => o.id === ticketType.id)
-                : undefined;
-
-            const unitPriceSpec = ticketType.priceSpecification;
-
             return {
                 name: ticketType.name,
                 id: ticketType.identifier, // POSに受け渡すのは券種IDでなく券種コードなので要注意
                 // POSに対するAPI互換性維持のため、charge属性追加
-                charge: (unitPriceSpec !== undefined) ? unitPriceSpec.price : undefined,
-                available_num: (offerAggregation !== undefined) ? offerAggregation.remainingAttendeeCapacity : undefined
+                charge: ticketType.priceSpecification?.price,
+                available_num: performance.offers?.find((o) => o.id === ticketType.id)?.remainingAttendeeCapacity
             };
         }),
         online_sales_status: (performance.ttts_extension !== undefined)
@@ -154,62 +243,110 @@ performanceRouter.get(
             .toDate()
     ],
     validator,
+    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
     async (req, res, next) => {
         try {
             const countDocuments = req.query.countDocuments === '1';
+            let useLegacySearch = req.query.useLegacySearch === '1';
 
-            // POSへの互換性維持
-            if (req.query.day !== undefined) {
-                if (typeof req.query.day === 'string' && req.query.day.length > 0) {
-                    req.query.startFrom = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                        .toDate();
-                    req.query.startThrough = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                        .add(1, 'day')
-                        .toDate();
+            useLegacySearch = true;
 
-                    delete req.query.day;
-                }
-
-                if (typeof req.query.day === 'object') {
-                    // day: { '$gte': '20190603', '$lte': '20190802' } } の場合
-                    if (req.query.day.$gte !== undefined) {
-                        req.query.startFrom = moment(`${req.query.day.$gte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+            if (useLegacySearch) {
+                // POSへの互換性維持
+                if (req.query.day !== undefined) {
+                    if (typeof req.query.day === 'string' && req.query.day.length > 0) {
+                        req.query.startFrom = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
                             .toDate();
-                    }
-                    if (req.query.day.$lte !== undefined) {
-                        req.query.startThrough = moment(`${req.query.day.$lte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                        req.query.startThrough = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
                             .add(1, 'day')
                             .toDate();
+
+                        delete req.query.day;
                     }
 
-                    delete req.query.day;
+                    if (typeof req.query.day === 'object') {
+                        // day: { '$gte': '20190603', '$lte': '20190802' } } の場合
+                        if (req.query.day.$gte !== undefined) {
+                            req.query.startFrom = moment(`${req.query.day.$gte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                                .toDate();
+                        }
+                        if (req.query.day.$lte !== undefined) {
+                            req.query.startThrough = moment(`${req.query.day.$lte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                                .add(1, 'day')
+                                .toDate();
+                        }
+
+                        delete req.query.day;
+                    }
                 }
+
+                const conditions: ttts.factory.performance.ISearchConditions = {
+                    ...req.query,
+                    // tslint:disable-next-line:no-magic-numbers
+                    limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100,
+                    page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1,
+                    sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: 1 },
+                    // POSへの互換性維持のためperformanceIdを補完
+                    ids: (typeof req.query.performanceId === 'string') ? [String(req.query.performanceId)] : undefined
+                };
+
+                const performanceRepo = new ttts.repository.Performance(mongoose.connection);
+
+                let totalCount: number | undefined;
+                if (countDocuments) {
+                    totalCount = await performanceRepo.count(conditions);
+                }
+
+                const performances = await search(conditions)({ performance: performanceRepo });
+
+                if (typeof totalCount === 'number') {
+                    res.set('X-Total-Count', totalCount.toString());
+                }
+
+                res.json({ data: performances });
+            } else {
+                // POSへの互換性維持
+                if (req.query.day !== undefined) {
+                    if (typeof req.query.day === 'string' && req.query.day.length > 0) {
+                        req.query.startFrom = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                            .toDate();
+                        req.query.startThrough = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                            .add(1, 'day')
+                            .toDate();
+
+                        delete req.query.day;
+                    }
+
+                    if (typeof req.query.day === 'object') {
+                        // day: { '$gte': '20190603', '$lte': '20190802' } } の場合
+                        if (req.query.day.$gte !== undefined) {
+                            req.query.startFrom = moment(`${req.query.day.$gte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                                .toDate();
+                        }
+                        if (req.query.day.$lte !== undefined) {
+                            req.query.startThrough = moment(`${req.query.day.$lte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                                .add(1, 'day')
+                                .toDate();
+                        }
+
+                        delete req.query.day;
+                    }
+                }
+
+                const conditions: cinerinoapi.factory.chevre.event.screeningEvent.ISearchConditions = {
+                    ...req.query,
+                    // tslint:disable-next-line:no-magic-numbers
+                    limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100,
+                    page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1,
+                    sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: 1 },
+                    // POSへの互換性維持のためperformanceIdを補完
+                    ids: (typeof req.query.performanceId === 'string') ? [String(req.query.performanceId)] : undefined
+                };
+
+                const events = await searchByChevre(conditions)();
+
+                res.json({ data: events });
             }
-
-            const conditions: ttts.factory.performance.ISearchConditions = {
-                ...req.query,
-                // tslint:disable-next-line:no-magic-numbers
-                limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100,
-                page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1,
-                sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: 1 },
-                // POSへの互換性維持のためperformanceIdを補完
-                ids: (typeof req.query.performanceId === 'string') ? [String(req.query.performanceId)] : undefined
-            };
-
-            const performanceRepo = new ttts.repository.Performance(mongoose.connection);
-
-            let totalCount: number | undefined;
-            if (countDocuments) {
-                totalCount = await performanceRepo.count(conditions);
-            }
-
-            const performances = await search(conditions)({ performance: performanceRepo });
-
-            if (typeof totalCount === 'number') {
-                res.set('X-Total-Count', totalCount.toString());
-            }
-
-            res.json({ data: performances });
         } catch (error) {
             next(error);
         }
