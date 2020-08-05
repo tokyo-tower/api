@@ -9,11 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.search = exports.searchByChevre = void 0;
 /**
  * パフォーマンスルーター
  */
-const cinerinoapi = require("@cinerino/sdk");
 const ttts = require("@tokyotower/domain");
 const express = require("express");
 const express_validator_1 = require("express-validator");
@@ -24,198 +22,8 @@ const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
+const performance_1 = require("../service/performance");
 const USE_NEW_EVENT_SEARCH = process.env.USE_NEW_EVENT_SEARCH === '1';
-const setting = {
-    offerCodes: [
-        '001',
-        '002',
-        '003',
-        '004',
-        '005',
-        '006'
-    ]
-};
-const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
-    domain: process.env.CINERINO_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.CINERINO_CLIENT_ID,
-    clientSecret: process.env.CINERINO_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
-const eventService = new cinerinoapi.service.Event({
-    endpoint: process.env.CINERINO_API_ENDPOINT,
-    auth: cinerinoAuthClient
-});
-function searchByChevre(params) {
-    // tslint:disable-next-line:max-func-body-length
-    return () => __awaiter(this, void 0, void 0, function* () {
-        var _a, _b, _c, _d;
-        // POSへの互換性維持
-        if (params.day !== undefined) {
-            if (typeof params.day === 'string' && params.day.length > 0) {
-                params.startFrom = moment(`${params.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                    .toDate();
-                params.startThrough = moment(`${params.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                    .add(1, 'day')
-                    .toDate();
-                delete params.day;
-            }
-            if (typeof params.day === 'object') {
-                // day: { '$gte': '20190603', '$lte': '20190802' } } の場合
-                if (params.day.$gte !== undefined) {
-                    params.startFrom = moment(`${params.day.$gte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                        .toDate();
-                }
-                if (params.day.$lte !== undefined) {
-                    params.startThrough = moment(`${params.day.$lte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                        .add(1, 'day')
-                        .toDate();
-                }
-                delete params.day;
-            }
-        }
-        let events;
-        // POSへの互換性維持のためperformanceIdを補完
-        if (typeof params.performanceId === 'string') {
-            const event = yield eventService.findById({ id: params.performanceId });
-            events = [event];
-        }
-        else {
-            const searchConditions = Object.assign(Object.assign(Object.assign({}, params), { 
-                // tslint:disable-next-line:no-magic-numbers
-                limit: (params.limit !== undefined) ? Number(params.limit) : 100, page: (params.page !== undefined) ? Math.max(Number(params.page), 1) : 1, sort: (params.sort !== undefined) ? params.sort : { startDate: 1 }, typeOf: cinerinoapi.factory.chevre.eventType.ScreeningEvent }), {
-                $projection: { aggregateReservation: 0 }
-            });
-            const searchResult = yield eventService.search(searchConditions);
-            events = searchResult.data;
-        }
-        // 検索結果があれば、ひとつめのイベントのオファーを検索
-        if (events.length === 0) {
-            return [];
-        }
-        const firstEvent = events[0];
-        const offers = yield eventService.searchTicketOffers({
-            event: { id: firstEvent.id },
-            seller: {
-                typeOf: (_b = (_a = firstEvent.offers) === null || _a === void 0 ? void 0 : _a.seller) === null || _b === void 0 ? void 0 : _b.typeOf,
-                id: (_d = (_c = firstEvent.offers) === null || _c === void 0 ? void 0 : _c.seller) === null || _d === void 0 ? void 0 : _d.id
-            },
-            store: {
-                id: process.env.CINERINO_CLIENT_ID
-            }
-        });
-        const unitPriceOffers = offers
-            // 指定のオファーコードに限定する
-            .filter((o) => setting.offerCodes.includes(o.identifier))
-            .map((o) => {
-            // tslint:disable-next-line:max-line-length
-            const unitPriceSpec = o.priceSpecification.priceComponent.find((p) => p.typeOf === cinerinoapi.factory.chevre.priceSpecificationType.UnitPriceSpecification);
-            return Object.assign(Object.assign({}, o), { priceSpecification: unitPriceSpec });
-        });
-        return events
-            .map((event) => {
-            var _a, _b, _c, _d, _e, _f, _g, _h;
-            // 一般座席の残席数
-            const seatStatus = (_c = (_b = (_a = event.aggregateOffer) === null || _a === void 0 ? void 0 : _a.offers) === null || _b === void 0 ? void 0 : _b.find((o) => o.identifier === '001')) === null || _c === void 0 ? void 0 : _c.remainingAttendeeCapacity;
-            // 車椅子座席の残席数
-            const wheelchairAvailable = (_f = (_e = (_d = event.aggregateOffer) === null || _d === void 0 ? void 0 : _d.offers) === null || _e === void 0 ? void 0 : _e.find((o) => o.identifier === '004')) === null || _f === void 0 ? void 0 : _f.remainingAttendeeCapacity;
-            const tourNumber = (_h = (_g = event.additionalProperty) === null || _g === void 0 ? void 0 : _g.find((p) => p.name === 'tourNumber')) === null || _h === void 0 ? void 0 : _h.value;
-            return {
-                id: event.id,
-                attributes: {
-                    day: moment(event.startDate)
-                        .tz('Asia/Tokyo')
-                        .format('YYYYMMDD'),
-                    open_time: moment(event.startDate)
-                        .tz('Asia/Tokyo')
-                        .format('HHmm'),
-                    start_time: moment(event.startDate)
-                        .tz('Asia/Tokyo')
-                        .format('HHmm'),
-                    end_time: moment(event.endDate)
-                        .tz('Asia/Tokyo')
-                        .format('HHmm'),
-                    seat_status: (typeof seatStatus === 'number') ? String(seatStatus) : undefined,
-                    wheelchair_available: wheelchairAvailable,
-                    tour_number: tourNumber,
-                    ticket_types: unitPriceOffers.map((unitPriceOffer) => {
-                        var _a, _b, _c, _d;
-                        const availableNum = (_c = (_b = (_a = event.aggregateOffer) === null || _a === void 0 ? void 0 : _a.offers) === null || _b === void 0 ? void 0 : _b.find((o) => o.id === unitPriceOffer.id)) === null || _c === void 0 ? void 0 : _c.remainingAttendeeCapacity;
-                        return {
-                            name: unitPriceOffer.name,
-                            id: String(unitPriceOffer.identifier),
-                            // POSに対するAPI互換性維持のため、charge属性追加
-                            charge: (_d = unitPriceOffer.priceSpecification) === null || _d === void 0 ? void 0 : _d.price,
-                            available_num: availableNum
-                        };
-                    }),
-                    online_sales_status: (event.eventStatus === cinerinoapi.factory.chevre.eventStatusType.EventScheduled)
-                        ? 'Normal'
-                        : 'Suspended'
-                }
-            };
-        });
-    });
-}
-exports.searchByChevre = searchByChevre;
-/**
- * 検索する
- */
-function search(searchConditions) {
-    return (repos) => __awaiter(this, void 0, void 0, function* () {
-        const performances = yield repos.performance.search(searchConditions);
-        return performances.map(performance2result);
-    });
-}
-exports.search = search;
-function performance2result(performance) {
-    var _a, _b;
-    // const ticketTypes = (performance.ticket_type_group !== undefined) ? performance.ticket_type_group.ticket_types : [];
-    const tourNumber = (_b = (_a = performance.additionalProperty) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === 'tourNumber')) === null || _b === void 0 ? void 0 : _b.value;
-    const attributes = {
-        day: moment(performance.startDate)
-            .tz('Asia/Tokyo')
-            .format('YYYYMMDD'),
-        open_time: moment(performance.doorTime)
-            .tz('Asia/Tokyo')
-            .format('HHmm'),
-        start_time: moment(performance.startDate)
-            .tz('Asia/Tokyo')
-            .format('HHmm'),
-        end_time: moment(performance.endDate)
-            .tz('Asia/Tokyo')
-            .format('HHmm'),
-        seat_status: performance.remainingAttendeeCapacity,
-        tour_number: tourNumber,
-        wheelchair_available: performance.remainingAttendeeCapacityForWheelchair,
-        online_sales_status: (performance.ttts_extension !== undefined)
-            ? performance.ttts_extension.online_sales_status : ttts.factory.performance.OnlineSalesStatus.Normal
-        // 以下、テストで不要確認したら削除
-        // ticket_types: ticketTypes.map((ticketType) => {
-        //     return {
-        //         name: ticketType.name,
-        //         id: ticketType.identifier, // POSに受け渡すのは券種IDでなく券種コードなので要注意
-        //         // POSに対するAPI互換性維持のため、charge属性追加
-        //         charge: ticketType.priceSpecification?.price,
-        //         available_num: performance.offers?.find((o) => o.id === ticketType.id)?.remainingAttendeeCapacity
-        //     };
-        // }),
-        // refunded_count: (performance.ttts_extension !== undefined)
-        //     ? performance.ttts_extension.refunded_count : undefined,
-        // refund_status: (performance.ttts_extension !== undefined)
-        //     ? performance.ttts_extension.refund_status : undefined,
-        // ev_service_status: (performance.ttts_extension !== undefined)
-        //     ? performance.ttts_extension.ev_service_status : undefined
-    };
-    return Object.assign(Object.assign(Object.assign({}, performance), { evServiceStatus: (performance.ttts_extension !== undefined)
-            ? performance.ttts_extension.ev_service_status
-            : ttts.factory.performance.EvServiceStatus.Normal, onlineSalesStatus: (performance.ttts_extension !== undefined)
-            ? performance.ttts_extension.online_sales_status
-            : ttts.factory.performance.OnlineSalesStatus.Normal, extension: performance.ttts_extension }), {
-        attributes: attributes,
-        tourNumber: tourNumber
-    });
-}
 const performanceRouter = express.Router();
 performanceRouter.use(authentication_1.default);
 performanceRouter.use(rateLimit_1.default);
@@ -304,14 +112,14 @@ performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
             if (countDocuments) {
                 totalCount = yield performanceRepo.count(conditions);
             }
-            const performances = yield search(conditions)({ performance: performanceRepo });
+            const performances = yield performance_1.search(conditions)({ performance: performanceRepo });
             if (typeof totalCount === 'number') {
                 res.set('X-Total-Count', totalCount.toString());
             }
             res.json({ data: performances });
         }
         else {
-            const events = yield searchByChevre(req.query)();
+            const events = yield performance_1.searchByChevre(req.query)();
             res.json({ data: events });
         }
     }

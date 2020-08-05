@@ -7,7 +7,7 @@ import { Router } from 'express';
 import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 
-import { search } from './performances';
+import { search } from '../service/performance';
 
 const project = {
     typeOf: <cinerinoapi.factory.chevre.organizationType.Project>cinerinoapi.factory.chevre.organizationType.Project,
