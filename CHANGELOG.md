@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - パフォーマンス検索を最適化
+- パフォーマンス残席数に、Chevreイベントのオファーごとの集計情報を利用するように調整
 
 ### Deprecated
 
