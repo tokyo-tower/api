@@ -85,7 +85,7 @@ function searchByChevre(searchConditions) {
             const tourNumber = (_h = (_g = event.additionalProperty) === null || _g === void 0 ? void 0 : _g.find((p) => p.name === 'tourNumber')) === null || _h === void 0 ? void 0 : _h.value;
             return {
                 id: event.id,
-                atrributes: {
+                attributes: {
                     day: moment(event.startDate)
                         .tz('Asia/Tokyo')
                         .format('YYYYMMDD'),

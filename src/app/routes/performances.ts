@@ -29,7 +29,7 @@ const setting = {
 
 export interface IPerformance4pos {
     id: string;
-    atrributes: {
+    attributes: {
         day: string;
         open_time: string;
         start_time: string;
@@ -129,7 +129,7 @@ export function searchByChevre(
 
                 return {
                     id: event.id,
-                    atrributes: {
+                    attributes: {
                         day: moment(event.startDate)
                             .tz('Asia/Tokyo')
                             .format('YYYYMMDD'),
