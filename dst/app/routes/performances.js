@@ -170,7 +170,7 @@ function search(searchConditions) {
 exports.search = search;
 function performance2result(performance) {
     var _a, _b;
-    const ticketTypes = (performance.ticket_type_group !== undefined) ? performance.ticket_type_group.ticket_types : [];
+    // const ticketTypes = (performance.ticket_type_group !== undefined) ? performance.ticket_type_group.ticket_types : [];
     const tourNumber = (_b = (_a = performance.additionalProperty) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === 'tourNumber')) === null || _b === void 0 ? void 0 : _b.value;
     const attributes = {
         day: moment(performance.startDate)
@@ -188,19 +188,18 @@ function performance2result(performance) {
         seat_status: performance.remainingAttendeeCapacity,
         tour_number: tourNumber,
         wheelchair_available: performance.remainingAttendeeCapacityForWheelchair,
-        ticket_types: ticketTypes.map((ticketType) => {
-            var _a, _b, _c;
-            return {
-                name: ticketType.name,
-                id: ticketType.identifier,
-                // POSに対するAPI互換性維持のため、charge属性追加
-                charge: (_a = ticketType.priceSpecification) === null || _a === void 0 ? void 0 : _a.price,
-                available_num: (_c = (_b = performance.offers) === null || _b === void 0 ? void 0 : _b.find((o) => o.id === ticketType.id)) === null || _c === void 0 ? void 0 : _c.remainingAttendeeCapacity
-            };
-        }),
         online_sales_status: (performance.ttts_extension !== undefined)
             ? performance.ttts_extension.online_sales_status : ttts.factory.performance.OnlineSalesStatus.Normal
         // 以下、テストで不要確認したら削除
+        // ticket_types: ticketTypes.map((ticketType) => {
+        //     return {
+        //         name: ticketType.name,
+        //         id: ticketType.identifier, // POSに受け渡すのは券種IDでなく券種コードなので要注意
+        //         // POSに対するAPI互換性維持のため、charge属性追加
+        //         charge: ticketType.priceSpecification?.price,
+        //         available_num: performance.offers?.find((o) => o.id === ticketType.id)?.remainingAttendeeCapacity
+        //     };
+        // }),
         // refunded_count: (performance.ttts_extension !== undefined)
         //     ? performance.ttts_extension.refunded_count : undefined,
         // refund_status: (performance.ttts_extension !== undefined)
