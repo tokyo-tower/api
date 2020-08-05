@@ -113,7 +113,7 @@ export function searchByChevre(
             events = [event];
         } else {
             const searchConditions: cinerinoapi.factory.chevre.event.screeningEvent.ISearchConditions = {
-                ...query,
+                ...params,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (params.limit !== undefined) ? Number(params.limit) : 100,
                 page: (params.page !== undefined) ? Math.max(Number(params.page), 1) : 1,
