@@ -73,23 +73,68 @@ const eventService = new cinerinoapi.service.Event({
 });
 
 export function searchByChevre(
-    searchConditions: cinerinoapi.factory.chevre.event.screeningEvent.ISearchConditions
+    params: any
 ) {
+    // tslint:disable-next-line:max-func-body-length
     return async (): Promise<IPerformance4pos[]> => {
-        const searchResult = await eventService.search({
-            ...searchConditions,
-            typeOf: cinerinoapi.factory.chevre.eventType.ScreeningEvent,
-            ...{
-                $projection: { aggregateReservation: 0 }
+        // POSへの互換性維持
+        if (params.day !== undefined) {
+            if (typeof params.day === 'string' && params.day.length > 0) {
+                params.startFrom = moment(`${params.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                    .toDate();
+                params.startThrough = moment(`${params.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                    .add(1, 'day')
+                    .toDate();
+
+                delete params.day;
             }
-        });
+
+            if (typeof params.day === 'object') {
+                // day: { '$gte': '20190603', '$lte': '20190802' } } の場合
+                if (params.day.$gte !== undefined) {
+                    params.startFrom = moment(`${params.day.$gte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                        .toDate();
+                }
+                if (params.day.$lte !== undefined) {
+                    params.startThrough = moment(`${params.day.$lte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                        .add(1, 'day')
+                        .toDate();
+                }
+
+                delete params.day;
+            }
+        }
+
+        let events: cinerinoapi.factory.chevre.event.screeningEvent.IEvent[];
+
+        // POSへの互換性維持のためperformanceIdを補完
+        if (typeof params.performanceId === 'string') {
+            const event = await eventService.findById<cinerinoapi.factory.chevre.eventType.ScreeningEvent>({ id: params.performanceId });
+            events = [event];
+        } else {
+            const searchConditions: cinerinoapi.factory.chevre.event.screeningEvent.ISearchConditions = {
+                ...query,
+                // tslint:disable-next-line:no-magic-numbers
+                limit: (params.limit !== undefined) ? Number(params.limit) : 100,
+                page: (params.page !== undefined) ? Math.max(Number(params.page), 1) : 1,
+                sort: (params.sort !== undefined) ? params.sort : { startDate: 1 },
+                typeOf: cinerinoapi.factory.chevre.eventType.ScreeningEvent,
+                ...{
+                    $projection: { aggregateReservation: 0 }
+                }
+            };
+
+            const searchResult = await eventService.search(searchConditions);
+
+            events = searchResult.data;
+        }
 
         // 検索結果があれば、ひとつめのイベントのオファーを検索
-        if (searchResult.data.length === 0) {
+        if (events.length === 0) {
             return [];
         }
 
-        const firstEvent = searchResult.data[0];
+        const firstEvent = events[0];
 
         const offers = await eventService.searchTicketOffers({
             event: { id: firstEvent.id },
@@ -118,7 +163,7 @@ export function searchByChevre(
                 };
             });
 
-        return searchResult.data
+        return events
             .map((event) => {
                 // 一般座席の残席数
                 const seatStatus = event.aggregateOffer?.offers?.find((o) => o.identifier === '001')?.remainingAttendeeCapacity;
@@ -355,45 +400,7 @@ performanceRouter.get(
 
                 res.json({ data: performances });
             } else {
-                // POSへの互換性維持
-                if (req.query.day !== undefined) {
-                    if (typeof req.query.day === 'string' && req.query.day.length > 0) {
-                        req.query.startFrom = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                            .toDate();
-                        req.query.startThrough = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                            .add(1, 'day')
-                            .toDate();
-
-                        delete req.query.day;
-                    }
-
-                    if (typeof req.query.day === 'object') {
-                        // day: { '$gte': '20190603', '$lte': '20190802' } } の場合
-                        if (req.query.day.$gte !== undefined) {
-                            req.query.startFrom = moment(`${req.query.day.$gte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                                .toDate();
-                        }
-                        if (req.query.day.$lte !== undefined) {
-                            req.query.startThrough = moment(`${req.query.day.$lte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                                .add(1, 'day')
-                                .toDate();
-                        }
-
-                        delete req.query.day;
-                    }
-                }
-
-                const conditions: cinerinoapi.factory.chevre.event.screeningEvent.ISearchConditions = {
-                    ...req.query,
-                    // tslint:disable-next-line:no-magic-numbers
-                    limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100,
-                    page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1,
-                    sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: 1 },
-                    // POSへの互換性維持のためperformanceIdを補完
-                    ids: (typeof req.query.performanceId === 'string') ? [String(req.query.performanceId)] : undefined
-                };
-
-                const events = await searchByChevre(conditions)();
+                const events = await searchByChevre(req.query)();
 
                 res.json({ data: events });
             }

@@ -46,17 +46,54 @@ const eventService = new cinerinoapi.service.Event({
     endpoint: process.env.CINERINO_API_ENDPOINT,
     auth: cinerinoAuthClient
 });
-function searchByChevre(searchConditions) {
+function searchByChevre(params) {
+    // tslint:disable-next-line:max-func-body-length
     return () => __awaiter(this, void 0, void 0, function* () {
         var _a, _b, _c, _d;
-        const searchResult = yield eventService.search(Object.assign(Object.assign(Object.assign({}, searchConditions), { typeOf: cinerinoapi.factory.chevre.eventType.ScreeningEvent }), {
-            $projection: { aggregateReservation: 0 }
-        }));
+        // POSへの互換性維持
+        if (params.day !== undefined) {
+            if (typeof params.day === 'string' && params.day.length > 0) {
+                params.startFrom = moment(`${params.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                    .toDate();
+                params.startThrough = moment(`${params.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                    .add(1, 'day')
+                    .toDate();
+                delete params.day;
+            }
+            if (typeof params.day === 'object') {
+                // day: { '$gte': '20190603', '$lte': '20190802' } } の場合
+                if (params.day.$gte !== undefined) {
+                    params.startFrom = moment(`${params.day.$gte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                        .toDate();
+                }
+                if (params.day.$lte !== undefined) {
+                    params.startThrough = moment(`${params.day.$lte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                        .add(1, 'day')
+                        .toDate();
+                }
+                delete params.day;
+            }
+        }
+        let events;
+        // POSへの互換性維持のためperformanceIdを補完
+        if (typeof params.performanceId === 'string') {
+            const event = yield eventService.findById({ id: params.performanceId });
+            events = [event];
+        }
+        else {
+            const searchConditions = Object.assign(Object.assign(Object.assign({}, express_validator_1.query), { 
+                // tslint:disable-next-line:no-magic-numbers
+                limit: (params.limit !== undefined) ? Number(params.limit) : 100, page: (params.page !== undefined) ? Math.max(Number(params.page), 1) : 1, sort: (params.sort !== undefined) ? params.sort : { startDate: 1 }, typeOf: cinerinoapi.factory.chevre.eventType.ScreeningEvent }), {
+                $projection: { aggregateReservation: 0 }
+            });
+            const searchResult = yield eventService.search(searchConditions);
+            events = searchResult.data;
+        }
         // 検索結果があれば、ひとつめのイベントのオファーを検索
-        if (searchResult.data.length === 0) {
+        if (events.length === 0) {
             return [];
         }
-        const firstEvent = searchResult.data[0];
+        const firstEvent = events[0];
         const offers = yield eventService.searchTicketOffers({
             event: { id: firstEvent.id },
             seller: {
@@ -75,7 +112,7 @@ function searchByChevre(searchConditions) {
             const unitPriceSpec = o.priceSpecification.priceComponent.find((p) => p.typeOf === cinerinoapi.factory.chevre.priceSpecificationType.UnitPriceSpecification);
             return Object.assign(Object.assign({}, o), { priceSpecification: unitPriceSpec });
         });
-        return searchResult.data
+        return events
             .map((event) => {
             var _a, _b, _c, _d, _e, _f, _g, _h;
             // 一般座席の残席数
@@ -275,36 +312,7 @@ performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
             res.json({ data: performances });
         }
         else {
-            // POSへの互換性維持
-            if (req.query.day !== undefined) {
-                if (typeof req.query.day === 'string' && req.query.day.length > 0) {
-                    req.query.startFrom = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                        .toDate();
-                    req.query.startThrough = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                        .add(1, 'day')
-                        .toDate();
-                    delete req.query.day;
-                }
-                if (typeof req.query.day === 'object') {
-                    // day: { '$gte': '20190603', '$lte': '20190802' } } の場合
-                    if (req.query.day.$gte !== undefined) {
-                        req.query.startFrom = moment(`${req.query.day.$gte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                            .toDate();
-                    }
-                    if (req.query.day.$lte !== undefined) {
-                        req.query.startThrough = moment(`${req.query.day.$lte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                            .add(1, 'day')
-                            .toDate();
-                    }
-                    delete req.query.day;
-                }
-            }
-            const conditions = Object.assign(Object.assign({}, req.query), { 
-                // tslint:disable-next-line:no-magic-numbers
-                limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100, page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: 1 }, 
-                // POSへの互換性維持のためperformanceIdを補完
-                ids: (typeof req.query.performanceId === 'string') ? [String(req.query.performanceId)] : undefined });
-            const events = yield searchByChevre(conditions)();
+            const events = yield searchByChevre(req.query)();
             res.json({ data: events });
         }
     }
