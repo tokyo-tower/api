@@ -24,6 +24,17 @@ const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
+const USE_NEW_EVENT_SEARCH = process.env.USE_NEW_EVENT_SEARCH === '1';
+const setting = {
+    offerCodes: [
+        '001',
+        '002',
+        '003',
+        '004',
+        '005',
+        '006'
+    ]
+};
 const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
     domain: process.env.CINERINO_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CINERINO_CLIENT_ID,
@@ -37,9 +48,33 @@ const eventService = new cinerinoapi.service.Event({
 });
 function searchByChevre(searchConditions) {
     return () => __awaiter(this, void 0, void 0, function* () {
+        var _a, _b, _c, _d;
         const searchResult = yield eventService.search(Object.assign(Object.assign(Object.assign({}, searchConditions), { typeOf: cinerinoapi.factory.chevre.eventType.ScreeningEvent }), {
             $projection: { aggregateReservation: 0 }
         }));
+        // 検索結果があれば、ひとつめのイベントのオファーを検索
+        if (searchResult.data.length === 0) {
+            return [];
+        }
+        const firstEvent = searchResult.data[0];
+        const offers = yield eventService.searchTicketOffers({
+            event: { id: firstEvent.id },
+            seller: {
+                typeOf: (_b = (_a = firstEvent.offers) === null || _a === void 0 ? void 0 : _a.seller) === null || _b === void 0 ? void 0 : _b.typeOf,
+                id: (_d = (_c = firstEvent.offers) === null || _c === void 0 ? void 0 : _c.seller) === null || _d === void 0 ? void 0 : _d.id
+            },
+            store: {
+                id: process.env.CINERINO_CLIENT_ID
+            }
+        });
+        const unitPriceOffers = offers
+            // 指定のオファーコードに限定する
+            .filter((o) => setting.offerCodes.includes(o.identifier))
+            .map((o) => {
+            // tslint:disable-next-line:max-line-length
+            const unitPriceSpec = o.priceSpecification.priceComponent.find((p) => p.typeOf === cinerinoapi.factory.chevre.priceSpecificationType.UnitPriceSpecification);
+            return Object.assign(Object.assign({}, o), { priceSpecification: unitPriceSpec });
+        });
         return searchResult.data
             .map((event) => {
             var _a, _b, _c, _d, _e, _f, _g, _h;
@@ -66,17 +101,17 @@ function searchByChevre(searchConditions) {
                     seat_status: (typeof seatStatus === 'number') ? String(seatStatus) : undefined,
                     wheelchair_available: wheelchairAvailable,
                     tour_number: tourNumber,
-                    ticket_types: [
-                    // {
-                    //     "charge": 1800,
-                    //     "name": {
-                    //         "en": "english name",
-                    //         "ja": "日本語名称"
-                    //     },
-                    //     "id": "001",
-                    //     "available_num": 1
-                    // }
-                    ],
+                    ticket_types: unitPriceOffers.map((unitPriceOffer) => {
+                        var _a, _b, _c, _d;
+                        const availableNum = (_c = (_b = (_a = event.aggregateOffer) === null || _a === void 0 ? void 0 : _a.offers) === null || _b === void 0 ? void 0 : _b.find((o) => o.id === unitPriceOffer.id)) === null || _c === void 0 ? void 0 : _c.remainingAttendeeCapacity;
+                        return {
+                            name: unitPriceOffer.name,
+                            id: String(unitPriceOffer.identifier),
+                            // POSに対するAPI互換性維持のため、charge属性追加
+                            charge: (_d = unitPriceOffer.priceSpecification) === null || _d === void 0 ? void 0 : _d.price,
+                            available_num: availableNum
+                        };
+                    }),
                     online_sales_status: (event.eventStatus === cinerinoapi.factory.chevre.eventStatusType.EventScheduled)
                         ? 'Normal'
                         : 'Suspended'
@@ -195,7 +230,9 @@ performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
     try {
         const countDocuments = req.query.countDocuments === '1';
         let useLegacySearch = req.query.useLegacySearch === '1';
-        useLegacySearch = true;
+        if (!USE_NEW_EVENT_SEARCH) {
+            useLegacySearch = true;
+        }
         if (useLegacySearch) {
             // POSへの互換性維持
             if (req.query.day !== undefined) {
