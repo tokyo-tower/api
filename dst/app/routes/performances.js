@@ -138,6 +138,7 @@ performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']), (req,
             : undefined), (req.body.onlineSalesStatus !== undefined)
             ? {
                 'ttts_extension.online_sales_status': req.body.onlineSalesStatus,
+                onlineSalesStatus: req.body.onlineSalesStatus,
                 eventStatus: (req.body.onlineSalesStatus === ttts.factory.performance.OnlineSalesStatus.Normal)
                     ? ttts.factory.chevre.eventStatusType.EventScheduled
                     : ttts.factory.chevre.eventStatusType.EventCancelled
@@ -150,7 +151,10 @@ performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']), (req,
                     .toDate()
             }
             : undefined), (req.body.evServiceStatus !== undefined)
-            ? { 'ttts_extension.ev_service_status': req.body.evServiceStatus }
+            ? {
+                'ttts_extension.ev_service_status': req.body.evServiceStatus,
+                evServiceStatus: req.body.evServiceStatus
+            }
             : undefined), (req.body.evServiceStatusUpdateUser !== undefined)
             ? { 'ttts_extension.ev_service_update_user': req.body.evServiceStatusUpdateUser }
             : undefined), (req.body.evServiceStatusUpdateAt !== undefined && req.body.evServiceStatusUpdateAt !== '')
