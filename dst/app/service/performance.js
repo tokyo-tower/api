@@ -173,28 +173,28 @@ exports.search = search;
 function performance2result(performance) {
     var _a, _b;
     const tourNumber = (_b = (_a = performance.additionalProperty) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === 'tourNumber')) === null || _b === void 0 ? void 0 : _b.value;
-    const attributes = {
-        day: moment(performance.startDate)
-            .tz('Asia/Tokyo')
-            .format('YYYYMMDD'),
-        open_time: moment(performance.doorTime)
-            .tz('Asia/Tokyo')
-            .format('HHmm'),
-        start_time: moment(performance.startDate)
-            .tz('Asia/Tokyo')
-            .format('HHmm'),
-        end_time: moment(performance.endDate)
-            .tz('Asia/Tokyo')
-            .format('HHmm'),
-        seat_status: performance.remainingAttendeeCapacity,
-        tour_number: tourNumber,
-        wheelchair_available: performance.remainingAttendeeCapacityForWheelchair,
-        online_sales_status: performance.onlineSalesStatus
-    };
+    // const attributes: any = {
+    //     day: moment(performance.startDate)
+    //         .tz('Asia/Tokyo')
+    //         .format('YYYYMMDD'),
+    //     open_time: moment(performance.doorTime)
+    //         .tz('Asia/Tokyo')
+    //         .format('HHmm'),
+    //     start_time: moment(performance.startDate)
+    //         .tz('Asia/Tokyo')
+    //         .format('HHmm'),
+    //     end_time: moment(performance.endDate)
+    //         .tz('Asia/Tokyo')
+    //         .format('HHmm'),
+    //     seat_status: performance.remainingAttendeeCapacity,
+    //     tour_number: tourNumber,
+    //     wheelchair_available: performance.remainingAttendeeCapacityForWheelchair,
+    //     online_sales_status: performance.onlineSalesStatus
+    // };
     return Object.assign(Object.assign(Object.assign({}, performance), (performance.ttts_extension !== undefined)
         ? { extension: performance.ttts_extension }
         : undefined), {
-        attributes: attributes,
+        // attributes: attributes, // attributes属性は、POSに対するAPI互換性維持のため
         tourNumber: tourNumber
     });
 }

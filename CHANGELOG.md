@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - パフォーマンスへのオファー情報のインポートを停止
 - USE_NEW_EVENT_SEARCH設定を削除
 - パフォーマンス検索にuseExtensionを指定できるように調整
+- パフォーマンス検索結果(POS対応以外)からattributesを削除
 
 ### Deprecated
 
