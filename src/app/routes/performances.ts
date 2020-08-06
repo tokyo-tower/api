@@ -15,8 +15,6 @@ import validator from '../middlewares/validator';
 
 import { search, searchByChevre } from '../service/performance';
 
-const USE_NEW_EVENT_SEARCH = process.env.USE_NEW_EVENT_SEARCH === '1';
-
 const performanceRouter = express.Router();
 
 performanceRouter.use(authentication);
@@ -76,11 +74,7 @@ performanceRouter.get(
     async (req, res, next) => {
         try {
             const countDocuments = req.query.countDocuments === '1';
-            let useLegacySearch = req.query.useLegacySearch === '1';
-
-            if (!USE_NEW_EVENT_SEARCH) {
-                useLegacySearch = true;
-            }
+            const useLegacySearch = req.query.useLegacySearch === '1';
 
             if (useLegacySearch) {
                 // POSへの互換性維持

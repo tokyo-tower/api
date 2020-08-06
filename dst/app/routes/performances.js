@@ -23,7 +23,6 @@ const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const performance_1 = require("../service/performance");
-const USE_NEW_EVENT_SEARCH = process.env.USE_NEW_EVENT_SEARCH === '1';
 const performanceRouter = express.Router();
 performanceRouter.use(authentication_1.default);
 performanceRouter.use(rateLimit_1.default);
@@ -73,10 +72,7 @@ performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const countDocuments = req.query.countDocuments === '1';
-        let useLegacySearch = req.query.useLegacySearch === '1';
-        if (!USE_NEW_EVENT_SEARCH) {
-            useLegacySearch = true;
-        }
+        const useLegacySearch = req.query.useLegacySearch === '1';
         if (useLegacySearch) {
             // POSへの互換性維持
             if (req.query.day !== undefined) {

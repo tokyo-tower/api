@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- パフォーマンスへのオファー情報のインポートを停止
+- USE_NEW_EVENT_SEARCH設定を削除
+
 ### Deprecated
 
 ### Removed
