@@ -75,6 +75,7 @@ performanceRouter.get(
         try {
             const countDocuments = req.query.countDocuments === '1';
             const useLegacySearch = req.query.useLegacySearch === '1';
+            const useExtension = req.query.useExtension === '1';
 
             if (useLegacySearch) {
                 // POSへの互換性維持
@@ -122,7 +123,7 @@ performanceRouter.get(
                     totalCount = await performanceRepo.count(conditions);
                 }
 
-                const performances = await search(conditions)({ performance: performanceRepo });
+                const performances = await search(conditions, useExtension)({ performance: performanceRepo });
 
                 if (typeof totalCount === 'number') {
                     res.set('X-Total-Count', totalCount.toString());

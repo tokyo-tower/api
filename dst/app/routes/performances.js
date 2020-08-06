@@ -73,6 +73,7 @@ performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
     try {
         const countDocuments = req.query.countDocuments === '1';
         const useLegacySearch = req.query.useLegacySearch === '1';
+        const useExtension = req.query.useExtension === '1';
         if (useLegacySearch) {
             // POSへの互換性維持
             if (req.query.day !== undefined) {
@@ -108,7 +109,7 @@ performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
             if (countDocuments) {
                 totalCount = yield performanceRepo.count(conditions);
             }
-            const performances = yield performance_1.search(conditions)({ performance: performanceRepo });
+            const performances = yield performance_1.search(conditions, useExtension)({ performance: performanceRepo });
             if (typeof totalCount === 'number') {
                 res.set('X-Total-Count', totalCount.toString());
             }
