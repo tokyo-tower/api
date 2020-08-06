@@ -18,6 +18,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v38.1.0 - 2020-08-06
+
+### Changed
+
+- パフォーマンス検索を最適化
+- パフォーマンス残席数に、Chevreイベントのオファーごとの集計情報を利用するように調整
+- パフォーマンスからオファー情報を削除
+- onlineSalesStatus変更時にeventStatusも同時に変更するように調整
+
 ## v38.0.0 - 2020-08-03
 
 ### Changed

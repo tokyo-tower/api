@@ -15,8 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerinoapi = require("@cinerino/sdk");
 const ttts = require("@tokyotower/domain");
 const express_1 = require("express");
-const moment = require("moment");
+const moment = require("moment-timezone");
 const mongoose = require("mongoose");
+const performance_1 = require("../service/performance");
 const project = {
     typeOf: cinerinoapi.factory.chevre.organizationType.Project,
     id: process.env.PROJECT_ID
@@ -47,7 +48,7 @@ previewRouter.get('/performancesWithAggregation', (req, res, next) => __awaiter(
                 : undefined
         };
         const performanceRepo = new ttts.repository.Performance(mongoose.connection);
-        const searchPerformanceResult = yield ttts.service.performance.search(conditions)({ performance: performanceRepo });
+        const searchPerformanceResult = yield performance_1.search(conditions)({ performance: performanceRepo });
         res.json(searchPerformanceResult);
     }
     catch (error) {

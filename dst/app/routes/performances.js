@@ -16,12 +16,14 @@ const ttts = require("@tokyotower/domain");
 const express = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
-const moment = require("moment");
+const moment = require("moment-timezone");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
+const performance_1 = require("../service/performance");
+const USE_NEW_EVENT_SEARCH = process.env.USE_NEW_EVENT_SEARCH === '1';
 const performanceRouter = express.Router();
 performanceRouter.use(authentication_1.default);
 performanceRouter.use(rateLimit_1.default);
@@ -66,57 +68,60 @@ performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
         .optional()
         .isISO8601()
         .toDate()
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+], validator_1.default, 
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const countDocuments = req.query.countDocuments === '1';
-        // 互換性維持のため
-        // if (typeof req.query.start_from === 'string' && req.query.start_from !== '') {
-        //     req.query.startFrom = moment(req.query.start_from)
-        //         .toDate();
-        // }
-        // if (typeof req.query.start_through === 'string' && req.query.start_through !== '') {
-        //     req.query.startThrough = moment(req.query.start_through)
-        //         .toDate();
-        // }
-        // POSへの互換性維持
-        if (req.query.day !== undefined) {
-            if (typeof req.query.day === 'string' && req.query.day.length > 0) {
-                req.query.startFrom = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                    .toDate();
-                req.query.startThrough = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                    .add(1, 'day')
-                    .toDate();
-                delete req.query.day;
-            }
-            if (typeof req.query.day === 'object') {
-                // day: { '$gte': '20190603', '$lte': '20190802' } } の場合
-                if (req.query.day.$gte !== undefined) {
-                    req.query.startFrom = moment(`${req.query.day.$gte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+        let useLegacySearch = req.query.useLegacySearch === '1';
+        if (!USE_NEW_EVENT_SEARCH) {
+            useLegacySearch = true;
+        }
+        if (useLegacySearch) {
+            // POSへの互換性維持
+            if (req.query.day !== undefined) {
+                if (typeof req.query.day === 'string' && req.query.day.length > 0) {
+                    req.query.startFrom = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
                         .toDate();
-                }
-                if (req.query.day.$lte !== undefined) {
-                    req.query.startThrough = moment(`${req.query.day.$lte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                    req.query.startThrough = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
                         .add(1, 'day')
                         .toDate();
+                    delete req.query.day;
                 }
-                delete req.query.day;
+                if (typeof req.query.day === 'object') {
+                    // day: { '$gte': '20190603', '$lte': '20190802' } } の場合
+                    if (req.query.day.$gte !== undefined) {
+                        req.query.startFrom = moment(`${req.query.day.$gte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                            .toDate();
+                    }
+                    if (req.query.day.$lte !== undefined) {
+                        req.query.startThrough = moment(`${req.query.day.$lte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                            .add(1, 'day')
+                            .toDate();
+                    }
+                    delete req.query.day;
+                }
             }
+            const conditions = Object.assign(Object.assign({}, req.query), { 
+                // tslint:disable-next-line:no-magic-numbers
+                limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100, page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: 1 }, 
+                // POSへの互換性維持のためperformanceIdを補完
+                ids: (typeof req.query.performanceId === 'string') ? [String(req.query.performanceId)] : undefined });
+            const performanceRepo = new ttts.repository.Performance(mongoose.connection);
+            let totalCount;
+            if (countDocuments) {
+                totalCount = yield performanceRepo.count(conditions);
+            }
+            const performances = yield performance_1.search(conditions)({ performance: performanceRepo });
+            if (typeof totalCount === 'number') {
+                res.set('X-Total-Count', totalCount.toString());
+            }
+            res.json({ data: performances });
         }
-        const conditions = Object.assign(Object.assign({}, req.query), { 
-            // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100, page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: 1 }, 
-            // POSへの互換性維持のためperformanceIdを補完
-            ids: (typeof req.query.performanceId === 'string') ? [String(req.query.performanceId)] : undefined });
-        const performanceRepo = new ttts.repository.Performance(mongoose.connection);
-        let totalCount;
-        if (countDocuments) {
-            totalCount = yield performanceRepo.count(conditions);
+        else {
+            const events = yield performance_1.searchByChevre(req.query)();
+            res.json({ data: events });
         }
-        const performances = yield ttts.service.performance.search(conditions)({ performance: performanceRepo });
-        if (typeof totalCount === 'number') {
-            res.set('X-Total-Count', totalCount.toString());
-        }
-        res.json({ data: performances });
     }
     catch (error) {
         next(error);
@@ -131,7 +136,13 @@ performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']), (req,
         yield performanceRepo.updateOne({ _id: req.params.id }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (req.body.reservationsAtLastUpdateDate !== undefined)
             ? { 'ttts_extension.reservationsAtLastUpdateDate': req.body.reservationsAtLastUpdateDate }
             : undefined), (req.body.onlineSalesStatus !== undefined)
-            ? { 'ttts_extension.online_sales_status': req.body.onlineSalesStatus }
+            ? {
+                'ttts_extension.online_sales_status': req.body.onlineSalesStatus,
+                onlineSalesStatus: req.body.onlineSalesStatus,
+                eventStatus: (req.body.onlineSalesStatus === ttts.factory.performance.OnlineSalesStatus.Normal)
+                    ? ttts.factory.chevre.eventStatusType.EventScheduled
+                    : ttts.factory.chevre.eventStatusType.EventCancelled
+            }
             : undefined), (req.body.onlineSalesStatusUpdateUser !== undefined)
             ? { 'ttts_extension.online_sales_update_user': req.body.onlineSalesStatusUpdateUser }
             : undefined), (req.body.onlineSalesStatusUpdateAt !== undefined && req.body.onlineSalesStatusUpdateAt !== '')
@@ -140,7 +151,10 @@ performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']), (req,
                     .toDate()
             }
             : undefined), (req.body.evServiceStatus !== undefined)
-            ? { 'ttts_extension.ev_service_status': req.body.evServiceStatus }
+            ? {
+                'ttts_extension.ev_service_status': req.body.evServiceStatus,
+                evServiceStatus: req.body.evServiceStatus
+            }
             : undefined), (req.body.evServiceStatusUpdateUser !== undefined)
             ? { 'ttts_extension.ev_service_update_user': req.body.evServiceStatusUpdateUser }
             : undefined), (req.body.evServiceStatusUpdateAt !== undefined && req.body.evServiceStatusUpdateAt !== '')
