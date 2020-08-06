@@ -136,7 +136,12 @@ performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']), (req,
         yield performanceRepo.updateOne({ _id: req.params.id }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (req.body.reservationsAtLastUpdateDate !== undefined)
             ? { 'ttts_extension.reservationsAtLastUpdateDate': req.body.reservationsAtLastUpdateDate }
             : undefined), (req.body.onlineSalesStatus !== undefined)
-            ? { 'ttts_extension.online_sales_status': req.body.onlineSalesStatus }
+            ? {
+                'ttts_extension.online_sales_status': req.body.onlineSalesStatus,
+                eventStatus: (req.body.onlineSalesStatus === ttts.factory.performance.OnlineSalesStatus.Normal)
+                    ? ttts.factory.chevre.eventStatusType.EventScheduled
+                    : ttts.factory.chevre.eventStatusType.EventCancelled
+            }
             : undefined), (req.body.onlineSalesStatusUpdateUser !== undefined)
             ? { 'ttts_extension.online_sales_update_user': req.body.onlineSalesStatusUpdateUser }
             : undefined), (req.body.onlineSalesStatusUpdateAt !== undefined && req.body.onlineSalesStatusUpdateAt !== '')

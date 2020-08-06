@@ -162,7 +162,12 @@ performanceRouter.put(
                         ? { 'ttts_extension.reservationsAtLastUpdateDate': req.body.reservationsAtLastUpdateDate }
                         : undefined,
                     ...(req.body.onlineSalesStatus !== undefined)
-                        ? { 'ttts_extension.online_sales_status': req.body.onlineSalesStatus }
+                        ? {
+                            'ttts_extension.online_sales_status': req.body.onlineSalesStatus,
+                            eventStatus: (req.body.onlineSalesStatus === ttts.factory.performance.OnlineSalesStatus.Normal)
+                                ? ttts.factory.chevre.eventStatusType.EventScheduled
+                                : ttts.factory.chevre.eventStatusType.EventCancelled
+                        }
                         : undefined,
                     ...(req.body.onlineSalesStatusUpdateUser !== undefined)
                         ? { 'ttts_extension.online_sales_update_user': req.body.onlineSalesStatusUpdateUser }
