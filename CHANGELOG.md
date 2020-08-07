@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 予約管理のためのパフォーマンス検索を分離
+
 ### Changed
 
 - パフォーマンスへのオファー情報のインポートを停止
