@@ -235,38 +235,13 @@ function performance2result(
     performance: ttts.factory.performance.IPerformance & ttts.factory.performance.IPerformanceWithAggregation
 ): ttts.factory.performance.IPerformanceWithAvailability {
     const tourNumber = performance.additionalProperty?.find((p) => p.name === 'tourNumber')?.value;
-    // const attributes: any = {
-    //     day: moment(performance.startDate)
-    //         .tz('Asia/Tokyo')
-    //         .format('YYYYMMDD'),
-    //     open_time: moment(performance.doorTime)
-    //         .tz('Asia/Tokyo')
-    //         .format('HHmm'),
-    //     start_time: moment(performance.startDate)
-    //         .tz('Asia/Tokyo')
-    //         .format('HHmm'),
-    //     end_time: moment(performance.endDate)
-    //         .tz('Asia/Tokyo')
-    //         .format('HHmm'),
-    //     seat_status: performance.remainingAttendeeCapacity,
-    //     tour_number: tourNumber,
-    //     wheelchair_available: performance.remainingAttendeeCapacityForWheelchair,
-    //     online_sales_status: performance.onlineSalesStatus
-    // };
 
     return {
         ...performance,
-        // evServiceStatus: (performance.ttts_extension !== undefined)
-        //     ? performance.ttts_extension.ev_service_status
-        //     : ttts.factory.performance.EvServiceStatus.Normal,
-        // onlineSalesStatus: (performance.ttts_extension !== undefined)
-        //     ? performance.ttts_extension.online_sales_status
-        //     : ttts.factory.performance.OnlineSalesStatus.Normal,
         ...(performance.ttts_extension !== undefined)
             ? { extension: performance.ttts_extension }
             : undefined,
         ...{
-            // attributes: attributes, // attributes属性は、POSに対するAPI互換性維持のため
             tourNumber: tourNumber
         }
     };
