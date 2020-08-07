@@ -14,7 +14,6 @@ exports.search = exports.searchByChevre = void 0;
  * パフォーマンスルーター
  */
 const cinerinoapi = require("@cinerino/sdk");
-const ttts = require("@tokyotower/domain");
 const moment = require("moment-timezone");
 const setting = {
     offerCodes: [
@@ -156,52 +155,27 @@ function event2performance4pos(params) {
 /**
  * 検索する
  */
-function search(searchConditions) {
+function search(searchConditions, useExtension) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
-        const performances = yield repos.performance.search(searchConditions);
+        const projection = (useExtension)
+            ? undefined
+            : {
+                __v: 0,
+                created_at: 0,
+                updated_at: 0,
+                ttts_extension: 0
+            };
+        const performances = yield repos.performance.search(searchConditions, projection);
         return performances.map(performance2result);
     });
 }
 exports.search = search;
 function performance2result(performance) {
     var _a, _b;
-    // const ticketTypes = (performance.ticket_type_group !== undefined) ? performance.ticket_type_group.ticket_types : [];
     const tourNumber = (_b = (_a = performance.additionalProperty) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === 'tourNumber')) === null || _b === void 0 ? void 0 : _b.value;
-    const attributes = {
-        day: moment(performance.startDate)
-            .tz('Asia/Tokyo')
-            .format('YYYYMMDD'),
-        open_time: moment(performance.doorTime)
-            .tz('Asia/Tokyo')
-            .format('HHmm'),
-        start_time: moment(performance.startDate)
-            .tz('Asia/Tokyo')
-            .format('HHmm'),
-        end_time: moment(performance.endDate)
-            .tz('Asia/Tokyo')
-            .format('HHmm'),
-        seat_status: performance.remainingAttendeeCapacity,
-        tour_number: tourNumber,
-        wheelchair_available: performance.remainingAttendeeCapacityForWheelchair,
-        online_sales_status: (performance.ttts_extension !== undefined)
-            ? performance.ttts_extension.online_sales_status : ttts.factory.performance.OnlineSalesStatus.Normal
-        // 以下、テストで不要確認したら削除
-        // ticket_types: ticketTypes.map((ticketType) => {
-        //     return {
-        //         name: ticketType.name,
-        //         id: ticketType.identifier, // POSに受け渡すのは券種IDでなく券種コードなので要注意
-        //         // POSに対するAPI互換性維持のため、charge属性追加
-        //         charge: ticketType.priceSpecification?.price,
-        //         available_num: performance.offers?.find((o) => o.id === ticketType.id)?.remainingAttendeeCapacity
-        //     };
-        // }),
-    };
-    return Object.assign(Object.assign(Object.assign({}, performance), { evServiceStatus: (performance.ttts_extension !== undefined)
-            ? performance.ttts_extension.ev_service_status
-            : ttts.factory.performance.EvServiceStatus.Normal, onlineSalesStatus: (performance.ttts_extension !== undefined)
-            ? performance.ttts_extension.online_sales_status
-            : ttts.factory.performance.OnlineSalesStatus.Normal, extension: performance.ttts_extension }), {
-        attributes: attributes,
+    return Object.assign(Object.assign(Object.assign({}, performance), (performance.ttts_extension !== undefined)
+        ? { extension: performance.ttts_extension }
+        : undefined), {
         tourNumber: tourNumber
     });
 }

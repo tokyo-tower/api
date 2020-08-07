@@ -12,6 +12,7 @@ import errorHandler from './middlewares/errorHandler';
 import notFoundHandler from './middlewares/notFoundHandler';
 
 import aggregateSalesRouter from './routes/aggregateSales';
+import eventsRouter from './routes/events';
 import healthRouter from './routes/health';
 import performanceRouter from './routes/performances';
 import previewRouter from './routes/preview';
@@ -68,6 +69,7 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 
 // ルーティング
 app.use('/aggregateSales', aggregateSalesRouter);
+app.use('/events', eventsRouter);
 app.use('/health', healthRouter);
 app.use('/preview', previewRouter);
 app.use('/performances', performanceRouter);
