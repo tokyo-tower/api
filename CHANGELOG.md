@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- パフォーマンス検索からuseLegacySearchの指定を削除
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v38.3.0 - 2020-08-07
+
+### Changed
+
+- パフォーマンス検索からuseLegacySearchの指定を削除
 
 ## v38.2.0 - 2020-08-07
 
