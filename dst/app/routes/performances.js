@@ -67,58 +67,13 @@ performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
         .optional()
         .isISO8601()
         .toDate()
-], validator_1.default, 
-// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const countDocuments = req.query.countDocuments === '1';
-        const useLegacySearch = req.query.useLegacySearch === '1';
-        const useExtension = req.query.useExtension === '1';
-        if (useLegacySearch) {
-            // POSへの互換性維持
-            if (req.query.day !== undefined) {
-                if (typeof req.query.day === 'string' && req.query.day.length > 0) {
-                    req.query.startFrom = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                        .toDate();
-                    req.query.startThrough = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                        .add(1, 'day')
-                        .toDate();
-                    delete req.query.day;
-                }
-                if (typeof req.query.day === 'object') {
-                    // day: { '$gte': '20190603', '$lte': '20190802' } } の場合
-                    if (req.query.day.$gte !== undefined) {
-                        req.query.startFrom = moment(`${req.query.day.$gte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                            .toDate();
-                    }
-                    if (req.query.day.$lte !== undefined) {
-                        req.query.startThrough = moment(`${req.query.day.$lte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                            .add(1, 'day')
-                            .toDate();
-                    }
-                    delete req.query.day;
-                }
-            }
-            const conditions = Object.assign(Object.assign({}, req.query), { 
-                // tslint:disable-next-line:no-magic-numbers
-                limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100, page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: 1 }, 
-                // POSへの互換性維持のためperformanceIdを補完
-                ids: (typeof req.query.performanceId === 'string') ? [String(req.query.performanceId)] : undefined });
-            const performanceRepo = new ttts.repository.Performance(mongoose.connection);
-            let totalCount;
-            if (countDocuments) {
-                totalCount = yield performanceRepo.count(conditions);
-            }
-            const performances = yield performance_1.search(conditions, useExtension)({ performance: performanceRepo });
-            if (typeof totalCount === 'number') {
-                res.set('X-Total-Count', totalCount.toString());
-            }
-            res.json({ data: performances });
-        }
-        else {
-            const events = yield performance_1.searchByChevre(req.query)();
-            res.json({ data: events });
-        }
+        // const countDocuments = req.query.countDocuments === '1';
+        // const useLegacySearch = req.query.useLegacySearch === '1';
+        // const useExtension = req.query.useExtension === '1';
+        const events = yield performance_1.searchByChevre(req.query)();
+        res.json({ data: events });
     }
     catch (error) {
         next(error);
