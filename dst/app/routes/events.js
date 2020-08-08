@@ -28,7 +28,7 @@ eventsRouter.use(rateLimit_1.default);
 /**
  * パフォーマンス検索
  */
-eventsRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
+eventsRouter.get('', permitScopes_1.default(['transactions']), ...[
     express_validator_1.query('startFrom')
         .optional()
         .isISO8601()
@@ -57,7 +57,7 @@ eventsRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
     try {
         const countDocuments = req.query.countDocuments === '1';
         const useExtension = req.query.useExtension === '1';
-        // POSへの互換性維持
+        // 互換性維持
         if (req.query.day !== undefined) {
             if (typeof req.query.day === 'string' && req.query.day.length > 0) {
                 req.query.startFrom = moment(`${req.query.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
@@ -67,25 +67,23 @@ eventsRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
                     .toDate();
                 delete req.query.day;
             }
-            if (typeof req.query.day === 'object') {
-                // day: { '$gte': '20190603', '$lte': '20190802' } } の場合
-                if (req.query.day.$gte !== undefined) {
-                    req.query.startFrom = moment(`${req.query.day.$gte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                        .toDate();
-                }
-                if (req.query.day.$lte !== undefined) {
-                    req.query.startThrough = moment(`${req.query.day.$lte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                        .add(1, 'day')
-                        .toDate();
-                }
-                delete req.query.day;
-            }
+            // if (typeof req.query.day === 'object') {
+            //     // day: { '$gte': '20190603', '$lte': '20190802' } } の場合
+            //     if (req.query.day.$gte !== undefined) {
+            //         req.query.startFrom = moment(`${req.query.day.$gte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+            //             .toDate();
+            //     }
+            //     if (req.query.day.$lte !== undefined) {
+            //         req.query.startThrough = moment(`${req.query.day.$lte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+            //             .add(1, 'day')
+            //             .toDate();
+            //     }
+            //     delete req.query.day;
+            // }
         }
         const conditions = Object.assign(Object.assign({}, req.query), { 
             // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100, page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: 1 }, 
-            // POSへの互換性維持のためperformanceIdを補完
-            ids: (typeof req.query.performanceId === 'string') ? [String(req.query.performanceId)] : undefined });
+            limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100, page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: 1 } });
         const performanceRepo = new ttts.repository.Performance(mongoose.connection);
         let totalCount;
         if (countDocuments) {
