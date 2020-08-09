@@ -3,7 +3,6 @@
  */
 import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
-import { query } from 'express-validator';
 import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
@@ -35,7 +34,8 @@ performanceRouter.get(
         } catch (error) {
             next(error);
         }
-    });
+    }
+);
 
 /**
  * パフォーマンス検索
@@ -43,39 +43,10 @@ performanceRouter.get(
 performanceRouter.get(
     '',
     permitScopes(['transactions', 'pos']),
-    ...[
-        query('startFrom')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('startThrough')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('endFrom')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('endThrough')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('ttts_extension.online_sales_update_at.$gte')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('ttts_extension.online_sales_update_at.$lt')
-            .optional()
-            .isISO8601()
-            .toDate()
-    ],
+    ...[],
     validator,
     async (req, res, next) => {
         try {
-            // const countDocuments = req.query.countDocuments === '1';
-            // const useLegacySearch = req.query.useLegacySearch === '1';
-            // const useExtension = req.query.useExtension === '1';
-
             const events = await searchByChevre(req.query)();
 
             res.json({ data: events });

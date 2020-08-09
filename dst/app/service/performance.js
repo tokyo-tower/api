@@ -14,6 +14,7 @@ exports.search = exports.searchByChevre = void 0;
  * パフォーマンスルーター
  */
 const cinerinoapi = require("@cinerino/sdk");
+const ttts = require("@tokyotower/domain");
 const moment = require("moment-timezone");
 const setting = {
     offerCodes: [
@@ -39,40 +40,24 @@ const eventService = new cinerinoapi.service.Event({
 function searchByChevre(params) {
     return () => __awaiter(this, void 0, void 0, function* () {
         var _a, _b, _c, _d;
-        // POSへの互換性維持
-        if (params.day !== undefined) {
-            if (typeof params.day === 'string' && params.day.length > 0) {
-                params.startFrom = moment(`${params.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                    .toDate();
-                params.startThrough = moment(`${params.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                    .add(1, 'day')
-                    .toDate();
-                delete params.day;
-            }
-            if (typeof params.day === 'object') {
-                // day: { '$gte': '20190603', '$lte': '20190802' } } の場合
-                if (params.day.$gte !== undefined) {
-                    params.startFrom = moment(`${params.day.$gte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                        .toDate();
-                }
-                if (params.day.$lte !== undefined) {
-                    params.startThrough = moment(`${params.day.$lte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                        .add(1, 'day')
-                        .toDate();
-                }
-                delete params.day;
-            }
-        }
         let events;
-        // POSへの互換性維持のためperformanceIdを補完
+        // performanceId指定の場合はこちら
         if (typeof params.performanceId === 'string') {
             const event = yield eventService.findById({ id: params.performanceId });
             events = [event];
         }
         else {
-            const searchConditions = Object.assign(Object.assign(Object.assign({}, params), { 
+            const searchConditions = Object.assign(Object.assign({ 
                 // tslint:disable-next-line:no-magic-numbers
-                limit: (params.limit !== undefined) ? Number(params.limit) : 100, page: (params.page !== undefined) ? Math.max(Number(params.page), 1) : 1, sort: (params.sort !== undefined) ? params.sort : { startDate: 1 }, typeOf: cinerinoapi.factory.chevre.eventType.ScreeningEvent }), {
+                limit: (params.limit !== undefined) ? Number(params.limit) : 100, page: (params.page !== undefined) ? Math.max(Number(params.page), 1) : 1, sort: { startDate: 1 }, typeOf: cinerinoapi.factory.chevre.eventType.ScreeningEvent }, (typeof params.day === 'string' && params.day.length > 0)
+                ? {
+                    startFrom: moment(`${params.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                        .toDate(),
+                    startThrough: moment(`${params.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                        .add(1, 'day')
+                        .toDate()
+                }
+                : undefined), {
                 $projection: { aggregateReservation: 0 }
             });
             const searchResult = yield eventService.search(searchConditions);
@@ -147,8 +132,8 @@ function event2performance4pos(params) {
                 };
             }),
             online_sales_status: (event.eventStatus === cinerinoapi.factory.chevre.eventStatusType.EventScheduled)
-                ? 'Normal'
-                : 'Suspended'
+                ? ttts.factory.performance.OnlineSalesStatus.Normal
+                : ttts.factory.performance.OnlineSalesStatus.Suspended
         }
     };
 }

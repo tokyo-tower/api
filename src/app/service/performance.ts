@@ -39,6 +39,13 @@ export interface IPerformance4pos {
     };
 }
 
+export interface ISearchConditions4pos {
+    page?: number;
+    limit?: number;
+    day?: string;
+    performanceId?: string;
+}
+
 export type ISearchResult = ttts.factory.performance.IPerformanceWithAvailability[];
 
 export type ISearchOperation<T> = (repos: {
@@ -58,52 +65,30 @@ const eventService = new cinerinoapi.service.Event({
     auth: cinerinoAuthClient
 });
 
-export function searchByChevre(
-    params: any
-) {
+export function searchByChevre(params: ISearchConditions4pos) {
     return async (): Promise<IPerformance4pos[]> => {
-        // POSへの互換性維持
-        if (params.day !== undefined) {
-            if (typeof params.day === 'string' && params.day.length > 0) {
-                params.startFrom = moment(`${params.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                    .toDate();
-                params.startThrough = moment(`${params.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                    .add(1, 'day')
-                    .toDate();
-
-                delete params.day;
-            }
-
-            if (typeof params.day === 'object') {
-                // day: { '$gte': '20190603', '$lte': '20190802' } } の場合
-                if (params.day.$gte !== undefined) {
-                    params.startFrom = moment(`${params.day.$gte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                        .toDate();
-                }
-                if (params.day.$lte !== undefined) {
-                    params.startThrough = moment(`${params.day.$lte}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                        .add(1, 'day')
-                        .toDate();
-                }
-
-                delete params.day;
-            }
-        }
-
         let events: cinerinoapi.factory.chevre.event.screeningEvent.IEvent[];
 
-        // POSへの互換性維持のためperformanceIdを補完
+        // performanceId指定の場合はこちら
         if (typeof params.performanceId === 'string') {
             const event = await eventService.findById<cinerinoapi.factory.chevre.eventType.ScreeningEvent>({ id: params.performanceId });
             events = [event];
         } else {
             const searchConditions: cinerinoapi.factory.chevre.event.screeningEvent.ISearchConditions = {
-                ...params,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (params.limit !== undefined) ? Number(params.limit) : 100,
                 page: (params.page !== undefined) ? Math.max(Number(params.page), 1) : 1,
-                sort: (params.sort !== undefined) ? params.sort : { startDate: 1 },
+                sort: { startDate: 1 },
                 typeOf: cinerinoapi.factory.chevre.eventType.ScreeningEvent,
+                ...(typeof params.day === 'string' && params.day.length > 0)
+                    ? {
+                        startFrom: moment(`${params.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                            .toDate(),
+                        startThrough: moment(`${params.day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+                            .add(1, 'day')
+                            .toDate()
+                    }
+                    : undefined,
                 ...{
                     $projection: { aggregateReservation: 0 }
                 }
@@ -200,8 +185,8 @@ function event2performance4pos(params: {
                 };
             }),
             online_sales_status: (event.eventStatus === cinerinoapi.factory.chevre.eventStatusType.EventScheduled)
-                ? 'Normal'
-                : 'Suspended'
+                ? ttts.factory.performance.OnlineSalesStatus.Normal
+                : ttts.factory.performance.OnlineSalesStatus.Suspended
         }
     };
 }

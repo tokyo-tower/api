@@ -14,7 +14,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const ttts = require("@tokyotower/domain");
 const express = require("express");
-const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 const mongoose = require("mongoose");
@@ -42,36 +41,8 @@ performanceRouter.get('/:id', permitScopes_1.default(['transactions', 'pos']), (
 /**
  * パフォーマンス検索
  */
-performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[
-    express_validator_1.query('startFrom')
-        .optional()
-        .isISO8601()
-        .toDate(),
-    express_validator_1.query('startThrough')
-        .optional()
-        .isISO8601()
-        .toDate(),
-    express_validator_1.query('endFrom')
-        .optional()
-        .isISO8601()
-        .toDate(),
-    express_validator_1.query('endThrough')
-        .optional()
-        .isISO8601()
-        .toDate(),
-    express_validator_1.query('ttts_extension.online_sales_update_at.$gte')
-        .optional()
-        .isISO8601()
-        .toDate(),
-    express_validator_1.query('ttts_extension.online_sales_update_at.$lt')
-        .optional()
-        .isISO8601()
-        .toDate()
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // const countDocuments = req.query.countDocuments === '1';
-        // const useLegacySearch = req.query.useLegacySearch === '1';
-        // const useExtension = req.query.useExtension === '1';
         const events = yield performance_1.searchByChevre(req.query)();
         res.json({ data: events });
     }
