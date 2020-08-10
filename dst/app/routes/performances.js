@@ -53,18 +53,27 @@ performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[]
 /**
  * 拡張属性更新
  */
-performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']), 
+// tslint:disable-next-line:cyclomatic-complexity
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        let newEventStatus = ttts.factory.chevre.eventStatusType.EventScheduled;
+        switch (req.body.evServiceStatus) {
+            case ttts.factory.performance.EvServiceStatus.Slowdown:
+                newEventStatus = ttts.factory.chevre.eventStatusType.EventPostponed;
+                break;
+            case ttts.factory.performance.EvServiceStatus.Suspended:
+                newEventStatus = ttts.factory.chevre.eventStatusType.EventCancelled;
+                break;
+            default:
+        }
         const performanceRepo = new ttts.repository.Performance(mongoose.connection);
         yield performanceRepo.updateOne({ _id: req.params.id }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (req.body.reservationsAtLastUpdateDate !== undefined)
             ? { 'ttts_extension.reservationsAtLastUpdateDate': req.body.reservationsAtLastUpdateDate }
             : undefined), (req.body.onlineSalesStatus !== undefined)
             ? {
                 'ttts_extension.online_sales_status': req.body.onlineSalesStatus,
-                onlineSalesStatus: req.body.onlineSalesStatus,
-                eventStatus: (req.body.onlineSalesStatus === ttts.factory.performance.OnlineSalesStatus.Normal)
-                    ? ttts.factory.chevre.eventStatusType.EventScheduled
-                    : ttts.factory.chevre.eventStatusType.EventCancelled
+                onlineSalesStatus: req.body.onlineSalesStatus
             }
             : undefined), (req.body.onlineSalesStatusUpdateUser !== undefined)
             ? { 'ttts_extension.online_sales_update_user': req.body.onlineSalesStatusUpdateUser }
@@ -76,7 +85,8 @@ performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']), (req,
             : undefined), (req.body.evServiceStatus !== undefined)
             ? {
                 'ttts_extension.ev_service_status': req.body.evServiceStatus,
-                evServiceStatus: req.body.evServiceStatus
+                evServiceStatus: req.body.evServiceStatus,
+                eventStatus: newEventStatus
             }
             : undefined), (req.body.evServiceStatusUpdateUser !== undefined)
             ? { 'ttts_extension.ev_service_update_user': req.body.evServiceStatusUpdateUser }

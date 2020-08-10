@@ -62,8 +62,22 @@ performanceRouter.get(
 performanceRouter.put(
     '/:id/extension',
     permitScopes(['admin']),
+    // tslint:disable-next-line:cyclomatic-complexity
     async (req, res, next) => {
         try {
+            let newEventStatus = ttts.factory.chevre.eventStatusType.EventScheduled;
+            switch (req.body.evServiceStatus) {
+                case ttts.factory.performance.EvServiceStatus.Slowdown:
+                    newEventStatus = ttts.factory.chevre.eventStatusType.EventPostponed;
+                    break;
+
+                case ttts.factory.performance.EvServiceStatus.Suspended:
+                    newEventStatus = ttts.factory.chevre.eventStatusType.EventCancelled;
+                    break;
+
+                default:
+            }
+
             const performanceRepo = new ttts.repository.Performance(mongoose.connection);
             await performanceRepo.updateOne(
                 { _id: req.params.id },
@@ -74,10 +88,7 @@ performanceRouter.put(
                     ...(req.body.onlineSalesStatus !== undefined)
                         ? {
                             'ttts_extension.online_sales_status': req.body.onlineSalesStatus,
-                            onlineSalesStatus: req.body.onlineSalesStatus,
-                            eventStatus: (req.body.onlineSalesStatus === ttts.factory.performance.OnlineSalesStatus.Normal)
-                                ? ttts.factory.chevre.eventStatusType.EventScheduled
-                                : ttts.factory.chevre.eventStatusType.EventCancelled
+                            onlineSalesStatus: req.body.onlineSalesStatus
                         }
                         : undefined,
                     ...(req.body.onlineSalesStatusUpdateUser !== undefined)
@@ -92,7 +103,8 @@ performanceRouter.put(
                     ...(req.body.evServiceStatus !== undefined)
                         ? {
                             'ttts_extension.ev_service_status': req.body.evServiceStatus,
-                            evServiceStatus: req.body.evServiceStatus
+                            evServiceStatus: req.body.evServiceStatus,
+                            eventStatus: newEventStatus
                         }
                         : undefined,
                     ...(req.body.evServiceStatusUpdateUser !== undefined)
