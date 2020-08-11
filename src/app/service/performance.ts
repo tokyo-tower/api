@@ -46,7 +46,7 @@ export interface ISearchConditions4pos {
     performanceId?: string;
 }
 
-export type ISearchResult = ttts.factory.performance.IPerformanceWithAvailability[];
+export type ISearchResult = ttts.factory.performance.IPerformance[];
 
 export type ISearchOperation<T> = (repos: {
     performance: ttts.repository.Performance;
@@ -217,8 +217,8 @@ export function search(
 }
 
 function performance2result(
-    performance: ttts.factory.performance.IPerformance & ttts.factory.performance.IPerformanceWithAggregation
-): ttts.factory.performance.IPerformanceWithAvailability {
+    performance: ttts.factory.performance.IPerformance
+): ttts.factory.performance.IPerformance {
     const tourNumber = performance.additionalProperty?.find((p) => p.name === 'tourNumber')?.value;
 
     return {
