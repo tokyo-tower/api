@@ -72,8 +72,7 @@ performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']),
             ? { 'ttts_extension.reservationsAtLastUpdateDate': req.body.reservationsAtLastUpdateDate }
             : undefined), (req.body.onlineSalesStatus !== undefined)
             ? {
-                'ttts_extension.online_sales_status': req.body.onlineSalesStatus,
-                onlineSalesStatus: req.body.onlineSalesStatus
+                'ttts_extension.online_sales_status': req.body.onlineSalesStatus
             }
             : undefined), (req.body.onlineSalesStatusUpdateUser !== undefined)
             ? { 'ttts_extension.online_sales_update_user': req.body.onlineSalesStatusUpdateUser }
@@ -85,7 +84,6 @@ performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']),
             : undefined), (req.body.evServiceStatus !== undefined)
             ? {
                 'ttts_extension.ev_service_status': req.body.evServiceStatus,
-                evServiceStatus: req.body.evServiceStatus,
                 eventStatus: newEventStatus
             }
             : undefined), (req.body.evServiceStatusUpdateUser !== undefined)
