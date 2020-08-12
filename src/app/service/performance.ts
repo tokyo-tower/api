@@ -202,11 +202,19 @@ export function search(
         performance: ttts.repository.Performance;
     }) => {
         const projection: any = (useExtension)
-            ? undefined
+            ? {
+                __v: 0,
+                created_at: 0,
+                updated_at: 0,
+                location: 0,
+                superEvent: 0
+            }
             : {
                 __v: 0,
                 created_at: 0,
                 updated_at: 0,
+                location: 0,
+                superEvent: 0,
                 ttts_extension: 0
             };
 

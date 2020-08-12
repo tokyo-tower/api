@@ -143,11 +143,19 @@ function event2performance4pos(params) {
 function search(searchConditions, useExtension) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
         const projection = (useExtension)
-            ? undefined
+            ? {
+                __v: 0,
+                created_at: 0,
+                updated_at: 0,
+                location: 0,
+                superEvent: 0
+            }
             : {
                 __v: 0,
                 created_at: 0,
                 updated_at: 0,
+                location: 0,
+                superEvent: 0,
                 ttts_extension: 0
             };
         const performances = yield repos.performance.search(searchConditions, projection);
