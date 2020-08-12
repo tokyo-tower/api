@@ -207,7 +207,8 @@ export function search(
                 created_at: 0,
                 updated_at: 0,
                 location: 0,
-                superEvent: 0
+                superEvent: 0,
+                offers: 0
             }
             : {
                 __v: 0,
@@ -215,6 +216,7 @@ export function search(
                 updated_at: 0,
                 location: 0,
                 superEvent: 0,
+                offers: 0,
                 ttts_extension: 0
             };
 

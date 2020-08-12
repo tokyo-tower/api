@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v38.9.0 - 2020-08-12
+
+### Changed
+
+- パフォーマンス検索を最適化
+- パフォーマンス更新にイベントステータスを指定できるように調整
+
 ## v38.8.0 - 2020-08-12
 
 ### Changed
