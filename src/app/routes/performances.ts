@@ -87,8 +87,7 @@ performanceRouter.put(
                         : undefined,
                     ...(req.body.onlineSalesStatus !== undefined)
                         ? {
-                            'ttts_extension.online_sales_status': req.body.onlineSalesStatus,
-                            onlineSalesStatus: req.body.onlineSalesStatus
+                            'ttts_extension.online_sales_status': req.body.onlineSalesStatus
                         }
                         : undefined,
                     ...(req.body.onlineSalesStatusUpdateUser !== undefined)
@@ -103,7 +102,6 @@ performanceRouter.put(
                     ...(req.body.evServiceStatus !== undefined)
                         ? {
                             'ttts_extension.ev_service_status': req.body.evServiceStatus,
-                            evServiceStatus: req.body.evServiceStatus,
                             eventStatus: newEventStatus
                         }
                         : undefined,

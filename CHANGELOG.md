@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v38.6.0 - 2020-08-12
+
+### Changed
+
+- エレベータ運行ステータスとオンライン販売ステータスをイベントステータスから変換するように変更
+- パフォーマンス検索条件拡張
+
 ## v38.5.0 - 2020-08-11
 
 ### Changed

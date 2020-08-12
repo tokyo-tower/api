@@ -216,10 +216,26 @@ export function search(
     };
 }
 
-function performance2result(
-    performance: ttts.factory.performance.IPerformance
-): ttts.factory.performance.IPerformance {
+function performance2result(performance: ttts.factory.performance.IPerformance): ttts.factory.performance.IPerformance {
     const tourNumber = performance.additionalProperty?.find((p) => p.name === 'tourNumber')?.value;
+
+    let evServiceStatus = ttts.factory.performance.EvServiceStatus.Normal;
+    let onlineSalesStatus = ttts.factory.performance.OnlineSalesStatus.Normal;
+
+    switch (performance.eventStatus) {
+        case cinerinoapi.factory.chevre.eventStatusType.EventCancelled:
+            evServiceStatus = ttts.factory.performance.EvServiceStatus.Suspended;
+            onlineSalesStatus = ttts.factory.performance.OnlineSalesStatus.Suspended;
+            break;
+        case cinerinoapi.factory.chevre.eventStatusType.EventPostponed:
+            evServiceStatus = ttts.factory.performance.EvServiceStatus.Slowdown;
+            onlineSalesStatus = ttts.factory.performance.OnlineSalesStatus.Suspended;
+            break;
+        case cinerinoapi.factory.chevre.eventStatusType.EventScheduled:
+            break;
+
+        default:
+    }
 
     return {
         ...performance,
@@ -227,6 +243,8 @@ function performance2result(
             ? { extension: performance.ttts_extension }
             : undefined,
         ...{
+            evServiceStatus: evServiceStatus,
+            onlineSalesStatus: onlineSalesStatus,
             tourNumber: tourNumber
         }
     };
