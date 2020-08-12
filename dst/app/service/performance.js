@@ -148,7 +148,8 @@ function search(searchConditions, useExtension) {
                 created_at: 0,
                 updated_at: 0,
                 location: 0,
-                superEvent: 0
+                superEvent: 0,
+                offers: 0
             }
             : {
                 __v: 0,
@@ -156,6 +157,7 @@ function search(searchConditions, useExtension) {
                 updated_at: 0,
                 location: 0,
                 superEvent: 0,
+                offers: 0,
                 ttts_extension: 0
             };
         const performances = yield repos.performance.search(searchConditions, projection);

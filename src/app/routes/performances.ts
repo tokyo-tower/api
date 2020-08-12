@@ -105,6 +105,11 @@ performanceRouter.put(
                             eventStatus: newEventStatus
                         }
                         : undefined,
+                    ...(typeof req.body.eventStatus === 'string')
+                        ? {
+                            eventStatus: req.body.eventStatus
+                        }
+                        : undefined,
                     ...(req.body.evServiceStatusUpdateUser !== undefined)
                         ? { 'ttts_extension.ev_service_update_user': req.body.evServiceStatusUpdateUser }
                         : undefined,

@@ -68,7 +68,7 @@ performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']),
             default:
         }
         const performanceRepo = new ttts.repository.Performance(mongoose.connection);
-        yield performanceRepo.updateOne({ _id: req.params.id }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (req.body.reservationsAtLastUpdateDate !== undefined)
+        yield performanceRepo.updateOne({ _id: req.params.id }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (req.body.reservationsAtLastUpdateDate !== undefined)
             ? { 'ttts_extension.reservationsAtLastUpdateDate': req.body.reservationsAtLastUpdateDate }
             : undefined), (req.body.onlineSalesStatus !== undefined)
             ? {
@@ -85,6 +85,10 @@ performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']),
             ? {
                 'ttts_extension.ev_service_status': req.body.evServiceStatus,
                 eventStatus: newEventStatus
+            }
+            : undefined), (typeof req.body.eventStatus === 'string')
+            ? {
+                eventStatus: req.body.eventStatus
             }
             : undefined), (req.body.evServiceStatusUpdateUser !== undefined)
             ? { 'ttts_extension.ev_service_update_user': req.body.evServiceStatusUpdateUser }

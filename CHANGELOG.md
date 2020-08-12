@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- パフォーマンス検索を最適化
+- パフォーマンス更新にイベントステータスを指定できるように調整
+
 ### Deprecated
 
 ### Removed
