@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - エレベータ運行ステータスとオンライン販売ステータスをイベントステータスから変換するように変更
+- パフォーマンス検索条件拡張
 
 ### Deprecated
 
