@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- パフォーマンス更新からevServiceStatusとonlineSalesStatusの指定を削除
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v38.11.0 - 2020-08-13
+
+### Changed
+
+- パフォーマンス更新からevServiceStatusとonlineSalesStatusの指定を削除
 
 ## v38.10.0 - 2020-08-13
 
