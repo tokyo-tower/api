@@ -179,7 +179,6 @@ function event2performance4pos(params: {
                 return {
                     name: <cinerinoapi.factory.chevre.multilingualString>unitPriceOffer.name,
                     id: String(unitPriceOffer.identifier), // POSに受け渡すのは券種IDでなく券種コードなので要注意
-                    // POSに対するAPI互換性維持のため、charge属性追加
                     charge: unitPriceOffer.priceSpecification?.price,
                     available_num: availableNum
                 };
@@ -249,9 +248,6 @@ function performance2result(performance: ttts.factory.performance.IPerformance):
 
     return {
         ...performance,
-        ...(performance.ttts_extension !== undefined)
-            ? { extension: performance.ttts_extension }
-            : undefined,
         ...{
             evServiceStatus: evServiceStatus,
             onlineSalesStatus: onlineSalesStatus,

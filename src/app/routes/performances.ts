@@ -62,33 +62,14 @@ performanceRouter.get(
 performanceRouter.put(
     '/:id/extension',
     permitScopes(['admin']),
-    // tslint:disable-next-line:cyclomatic-complexity
     async (req, res, next) => {
         try {
-            let newEventStatus = ttts.factory.chevre.eventStatusType.EventScheduled;
-            switch (req.body.evServiceStatus) {
-                case ttts.factory.performance.EvServiceStatus.Slowdown:
-                    newEventStatus = ttts.factory.chevre.eventStatusType.EventPostponed;
-                    break;
-
-                case ttts.factory.performance.EvServiceStatus.Suspended:
-                    newEventStatus = ttts.factory.chevre.eventStatusType.EventCancelled;
-                    break;
-
-                default:
-            }
-
             const performanceRepo = new ttts.repository.Performance(mongoose.connection);
             await performanceRepo.updateOne(
                 { _id: req.params.id },
                 {
                     ...(req.body.reservationsAtLastUpdateDate !== undefined)
                         ? { 'ttts_extension.reservationsAtLastUpdateDate': req.body.reservationsAtLastUpdateDate }
-                        : undefined,
-                    ...(req.body.onlineSalesStatus !== undefined)
-                        ? {
-                            'ttts_extension.online_sales_status': req.body.onlineSalesStatus
-                        }
                         : undefined,
                     ...(req.body.onlineSalesStatusUpdateUser !== undefined)
                         ? { 'ttts_extension.online_sales_update_user': req.body.onlineSalesStatusUpdateUser }
@@ -99,16 +80,8 @@ performanceRouter.put(
                                 .toDate()
                         }
                         : undefined,
-                    ...(req.body.evServiceStatus !== undefined)
-                        ? {
-                            'ttts_extension.ev_service_status': req.body.evServiceStatus,
-                            eventStatus: newEventStatus
-                        }
-                        : undefined,
                     ...(typeof req.body.eventStatus === 'string')
-                        ? {
-                            eventStatus: req.body.eventStatus
-                        }
+                        ? { eventStatus: req.body.eventStatus }
                         : undefined,
                     ...(req.body.evServiceStatusUpdateUser !== undefined)
                         ? { 'ttts_extension.ev_service_update_user': req.body.evServiceStatusUpdateUser }
