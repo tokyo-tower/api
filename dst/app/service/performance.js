@@ -126,7 +126,6 @@ function event2performance4pos(params) {
                 return {
                     name: unitPriceOffer.name,
                     id: String(unitPriceOffer.identifier),
-                    // POSに対するAPI互換性維持のため、charge属性追加
                     charge: (_d = unitPriceOffer.priceSpecification) === null || _d === void 0 ? void 0 : _d.price,
                     available_num: availableNum
                 };
@@ -183,9 +182,7 @@ function performance2result(performance) {
             break;
         default:
     }
-    return Object.assign(Object.assign(Object.assign({}, performance), (performance.ttts_extension !== undefined)
-        ? { extension: performance.ttts_extension }
-        : undefined), {
+    return Object.assign(Object.assign({}, performance), {
         evServiceStatus: evServiceStatus,
         onlineSalesStatus: onlineSalesStatus,
         tourNumber: tourNumber
