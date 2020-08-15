@@ -148,7 +148,9 @@ function search(searchConditions, useExtension) {
                 updated_at: 0,
                 location: 0,
                 superEvent: 0,
-                offers: 0
+                offers: 0,
+                doorTime: 0,
+                duration: 0
             }
             : {
                 __v: 0,
@@ -157,6 +159,8 @@ function search(searchConditions, useExtension) {
                 location: 0,
                 superEvent: 0,
                 offers: 0,
+                doorTime: 0,
+                duration: 0,
                 ttts_extension: 0
             };
         const performances = yield repos.performance.search(searchConditions, projection);
