@@ -19,8 +19,6 @@ import previewRouter from './routes/preview';
 import reservationsRouter from './routes/reservations';
 import statsRouter from './routes/stats';
 import tasksRouter from './routes/tasks';
-import placeOrderTransactionsRouter from './routes/transactions/placeOrder';
-import returnOrderTransactionsRouter from './routes/transactions/returnOrder';
 import webhooksRouter from './routes/webhooks';
 
 const app = express();
@@ -76,8 +74,6 @@ app.use('/performances', performanceRouter);
 app.use('/reservations', reservationsRouter);
 app.use('/stats', statsRouter);
 app.use('/tasks', tasksRouter);
-app.use('/transactions/placeOrder', placeOrderTransactionsRouter);
-app.use('/transactions/returnOrder', returnOrderTransactionsRouter);
 app.use('/webhooks', webhooksRouter);
 
 // 404

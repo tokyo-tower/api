@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
+- Legacy POSのためのサービスを削除
+
 ### Fixed
 
 ### Security
