@@ -20,31 +20,17 @@ const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
-const validator_1 = require("../middlewares/validator");
-const performance_1 = require("../service/performance");
 const performanceRouter = express.Router();
 performanceRouter.use(authentication_1.default);
 performanceRouter.use(rateLimit_1.default);
 /**
  * IDでパフォーマンス検索
  */
-performanceRouter.get('/:id', permitScopes_1.default(['transactions', 'pos']), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+performanceRouter.get('/:id', permitScopes_1.default(['transactions']), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const repo = new ttts.repository.Performance(mongoose.connection);
         const performance = yield repo.findById(req.params.id);
         res.json(performance);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * パフォーマンス検索
- */
-performanceRouter.get('', permitScopes_1.default(['transactions', 'pos']), ...[], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const events = yield performance_1.searchByChevre(req.query)();
-        res.json({ data: events });
     }
     catch (error) {
         next(error);
