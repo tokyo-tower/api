@@ -14,7 +14,6 @@
     "@tokyotower/domain": "^48.13.0",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
-    "cron": "^1.7.1",
     "debug": "^3.1.0",
     "express": "^4.16.2",
     "express-validator": "^6.5.0",
@@ -27,16 +26,13 @@
     "moment": "^2.20.1",
     "moment-timezone": "^0.5.25",
     "mongoose": "5.6.7",
-    "redis": "^2.8.0",
-    "request": "^2.88.0",
-    "request-promise-native": "^1.0.7"
+    "redis": "^2.8.0"
   },
   "description": "TTTS API Application",
   "devDependencies": {
     "@types/body-parser": "0.0.34",
     "@types/config": "0.0.32",
     "@types/cors": "^2.8.3",
-    "@types/cron": "^1.7.1",
     "@types/debug": "0.0.30",
     "@types/express": "^4.11.0",
     "@types/express-validator": "^3.0.0",
@@ -50,7 +46,6 @@
     "@types/mongoose": "5.5.11",
     "@types/node": "^8.10.59",
     "@types/redis": "^2.8.25",
-    "@types/request-promise-native": "^1.0.17",
     "mocha": "^3.5.3",
     "nyc": "^11.4.1",
     "rimraf": "^2.6.2",
@@ -83,5 +78,5 @@
     "version": "git add -A",
     "postversion": "git push origin --tags"
   },
-  "version": "39.0.0"
+  "version": "39.0.1"
 }

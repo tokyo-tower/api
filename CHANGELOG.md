@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v39.0.1 - 2020-08-17
+
+### Changed
+
+- 不要なパッケージを削除
+
 ## v39.0.0 - 2020-08-17
 
 ### Removed
