@@ -14,11 +14,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
-- Legacy POSのためのサービスを削除
-
 ### Fixed
 
 ### Security
+
+## v39.0.0 - 2020-08-17
+
+### Removed
+
+- Legacy POSのためのサービスを削除
 
 ## v38.14.0 - 2020-08-15
 
