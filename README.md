@@ -13,9 +13,6 @@
 
 | Name                               | Required | Value      | Purpose                        |
 | ---------------------------------- | -------- | ---------- | ------------------------------ |
-| `ADMINS_USER_POOL_ID`              | true     |            | Admin userpool ID              |
-| `AWS_ACCESS_KEY_ID`                | true     |            | AWS credentials                |
-| `AWS_SECRET_ACCESS_KEY`            | true     |            | AWS credentials                |
 | `CINERINO_API_ENDPOINT`            | true     |            | Cinerino API Settings          |
 | `CINERINO_AUTHORIZE_SERVER_DOMAIN` | true     |            | Chevre API Settings            |
 | `CINERINO_CLIENT_ID`               | true     |            | Chevre API Settings            |
@@ -33,7 +30,6 @@
 | `RESOURECE_SERVER_IDENTIFIER`      | true     |            | Resource Server Identifier     |
 | `SENDGRID_API_KEY`                 | true     |            | SendGrid API Key               |
 | `TOKEN_ISSUERS`                    | true     |            | Token issuers(Comma separated) |
-| `WAITER_ENDPOINT`                  | true     |            | Waiter endpoint                |
 
 ## License
 
