@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- Cinerinoサービス使用時にプロジェクトIDを明示的に指定
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v39.1.0 - 2020-08-20
+
+### Changed
+
+- Cinerinoサービス使用時にプロジェクトIDを明示的に指定
 
 ## v39.0.1 - 2020-08-17
 
