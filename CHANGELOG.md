@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- USE_SEND_EMAIL設定で、タスクサービスとEメール送信タスクを無効化できるように調整
+
 ### Deprecated
 
 ### Removed

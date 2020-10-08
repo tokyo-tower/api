@@ -21,6 +21,8 @@ import statsRouter from './routes/stats';
 import tasksRouter from './routes/tasks';
 import webhooksRouter from './routes/webhooks';
 
+const USE_SEND_EMAIL = process.env.USE_SEND_EMAIL === '1';
+
 const app = express();
 
 const options: cors.CorsOptions = {
@@ -73,7 +75,9 @@ app.use('/preview', previewRouter);
 app.use('/performances', performanceRouter);
 app.use('/reservations', reservationsRouter);
 app.use('/stats', statsRouter);
-app.use('/tasks', tasksRouter);
+if (USE_SEND_EMAIL) {
+    app.use('/tasks', tasksRouter);
+}
 app.use('/webhooks', webhooksRouter);
 
 // 404
