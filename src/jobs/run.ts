@@ -15,7 +15,10 @@ import sendEmailMessage from './continuous/sendEmailMessage/run';
 import updateOrderReportByReservation from './continuous/updateOrderReportByReservation/run';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-const project: factory.project.IProject = { typeOf: cinerinoapi.factory.organizationType.Project, id: <string>process.env.PROJECT_ID };
+const project: factory.project.IProject = {
+    typeOf: cinerinoapi.factory.chevre.organizationType.Project,
+    id: <string>process.env.PROJECT_ID
+};
 const USE_SEND_EMAIL = process.env.USE_SEND_EMAIL === '1';
 
 export default async () => {

@@ -22,7 +22,10 @@ const run_6 = require("./continuous/importEvent/run");
 const run_7 = require("./continuous/sendEmailMessage/run");
 const run_8 = require("./continuous/updateOrderReportByReservation/run");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-const project = { typeOf: cinerinoapi.factory.organizationType.Project, id: process.env.PROJECT_ID };
+const project = {
+    typeOf: cinerinoapi.factory.chevre.organizationType.Project,
+    id: process.env.PROJECT_ID
+};
 const USE_SEND_EMAIL = process.env.USE_SEND_EMAIL === '1';
 exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_1.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });

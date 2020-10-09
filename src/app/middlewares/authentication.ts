@@ -14,7 +14,7 @@ const ISSUERS = (<string>process.env.TOKEN_ISSUERS).split(',');
 /* istanbul ignore next */
 export default async (req: Request, res: Response, next: NextFunction) => {
     try {
-        req.project = { typeOf: cinerinoapi.factory.organizationType.Project, id: <string>process.env.PROJECT_ID };
+        req.project = { typeOf: cinerinoapi.factory.chevre.organizationType.Project, id: <string>process.env.PROJECT_ID };
 
         await cognitoAuth({
             issuers: ISSUERS,
