@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
+- IDでのパフォーマンス検索サービスを削除
+
 ### Fixed
 
 ### Security

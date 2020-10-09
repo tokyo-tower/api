@@ -19,20 +19,20 @@ performanceRouter.use(rateLimit);
 /**
  * IDでパフォーマンス検索
  */
-performanceRouter.get(
-    '/:id',
-    permitScopes(['transactions']),
-    async (req, res, next) => {
-        try {
-            const repo = new ttts.repository.Performance(mongoose.connection);
-            const performance = await repo.findById(req.params.id);
+// performanceRouter.get(
+//     '/:id',
+//     permitScopes(['transactions']),
+//     async (req, res, next) => {
+//         try {
+//             const repo = new ttts.repository.Performance(mongoose.connection);
+//             const performance = await repo.findById(req.params.id);
 
-            res.json(performance);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
+//             res.json(performance);
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 
 /**
  * 拡張属性更新
