@@ -16,9 +16,7 @@ const performances_1 = require("./routes/performances");
 const preview_1 = require("./routes/preview");
 const reservations_1 = require("./routes/reservations");
 const stats_1 = require("./routes/stats");
-const tasks_1 = require("./routes/tasks");
 const webhooks_1 = require("./routes/webhooks");
-const USE_SEND_EMAIL = process.env.USE_SEND_EMAIL === '1';
 const app = express();
 const options = {
     origin: '*',
@@ -65,9 +63,6 @@ app.use('/preview', preview_1.default);
 app.use('/performances', performances_1.default);
 app.use('/reservations', reservations_1.default);
 app.use('/stats', stats_1.default);
-if (USE_SEND_EMAIL) {
-    app.use('/tasks', tasks_1.default);
-}
 app.use('/webhooks', webhooks_1.default);
 // 404
 app.use(notFoundHandler_1.default);

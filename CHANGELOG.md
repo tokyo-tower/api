@@ -10,15 +10,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- USE_SEND_EMAIL設定で、タスクサービスとEメール送信タスクを無効化できるように調整
 - update @cinerino/sdk
-- 予約集計時に、イベントステータス最終更新時の予約について未入場数を算出するように調整
+- 予約集計時に、入場済予約をイベントに保管するように調整
 
 ### Deprecated
 
 ### Removed
 
 - IDでのパフォーマンス検索サービスを削除
+- タスクサービスを削除
+- Eメール送信タスクを削除
 
 ### Fixed
 

@@ -11,7 +11,6 @@ import aggregateEventReservations from './continuous/aggregateEventReservations/
 import createPlaceOrderReport from './continuous/createPlaceOrderReport/run';
 import createReturnOrderReport from './continuous/createReturnOrderReport/run';
 import importEvent from './continuous/importEvent/run';
-import sendEmailMessage from './continuous/sendEmailMessage/run';
 import updateOrderReportByReservation from './continuous/updateOrderReportByReservation/run';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
@@ -19,7 +18,6 @@ const project: factory.project.IProject = {
     typeOf: cinerinoapi.factory.chevre.organizationType.Project,
     id: <string>process.env.PROJECT_ID
 };
-const USE_SEND_EMAIL = process.env.USE_SEND_EMAIL === '1';
 
 export default async () => {
     await abortTasks({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
@@ -29,8 +27,5 @@ export default async () => {
     await createPlaceOrderReport({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await createReturnOrderReport({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await importEvent({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    if (USE_SEND_EMAIL) {
-        await sendEmailMessage({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    }
     await updateOrderReportByReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
 };

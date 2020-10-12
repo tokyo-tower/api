@@ -18,10 +18,7 @@ import performanceRouter from './routes/performances';
 import previewRouter from './routes/preview';
 import reservationsRouter from './routes/reservations';
 import statsRouter from './routes/stats';
-import tasksRouter from './routes/tasks';
 import webhooksRouter from './routes/webhooks';
-
-const USE_SEND_EMAIL = process.env.USE_SEND_EMAIL === '1';
 
 const app = express();
 
@@ -75,9 +72,6 @@ app.use('/preview', previewRouter);
 app.use('/performances', performanceRouter);
 app.use('/reservations', reservationsRouter);
 app.use('/stats', statsRouter);
-if (USE_SEND_EMAIL) {
-    app.use('/tasks', tasksRouter);
-}
 app.use('/webhooks', webhooksRouter);
 
 // 404
