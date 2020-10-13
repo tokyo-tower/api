@@ -10,20 +10,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v40.0.0 - 2020-10-12
+
+### Changed
+
 - update @cinerino/sdk
 - 予約集計時に、入場済予約をイベントに保管するように調整
-
-### Deprecated
 
 ### Removed
 
 - IDでのパフォーマンス検索サービスを削除
 - タスクサービスを削除
 - Eメール送信タスクを削除
-
-### Fixed
-
-### Security
 
 ## v39.1.0 - 2020-08-20
 
