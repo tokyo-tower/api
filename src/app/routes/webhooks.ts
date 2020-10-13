@@ -152,7 +152,7 @@ webhooksRouter.post(
                 // イベント更新処理
                 const task: ttts.factory.task.IAttributes<any> = {
                     name: <any>'importEvent',
-                    project: { typeOf: cinerinoapi.factory.organizationType.Project, id: event.project.id },
+                    project: { typeOf: cinerinoapi.factory.chevre.organizationType.Project, id: event.project.id },
                     status: ttts.factory.taskStatus.Ready,
                     runsAt: new Date(),
                     remainingNumberOfTries: 2,

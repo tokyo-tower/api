@@ -19,10 +19,12 @@ const run_3 = require("./continuous/aggregateEventReservations/run");
 const run_4 = require("./continuous/createPlaceOrderReport/run");
 const run_5 = require("./continuous/createReturnOrderReport/run");
 const run_6 = require("./continuous/importEvent/run");
-const run_7 = require("./continuous/sendEmailMessage/run");
-const run_8 = require("./continuous/updateOrderReportByReservation/run");
+const run_7 = require("./continuous/updateOrderReportByReservation/run");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-const project = { typeOf: cinerinoapi.factory.organizationType.Project, id: process.env.PROJECT_ID };
+const project = {
+    typeOf: cinerinoapi.factory.chevre.organizationType.Project,
+    id: process.env.PROJECT_ID
+};
 exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_1.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     yield run_2.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
@@ -31,5 +33,4 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_5.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     yield run_6.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     yield run_7.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    yield run_8.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
 });

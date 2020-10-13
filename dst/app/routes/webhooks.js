@@ -129,7 +129,7 @@ webhooksRouter.post('/onEventChanged', (req, res, next) => __awaiter(void 0, voi
             // イベント更新処理
             const task = {
                 name: 'importEvent',
-                project: { typeOf: cinerinoapi.factory.organizationType.Project, id: event.project.id },
+                project: { typeOf: cinerinoapi.factory.chevre.organizationType.Project, id: event.project.id },
                 status: ttts.factory.taskStatus.Ready,
                 runsAt: new Date(),
                 remainingNumberOfTries: 2,
