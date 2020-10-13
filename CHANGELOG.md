@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 購入番号としてorder.confirmationNumberを使用するように調整
-- 予約集計時に、入場済予約をイベントに保管するように調整
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v40.0.1 - 2020-10-13
+
+### Changed
+
+- 購入番号としてorder.confirmationNumberを使用するように調整
+- 予約集計時に、入場済予約をイベントに保管するように調整
 
 ## v40.0.0 - 2020-10-12
 
