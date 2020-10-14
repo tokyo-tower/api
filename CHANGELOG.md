@@ -10,10 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- mongooseスキーマオプションを最適化
-- レポート作成処理を最適化
-- レポートのインターフェースを最適化(reservation.idを追加、aggregateUnitを削除)
-
 ### Deprecated
 
 ### Removed
@@ -21,6 +17,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v40.1.0 - 2020-10-14
+
+### Changed
+
+- mongooseスキーマオプションを最適化
+- レポート作成処理を最適化
+- レポートのインターフェースを最適化(reservation.idを追加、aggregateUnitを削除)
 
 ## v40.0.3 - 2020-10-14
 
