@@ -83,7 +83,9 @@ aggregateSalesRouter.get(
                     チケットコード: doc.ticketType.csvCode,
                     券種料金: doc.ticketType.charge,
                     客層: doc.customer.segment,
-                    payment_seat_index: doc.payment_seat_index,
+                    payment_seat_index: (doc.payment_seat_index !== undefined && doc.payment_seat_index !== null)
+                        ? String(doc.payment_seat_index)
+                        : '',
                     予約単位料金: doc.price,
                     ユーザーネーム: doc.customer.username,
                     入場フラグ: doc.checkedin,
