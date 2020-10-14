@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- payment_seat_indexが存在しない行も売上レポートが出力されるように調整
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v40.0.3 - 2020-10-14
+
+### Changed
+
+- payment_seat_indexが存在しない行も売上レポートが出力されるように調整
 
 ## v40.0.2 - 2020-10-14
 
