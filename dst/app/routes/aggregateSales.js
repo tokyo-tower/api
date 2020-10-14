@@ -34,14 +34,13 @@ aggregateSalesRouter.use(rateLimit_1.default);
 /**
  * ストリーミング検索
  */
-aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), validator_1.default, 
-// tslint:disable-next-line:max-func-body-length
-(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // 集計データにストリーミングcursorを作成する
         const aggregateSaleRepo = new ttts.repository.AggregateSale(mongoose.connection);
         debug('finding aggregateSales...', req.query);
-        const cursor = aggregateSaleRepo.aggregateSaleModel.find(req.query)
+        const andConditions = req.query.$and;
+        const cursor = aggregateSaleRepo.aggregateSaleModel.find((Array.isArray(andConditions) && andConditions.length > 0) ? { $and: andConditions } : {})
             .sort({
             'performance.startDay': 1,
             'performance.startTime': 1,
