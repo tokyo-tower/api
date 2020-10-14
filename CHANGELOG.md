@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 無条件でも売上レポートを検索できるように調整
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v40.0.2 - 2020-10-14
+
+### Changed
+
+- 無条件でも売上レポートを検索できるように調整
 
 ## v40.0.1 - 2020-10-13
 
