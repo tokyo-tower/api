@@ -34,13 +34,15 @@ aggregateSalesRouter.get(
     '/stream',
     permitScopes(['admin']),
     validator,
-    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
             // 集計データにストリーミングcursorを作成する
             const aggregateSaleRepo = new ttts.repository.AggregateSale(mongoose.connection);
             debug('finding aggregateSales...', req.query);
-            const cursor = aggregateSaleRepo.aggregateSaleModel.find(req.query)
+            const andConditions = req.query.$and;
+            const cursor = aggregateSaleRepo.aggregateSaleModel.find(
+                (Array.isArray(andConditions) && andConditions.length > 0) ? { $and: andConditions } : {}
+            )
                 .sort({
                     'performance.startDay': 1,
                     'performance.startTime': 1,
