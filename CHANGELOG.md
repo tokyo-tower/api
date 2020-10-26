@@ -10,9 +10,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- IDによる予約検索時のChevreチェックイン連動を削除
+
 ### Deprecated
 
 ### Removed
+
+- 注文番号による予約検索を削除
 
 ### Fixed
 

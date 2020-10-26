@@ -87,37 +87,41 @@ reservationsRouter.get('/distinct/:field', permitScopes_1.default(['admin']), ..
 /**
  * 注文番号で予約検索
  */
-reservationsRouter.get('/findByOrderNumber/:orderNumber', permitScopes_1.default(['transactions', 'reservations.read-only']), ...[], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
-        // 予約検索条件
-        const conditions = {
-            typeOf: ttts.factory.chevre.reservationType.EventReservation,
-            underName: {
-                identifier: { $in: [{ name: 'orderNumber', value: req.params.orderNumber }] }
-            }
-        };
-        // 予約を検索
-        const reservations = yield reservationRepo.search(conditions);
-        // Chevreへチェックイン連携
-        try {
-            const reservationService = new cinerinoapi.service.Reservation({
-                auth: cinerinoAuthClient,
-                endpoint: process.env.CINERINO_API_ENDPOINT,
-                project: { id: project.id }
-            });
-            yield reservationService.checkIn({ reservationNumber: reservations[0].reservationNumber });
-        }
-        catch (error) {
-            // tslint:disable-next-line:no-console
-            console.error('Chevre checkInScreeningEventReservations failed:', error);
-        }
-        res.json(reservations);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
+// reservationsRouter.get(
+//     '/findByOrderNumber/:orderNumber',
+//     permitScopes(['transactions', 'reservations.read-only']),
+//     ...[],
+//     validator,
+//     async (req, res, next) => {
+//         try {
+//             const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
+//             // 予約検索条件
+//             const conditions: ttts.factory.reservation.event.ISearchConditions = {
+//                 typeOf: ttts.factory.chevre.reservationType.EventReservation,
+//                 underName: {
+//                     identifier: { $in: [{ name: 'orderNumber', value: req.params.orderNumber }] }
+//                 }
+//             };
+//             // 予約を検索
+//             const reservations = await reservationRepo.search(conditions);
+//             // Chevreへチェックイン連携
+//             try {
+//                 const reservationService = new cinerinoapi.service.Reservation({
+//                     auth: cinerinoAuthClient,
+//                     endpoint: <string>process.env.CINERINO_API_ENDPOINT,
+//                     project: { id: project.id }
+//                 });
+//                 await reservationService.checkIn({ reservationNumber: reservations[0].reservationNumber });
+//             } catch (error) {
+//                 // tslint:disable-next-line:no-console
+//                 console.error('Chevre checkInScreeningEventReservations failed:', error);
+//             }
+//             res.json(reservations);
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 /**
  * IDで予約取得(実質chevreチェックインapi)
  */
@@ -127,18 +131,17 @@ reservationsRouter.get('/:id', permitScopes_1.default(['transactions', 'reservat
         // 予約を検索
         const reservation = yield reservationRepo.findById({ id: req.params.id });
         // Chevreへチェックイン連携
-        try {
-            const reservationService = new cinerinoapi.service.Reservation({
-                auth: cinerinoAuthClient,
-                endpoint: process.env.CINERINO_API_ENDPOINT,
-                project: { id: project.id }
-            });
-            yield reservationService.checkIn({ id: reservation.id });
-        }
-        catch (error) {
-            // tslint:disable-next-line:no-console
-            console.error('Chevre checkInScreeningEventReservations failed:', error);
-        }
+        // try {
+        //     const reservationService = new cinerinoapi.service.Reservation({
+        //         auth: cinerinoAuthClient,
+        //         endpoint: <string>process.env.CINERINO_API_ENDPOINT,
+        //         project: { id: project.id }
+        //     });
+        //     await reservationService.checkIn({ id: reservation.id });
+        // } catch (error) {
+        //     // tslint:disable-next-line:no-console
+        //     console.error('Chevre checkInScreeningEventReservations failed:', error);
+        // }
         res.json(reservation);
     }
     catch (error) {
