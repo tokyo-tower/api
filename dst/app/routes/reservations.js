@@ -28,13 +28,13 @@ const project = {
     typeOf: cinerinoapi.factory.chevre.organizationType.Project,
     id: process.env.PROJECT_ID
 };
-const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
-    domain: process.env.CINERINO_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.CINERINO_CLIENT_ID,
-    clientSecret: process.env.CINERINO_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
+// const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
+//     domain: <string>process.env.CINERINO_AUTHORIZE_SERVER_DOMAIN,
+//     clientId: <string>process.env.CINERINO_CLIENT_ID,
+//     clientSecret: <string>process.env.CINERINO_CLIENT_SECRET,
+//     scopes: [],
+//     state: ''
+// });
 const reservationsRouter = express.Router();
 reservationsRouter.use(authentication_1.default);
 reservationsRouter.use(rateLimit_1.default);
@@ -85,44 +85,6 @@ reservationsRouter.get('/distinct/:field', permitScopes_1.default(['admin']), ..
     }
 }));
 /**
- * 注文番号で予約検索
- */
-// reservationsRouter.get(
-//     '/findByOrderNumber/:orderNumber',
-//     permitScopes(['transactions', 'reservations.read-only']),
-//     ...[],
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
-//             // 予約検索条件
-//             const conditions: ttts.factory.reservation.event.ISearchConditions = {
-//                 typeOf: ttts.factory.chevre.reservationType.EventReservation,
-//                 underName: {
-//                     identifier: { $in: [{ name: 'orderNumber', value: req.params.orderNumber }] }
-//                 }
-//             };
-//             // 予約を検索
-//             const reservations = await reservationRepo.search(conditions);
-//             // Chevreへチェックイン連携
-//             try {
-//                 const reservationService = new cinerinoapi.service.Reservation({
-//                     auth: cinerinoAuthClient,
-//                     endpoint: <string>process.env.CINERINO_API_ENDPOINT,
-//                     project: { id: project.id }
-//                 });
-//                 await reservationService.checkIn({ reservationNumber: reservations[0].reservationNumber });
-//             } catch (error) {
-//                 // tslint:disable-next-line:no-console
-//                 console.error('Chevre checkInScreeningEventReservations failed:', error);
-//             }
-//             res.json(reservations);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
-/**
  * IDで予約取得(実質chevreチェックインapi)
  */
 reservationsRouter.get('/:id', permitScopes_1.default(['transactions', 'reservations.read-only']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -130,18 +92,6 @@ reservationsRouter.get('/:id', permitScopes_1.default(['transactions', 'reservat
         const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
         // 予約を検索
         const reservation = yield reservationRepo.findById({ id: req.params.id });
-        // Chevreへチェックイン連携
-        // try {
-        //     const reservationService = new cinerinoapi.service.Reservation({
-        //         auth: cinerinoAuthClient,
-        //         endpoint: <string>process.env.CINERINO_API_ENDPOINT,
-        //         project: { id: project.id }
-        //     });
-        //     await reservationService.checkIn({ id: reservation.id });
-        // } catch (error) {
-        //     // tslint:disable-next-line:no-console
-        //     console.error('Chevre checkInScreeningEventReservations failed:', error);
-        // }
         res.json(reservation);
     }
     catch (error) {
@@ -252,18 +202,17 @@ reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.c
         };
         yield taskRepo.save(aggregateTask);
         // Chevreへ入場連携
-        try {
-            const reservationService = new cinerinoapi.service.Reservation({
-                auth: cinerinoAuthClient,
-                endpoint: process.env.CINERINO_API_ENDPOINT,
-                project: { id: project.id }
-            });
-            yield reservationService.attend({ id: reservation.id });
-        }
-        catch (error) {
-            // tslint:disable-next-line:no-console
-            console.error('Cinerino reservationService.attend failed:', error);
-        }
+        // try {
+        //     const reservationService = new cinerinoapi.service.Reservation({
+        //         auth: cinerinoAuthClient,
+        //         endpoint: <string>process.env.CINERINO_API_ENDPOINT,
+        //         project: { id: project.id }
+        //     });
+        //     await reservationService.attend({ id: reservation.id });
+        // } catch (error) {
+        //     // tslint:disable-next-line:no-console
+        //     console.error('Cinerino reservationService.attend failed:', error);
+        // }
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
