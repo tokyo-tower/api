@@ -10,18 +10,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- IDによる予約検索時のChevreチェックイン連動を削除
-- IDによる予約入場履歴追加時のChevre入場連動を削除
-
 ### Deprecated
 
 ### Removed
 
-- 注文番号による予約検索を削除
-
 ### Fixed
 
 ### Security
+
+## v41.0.0 - 2020-10-29
+
+### Changed
+
+- IDによる予約検索時のChevreチェックイン連動を削除
+- IDによる予約入場履歴追加時のChevre入場連動を削除
+
+### Removed
+
+- 注文番号による予約検索を削除
 
 ## v40.1.0 - 2020-10-14
 
