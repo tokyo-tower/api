@@ -157,10 +157,6 @@ reservationsRouter.get(
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
                 sort: (req.query.sort !== undefined) ? req.query.sort : { modifiedTime: ttts.factory.sortType.Descending }
-                // デフォルトで余分確保分を除く
-                // additionalProperty: {
-                //     $nin: [{ name: 'extra', value: '1' }]
-                // }
             };
 
             // 予約を検索
