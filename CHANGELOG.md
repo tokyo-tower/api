@@ -10,10 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- update @cinerino/sdk
-- オファーカテゴリーについて、オファーの追加特性参照を廃止
-- ヘルスチェックを調整
-
 ### Deprecated
 
 ### Removed
@@ -21,6 +17,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v41.0.1 - 2020-12-14
+
+### Changed
+
+- update @cinerino/sdk
+- オファーカテゴリーについて、オファーの追加特性参照を廃止
+- ヘルスチェックを調整
 
 ## v41.0.0 - 2020-10-29
 
