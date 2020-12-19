@@ -49,20 +49,30 @@ export function search(
     };
 }
 
+/**
+ * オンライン販売ステータス
+ */
+enum OnlineSalesStatus {
+    // 販売
+    Normal = 'Normal',
+    // 停止
+    Suspended = 'Suspended'
+}
+
 function performance2result(performance: ttts.factory.performance.IPerformance): ttts.factory.performance.IPerformance {
     const tourNumber = performance.additionalProperty?.find((p) => p.name === 'tourNumber')?.value;
 
     let evServiceStatus = ttts.factory.performance.EvServiceStatus.Normal;
-    let onlineSalesStatus = ttts.factory.performance.OnlineSalesStatus.Normal;
+    let onlineSalesStatus = OnlineSalesStatus.Normal;
 
     switch (performance.eventStatus) {
         case cinerinoapi.factory.chevre.eventStatusType.EventCancelled:
             evServiceStatus = ttts.factory.performance.EvServiceStatus.Suspended;
-            onlineSalesStatus = ttts.factory.performance.OnlineSalesStatus.Suspended;
+            onlineSalesStatus = OnlineSalesStatus.Suspended;
             break;
         case cinerinoapi.factory.chevre.eventStatusType.EventPostponed:
             evServiceStatus = ttts.factory.performance.EvServiceStatus.Slowdown;
-            onlineSalesStatus = ttts.factory.performance.OnlineSalesStatus.Suspended;
+            onlineSalesStatus = OnlineSalesStatus.Suspended;
             break;
         case cinerinoapi.factory.chevre.eventStatusType.EventScheduled:
             break;

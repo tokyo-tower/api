@@ -47,19 +47,29 @@ function search(searchConditions, useExtension) {
     });
 }
 exports.search = search;
+/**
+ * オンライン販売ステータス
+ */
+var OnlineSalesStatus;
+(function (OnlineSalesStatus) {
+    // 販売
+    OnlineSalesStatus["Normal"] = "Normal";
+    // 停止
+    OnlineSalesStatus["Suspended"] = "Suspended";
+})(OnlineSalesStatus || (OnlineSalesStatus = {}));
 function performance2result(performance) {
     var _a, _b;
     const tourNumber = (_b = (_a = performance.additionalProperty) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === 'tourNumber')) === null || _b === void 0 ? void 0 : _b.value;
     let evServiceStatus = ttts.factory.performance.EvServiceStatus.Normal;
-    let onlineSalesStatus = ttts.factory.performance.OnlineSalesStatus.Normal;
+    let onlineSalesStatus = OnlineSalesStatus.Normal;
     switch (performance.eventStatus) {
         case cinerinoapi.factory.chevre.eventStatusType.EventCancelled:
             evServiceStatus = ttts.factory.performance.EvServiceStatus.Suspended;
-            onlineSalesStatus = ttts.factory.performance.OnlineSalesStatus.Suspended;
+            onlineSalesStatus = OnlineSalesStatus.Suspended;
             break;
         case cinerinoapi.factory.chevre.eventStatusType.EventPostponed:
             evServiceStatus = ttts.factory.performance.EvServiceStatus.Slowdown;
-            onlineSalesStatus = ttts.factory.performance.OnlineSalesStatus.Suspended;
+            onlineSalesStatus = OnlineSalesStatus.Suspended;
             break;
         case cinerinoapi.factory.chevre.eventStatusType.EventScheduled:
             break;
