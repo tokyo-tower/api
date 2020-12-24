@@ -29,7 +29,7 @@ webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(void 0, void
             const aggregateSalesRepo = new ttts.repository.AggregateSale(mongoose.connection);
             yield ttts.service.aggregate.report4sales.createRefundOrderReport({
                 order: order
-            })(aggregateSalesRepo);
+            })({ aggregateSale: aggregateSalesRepo });
         }
         res.status(http_status_1.NO_CONTENT)
             .end();

@@ -25,7 +25,7 @@ webhooksRouter.post(
 
                 await ttts.service.aggregate.report4sales.createRefundOrderReport({
                     order: order
-                })(aggregateSalesRepo);
+                })({ aggregateSale: aggregateSalesRepo });
             }
 
             res.status(NO_CONTENT)
