@@ -37,10 +37,10 @@ aggregateSalesRouter.use(rateLimit_1.default);
 aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // 集計データにストリーミングcursorを作成する
-        const aggregateSaleRepo = new ttts.repository.AggregateSale(mongoose.connection);
+        const reportRepo = new ttts.repository.Report(mongoose.connection);
         debug('finding aggregateSales...', req.query);
         const andConditions = req.query.$and;
-        const cursor = aggregateSaleRepo.aggregateSaleModel.find((Array.isArray(andConditions) && andConditions.length > 0) ? { $and: andConditions } : {})
+        const cursor = reportRepo.aggregateSaleModel.find((Array.isArray(andConditions) && andConditions.length > 0) ? { $and: andConditions } : {})
             .sort({
             'performance.startDay': 1,
             'performance.startTime': 1,

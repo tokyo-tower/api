@@ -37,10 +37,10 @@ aggregateSalesRouter.get(
     async (req, res, next) => {
         try {
             // 集計データにストリーミングcursorを作成する
-            const aggregateSaleRepo = new ttts.repository.AggregateSale(mongoose.connection);
+            const reportRepo = new ttts.repository.Report(mongoose.connection);
             debug('finding aggregateSales...', req.query);
             const andConditions = req.query.$and;
-            const cursor = aggregateSaleRepo.aggregateSaleModel.find(
+            const cursor = reportRepo.aggregateSaleModel.find(
                 (Array.isArray(andConditions) && andConditions.length > 0) ? { $and: andConditions } : {}
             )
                 .sort({
