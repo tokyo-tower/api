@@ -47,26 +47,31 @@ webhooksRouter.post(
         try {
             const order = <cinerinoapi.factory.order.IOrder>req.body.data;
 
-            const taskRepo = new ttts.repository.Task(mongoose.connection);
+            const reportRepo = new ttts.repository.Report(mongoose.connection);
+            // const taskRepo = new ttts.repository.Task(mongoose.connection);
             const performanceRepo = new ttts.repository.Performance(mongoose.connection);
 
             if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
                 switch (order.orderStatus) {
                     case cinerinoapi.factory.orderStatus.OrderProcessing:
-                        const createPlaceOrderReportTask: ttts.factory.task.createPlaceOrderReport.IAttributes = {
-                            name: <any>ttts.factory.taskName.CreatePlaceOrderReport,
-                            project: { typeOf: order.project.typeOf, id: order.project.id },
-                            status: ttts.factory.taskStatus.Ready,
-                            runsAt: new Date(), // なるはやで実行
-                            remainingNumberOfTries: 10,
-                            numberOfTried: 0,
-                            executionResults: [],
-                            data: {
-                                order: order
-                            }
-                        };
+                        await ttts.service.report.order.createPlaceOrderReport({
+                            order: order
+                        })(reportRepo);
 
-                        await taskRepo.save(<any>createPlaceOrderReportTask);
+                        // 非同期の場合はこちら↓
+                        // const createPlaceOrderReportTask: ttts.factory.task.createPlaceOrderReport.IAttributes = {
+                        //     name: <any>ttts.factory.taskName.CreatePlaceOrderReport,
+                        //     project: { typeOf: order.project.typeOf, id: order.project.id },
+                        //     status: ttts.factory.taskStatus.Ready,
+                        //     runsAt: new Date(), // なるはやで実行
+                        //     remainingNumberOfTries: 10,
+                        //     numberOfTried: 0,
+                        //     executionResults: [],
+                        //     data: {
+                        //         order: order
+                        //     }
+                        // };
+                        // await taskRepo.save(<any>createPlaceOrderReportTask);
 
                         break;
 
@@ -75,20 +80,24 @@ webhooksRouter.post(
 
                     case cinerinoapi.factory.orderStatus.OrderReturned:
                         // 返品レポート作成
-                        const createReturnOrderReportTask: ttts.factory.task.createReturnOrderReport.IAttributes = {
-                            name: <any>ttts.factory.taskName.CreateReturnOrderReport,
-                            project: { typeOf: order.project.typeOf, id: order.project.id },
-                            status: ttts.factory.taskStatus.Ready,
-                            runsAt: new Date(), // なるはやで実行
-                            remainingNumberOfTries: 10,
-                            numberOfTried: 0,
-                            executionResults: [],
-                            data: {
-                                order: order
-                            }
-                        };
+                        await ttts.service.report.order.createReturnOrderReport({
+                            order: order
+                        })({ aggregateSale: reportRepo });
 
-                        await taskRepo.save(<any>createReturnOrderReportTask);
+                        // 非同期の場合はこちら↓
+                        // const createReturnOrderReportTask: ttts.factory.task.createReturnOrderReport.IAttributes = {
+                        //     name: <any>ttts.factory.taskName.CreateReturnOrderReport,
+                        //     project: { typeOf: order.project.typeOf, id: order.project.id },
+                        //     status: ttts.factory.taskStatus.Ready,
+                        //     runsAt: new Date(), // なるはやで実行
+                        //     remainingNumberOfTries: 10,
+                        //     numberOfTried: 0,
+                        //     executionResults: [],
+                        //     data: {
+                        //         order: order
+                        //     }
+                        // };
+                        // await taskRepo.save(<any>createReturnOrderReportTask);
 
                         await onOrderReturned(order)({
                             performance: performanceRepo
