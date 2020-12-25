@@ -3,6 +3,51 @@ import * as ttts from '@tokyotower/domain';
 import * as moment from 'moment-timezone';
 
 /**
+ * イベント変更検知時の処理
+ */
+export function onEventChanged(params: cinerinoapi.factory.chevre.event.IEvent<cinerinoapi.factory.chevre.eventType.ScreeningEvent>) {
+    return async (repos: {
+        performance: ttts.repository.Performance;
+        task: ttts.repository.Task;
+    }) => {
+        const event = params;
+
+        // パフォーマンス登録
+        const performance: ttts.factory.performance.IPerformance = {
+            id: event.id,
+            startDate: moment(event.startDate)
+                .toDate(),
+            endDate: moment(event.endDate)
+                .toDate(),
+            eventStatus: event.eventStatus,
+            additionalProperty: event.additionalProperty,
+            ttts_extension: {
+                ev_service_update_user: '',
+                online_sales_update_user: '',
+                refund_status: ttts.factory.performance.RefundStatus.None,
+                refund_update_user: '',
+                refunded_count: 0
+            }
+        };
+
+        await repos.performance.saveIfNotExists(performance);
+
+        // 集計タスク作成
+        const aggregateTask: ttts.factory.task.aggregateEventReservations.IAttributes = {
+            name: <any>ttts.factory.taskName.AggregateEventReservations,
+            project: { typeOf: ttts.factory.chevre.organizationType.Project, id: event.project.id },
+            status: ttts.factory.taskStatus.Ready,
+            runsAt: new Date(),
+            remainingNumberOfTries: 3,
+            numberOfTried: 0,
+            executionResults: [],
+            data: { id: performance.id }
+        };
+        await repos.task.save(aggregateTask);
+    };
+}
+
+/**
  * 注文返品時の情報連携
  */
 export function onOrderReturned(params: cinerinoapi.factory.order.IOrder) {

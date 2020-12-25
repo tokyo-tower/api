@@ -135,7 +135,7 @@ webhooksRouter.post('/onEventChanged', (req, res, next) => __awaiter(void 0, voi
         const taskRepo = new ttts.repository.Task(mongoose.connection);
         if (typeof (event === null || event === void 0 ? void 0 : event.id) === 'string' && typeof (event === null || event === void 0 ? void 0 : event.eventStatus) === 'string') {
             // イベント更新処理
-            yield ttts.service.performance.importFromCinerino(event)({
+            yield webhook_1.onEventChanged(event)({
                 performance: performanceRepo,
                 task: taskRepo
             });

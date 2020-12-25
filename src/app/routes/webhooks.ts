@@ -6,7 +6,7 @@ import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
 import * as mongoose from 'mongoose';
 
-import { onOrderReturned, onReservationStatusChanged } from '../controllers/webhook';
+import { onEventChanged, onOrderReturned, onReservationStatusChanged } from '../controllers/webhook';
 
 const webhooksRouter = express.Router();
 
@@ -160,7 +160,7 @@ webhooksRouter.post(
 
             if (typeof event?.id === 'string' && typeof event?.eventStatus === 'string') {
                 // イベント更新処理
-                await ttts.service.performance.importFromCinerino(event)({
+                await onEventChanged(event)({
                     performance: performanceRepo,
                     task: taskRepo
                 });
