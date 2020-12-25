@@ -24,22 +24,6 @@ const performanceRouter = express.Router();
 performanceRouter.use(authentication_1.default);
 performanceRouter.use(rateLimit_1.default);
 /**
- * IDでパフォーマンス検索
- */
-// performanceRouter.get(
-//     '/:id',
-//     permitScopes(['transactions']),
-//     async (req, res, next) => {
-//         try {
-//             const repo = new ttts.repository.Performance(mongoose.connection);
-//             const performance = await repo.findById(req.params.id);
-//             res.json(performance);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
-/**
  * 拡張属性更新
  */
 performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {

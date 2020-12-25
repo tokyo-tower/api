@@ -75,9 +75,20 @@ function performance2result(performance) {
             break;
         default:
     }
+    // tslint:disable-next-line:no-suspicious-comment
+    // TODO maximumAttendeeCapacity, remainingAttendeeCapacity, remainingAttendeeCapacityForWheelchairをaggregateOfferから算出
+    // const aggregateOffer = performance.aggregateOffer;
+    // const maximumAttendeeCapacity = aggregateOffer?.offers?.find((o) => o.identifier === '001')?.maximumAttendeeCapacity;
+    // const remainingAttendeeCapacity = aggregateOffer?.offers?.find((o) => o.identifier === '001')?.remainingAttendeeCapacity;
+    // const remainingAttendeeCapacityForWheelchair =
+    //     aggregateOffer?.offers?.find((o) => o.identifier === '004')?.remainingAttendeeCapacity;
     return Object.assign(Object.assign({}, performance), {
         evServiceStatus: evServiceStatus,
         onlineSalesStatus: onlineSalesStatus,
         tourNumber: tourNumber
-    });
+    }
+    // ...(typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined,
+    // ...(typeof remainingAttendeeCapacity === 'number') ? { remainingAttendeeCapacity } : undefined,
+    // ...(typeof remainingAttendeeCapacityForWheelchair === 'number') ? { remainingAttendeeCapacityForWheelchair } : undefined
+    );
 }
