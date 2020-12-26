@@ -4,6 +4,8 @@
 import * as cinerinoapi from '@cinerino/sdk';
 import * as ttts from '@tokyotower/domain';
 
+const USE_NEW_PERFORMANCE_AGGREGATION = process.env.USE_NEW_PERFORMANCE_AGGREGATION === '1';
+
 export type ISearchResult = ttts.factory.performance.IPerformance[];
 
 export type ISearchOperation<T> = (repos: {
@@ -80,13 +82,27 @@ function performance2result(performance: ttts.factory.performance.IPerformance):
         default:
     }
 
-    // tslint:disable-next-line:no-suspicious-comment
-    // TODO maximumAttendeeCapacity, remainingAttendeeCapacity, remainingAttendeeCapacityForWheelchairをaggregateOfferから算出
-    // const aggregateOffer = performance.aggregateOffer;
-    // const maximumAttendeeCapacity = aggregateOffer?.offers?.find((o) => o.identifier === '001')?.maximumAttendeeCapacity;
-    // const remainingAttendeeCapacity = aggregateOffer?.offers?.find((o) => o.identifier === '001')?.remainingAttendeeCapacity;
-    // const remainingAttendeeCapacityForWheelchair =
-    //     aggregateOffer?.offers?.find((o) => o.identifier === '004')?.remainingAttendeeCapacity;
+    let maximumAttendeeCapacity: number | undefined;
+    let remainingAttendeeCapacity: number | undefined;
+    let remainingAttendeeCapacityForWheelchair: number | undefined;
+    let reservationCount: number | undefined;
+    let reservationCountsByTicketType: ttts.factory.performance.IReservationCountByTicketType[] | undefined;
+
+    if (USE_NEW_PERFORMANCE_AGGREGATION) {
+        // aggregateOffer,aggregateReservationから算出する
+        maximumAttendeeCapacity = performance.aggregateOffer?.offers?.find((o) => o.identifier === '001')?.maximumAttendeeCapacity;
+        remainingAttendeeCapacity = performance.aggregateOffer?.offers?.find((o) => o.identifier === '001')?.remainingAttendeeCapacity;
+        remainingAttendeeCapacityForWheelchair
+            = performance.aggregateOffer?.offers?.find((o) => o.identifier === '004')?.remainingAttendeeCapacity;
+
+        reservationCount = performance.aggregateReservation?.reservationCount;
+        reservationCountsByTicketType = performance.aggregateOffer?.offers?.map((offer) => {
+            return {
+                ticketType: <string>offer.id,
+                count: offer.aggregateReservation?.reservationCount
+            };
+        });
+    }
 
     return {
         ...performance,
@@ -94,9 +110,12 @@ function performance2result(performance: ttts.factory.performance.IPerformance):
             evServiceStatus: evServiceStatus,
             onlineSalesStatus: onlineSalesStatus,
             tourNumber: tourNumber
-        }
-        // ...(typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined,
-        // ...(typeof remainingAttendeeCapacity === 'number') ? { remainingAttendeeCapacity } : undefined,
-        // ...(typeof remainingAttendeeCapacityForWheelchair === 'number') ? { remainingAttendeeCapacityForWheelchair } : undefined
+        },
+
+        ...(typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined,
+        ...(typeof remainingAttendeeCapacity === 'number') ? { remainingAttendeeCapacity } : undefined,
+        ...(typeof remainingAttendeeCapacityForWheelchair === 'number') ? { remainingAttendeeCapacityForWheelchair } : undefined,
+        ...(typeof reservationCount === 'number') ? { reservationCount } : undefined,
+        ...(Array.isArray(reservationCountsByTicketType)) ? { reservationCountsByTicketType } : undefined
     };
 }
