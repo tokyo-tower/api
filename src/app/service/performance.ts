@@ -31,7 +31,16 @@ export function search(
                 superEvent: 0,
                 offers: 0,
                 doorTime: 0,
-                duration: 0
+                duration: 0,
+                ...(USE_NEW_PERFORMANCE_AGGREGATION)
+                    ? {
+                        maximumAttendeeCapacity: 0,
+                        remainingAttendeeCapacity: 0,
+                        remainingAttendeeCapacityForWheelchair: 0,
+                        reservationCount: 0,
+                        reservationCountsByTicketType: 0
+                    }
+                    : undefined
             }
             : {
                 __v: 0,
@@ -42,6 +51,15 @@ export function search(
                 offers: 0,
                 doorTime: 0,
                 duration: 0,
+                ...(USE_NEW_PERFORMANCE_AGGREGATION)
+                    ? {
+                        maximumAttendeeCapacity: 0,
+                        remainingAttendeeCapacity: 0,
+                        remainingAttendeeCapacityForWheelchair: 0,
+                        reservationCount: 0,
+                        reservationCountsByTicketType: 0
+                    }
+                    : undefined,
                 ttts_extension: 0
             };
 

@@ -21,27 +21,23 @@ const USE_NEW_PERFORMANCE_AGGREGATION = process.env.USE_NEW_PERFORMANCE_AGGREGAT
 function search(searchConditions, useExtension) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
         const projection = (useExtension)
+            ? Object.assign({ __v: 0, created_at: 0, updated_at: 0, location: 0, superEvent: 0, offers: 0, doorTime: 0, duration: 0 }, (USE_NEW_PERFORMANCE_AGGREGATION)
+                ? {
+                    maximumAttendeeCapacity: 0,
+                    remainingAttendeeCapacity: 0,
+                    remainingAttendeeCapacityForWheelchair: 0,
+                    reservationCount: 0,
+                    reservationCountsByTicketType: 0
+                }
+                : undefined) : Object.assign(Object.assign({ __v: 0, created_at: 0, updated_at: 0, location: 0, superEvent: 0, offers: 0, doorTime: 0, duration: 0 }, (USE_NEW_PERFORMANCE_AGGREGATION)
             ? {
-                __v: 0,
-                created_at: 0,
-                updated_at: 0,
-                location: 0,
-                superEvent: 0,
-                offers: 0,
-                doorTime: 0,
-                duration: 0
+                maximumAttendeeCapacity: 0,
+                remainingAttendeeCapacity: 0,
+                remainingAttendeeCapacityForWheelchair: 0,
+                reservationCount: 0,
+                reservationCountsByTicketType: 0
             }
-            : {
-                __v: 0,
-                created_at: 0,
-                updated_at: 0,
-                location: 0,
-                superEvent: 0,
-                offers: 0,
-                doorTime: 0,
-                duration: 0,
-                ttts_extension: 0
-            };
+            : undefined), { ttts_extension: 0 });
         const performances = yield repos.performance.search(searchConditions, projection);
         return performances.map(performance2result);
     });
