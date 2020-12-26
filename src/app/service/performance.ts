@@ -52,6 +52,18 @@ export function search(
 }
 
 /**
+ * エレベータ運行ステータス
+ */
+enum EvServiceStatus {
+    // 正常運行
+    Normal = 'Normal',
+    // 減速
+    Slowdown = 'Slowdown',
+    // 停止
+    Suspended = 'Suspended'
+}
+
+/**
  * オンライン販売ステータス
  */
 enum OnlineSalesStatus {
@@ -64,16 +76,16 @@ enum OnlineSalesStatus {
 function performance2result(performance: ttts.factory.performance.IPerformance): ttts.factory.performance.IPerformance {
     const tourNumber = performance.additionalProperty?.find((p) => p.name === 'tourNumber')?.value;
 
-    let evServiceStatus = ttts.factory.performance.EvServiceStatus.Normal;
+    let evServiceStatus = EvServiceStatus.Normal;
     let onlineSalesStatus = OnlineSalesStatus.Normal;
 
     switch (performance.eventStatus) {
         case cinerinoapi.factory.chevre.eventStatusType.EventCancelled:
-            evServiceStatus = ttts.factory.performance.EvServiceStatus.Suspended;
+            evServiceStatus = EvServiceStatus.Suspended;
             onlineSalesStatus = OnlineSalesStatus.Suspended;
             break;
         case cinerinoapi.factory.chevre.eventStatusType.EventPostponed:
-            evServiceStatus = ttts.factory.performance.EvServiceStatus.Slowdown;
+            evServiceStatus = EvServiceStatus.Slowdown;
             onlineSalesStatus = OnlineSalesStatus.Suspended;
             break;
         case cinerinoapi.factory.chevre.eventStatusType.EventScheduled:

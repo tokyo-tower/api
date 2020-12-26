@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - イベントの予約集計時に、Chevreからオファー集計を保管するように調整
 - イベントの予約集計時に、Chevreから予約集計を保管するように調整
 - USE_NEW_PERFORMANCE_AGGREGATION設定を追加
+- パフォーマンスデータから不要な集計属性を削除
 
 ### Deprecated
 

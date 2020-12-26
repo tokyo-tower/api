@@ -14,7 +14,6 @@ exports.search = void 0;
  * パフォーマンスルーター
  */
 const cinerinoapi = require("@cinerino/sdk");
-const ttts = require("@tokyotower/domain");
 const USE_NEW_PERFORMANCE_AGGREGATION = process.env.USE_NEW_PERFORMANCE_AGGREGATION === '1';
 /**
  * 検索する
@@ -49,6 +48,18 @@ function search(searchConditions, useExtension) {
 }
 exports.search = search;
 /**
+ * エレベータ運行ステータス
+ */
+var EvServiceStatus;
+(function (EvServiceStatus) {
+    // 正常運行
+    EvServiceStatus["Normal"] = "Normal";
+    // 減速
+    EvServiceStatus["Slowdown"] = "Slowdown";
+    // 停止
+    EvServiceStatus["Suspended"] = "Suspended";
+})(EvServiceStatus || (EvServiceStatus = {}));
+/**
  * オンライン販売ステータス
  */
 var OnlineSalesStatus;
@@ -61,15 +72,15 @@ var OnlineSalesStatus;
 function performance2result(performance) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
     const tourNumber = (_b = (_a = performance.additionalProperty) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === 'tourNumber')) === null || _b === void 0 ? void 0 : _b.value;
-    let evServiceStatus = ttts.factory.performance.EvServiceStatus.Normal;
+    let evServiceStatus = EvServiceStatus.Normal;
     let onlineSalesStatus = OnlineSalesStatus.Normal;
     switch (performance.eventStatus) {
         case cinerinoapi.factory.chevre.eventStatusType.EventCancelled:
-            evServiceStatus = ttts.factory.performance.EvServiceStatus.Suspended;
+            evServiceStatus = EvServiceStatus.Suspended;
             onlineSalesStatus = OnlineSalesStatus.Suspended;
             break;
         case cinerinoapi.factory.chevre.eventStatusType.EventPostponed:
-            evServiceStatus = ttts.factory.performance.EvServiceStatus.Slowdown;
+            evServiceStatus = EvServiceStatus.Slowdown;
             onlineSalesStatus = OnlineSalesStatus.Suspended;
             break;
         case cinerinoapi.factory.chevre.eventStatusType.EventScheduled:
