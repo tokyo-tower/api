@@ -30,7 +30,7 @@ webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(void 0, void
             const reportRepo = new ttts.repository.Report(mongoose.connection);
             yield ttts.service.report.order.createRefundOrderReport({
                 order: order
-            })({ aggregateSale: reportRepo });
+            })({ report: reportRepo });
         }
         res.status(http_status_1.NO_CONTENT)
             .end();
@@ -53,21 +53,7 @@ webhooksRouter.post('/onOrderStatusChanged', (req, res, next) => __awaiter(void 
                 case cinerinoapi.factory.orderStatus.OrderProcessing:
                     yield ttts.service.report.order.createPlaceOrderReport({
                         order: order
-                    })(reportRepo);
-                    // 非同期の場合はこちら↓
-                    // const createPlaceOrderReportTask: ttts.factory.task.createPlaceOrderReport.IAttributes = {
-                    //     name: <any>ttts.factory.taskName.CreatePlaceOrderReport,
-                    //     project: { typeOf: order.project.typeOf, id: order.project.id },
-                    //     status: ttts.factory.taskStatus.Ready,
-                    //     runsAt: new Date(), // なるはやで実行
-                    //     remainingNumberOfTries: 10,
-                    //     numberOfTried: 0,
-                    //     executionResults: [],
-                    //     data: {
-                    //         order: order
-                    //     }
-                    // };
-                    // await taskRepo.save(<any>createPlaceOrderReportTask);
+                    })({ report: reportRepo });
                     break;
                 case cinerinoapi.factory.orderStatus.OrderDelivered:
                     break;
@@ -75,21 +61,7 @@ webhooksRouter.post('/onOrderStatusChanged', (req, res, next) => __awaiter(void 
                     // 返品レポート作成
                     yield ttts.service.report.order.createReturnOrderReport({
                         order: order
-                    })({ aggregateSale: reportRepo });
-                    // 非同期の場合はこちら↓
-                    // const createReturnOrderReportTask: ttts.factory.task.createReturnOrderReport.IAttributes = {
-                    //     name: <any>ttts.factory.taskName.CreateReturnOrderReport,
-                    //     project: { typeOf: order.project.typeOf, id: order.project.id },
-                    //     status: ttts.factory.taskStatus.Ready,
-                    //     runsAt: new Date(), // なるはやで実行
-                    //     remainingNumberOfTries: 10,
-                    //     numberOfTried: 0,
-                    //     executionResults: [],
-                    //     data: {
-                    //         order: order
-                    //     }
-                    // };
-                    // await taskRepo.save(<any>createReturnOrderReportTask);
+                    })({ report: reportRepo });
                     yield webhook_1.onOrderReturned(order)({
                         performance: performanceRepo
                     });
@@ -139,18 +111,6 @@ webhooksRouter.post('/onEventChanged', (req, res, next) => __awaiter(void 0, voi
                 performance: performanceRepo,
                 task: taskRepo
             });
-            // 非同期の場合こちら↓
-            // const task: ttts.factory.task.IAttributes<any> = {
-            //     name: <any>'importEvent',
-            //     project: { typeOf: cinerinoapi.factory.chevre.organizationType.Project, id: event.project.id },
-            //     status: ttts.factory.taskStatus.Ready,
-            //     runsAt: new Date(),
-            //     remainingNumberOfTries: 2,
-            //     numberOfTried: 0,
-            //     executionResults: [],
-            //     data: event
-            // };
-            // await taskRepo.save(task);
         }
         res.status(http_status_1.NO_CONTENT)
             .end();

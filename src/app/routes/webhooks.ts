@@ -27,7 +27,7 @@ webhooksRouter.post(
 
                 await ttts.service.report.order.createRefundOrderReport({
                     order: order
-                })({ aggregateSale: reportRepo });
+                })({ report: reportRepo });
             }
 
             res.status(NO_CONTENT)
@@ -56,22 +56,7 @@ webhooksRouter.post(
                     case cinerinoapi.factory.orderStatus.OrderProcessing:
                         await ttts.service.report.order.createPlaceOrderReport({
                             order: order
-                        })(reportRepo);
-
-                        // 非同期の場合はこちら↓
-                        // const createPlaceOrderReportTask: ttts.factory.task.createPlaceOrderReport.IAttributes = {
-                        //     name: <any>ttts.factory.taskName.CreatePlaceOrderReport,
-                        //     project: { typeOf: order.project.typeOf, id: order.project.id },
-                        //     status: ttts.factory.taskStatus.Ready,
-                        //     runsAt: new Date(), // なるはやで実行
-                        //     remainingNumberOfTries: 10,
-                        //     numberOfTried: 0,
-                        //     executionResults: [],
-                        //     data: {
-                        //         order: order
-                        //     }
-                        // };
-                        // await taskRepo.save(<any>createPlaceOrderReportTask);
+                        })({ report: reportRepo });
 
                         break;
 
@@ -82,22 +67,7 @@ webhooksRouter.post(
                         // 返品レポート作成
                         await ttts.service.report.order.createReturnOrderReport({
                             order: order
-                        })({ aggregateSale: reportRepo });
-
-                        // 非同期の場合はこちら↓
-                        // const createReturnOrderReportTask: ttts.factory.task.createReturnOrderReport.IAttributes = {
-                        //     name: <any>ttts.factory.taskName.CreateReturnOrderReport,
-                        //     project: { typeOf: order.project.typeOf, id: order.project.id },
-                        //     status: ttts.factory.taskStatus.Ready,
-                        //     runsAt: new Date(), // なるはやで実行
-                        //     remainingNumberOfTries: 10,
-                        //     numberOfTried: 0,
-                        //     executionResults: [],
-                        //     data: {
-                        //         order: order
-                        //     }
-                        // };
-                        // await taskRepo.save(<any>createReturnOrderReportTask);
+                        })({ report: reportRepo });
 
                         await onOrderReturned(order)({
                             performance: performanceRepo
@@ -164,20 +134,6 @@ webhooksRouter.post(
                     performance: performanceRepo,
                     task: taskRepo
                 });
-
-                // 非同期の場合こちら↓
-                // const task: ttts.factory.task.IAttributes<any> = {
-                //     name: <any>'importEvent',
-                //     project: { typeOf: cinerinoapi.factory.chevre.organizationType.Project, id: event.project.id },
-                //     status: ttts.factory.taskStatus.Ready,
-                //     runsAt: new Date(),
-                //     remainingNumberOfTries: 2,
-                //     numberOfTried: 0,
-                //     executionResults: [],
-                //     data: event
-                // };
-
-                // await taskRepo.save(task);
             }
 
             res.status(NO_CONTENT)
