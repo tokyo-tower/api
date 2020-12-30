@@ -163,16 +163,36 @@ reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.c
         .withMessage(() => 'required')
         .isISO8601()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
+        let chevreUseActionId;
+        // 注文トークンの指定があればcinerinoで予約使用
+        const token = (_a = req.body.instrument) === null || _a === void 0 ? void 0 : _a.token;
+        if (typeof token === 'string' && token.length > 0) {
+            const authClient = new cinerinoapi.auth.ClientCredentials({
+                domain: '',
+                clientId: '',
+                clientSecret: '',
+                scopes: [],
+                state: ''
+            });
+            authClient.setCredentials({ access_token: req.accessToken });
+            const reservationService = new cinerinoapi.service.Reservation({
+                auth: authClient,
+                endpoint: process.env.CINERINO_API_ENDPOINT,
+                project: { id: project.id }
+            });
+            const useResult = yield reservationService.useByToken(Object.assign({ object: { id: req.params.id }, instrument: { token }, location: { identifier: req.body.where } }, {
+                includesActionId: '1'
+            }));
+            if (useResult !== undefined) {
+                chevreUseActionId = useResult.id;
+            }
+        }
         const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
         const taskRepo = new ttts.repository.Task(mongoose.connection);
-        const checkin = {
-            when: moment(req.body.when)
-                .toDate(),
-            where: req.body.where,
-            why: req.body.why,
-            how: req.body.how
-        };
+        const checkin = Object.assign({ when: moment(req.body.when)
+                .toDate(), where: req.body.where, why: req.body.why, how: req.body.how }, (typeof chevreUseActionId === 'string') ? { id: chevreUseActionId } : undefined);
         const reservation = yield reservationRepo.checkIn({
             id: req.params.id,
             checkin: checkin

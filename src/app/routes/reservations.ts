@@ -196,6 +196,38 @@ reservationsRouter.post(
     validator,
     async (req, res, next) => {
         try {
+            let chevreUseActionId: string | undefined;
+
+            // 注文トークンの指定があればcinerinoで予約使用
+            const token = req.body.instrument?.token;
+            if (typeof token === 'string' && token.length > 0) {
+                const authClient = new cinerinoapi.auth.ClientCredentials({
+                    domain: '',
+                    clientId: '',
+                    clientSecret: '',
+                    scopes: [],
+                    state: ''
+                });
+                authClient.setCredentials({ access_token: req.accessToken });
+
+                const reservationService = new cinerinoapi.service.Reservation({
+                    auth: authClient,
+                    endpoint: <string>process.env.CINERINO_API_ENDPOINT,
+                    project: { id: project.id }
+                });
+                const useResult = await reservationService.useByToken({
+                    object: { id: req.params.id },
+                    instrument: { token },
+                    location: { identifier: req.body.where },
+                    ...{
+                        includesActionId: '1'
+                    }
+                });
+                if (useResult !== undefined) {
+                    chevreUseActionId = useResult.id;
+                }
+            }
+
             const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
             const taskRepo = new ttts.repository.Task(mongoose.connection);
 
@@ -204,7 +236,9 @@ reservationsRouter.post(
                     .toDate(),
                 where: req.body.where,
                 why: req.body.why,
-                how: req.body.how
+                how: req.body.how,
+                // ChevreアクションIDを連携
+                ...(typeof chevreUseActionId === 'string') ? { id: chevreUseActionId } : undefined
             };
             const reservation = await reservationRepo.checkIn({
                 id: req.params.id,

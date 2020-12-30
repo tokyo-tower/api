@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@cinerino/sdk": "1.18.1",
+    "@cinerino/sdk": "1.19.1",
     "@motionpicture/express-middleware": "^0.1.1",
     "@tokyotower/domain": "49.0.0-alpha.7",
     "body-parser": "^1.18.2",
