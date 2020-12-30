@@ -28,13 +28,13 @@ const project = {
     typeOf: cinerinoapi.factory.chevre.organizationType.Project,
     id: process.env.PROJECT_ID
 };
-// const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
-//     domain: <string>process.env.CINERINO_AUTHORIZE_SERVER_DOMAIN,
-//     clientId: <string>process.env.CINERINO_CLIENT_ID,
-//     clientSecret: <string>process.env.CINERINO_CLIENT_SECRET,
-//     scopes: [],
-//     state: ''
-// });
+const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
+    domain: process.env.CINERINO_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CINERINO_CLIENT_ID,
+    clientSecret: process.env.CINERINO_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const reservationsRouter = express.Router();
 reservationsRouter.use(authentication_1.default);
 reservationsRouter.use(rateLimit_1.default);
@@ -169,16 +169,16 @@ reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.c
         // 注文トークンの指定があればcinerinoで予約使用
         const token = (_a = req.body.instrument) === null || _a === void 0 ? void 0 : _a.token;
         if (typeof token === 'string' && token.length > 0) {
-            const authClient = new cinerinoapi.auth.ClientCredentials({
-                domain: '',
-                clientId: '',
-                clientSecret: '',
-                scopes: [],
-                state: ''
-            });
-            authClient.setCredentials({ access_token: req.accessToken });
+            // const authClient = new cinerinoapi.auth.ClientCredentials({
+            //     domain: '',
+            //     clientId: '',
+            //     clientSecret: '',
+            //     scopes: [],
+            //     state: ''
+            // });
+            // authClient.setCredentials({ access_token: req.accessToken });
             const reservationService = new cinerinoapi.service.Reservation({
-                auth: authClient,
+                auth: cinerinoAuthClient,
                 endpoint: process.env.CINERINO_API_ENDPOINT,
                 project: { id: project.id }
             });
