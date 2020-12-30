@@ -117,6 +117,7 @@ function performance2result(performance: ttts.factory.performance.IPerformance):
     let remainingAttendeeCapacityForWheelchair: number | undefined;
     let reservationCount: number | undefined;
     let reservationCountsByTicketType: ttts.factory.performance.IReservationCountByTicketType[] | undefined;
+    let checkinCountsByWhere: ttts.factory.performance.ICheckinCountByWhere[] | undefined;
 
     if (USE_NEW_PERFORMANCE_AGGREGATION) {
         // aggregateOffer,aggregateReservationから算出する
@@ -130,6 +131,19 @@ function performance2result(performance: ttts.factory.performance.IPerformance):
             return {
                 ticketType: <string>offer.id,
                 count: offer.aggregateReservation?.reservationCount
+            };
+        });
+
+        checkinCountsByWhere = (<any>performance).aggregateEntranceGate?.places?.map((entranceGate: any) => {
+            return {
+                where: entranceGate.identifier,
+                checkinCountsByTicketType: entranceGate.aggregateOffer?.offers?.map((offer: any) => {
+                    return {
+                        ticketType: offer.id,
+                        ticketCategory: offer.category?.codeValue,
+                        count: offer.aggregateReservation?.useActionCount
+                    };
+                })
             };
         });
     }
@@ -146,6 +160,7 @@ function performance2result(performance: ttts.factory.performance.IPerformance):
         ...(typeof remainingAttendeeCapacity === 'number') ? { remainingAttendeeCapacity } : undefined,
         ...(typeof remainingAttendeeCapacityForWheelchair === 'number') ? { remainingAttendeeCapacityForWheelchair } : undefined,
         ...(typeof reservationCount === 'number') ? { reservationCount } : undefined,
-        ...(Array.isArray(reservationCountsByTicketType)) ? { reservationCountsByTicketType } : undefined
+        ...(Array.isArray(reservationCountsByTicketType)) ? { reservationCountsByTicketType } : undefined,
+        ...(Array.isArray(checkinCountsByWhere)) ? { checkinCountsByWherePreview: checkinCountsByWhere } : undefined
     };
 }
