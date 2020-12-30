@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - USE_NEW_PERFORMANCE_AGGREGATION設定を追加
 - パフォーマンスデータから不要な集計属性を削除
 - 入場時にChevreで予約を使用連携するように調整
+- 入場取消時にChevreへ連携するように調整
 
 ### Deprecated
 

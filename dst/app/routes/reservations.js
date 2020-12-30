@@ -221,18 +221,6 @@ reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.c
             data: { id: reservation.reservationFor.id }
         };
         yield taskRepo.save(aggregateTask);
-        // Chevreへ入場連携
-        // try {
-        //     const reservationService = new cinerinoapi.service.Reservation({
-        //         auth: cinerinoAuthClient,
-        //         endpoint: <string>process.env.CINERINO_API_ENDPOINT,
-        //         project: { id: project.id }
-        //     });
-        //     await reservationService.attend({ id: reservation.id });
-        // } catch (error) {
-        //     // tslint:disable-next-line:no-console
-        //     console.error('Cinerino reservationService.attend failed:', error);
-        // }
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
@@ -245,19 +233,54 @@ reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.c
  * 入場日時がid
  */
 reservationsRouter.delete('/:id/checkins/:when', permitScopes_1.default(['reservations.checkins']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
     try {
         const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
         const taskRepo = new ttts.repository.Task(mongoose.connection);
-        const checkin = {
-            when: req.params.when,
-            where: '',
-            why: '',
-            how: ''
-        };
-        const reservation = yield reservationRepo.cancelCheckIn({
-            id: req.params.id,
-            checkin: checkin
+        let reservation = yield reservationRepo.findById({ id: req.params.id });
+        const deletingCheckin = (_b = reservation.checkins) === null || _b === void 0 ? void 0 : _b.find((c) => {
+            return moment(c.when)
+                .isSame(moment(req.params.when));
         });
+        if (deletingCheckin !== undefined) {
+            // checkinにアクションIDが存在すれば、Chevre予約使用アクション取消
+            if (typeof deletingCheckin.id === 'string') {
+                const actionId = deletingCheckin.id;
+                const authClient = new cinerinoapi.auth.ClientCredentials({
+                    domain: '',
+                    clientId: '',
+                    clientSecret: '',
+                    scopes: [],
+                    state: ''
+                });
+                authClient.setCredentials({ access_token: req.accessToken });
+                const reservationService = new cinerinoapi.service.Reservation({
+                    auth: authClient,
+                    endpoint: process.env.CINERINO_API_ENDPOINT,
+                    project: { id: project.id }
+                });
+                try {
+                    yield reservationService.cancelUseAction({
+                        id: actionId,
+                        object: { id: reservation.id }
+                    });
+                }
+                catch (error) {
+                    // tslint:disable-next-line:no-console
+                    console.log('cancelUseAction failed.', error);
+                }
+            }
+            const checkin = {
+                when: req.params.when,
+                where: '',
+                why: '',
+                how: ''
+            };
+            reservation = yield reservationRepo.cancelCheckIn({
+                id: req.params.id,
+                checkin: checkin
+            });
+        }
         // レポート更新タスク作成
         const taskAttributes = {
             name: ttts.factory.taskName.UpdateOrderReportByReservation,
