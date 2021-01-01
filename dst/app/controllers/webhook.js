@@ -21,6 +21,7 @@ function onEventChanged(params) {
         const event = params;
         // パフォーマンス登録
         const performance = {
+            project: params.project,
             id: event.id,
             startDate: moment(event.startDate)
                 .toDate(),

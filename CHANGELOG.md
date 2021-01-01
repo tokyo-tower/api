@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 入場時にChevreで予約を使用連携するように調整
 - 入場取消時にChevreへ連携するように調整
 - 実験的にパフォーマンス検索結果にcheckinCountsByWherePreviewを追加
+- 全コレクションにproject属性を追加
 
 ### Deprecated
 

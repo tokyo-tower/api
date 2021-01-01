@@ -14,6 +14,7 @@ export function onEventChanged(params: cinerinoapi.factory.chevre.event.IEvent<c
 
         // パフォーマンス登録
         const performance: ttts.factory.performance.IPerformance = {
+            project: params.project,
             id: event.id,
             startDate: moment(event.startDate)
                 .toDate(),
