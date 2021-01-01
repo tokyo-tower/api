@@ -105,12 +105,32 @@ export function performance2result(performance: ttts.factory.performance.IPerfor
         default:
     }
 
+    const offers = performance.aggregateOffer?.offers;
+
     let maximumAttendeeCapacity: number | undefined;
     let remainingAttendeeCapacity: number | undefined;
     let remainingAttendeeCapacityForWheelchair: number | undefined;
     let reservationCount: number | undefined;
     let reservationCountsByTicketType: ttts.factory.performance.IReservationCountByTicketType[] | undefined;
-    let checkinCountsByWhere: ttts.factory.performance.ICheckinCountByWhere[] | undefined;
+    const defaultCheckinCountsByTicketType: ttts.factory.performance.ICheckinCountsByTicketType[] = (Array.isArray(offers))
+        ? offers.map((offer) => {
+            return {
+                ticketType: <string>offer.id,
+                ticketCategory: <string>offer.category?.codeValue,
+                count: 0
+            };
+        })
+        : [];
+    let checkinCountsByWhere: ttts.factory.performance.ICheckinCountByWhere[] = [
+        {
+            where: 'DAITEN_AUTH',
+            checkinCountsByTicketType: defaultCheckinCountsByTicketType
+        },
+        {
+            where: 'TOPDECK_AUTH',
+            checkinCountsByTicketType: defaultCheckinCountsByTicketType
+        }
+    ];
     let checkinCount: number | undefined;
 
     // aggregateOffer,aggregateReservationから算出する
@@ -127,19 +147,20 @@ export function performance2result(performance: ttts.factory.performance.IPerfor
         };
     });
 
-    checkinCountsByWhere = (<any>performance).aggregateEntranceGate?.places?.map((entranceGate: any) => {
-        return {
-            where: entranceGate.identifier,
-            checkinCountsByTicketType: entranceGate.aggregateOffer?.offers?.map((offer: any) => {
-                return {
-                    ticketType: offer.id,
-                    ticketCategory: offer.category?.codeValue,
-                    count: offer.aggregateReservation?.useActionCount
-                };
-            })
-        };
-    });
     if (Array.isArray((<any>performance).aggregateEntranceGate?.places)) {
+        checkinCountsByWhere = (<any>performance).aggregateEntranceGate.places.map((entranceGate: any) => {
+            return {
+                where: entranceGate.identifier,
+                checkinCountsByTicketType: entranceGate.aggregateOffer?.offers?.map((offer: any) => {
+                    return {
+                        ticketType: offer.id,
+                        ticketCategory: offer.category?.codeValue,
+                        count: offer.aggregateReservation?.useActionCount
+                    };
+                })
+            };
+        });
+
         checkinCount = (<any[]>(<any>performance).aggregateEntranceGate.places).reduce<number>(
             (a, b) => {
                 let useActionCount = a;
@@ -176,17 +197,6 @@ export function performance2result(performance: ttts.factory.performance.IPerfor
         ...(Array.isArray(reservationCountsByTicketType)) ? { reservationCountsByTicketType } : undefined,
         ...(Array.isArray(checkinCountsByWhere)) ? { checkinCountsByWherePreview: checkinCountsByWhere } : undefined,
         ...(typeof checkinCount === 'number') ? { checkinCountPreview: checkinCount } : undefined,
-        ...(USE_NEW_AGGREGATE_ENTRANCE_GATE)
-            ? (Array.isArray(checkinCountsByWhere))
-                ? { checkinCountsByWhere, checkinCount }
-                : {
-                    // 万が一の互換性維持対応
-                    checkinCountsByWhere: [
-                        { where: 'DAITEN_AUTH', checkinCountsByTicketType: [] },
-                        { where: 'TOPDECK_AUTH', checkinCountsByTicketType: [] }
-                    ],
-                    checkinCount: 0
-                }
-            : undefined
+        ...(USE_NEW_AGGREGATE_ENTRANCE_GATE) ? { checkinCountsByWhere, checkinCount } : undefined
     };
 }

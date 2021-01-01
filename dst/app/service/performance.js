@@ -81,7 +81,7 @@ var OnlineSalesStatus;
 })(OnlineSalesStatus || (OnlineSalesStatus = {}));
 // tslint:disable-next-line:max-func-body-length
 function performance2result(performance) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
     const tourNumber = (_b = (_a = performance.additionalProperty) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === 'tourNumber')) === null || _b === void 0 ? void 0 : _b.value;
     let evServiceStatus = EvServiceStatus.Normal;
     let onlineSalesStatus = OnlineSalesStatus.Normal;
@@ -98,41 +98,61 @@ function performance2result(performance) {
             break;
         default:
     }
+    const offers = (_c = performance.aggregateOffer) === null || _c === void 0 ? void 0 : _c.offers;
     let maximumAttendeeCapacity;
     let remainingAttendeeCapacity;
     let remainingAttendeeCapacityForWheelchair;
     let reservationCount;
     let reservationCountsByTicketType;
-    let checkinCountsByWhere;
+    const defaultCheckinCountsByTicketType = (Array.isArray(offers))
+        ? offers.map((offer) => {
+            var _a;
+            return {
+                ticketType: offer.id,
+                ticketCategory: (_a = offer.category) === null || _a === void 0 ? void 0 : _a.codeValue,
+                count: 0
+            };
+        })
+        : [];
+    let checkinCountsByWhere = [
+        {
+            where: 'DAITEN_AUTH',
+            checkinCountsByTicketType: defaultCheckinCountsByTicketType
+        },
+        {
+            where: 'TOPDECK_AUTH',
+            checkinCountsByTicketType: defaultCheckinCountsByTicketType
+        }
+    ];
     let checkinCount;
     // aggregateOffer,aggregateReservationから算出する
-    maximumAttendeeCapacity = (_e = (_d = (_c = performance.aggregateOffer) === null || _c === void 0 ? void 0 : _c.offers) === null || _d === void 0 ? void 0 : _d.find((o) => o.identifier === '001')) === null || _e === void 0 ? void 0 : _e.maximumAttendeeCapacity;
-    remainingAttendeeCapacity = (_h = (_g = (_f = performance.aggregateOffer) === null || _f === void 0 ? void 0 : _f.offers) === null || _g === void 0 ? void 0 : _g.find((o) => o.identifier === '001')) === null || _h === void 0 ? void 0 : _h.remainingAttendeeCapacity;
+    maximumAttendeeCapacity = (_f = (_e = (_d = performance.aggregateOffer) === null || _d === void 0 ? void 0 : _d.offers) === null || _e === void 0 ? void 0 : _e.find((o) => o.identifier === '001')) === null || _f === void 0 ? void 0 : _f.maximumAttendeeCapacity;
+    remainingAttendeeCapacity = (_j = (_h = (_g = performance.aggregateOffer) === null || _g === void 0 ? void 0 : _g.offers) === null || _h === void 0 ? void 0 : _h.find((o) => o.identifier === '001')) === null || _j === void 0 ? void 0 : _j.remainingAttendeeCapacity;
     remainingAttendeeCapacityForWheelchair
-        = (_l = (_k = (_j = performance.aggregateOffer) === null || _j === void 0 ? void 0 : _j.offers) === null || _k === void 0 ? void 0 : _k.find((o) => o.identifier === '004')) === null || _l === void 0 ? void 0 : _l.remainingAttendeeCapacity;
-    reservationCount = (_m = performance.aggregateReservation) === null || _m === void 0 ? void 0 : _m.reservationCount;
-    reservationCountsByTicketType = (_p = (_o = performance.aggregateOffer) === null || _o === void 0 ? void 0 : _o.offers) === null || _p === void 0 ? void 0 : _p.map((offer) => {
+        = (_m = (_l = (_k = performance.aggregateOffer) === null || _k === void 0 ? void 0 : _k.offers) === null || _l === void 0 ? void 0 : _l.find((o) => o.identifier === '004')) === null || _m === void 0 ? void 0 : _m.remainingAttendeeCapacity;
+    reservationCount = (_o = performance.aggregateReservation) === null || _o === void 0 ? void 0 : _o.reservationCount;
+    reservationCountsByTicketType = (_q = (_p = performance.aggregateOffer) === null || _p === void 0 ? void 0 : _p.offers) === null || _q === void 0 ? void 0 : _q.map((offer) => {
         var _a;
         return {
             ticketType: offer.id,
             count: (_a = offer.aggregateReservation) === null || _a === void 0 ? void 0 : _a.reservationCount
         };
     });
-    checkinCountsByWhere = (_r = (_q = performance.aggregateEntranceGate) === null || _q === void 0 ? void 0 : _q.places) === null || _r === void 0 ? void 0 : _r.map((entranceGate) => {
-        var _a, _b;
-        return {
-            where: entranceGate.identifier,
-            checkinCountsByTicketType: (_b = (_a = entranceGate.aggregateOffer) === null || _a === void 0 ? void 0 : _a.offers) === null || _b === void 0 ? void 0 : _b.map((offer) => {
-                var _a, _b;
-                return {
-                    ticketType: offer.id,
-                    ticketCategory: (_a = offer.category) === null || _a === void 0 ? void 0 : _a.codeValue,
-                    count: (_b = offer.aggregateReservation) === null || _b === void 0 ? void 0 : _b.useActionCount
-                };
-            })
-        };
-    });
-    if (Array.isArray((_s = performance.aggregateEntranceGate) === null || _s === void 0 ? void 0 : _s.places)) {
+    if (Array.isArray((_r = performance.aggregateEntranceGate) === null || _r === void 0 ? void 0 : _r.places)) {
+        checkinCountsByWhere = performance.aggregateEntranceGate.places.map((entranceGate) => {
+            var _a, _b;
+            return {
+                where: entranceGate.identifier,
+                checkinCountsByTicketType: (_b = (_a = entranceGate.aggregateOffer) === null || _a === void 0 ? void 0 : _a.offers) === null || _b === void 0 ? void 0 : _b.map((offer) => {
+                    var _a, _b;
+                    return {
+                        ticketType: offer.id,
+                        ticketCategory: (_a = offer.category) === null || _a === void 0 ? void 0 : _a.codeValue,
+                        count: (_b = offer.aggregateReservation) === null || _b === void 0 ? void 0 : _b.useActionCount
+                    };
+                })
+            };
+        });
         checkinCount = performance.aggregateEntranceGate.places.reduce((a, b) => {
             var _a;
             let useActionCount = a;
@@ -149,17 +169,6 @@ function performance2result(performance) {
         evServiceStatus: evServiceStatus,
         onlineSalesStatus: onlineSalesStatus,
         tourNumber: tourNumber
-    }), (typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined), (typeof remainingAttendeeCapacity === 'number') ? { remainingAttendeeCapacity } : undefined), (typeof remainingAttendeeCapacityForWheelchair === 'number') ? { remainingAttendeeCapacityForWheelchair } : undefined), (typeof reservationCount === 'number') ? { reservationCount } : undefined), (Array.isArray(reservationCountsByTicketType)) ? { reservationCountsByTicketType } : undefined), (Array.isArray(checkinCountsByWhere)) ? { checkinCountsByWherePreview: checkinCountsByWhere } : undefined), (typeof checkinCount === 'number') ? { checkinCountPreview: checkinCount } : undefined), (USE_NEW_AGGREGATE_ENTRANCE_GATE)
-        ? (Array.isArray(checkinCountsByWhere))
-            ? { checkinCountsByWhere, checkinCount }
-            : {
-                // 万が一の互換性維持対応
-                checkinCountsByWhere: [
-                    { where: 'DAITEN_AUTH', checkinCountsByTicketType: [] },
-                    { where: 'TOPDECK_AUTH', checkinCountsByTicketType: [] }
-                ],
-                checkinCount: 0
-            }
-        : undefined);
+    }), (typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined), (typeof remainingAttendeeCapacity === 'number') ? { remainingAttendeeCapacity } : undefined), (typeof remainingAttendeeCapacityForWheelchair === 'number') ? { remainingAttendeeCapacityForWheelchair } : undefined), (typeof reservationCount === 'number') ? { reservationCount } : undefined), (Array.isArray(reservationCountsByTicketType)) ? { reservationCountsByTicketType } : undefined), (Array.isArray(checkinCountsByWhere)) ? { checkinCountsByWherePreview: checkinCountsByWhere } : undefined), (typeof checkinCount === 'number') ? { checkinCountPreview: checkinCount } : undefined), (USE_NEW_AGGREGATE_ENTRANCE_GATE) ? { checkinCountsByWhere, checkinCount } : undefined);
 }
 exports.performance2result = performance2result;
