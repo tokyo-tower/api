@@ -152,7 +152,14 @@ function performance2result(performance) {
     }), (typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined), (typeof remainingAttendeeCapacity === 'number') ? { remainingAttendeeCapacity } : undefined), (typeof remainingAttendeeCapacityForWheelchair === 'number') ? { remainingAttendeeCapacityForWheelchair } : undefined), (typeof reservationCount === 'number') ? { reservationCount } : undefined), (Array.isArray(reservationCountsByTicketType)) ? { reservationCountsByTicketType } : undefined), (Array.isArray(checkinCountsByWhere)) ? { checkinCountsByWherePreview: checkinCountsByWhere } : undefined), (typeof checkinCount === 'number') ? { checkinCountPreview: checkinCount } : undefined), (USE_NEW_AGGREGATE_ENTRANCE_GATE)
         ? (Array.isArray(checkinCountsByWhere))
             ? { checkinCountsByWhere, checkinCount }
-            : { checkinCountsByWhere: [], checkinCount: 0 }
+            : {
+                // 万が一の互換性維持対応
+                checkinCountsByWhere: [
+                    { where: 'DAITEN_AUTH', checkinCountsByTicketType: [] },
+                    { where: 'TOPDECK_AUTH', checkinCountsByTicketType: [] }
+                ],
+                checkinCount: 0
+            }
         : undefined);
 }
 exports.performance2result = performance2result;
