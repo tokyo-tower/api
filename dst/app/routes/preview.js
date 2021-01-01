@@ -18,7 +18,7 @@ const express_1 = require("express");
 const moment = require("moment-timezone");
 const mongoose = require("mongoose");
 const performance_1 = require("../service/performance");
-const USE_NEW_SEARCH_PERFORMANCE_WITH_AGGREGATION = process.env.USE_NEW_SEARCH_PERFORMANCE_WITH_AGGREGATION;
+const USE_NEW_SEARCH_PERFORMANCE_WITH_AGGREGATION = process.env.USE_NEW_SEARCH_PERFORMANCE_WITH_AGGREGATION === '1';
 const project = {
     typeOf: cinerinoapi.factory.chevre.organizationType.Project,
     id: process.env.PROJECT_ID
@@ -56,14 +56,13 @@ previewRouter.get('/performancesWithAggregation', (req, res, next) => __awaiter(
                 endpoint: process.env.CINERINO_API_ENDPOINT,
                 project: { id: project.id }
             });
-            const searchEventsResult = yield eventService.search({
-                typeOf: cinerinoapi.factory.chevre.eventType.ScreeningEvent,
-                limit: conditions.limit,
-                page: conditions.page,
-                sort: { startDate: 1 },
-                startFrom: conditions.startFrom,
-                startThrough: conditions.startThrough
-            });
+            const searchEventsResult = yield eventService.search(Object.assign({ typeOf: cinerinoapi.factory.chevre.eventType.ScreeningEvent, limit: conditions.limit, page: conditions.page, sort: { startDate: 1 }, startFrom: conditions.startFrom, startThrough: conditions.startThrough }, {
+                $projection: {
+                    checkInCount: 0,
+                    maximumAttendeeCapacity: 0,
+                    remainingAttendeeCapacity: 0
+                }
+            }));
             searchPerformanceResult = searchEventsResult.data.map(performance_1.performance2result);
         }
         else {

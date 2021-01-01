@@ -59,7 +59,14 @@ previewRouter.get('/performancesWithAggregation', async (req, res, next) => {
                 page: conditions.page,
                 sort: { startDate: 1 },
                 startFrom: conditions.startFrom,
-                startThrough: conditions.startThrough
+                startThrough: conditions.startThrough,
+                ...{
+                    $projection: {
+                        checkInCount: 0,
+                        maximumAttendeeCapacity: 0,
+                        remainingAttendeeCapacity: 0
+                    }
+                }
             });
             searchPerformanceResult = searchEventsResult.data.map(performance2result);
         } else {
