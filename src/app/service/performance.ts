@@ -83,7 +83,7 @@ enum OnlineSalesStatus {
     Suspended = 'Suspended'
 }
 
-function performance2result(performance: ttts.factory.performance.IPerformance): ttts.factory.performance.IPerformance {
+export function performance2result(performance: ttts.factory.performance.IPerformance): ttts.factory.performance.IPerformance {
     const tourNumber = performance.additionalProperty?.find((p) => p.name === 'tourNumber')?.value;
 
     let evServiceStatus = EvServiceStatus.Normal;
@@ -110,6 +110,7 @@ function performance2result(performance: ttts.factory.performance.IPerformance):
     let reservationCount: number | undefined;
     let reservationCountsByTicketType: ttts.factory.performance.IReservationCountByTicketType[] | undefined;
     let checkinCountsByWhere: ttts.factory.performance.ICheckinCountByWhere[] | undefined;
+    let checkinCount: number | undefined;
 
     // aggregateOffer,aggregateReservationから算出する
     maximumAttendeeCapacity = performance.aggregateOffer?.offers?.find((o) => o.identifier === '001')?.maximumAttendeeCapacity;
@@ -137,6 +138,27 @@ function performance2result(performance: ttts.factory.performance.IPerformance):
             })
         };
     });
+    if (Array.isArray((<any>performance).aggregateEntranceGate?.places)) {
+        checkinCount = (<any[]>(<any>performance).aggregateEntranceGate.places).reduce<number>(
+            (a, b) => {
+                let useActionCount = a;
+
+                if (Array.isArray(b.aggregateOffer?.offers)) {
+                    useActionCount += (<any[]>b.aggregateOffer.offers).reduce<number>(
+                        (a2, b2) => {
+                            return a2 + Number(b2.aggregateReservation?.useActionCount);
+                        },
+                        0
+                    );
+
+                }
+
+                return useActionCount;
+            },
+            0
+        );
+
+    }
 
     return {
         ...performance,
@@ -152,8 +174,12 @@ function performance2result(performance: ttts.factory.performance.IPerformance):
         ...(typeof reservationCount === 'number') ? { reservationCount } : undefined,
         ...(Array.isArray(reservationCountsByTicketType)) ? { reservationCountsByTicketType } : undefined,
         ...(Array.isArray(checkinCountsByWhere)) ? { checkinCountsByWherePreview: checkinCountsByWhere } : undefined,
+        ...(typeof checkinCount === 'number') ? { checkinCountPreview: checkinCount } : undefined,
         ...(USE_NEW_AGGREGATE_ENTRANCE_GATE && Array.isArray(checkinCountsByWhere))
-            ? { checkinCountsByWhere }
+            ? {
+                checkinCountsByWhere,
+                checkinCount
+            }
             : undefined
     };
 }

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.search = void 0;
+exports.performance2result = exports.search = void 0;
 /**
  * パフォーマンスルーター
  */
@@ -80,7 +80,7 @@ var OnlineSalesStatus;
     OnlineSalesStatus["Suspended"] = "Suspended";
 })(OnlineSalesStatus || (OnlineSalesStatus = {}));
 function performance2result(performance) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s;
     const tourNumber = (_b = (_a = performance.additionalProperty) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === 'tourNumber')) === null || _b === void 0 ? void 0 : _b.value;
     let evServiceStatus = EvServiceStatus.Normal;
     let onlineSalesStatus = OnlineSalesStatus.Normal;
@@ -103,6 +103,7 @@ function performance2result(performance) {
     let reservationCount;
     let reservationCountsByTicketType;
     let checkinCountsByWhere;
+    let checkinCount;
     // aggregateOffer,aggregateReservationから算出する
     maximumAttendeeCapacity = (_e = (_d = (_c = performance.aggregateOffer) === null || _c === void 0 ? void 0 : _c.offers) === null || _d === void 0 ? void 0 : _d.find((o) => o.identifier === '001')) === null || _e === void 0 ? void 0 : _e.maximumAttendeeCapacity;
     remainingAttendeeCapacity = (_h = (_g = (_f = performance.aggregateOffer) === null || _f === void 0 ? void 0 : _f.offers) === null || _g === void 0 ? void 0 : _g.find((o) => o.identifier === '001')) === null || _h === void 0 ? void 0 : _h.remainingAttendeeCapacity;
@@ -130,11 +131,28 @@ function performance2result(performance) {
             })
         };
     });
-    return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, performance), {
+    if (Array.isArray((_s = performance.aggregateEntranceGate) === null || _s === void 0 ? void 0 : _s.places)) {
+        checkinCount = performance.aggregateEntranceGate.places.reduce((a, b) => {
+            var _a;
+            let useActionCount = a;
+            if (Array.isArray((_a = b.aggregateOffer) === null || _a === void 0 ? void 0 : _a.offers)) {
+                useActionCount += b.aggregateOffer.offers.reduce((a2, b2) => {
+                    var _a;
+                    return a2 + Number((_a = b2.aggregateReservation) === null || _a === void 0 ? void 0 : _a.useActionCount);
+                }, 0);
+            }
+            return useActionCount;
+        }, 0);
+    }
+    return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, performance), {
         evServiceStatus: evServiceStatus,
         onlineSalesStatus: onlineSalesStatus,
         tourNumber: tourNumber
-    }), (typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined), (typeof remainingAttendeeCapacity === 'number') ? { remainingAttendeeCapacity } : undefined), (typeof remainingAttendeeCapacityForWheelchair === 'number') ? { remainingAttendeeCapacityForWheelchair } : undefined), (typeof reservationCount === 'number') ? { reservationCount } : undefined), (Array.isArray(reservationCountsByTicketType)) ? { reservationCountsByTicketType } : undefined), (Array.isArray(checkinCountsByWhere)) ? { checkinCountsByWherePreview: checkinCountsByWhere } : undefined), (USE_NEW_AGGREGATE_ENTRANCE_GATE && Array.isArray(checkinCountsByWhere))
-        ? { checkinCountsByWhere }
+    }), (typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined), (typeof remainingAttendeeCapacity === 'number') ? { remainingAttendeeCapacity } : undefined), (typeof remainingAttendeeCapacityForWheelchair === 'number') ? { remainingAttendeeCapacityForWheelchair } : undefined), (typeof reservationCount === 'number') ? { reservationCount } : undefined), (Array.isArray(reservationCountsByTicketType)) ? { reservationCountsByTicketType } : undefined), (Array.isArray(checkinCountsByWhere)) ? { checkinCountsByWherePreview: checkinCountsByWhere } : undefined), (typeof checkinCount === 'number') ? { checkinCountPreview: checkinCount } : undefined), (USE_NEW_AGGREGATE_ENTRANCE_GATE && Array.isArray(checkinCountsByWhere))
+        ? {
+            checkinCountsByWhere,
+            checkinCount
+        }
         : undefined);
 }
+exports.performance2result = performance2result;

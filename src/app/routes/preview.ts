@@ -7,7 +7,9 @@ import { Router } from 'express';
 import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 
-import { search } from '../service/performance';
+import { ISearchResult, performance2result, search } from '../service/performance';
+
+const USE_NEW_SEARCH_PERFORMANCE_WITH_AGGREGATION = process.env.USE_NEW_SEARCH_PERFORMANCE_WITH_AGGREGATION === '1';
 
 const project = {
     typeOf: <cinerinoapi.factory.chevre.organizationType.Project>cinerinoapi.factory.chevre.organizationType.Project,
@@ -42,9 +44,29 @@ previewRouter.get('/performancesWithAggregation', async (req, res, next) => {
                 : undefined
         };
 
-        const performanceRepo = new ttts.repository.Performance(mongoose.connection);
+        let searchPerformanceResult: ISearchResult;
+        if (USE_NEW_SEARCH_PERFORMANCE_WITH_AGGREGATION) {
+            // chevreで取得
+            const eventService = new cinerinoapi.service.Event({
+                auth: cinerinoAuthClient,
+                endpoint: <string>process.env.CINERINO_API_ENDPOINT,
+                project: { id: project.id }
+            });
 
-        const searchPerformanceResult = await search(conditions, false)({ performance: performanceRepo });
+            const searchEventsResult = await eventService.search({
+                typeOf: cinerinoapi.factory.chevre.eventType.ScreeningEvent,
+                limit: conditions.limit,
+                page: conditions.page,
+                sort: { startDate: 1 },
+                startFrom: conditions.startFrom,
+                startThrough: conditions.startThrough
+            });
+            searchPerformanceResult = searchEventsResult.data.map(performance2result);
+        } else {
+            const performanceRepo = new ttts.repository.Performance(mongoose.connection);
+
+            searchPerformanceResult = await search(conditions, false)({ performance: performanceRepo });
+        }
 
         res.json(searchPerformanceResult);
     } catch (error) {
