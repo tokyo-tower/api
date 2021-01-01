@@ -147,26 +147,29 @@ export function performance2result(performance: ttts.factory.performance.IPerfor
         };
     });
 
-    if (Array.isArray((<any>performance).aggregateEntranceGate?.places)) {
-        checkinCountsByWhere = (<any>performance).aggregateEntranceGate.places.map((entranceGate: any) => {
+    const places = performance.aggregateEntranceGate?.places;
+    if (Array.isArray(places)) {
+        checkinCountsByWhere = places.map((entranceGate) => {
             return {
-                where: entranceGate.identifier,
-                checkinCountsByTicketType: entranceGate.aggregateOffer?.offers?.map((offer: any) => {
-                    return {
-                        ticketType: offer.id,
-                        ticketCategory: offer.category?.codeValue,
-                        count: offer.aggregateReservation?.useActionCount
-                    };
-                })
+                where: <string>entranceGate.identifier,
+                checkinCountsByTicketType: <ttts.factory.performance.ICheckinCountsByTicketType[]>
+                    entranceGate.aggregateOffer?.offers?.map((offer) => {
+                        return {
+                            ticketType: offer.id,
+                            ticketCategory: offer.category?.codeValue,
+                            count: offer.aggregateReservation?.useActionCount
+                        };
+                    })
             };
         });
 
-        checkinCount = (<any[]>(<any>performance).aggregateEntranceGate.places).reduce<number>(
+        checkinCount = places.reduce<number>(
             (a, b) => {
                 let useActionCount = a;
 
-                if (Array.isArray(b.aggregateOffer?.offers)) {
-                    useActionCount += (<any[]>b.aggregateOffer.offers).reduce<number>(
+                const offers4b = b.aggregateOffer?.offers;
+                if (Array.isArray(offers4b)) {
+                    useActionCount += offers4b.reduce<number>(
                         (a2, b2) => {
                             return a2 + Number(b2.aggregateReservation?.useActionCount);
                         },

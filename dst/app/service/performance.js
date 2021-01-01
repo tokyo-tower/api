@@ -138,8 +138,9 @@ function performance2result(performance) {
             count: (_a = offer.aggregateReservation) === null || _a === void 0 ? void 0 : _a.reservationCount
         };
     });
-    if (Array.isArray((_r = performance.aggregateEntranceGate) === null || _r === void 0 ? void 0 : _r.places)) {
-        checkinCountsByWhere = performance.aggregateEntranceGate.places.map((entranceGate) => {
+    const places = (_r = performance.aggregateEntranceGate) === null || _r === void 0 ? void 0 : _r.places;
+    if (Array.isArray(places)) {
+        checkinCountsByWhere = places.map((entranceGate) => {
             var _a, _b;
             return {
                 where: entranceGate.identifier,
@@ -153,11 +154,12 @@ function performance2result(performance) {
                 })
             };
         });
-        checkinCount = performance.aggregateEntranceGate.places.reduce((a, b) => {
+        checkinCount = places.reduce((a, b) => {
             var _a;
             let useActionCount = a;
-            if (Array.isArray((_a = b.aggregateOffer) === null || _a === void 0 ? void 0 : _a.offers)) {
-                useActionCount += b.aggregateOffer.offers.reduce((a2, b2) => {
+            const offers4b = (_a = b.aggregateOffer) === null || _a === void 0 ? void 0 : _a.offers;
+            if (Array.isArray(offers4b)) {
+                useActionCount += offers4b.reduce((a2, b2) => {
                     var _a;
                     return a2 + Number((_a = b2.aggregateReservation) === null || _a === void 0 ? void 0 : _a.useActionCount);
                 }, 0);
