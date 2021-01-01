@@ -18,7 +18,7 @@ const express_1 = require("express");
 const moment = require("moment-timezone");
 const mongoose = require("mongoose");
 const performance_1 = require("../service/performance");
-const USE_NEW_SEARCH_PERFORMANCE_WITH_AGGREGATION = process.env.USE_NEW_SEARCH_PERFORMANCE_WITH_AGGREGATION;
+const USE_NEW_SEARCH_PERFORMANCE_WITH_AGGREGATION = process.env.USE_NEW_SEARCH_PERFORMANCE_WITH_AGGREGATION === '1';
 const project = {
     typeOf: cinerinoapi.factory.chevre.organizationType.Project,
     id: process.env.PROJECT_ID
