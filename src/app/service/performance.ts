@@ -83,6 +83,7 @@ enum OnlineSalesStatus {
     Suspended = 'Suspended'
 }
 
+// tslint:disable-next-line:max-func-body-length
 export function performance2result(performance: ttts.factory.performance.IPerformance): ttts.factory.performance.IPerformance {
     const tourNumber = performance.additionalProperty?.find((p) => p.name === 'tourNumber')?.value;
 
@@ -175,11 +176,10 @@ export function performance2result(performance: ttts.factory.performance.IPerfor
         ...(Array.isArray(reservationCountsByTicketType)) ? { reservationCountsByTicketType } : undefined,
         ...(Array.isArray(checkinCountsByWhere)) ? { checkinCountsByWherePreview: checkinCountsByWhere } : undefined,
         ...(typeof checkinCount === 'number') ? { checkinCountPreview: checkinCount } : undefined,
-        ...(USE_NEW_AGGREGATE_ENTRANCE_GATE && Array.isArray(checkinCountsByWhere))
-            ? {
-                checkinCountsByWhere,
-                checkinCount
-            }
+        ...(USE_NEW_AGGREGATE_ENTRANCE_GATE)
+            ? (Array.isArray(checkinCountsByWhere))
+                ? { checkinCountsByWhere, checkinCount }
+                : { checkinCountsByWhere: [], checkinCount: 0 }
             : undefined
     };
 }
