@@ -4,7 +4,7 @@
 import * as cinerinoapi from '@cinerino/sdk';
 import * as ttts from '@tokyotower/domain';
 
-const USE_NEW_PERFORMANCE_AGGREGATION = process.env.USE_NEW_PERFORMANCE_AGGREGATION === '1';
+const USE_NEW_AGGREGATE_ENTRANCE_GATE = process.env.USE_NEW_AGGREGATE_ENTRANCE_GATE === '1';
 
 export type ISearchResult = ttts.factory.performance.IPerformance[];
 
@@ -32,15 +32,11 @@ export function search(
                 offers: 0,
                 doorTime: 0,
                 duration: 0,
-                ...(USE_NEW_PERFORMANCE_AGGREGATION)
-                    ? {
-                        maximumAttendeeCapacity: 0,
-                        remainingAttendeeCapacity: 0,
-                        remainingAttendeeCapacityForWheelchair: 0,
-                        reservationCount: 0,
-                        reservationCountsByTicketType: 0
-                    }
-                    : undefined
+                maximumAttendeeCapacity: 0,
+                remainingAttendeeCapacity: 0,
+                remainingAttendeeCapacityForWheelchair: 0,
+                reservationCount: 0,
+                reservationCountsByTicketType: 0
             }
             : {
                 __v: 0,
@@ -51,15 +47,11 @@ export function search(
                 offers: 0,
                 doorTime: 0,
                 duration: 0,
-                ...(USE_NEW_PERFORMANCE_AGGREGATION)
-                    ? {
-                        maximumAttendeeCapacity: 0,
-                        remainingAttendeeCapacity: 0,
-                        remainingAttendeeCapacityForWheelchair: 0,
-                        reservationCount: 0,
-                        reservationCountsByTicketType: 0
-                    }
-                    : undefined,
+                maximumAttendeeCapacity: 0,
+                remainingAttendeeCapacity: 0,
+                remainingAttendeeCapacityForWheelchair: 0,
+                reservationCount: 0,
+                reservationCountsByTicketType: 0,
                 ttts_extension: 0
             };
 
@@ -119,34 +111,32 @@ function performance2result(performance: ttts.factory.performance.IPerformance):
     let reservationCountsByTicketType: ttts.factory.performance.IReservationCountByTicketType[] | undefined;
     let checkinCountsByWhere: ttts.factory.performance.ICheckinCountByWhere[] | undefined;
 
-    if (USE_NEW_PERFORMANCE_AGGREGATION) {
-        // aggregateOffer,aggregateReservationから算出する
-        maximumAttendeeCapacity = performance.aggregateOffer?.offers?.find((o) => o.identifier === '001')?.maximumAttendeeCapacity;
-        remainingAttendeeCapacity = performance.aggregateOffer?.offers?.find((o) => o.identifier === '001')?.remainingAttendeeCapacity;
-        remainingAttendeeCapacityForWheelchair
-            = performance.aggregateOffer?.offers?.find((o) => o.identifier === '004')?.remainingAttendeeCapacity;
+    // aggregateOffer,aggregateReservationから算出する
+    maximumAttendeeCapacity = performance.aggregateOffer?.offers?.find((o) => o.identifier === '001')?.maximumAttendeeCapacity;
+    remainingAttendeeCapacity = performance.aggregateOffer?.offers?.find((o) => o.identifier === '001')?.remainingAttendeeCapacity;
+    remainingAttendeeCapacityForWheelchair
+        = performance.aggregateOffer?.offers?.find((o) => o.identifier === '004')?.remainingAttendeeCapacity;
 
-        reservationCount = performance.aggregateReservation?.reservationCount;
-        reservationCountsByTicketType = performance.aggregateOffer?.offers?.map((offer) => {
-            return {
-                ticketType: <string>offer.id,
-                count: offer.aggregateReservation?.reservationCount
-            };
-        });
+    reservationCount = performance.aggregateReservation?.reservationCount;
+    reservationCountsByTicketType = performance.aggregateOffer?.offers?.map((offer) => {
+        return {
+            ticketType: <string>offer.id,
+            count: offer.aggregateReservation?.reservationCount
+        };
+    });
 
-        checkinCountsByWhere = (<any>performance).aggregateEntranceGate?.places?.map((entranceGate: any) => {
-            return {
-                where: entranceGate.identifier,
-                checkinCountsByTicketType: entranceGate.aggregateOffer?.offers?.map((offer: any) => {
-                    return {
-                        ticketType: offer.id,
-                        ticketCategory: offer.category?.codeValue,
-                        count: offer.aggregateReservation?.useActionCount
-                    };
-                })
-            };
-        });
-    }
+    checkinCountsByWhere = (<any>performance).aggregateEntranceGate?.places?.map((entranceGate: any) => {
+        return {
+            where: entranceGate.identifier,
+            checkinCountsByTicketType: entranceGate.aggregateOffer?.offers?.map((offer: any) => {
+                return {
+                    ticketType: offer.id,
+                    ticketCategory: offer.category?.codeValue,
+                    count: offer.aggregateReservation?.useActionCount
+                };
+            })
+        };
+    });
 
     return {
         ...performance,
@@ -161,6 +151,9 @@ function performance2result(performance: ttts.factory.performance.IPerformance):
         ...(typeof remainingAttendeeCapacityForWheelchair === 'number') ? { remainingAttendeeCapacityForWheelchair } : undefined,
         ...(typeof reservationCount === 'number') ? { reservationCount } : undefined,
         ...(Array.isArray(reservationCountsByTicketType)) ? { reservationCountsByTicketType } : undefined,
-        ...(Array.isArray(checkinCountsByWhere)) ? { checkinCountsByWherePreview: checkinCountsByWhere } : undefined
+        ...(Array.isArray(checkinCountsByWhere)) ? { checkinCountsByWherePreview: checkinCountsByWhere } : undefined,
+        ...(USE_NEW_AGGREGATE_ENTRANCE_GATE && Array.isArray(checkinCountsByWhere))
+            ? { checkinCountsByWhere }
+            : undefined
     };
 }
