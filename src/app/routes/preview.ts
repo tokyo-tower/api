@@ -72,7 +72,7 @@ previewRouter.get('/performancesWithAggregation', async (req, res, next) => {
         } else {
             const performanceRepo = new ttts.repository.Performance(mongoose.connection);
 
-            searchPerformanceResult = await search(conditions, false)({ performance: performanceRepo });
+            searchPerformanceResult = await search(conditions, false, true)({ performance: performanceRepo });
         }
 
         res.json(searchPerformanceResult);

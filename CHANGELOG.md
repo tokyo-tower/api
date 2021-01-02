@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 実験的にパフォーマンス検索結果にcheckinCountsByWherePreviewを追加
 - 全コレクションにproject属性を追加
 - USE_NEW_SEARCH_PERFORMANCE_WITH_AGGREGATION設定を追加
+- 通常のパフォーマンス検索から集計属性を削除
 
 ### Deprecated
 

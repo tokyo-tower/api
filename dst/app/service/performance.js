@@ -18,7 +18,7 @@ const USE_NEW_AGGREGATE_ENTRANCE_GATE = process.env.USE_NEW_AGGREGATE_ENTRANCE_G
 /**
  * 検索する
  */
-function search(searchConditions, useExtension) {
+function search(searchConditions, useExtension, useAggregation) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
         const projection = (useExtension)
             ? {
@@ -53,7 +53,12 @@ function search(searchConditions, useExtension) {
                 ttts_extension: 0
             };
         const performances = yield repos.performance.search(searchConditions, projection);
-        return performances.map(performance2result);
+        if (useAggregation) {
+            return performances.map(performance2result);
+        }
+        else {
+            return performances;
+        }
     });
 }
 exports.search = search;

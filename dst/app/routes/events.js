@@ -76,7 +76,7 @@ eventsRouter.get('', permitScopes_1.default(['transactions']), ...[
         if (countDocuments) {
             totalCount = yield performanceRepo.count(conditions);
         }
-        const performances = yield performance_1.search(conditions, useExtension)({ performance: performanceRepo });
+        const performances = yield performance_1.search(conditions, useExtension, false)({ performance: performanceRepo });
         if (typeof totalCount === 'number') {
             res.set('X-Total-Count', totalCount.toString());
         }

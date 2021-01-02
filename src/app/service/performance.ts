@@ -17,7 +17,8 @@ export type ISearchOperation<T> = (repos: {
  */
 export function search(
     searchConditions: ttts.factory.performance.ISearchConditions,
-    useExtension: boolean
+    useExtension: boolean,
+    useAggregation: boolean
 ): ISearchOperation<ISearchResult> {
     return async (repos: {
         performance: ttts.repository.Performance;
@@ -57,7 +58,11 @@ export function search(
 
         const performances = await repos.performance.search(searchConditions, projection);
 
-        return performances.map(performance2result);
+        if (useAggregation) {
+            return performances.map(performance2result);
+        } else {
+            return performances;
+        }
     };
 }
 

@@ -85,7 +85,7 @@ eventsRouter.get(
                 totalCount = await performanceRepo.count(conditions);
             }
 
-            const performances = await search(conditions, useExtension)({ performance: performanceRepo });
+            const performances = await search(conditions, useExtension, false)({ performance: performanceRepo });
 
             if (typeof totalCount === 'number') {
                 res.set('X-Total-Count', totalCount.toString());
