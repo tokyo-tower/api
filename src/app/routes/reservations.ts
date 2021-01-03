@@ -19,14 +19,6 @@ const project = {
     id: <string>process.env.PROJECT_ID
 };
 
-const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
-    domain: <string>process.env.CINERINO_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.CINERINO_CLIENT_ID,
-    clientSecret: <string>process.env.CINERINO_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
-
 const reservationsRouter = express.Router();
 
 reservationsRouter.use(authentication);
@@ -201,17 +193,17 @@ reservationsRouter.post(
             // 注文トークンの指定があればcinerinoで予約使用
             const token = req.body.instrument?.token;
             if (typeof token === 'string' && token.length > 0) {
-                // const authClient = new cinerinoapi.auth.ClientCredentials({
-                //     domain: '',
-                //     clientId: '',
-                //     clientSecret: '',
-                //     scopes: [],
-                //     state: ''
-                // });
-                // authClient.setCredentials({ access_token: req.accessToken });
+                const authClient = new cinerinoapi.auth.ClientCredentials({
+                    domain: '',
+                    clientId: '',
+                    clientSecret: '',
+                    scopes: [],
+                    state: ''
+                });
+                authClient.setCredentials({ access_token: req.accessToken });
 
                 const reservationService = new cinerinoapi.service.Reservation({
-                    auth: cinerinoAuthClient,
+                    auth: authClient,
                     endpoint: <string>process.env.CINERINO_API_ENDPOINT,
                     project: { id: project.id }
                 });
