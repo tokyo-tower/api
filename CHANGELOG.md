@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 全コレクションにproject属性を追加
 - USE_NEW_SEARCH_PERFORMANCE_WITH_AGGREGATION設定を追加
 - 通常のパフォーマンス検索から集計属性を削除
+- イベントの予約集計時、同時刻隊のツアーに関しての集計を実行しないように調整
 
 ### Deprecated
 

@@ -39,17 +39,17 @@ function onEventChanged(params) {
         };
         yield repos.performance.saveIfNotExists(performance);
         // 集計タスク作成
-        const aggregateTask = {
-            name: ttts.factory.taskName.AggregateEventReservations,
-            project: { typeOf: ttts.factory.chevre.organizationType.Project, id: event.project.id },
-            status: ttts.factory.taskStatus.Ready,
-            runsAt: new Date(),
-            remainingNumberOfTries: 3,
-            numberOfTried: 0,
-            executionResults: [],
-            data: { id: performance.id }
-        };
-        yield repos.task.save(aggregateTask);
+        // const aggregateTask: ttts.factory.task.aggregateEventReservations.IAttributes = {
+        //     name: <any>ttts.factory.taskName.AggregateEventReservations,
+        //     project: { typeOf: ttts.factory.chevre.organizationType.Project, id: event.project.id },
+        //     status: ttts.factory.taskStatus.Ready,
+        //     runsAt: new Date(),
+        //     remainingNumberOfTries: 3,
+        //     numberOfTried: 0,
+        //     executionResults: [],
+        //     data: { id: performance.id }
+        // };
+        // await repos.task.save(aggregateTask);
     });
 }
 exports.onEventChanged = onEventChanged;
