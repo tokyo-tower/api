@@ -28,6 +28,9 @@ performanceRouter.put(
             await performanceRepo.updateOne(
                 { _id: req.params.id },
                 {
+                    ...(Array.isArray(req.body.checkedReservations))
+                        ? { 'ttts_extension.checkedReservations': req.body.checkedReservations }
+                        : undefined,
                     ...(req.body.reservationsAtLastUpdateDate !== undefined)
                         ? { 'ttts_extension.reservationsAtLastUpdateDate': req.body.reservationsAtLastUpdateDate }
                         : undefined,
