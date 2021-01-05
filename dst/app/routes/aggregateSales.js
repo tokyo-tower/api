@@ -34,7 +34,9 @@ aggregateSalesRouter.use(rateLimit_1.default);
 /**
  * ストリーミング検索
  */
-aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), validator_1.default, 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // 集計データにストリーミングcursorを作成する
         const reportRepo = new ttts.repository.Report(mongoose.connection);
@@ -52,6 +54,32 @@ aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), validator
             .cursor();
         // Mongoドキュメントをcsvデータに変換するtransformer
         const transformer = (doc) => {
+            const eventDate = moment(`${doc.performance.startDay} ${doc.performance.startTime}+09:00`, 'YYYYMMDD HHmmZ')
+                .toDate();
+            const orderDate = (moment(doc.orderDate)
+                .isAfter(moment(eventDate)
+                .add(1, 'hour')))
+                ? moment(doc.orderDate)
+                    // tslint:disable-next-line:no-magic-numbers
+                    .add(-9, 'hours')
+                    .tz('Asia/Tokyo')
+                    .format('YYYY/MM/DD HH:mm:ss')
+                : moment(doc.orderDate)
+                    .tz('Asia/Tokyo')
+                    .format('YYYY/MM/DD HH:mm:ss');
+            const attendDate = doc.checkedin === 'TRUE'
+                ? (moment(doc.checkinDate)
+                    .isAfter(moment(eventDate)
+                    .add(1, 'hour')))
+                    ? moment(doc.checkinDate)
+                        // tslint:disable-next-line:no-magic-numbers
+                        .add(-9, 'hours')
+                        .tz('Asia/Tokyo')
+                        .format('YYYY/MM/DD HH:mm:ss')
+                    : moment(doc.checkinDate)
+                        .tz('Asia/Tokyo')
+                        .format('YYYY/MM/DD HH:mm:ss')
+                : '';
             // Return an object with all fields you need in the CSV
             return {
                 購入番号: doc.payment_no,
@@ -70,9 +98,7 @@ aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), validator
                 '購入者（姓）': doc.customer.familyName,
                 購入者メール: doc.customer.email,
                 購入者電話: doc.customer.telephone,
-                購入日時: moment(doc.orderDate)
-                    .tz('Asia/Tokyo')
-                    .format('YYYY/MM/DD HH:mm:ss'),
+                購入日時: orderDate,
                 決済方法: doc.paymentMethod,
                 '---f': '',
                 '---g': '',
@@ -86,11 +112,7 @@ aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), validator
                 予約単位料金: doc.price,
                 ユーザーネーム: doc.customer.username,
                 入場フラグ: doc.checkedin,
-                入場日時: doc.checkedin === 'TRUE'
-                    ? moment(doc.checkinDate)
-                        .tz('Asia/Tokyo')
-                        .format('YYYY/MM/DD HH:mm:ss')
-                    : ''
+                入場日時: attendDate
             };
         };
         // Create a Fast CSV stream which transforms documents to objects

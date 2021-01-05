@@ -168,13 +168,10 @@ export function onActionStatusChanged(
                     actionObject;
 
                 const checkedin = action.actionStatus === ttts.factory.chevre.actionStatusType.CompletedActionStatus;
-                // const checkinDate: string = checkedin
-                //     ? `${String(action.startDate)} / ${moment(action.startDate)
-                //         .tz('Asia/Tokyo', false)
-                //         .format('YYYY/MM/DD HH:mm:ss')}`
-                //     : '';
                 const checkinDate: string = checkedin
-                    ? String(action.startDate)
+                    ? moment(action.startDate)
+                        .tz('Asia/Tokyo')
+                        .format('YYYY/MM/DD HH:mm:ss')
                     : '';
 
                 await Promise.all(reservations.map(async (reservation) => {

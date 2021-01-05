@@ -132,13 +132,10 @@ function onActionStatusChanged(params) {
             if (Array.isArray(actionObject)) {
                 const reservations = actionObject;
                 const checkedin = action.actionStatus === ttts.factory.chevre.actionStatusType.CompletedActionStatus;
-                // const checkinDate: string = checkedin
-                //     ? `${String(action.startDate)} / ${moment(action.startDate)
-                //         .tz('Asia/Tokyo', false)
-                //         .format('YYYY/MM/DD HH:mm:ss')}`
-                //     : '';
                 const checkinDate = checkedin
-                    ? String(action.startDate)
+                    ? moment(action.startDate)
+                        .tz('Asia/Tokyo')
+                        .format('YYYY/MM/DD HH:mm:ss')
                     : '';
                 yield Promise.all(reservations.map((reservation) => __awaiter(this, void 0, void 0, function* () {
                     if (reservation.typeOf === ttts.factory.chevre.reservationType.EventReservation
