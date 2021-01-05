@@ -14,6 +14,8 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
+const DISABLE_UPDATE_ORDER_REPORT_TASK = process.env.DISABLE_UPDATE_ORDER_REPORT_TASK === '1';
+
 const project = {
     typeOf: <cinerinoapi.factory.chevre.organizationType.Project>cinerinoapi.factory.chevre.organizationType.Project,
     id: <string>process.env.PROJECT_ID
@@ -237,18 +239,20 @@ reservationsRouter.post(
                 checkin: checkin
             });
 
-            // レポート更新タスク作成
-            const taskAttributes: ttts.factory.task.updateOrderReportByReservation.IAttributes = {
-                name: <any>ttts.factory.taskName.UpdateOrderReportByReservation,
-                project: req.project,
-                status: ttts.factory.taskStatus.Ready,
-                runsAt: new Date(),
-                remainingNumberOfTries: 3,
-                numberOfTried: 0,
-                executionResults: [],
-                data: { reservation: reservation }
-            };
-            await taskRepo.save(<any>taskAttributes);
+            if (!DISABLE_UPDATE_ORDER_REPORT_TASK) {
+                // レポート更新タスク作成
+                const taskAttributes: ttts.factory.task.updateOrderReportByReservation.IAttributes = {
+                    name: <any>ttts.factory.taskName.UpdateOrderReportByReservation,
+                    project: req.project,
+                    status: ttts.factory.taskStatus.Ready,
+                    runsAt: new Date(),
+                    remainingNumberOfTries: 3,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: { reservation: reservation }
+                };
+                await taskRepo.save(<any>taskAttributes);
+            }
 
             res.status(NO_CONTENT)
                 .end();
@@ -318,18 +322,20 @@ reservationsRouter.delete(
                 });
             }
 
-            // レポート更新タスク作成
-            const taskAttributes: ttts.factory.task.updateOrderReportByReservation.IAttributes = {
-                name: <any>ttts.factory.taskName.UpdateOrderReportByReservation,
-                project: req.project,
-                status: ttts.factory.taskStatus.Ready,
-                runsAt: new Date(),
-                remainingNumberOfTries: 3,
-                numberOfTried: 0,
-                executionResults: [],
-                data: { reservation: reservation }
-            };
-            await taskRepo.save(<any>taskAttributes);
+            if (!DISABLE_UPDATE_ORDER_REPORT_TASK) {
+                // レポート更新タスク作成
+                const taskAttributes: ttts.factory.task.updateOrderReportByReservation.IAttributes = {
+                    name: <any>ttts.factory.taskName.UpdateOrderReportByReservation,
+                    project: req.project,
+                    status: ttts.factory.taskStatus.Ready,
+                    runsAt: new Date(),
+                    remainingNumberOfTries: 3,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: { reservation: reservation }
+                };
+                await taskRepo.save(<any>taskAttributes);
+            }
 
             res.status(NO_CONTENT)
                 .end();

@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - NEW_PREVIEW_URL設定を追加
 - パフォーマンスの拡張属性更新対象にcheckedReservationsを追加
 - DISABLE_ASYNCHRONOUS_CHECKED_RESERVATION設定を追加
+- DISABLE_UPDATE_ORDER_REPORT_TASK設定を追加
 
 ### Deprecated
 
