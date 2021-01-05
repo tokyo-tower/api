@@ -168,6 +168,11 @@ export function onActionStatusChanged(
                     actionObject;
 
                 const checkedin = action.actionStatus === ttts.factory.chevre.actionStatusType.CompletedActionStatus;
+                const checkinDate: string = checkedin
+                    ? `${String(action.startDate)} / ${moment(action.startDate)
+                        .tz('Asia/Tokyo', false)
+                        .format('YYYY/MM/DD HH:mm:ss')}`
+                    : '';
 
                 await Promise.all(reservations.map(async (reservation) => {
                     if (reservation.typeOf === ttts.factory.chevre.reservationType.EventReservation
@@ -177,11 +182,7 @@ export function onActionStatusChanged(
                         await repos.report.updateAttendStatus({
                             reservation: { id: reservation.id },
                             checkedin: checkedin ? 'TRUE' : 'FALSE',
-                            checkinDate: checkedin
-                                ? moment(action.startDate)
-                                    .tz('Asia/Tokyo')
-                                    .format('YYYY/MM/DD HH:mm:ss')
-                                : ''
+                            checkinDate: checkinDate
                         });
                     }
                 }));
