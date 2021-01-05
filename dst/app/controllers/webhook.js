@@ -138,7 +138,7 @@ function onActionStatusChanged(params) {
                 //         .format('YYYY/MM/DD HH:mm:ss')}`
                 //     : '';
                 const checkinDate = checkedin
-                    ? `${String(action.id)} ${typeof action.startDate} ${String(action.startDate)} ${String(action.endDate)}`
+                    ? String(action.startDate)
                     : '';
                 yield Promise.all(reservations.map((reservation) => __awaiter(this, void 0, void 0, function* () {
                     if (reservation.typeOf === ttts.factory.chevre.reservationType.EventReservation

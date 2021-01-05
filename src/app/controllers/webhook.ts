@@ -174,7 +174,7 @@ export function onActionStatusChanged(
                 //         .format('YYYY/MM/DD HH:mm:ss')}`
                 //     : '';
                 const checkinDate: string = checkedin
-                    ? `${String(action.id)} ${typeof action.startDate} ${String(action.startDate)} ${String(action.endDate)}`
+                    ? String(action.startDate)
                     : '';
 
                 await Promise.all(reservations.map(async (reservation) => {
