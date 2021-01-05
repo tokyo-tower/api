@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 予約使用アクション通知受信エンドポイントを追加
+
 ### Changed
 
 - 売上レポートサービスを最適化

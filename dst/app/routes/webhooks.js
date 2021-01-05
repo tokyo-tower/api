@@ -119,4 +119,23 @@ webhooksRouter.post('/onEventChanged', (req, res, next) => __awaiter(void 0, voi
         next(error);
     }
 }));
+/**
+ * 予約使用アクション変更イベント
+ */
+webhooksRouter.post('/onActionStatusChanged', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const action 
+        // tslint:disable-next-line:max-line-length
+        = req.body.data;
+        const reportRepo = new ttts.repository.Report(mongoose.connection);
+        if (typeof (action === null || action === void 0 ? void 0 : action.typeOf) === 'string') {
+            yield webhook_1.onActionStatusChanged(action)({ report: reportRepo });
+        }
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 exports.default = webhooksRouter;

@@ -6,7 +6,7 @@ import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
 import * as mongoose from 'mongoose';
 
-import { onEventChanged, onOrderReturned, onReservationStatusChanged } from '../controllers/webhook';
+import { onActionStatusChanged, onEventChanged, onOrderReturned, onReservationStatusChanged } from '../controllers/webhook';
 
 const webhooksRouter = express.Router();
 
@@ -134,6 +134,32 @@ webhooksRouter.post(
                     performance: performanceRepo,
                     task: taskRepo
                 });
+            }
+
+            res.status(NO_CONTENT)
+                .end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 予約使用アクション変更イベント
+ */
+webhooksRouter.post(
+    '/onActionStatusChanged',
+    async (req, res, next) => {
+        try {
+            const action
+                // tslint:disable-next-line:max-line-length
+                = <ttts.factory.chevre.action.IAction<ttts.factory.chevre.action.IAttributes<ttts.factory.chevre.actionType, any, any>> | undefined>
+                req.body.data;
+
+            const reportRepo = new ttts.repository.Report(mongoose.connection);
+
+            if (typeof action?.typeOf === 'string') {
+                await onActionStatusChanged(action)({ report: reportRepo });
             }
 
             res.status(NO_CONTENT)

@@ -148,3 +148,44 @@ export function onReservationStatusChanged(
         }
     };
 }
+
+/**
+ * 予約使用アクション変更イベント処理
+ */
+export function onActionStatusChanged(
+    params: ttts.factory.chevre.action.IAction<ttts.factory.chevre.action.IAttributes<ttts.factory.chevre.actionType, any, any>>
+) {
+    return async (repos: {
+        report: ttts.repository.Report;
+    }) => {
+        const action = params;
+
+        if (action.typeOf === ttts.factory.chevre.actionType.UseAction) {
+            const actionObject = action.object;
+            if (Array.isArray(actionObject)) {
+                const reservations =
+                    <ttts.factory.chevre.reservation.IReservation<ttts.factory.chevre.reservationType.EventReservation>[]>
+                    actionObject;
+
+                const checkedin = action.actionStatus === ttts.factory.chevre.actionStatusType.CompletedActionStatus;
+
+                await Promise.all(reservations.map(async (reservation) => {
+                    if (reservation.typeOf === ttts.factory.chevre.reservationType.EventReservation
+                        && typeof reservation.id === 'string'
+                        && reservation.id.length > 0) {
+                        // レポートに反映
+                        await repos.report.updateAttendStatus({
+                            reservation: { id: reservation.id },
+                            checkedin: checkedin ? 'TRUE' : 'FALSE',
+                            checkinDate: checkedin
+                                ? moment(action.startDate)
+                                    .tz('Asia/Tokyo')
+                                    .format('YYYY/MM/DD HH:mm:ss')
+                                : ''
+                        });
+                    }
+                }));
+            }
+        }
+    };
+}

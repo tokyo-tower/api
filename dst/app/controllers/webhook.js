@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onReservationStatusChanged = exports.onOrderReturned = exports.onEventChanged = void 0;
+exports.onActionStatusChanged = exports.onReservationStatusChanged = exports.onOrderReturned = exports.onEventChanged = void 0;
 const cinerinoapi = require("@cinerino/sdk");
 const ttts = require("@tokyotower/domain");
 const moment = require("moment-timezone");
@@ -121,3 +121,35 @@ function onReservationStatusChanged(params) {
     });
 }
 exports.onReservationStatusChanged = onReservationStatusChanged;
+/**
+ * 予約使用アクション変更イベント処理
+ */
+function onActionStatusChanged(params) {
+    return (repos) => __awaiter(this, void 0, void 0, function* () {
+        const action = params;
+        if (action.typeOf === ttts.factory.chevre.actionType.UseAction) {
+            const actionObject = action.object;
+            if (Array.isArray(actionObject)) {
+                const reservations = actionObject;
+                const checkedin = action.actionStatus === ttts.factory.chevre.actionStatusType.CompletedActionStatus;
+                yield Promise.all(reservations.map((reservation) => __awaiter(this, void 0, void 0, function* () {
+                    if (reservation.typeOf === ttts.factory.chevre.reservationType.EventReservation
+                        && typeof reservation.id === 'string'
+                        && reservation.id.length > 0) {
+                        // レポートに反映
+                        yield repos.report.updateAttendStatus({
+                            reservation: { id: reservation.id },
+                            checkedin: checkedin ? 'TRUE' : 'FALSE',
+                            checkinDate: checkedin
+                                ? moment(action.startDate)
+                                    .tz('Asia/Tokyo')
+                                    .format('YYYY/MM/DD HH:mm:ss')
+                                : ''
+                        });
+                    }
+                })));
+            }
+        }
+    });
+}
+exports.onActionStatusChanged = onActionStatusChanged;
