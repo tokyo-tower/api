@@ -77,20 +77,6 @@ performanceRouter.put(
                 }
             );
 
-            // 集計タスク作成
-            const taskRepo = new ttts.repository.Task(mongoose.connection);
-            const aggregateTask: ttts.factory.task.aggregateEventReservations.IAttributes = {
-                name: <any>ttts.factory.taskName.AggregateEventReservations,
-                project: req.project,
-                status: ttts.factory.taskStatus.Ready,
-                runsAt: new Date(),
-                remainingNumberOfTries: 3,
-                numberOfTried: 0,
-                executionResults: [],
-                data: { id: req.params.id }
-            };
-            await taskRepo.save(<any>aggregateTask);
-
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {

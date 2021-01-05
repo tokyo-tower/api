@@ -202,18 +202,6 @@ reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.c
             data: { reservation: reservation }
         };
         yield taskRepo.save(taskAttributes);
-        // 集計タスク作成
-        const aggregateTask = {
-            name: ttts.factory.taskName.AggregateEventReservations,
-            project: req.project,
-            status: ttts.factory.taskStatus.Ready,
-            runsAt: new Date(),
-            remainingNumberOfTries: 3,
-            numberOfTried: 0,
-            executionResults: [],
-            data: { id: reservation.reservationFor.id }
-        };
-        yield taskRepo.save(aggregateTask);
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
@@ -286,18 +274,6 @@ reservationsRouter.delete('/:id/checkins/:when', permitScopes_1.default(['reserv
             data: { reservation: reservation }
         };
         yield taskRepo.save(taskAttributes);
-        // 集計タスク作成
-        const aggregateTask = {
-            name: ttts.factory.taskName.AggregateEventReservations,
-            project: req.project,
-            status: ttts.factory.taskStatus.Ready,
-            runsAt: new Date(),
-            remainingNumberOfTries: 3,
-            numberOfTried: 0,
-            executionResults: [],
-            data: { id: reservation.reservationFor.id }
-        };
-        yield taskRepo.save(aggregateTask);
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
