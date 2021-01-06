@@ -1,7 +1,6 @@
 /**
  * MongoDBコネクション確立
  */
-import * as ttts from '@tokyotower/domain';
 import * as createDebug from 'debug';
 import * as mongoose from 'mongoose';
 
@@ -66,17 +65,11 @@ export async function connectMongo(params: {
                 await connection.close();
                 await connection.openUri(MONGOLAB_URI, connectOptions);
                 debug('MongoDB reconnected!');
-                await ttts.service.notification.report2developers(
-                    `[${process.env.PROJECT_ID}] api:connectMongo`,
-                    'MongoDB connection reestablished!'
-                )();
+                // tslint:disable-next-line:no-console
+                console.error('MongoDB connection reestablished!');
             } catch (error) {
                 // tslint:disable-next-line:no-console
-                console.error('mongoose.connect:', error);
-                await ttts.service.notification.report2developers(
-                    `[${process.env.PROJECT_ID}] api:connectMongo`,
-                    `MongoDB connection error: ${error.stack}`
-                )();
+                console.error('MongoDB connection error:', error);
             }
         },
         PING_INTERVAL

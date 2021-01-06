@@ -13,7 +13,6 @@ exports.connectMongo = void 0;
 /**
  * MongoDBコネクション確立
  */
-const ttts = require("@tokyotower/domain");
 const createDebug = require("debug");
 const mongoose = require("mongoose");
 const debug = createDebug('ttts-api:connectMongo');
@@ -71,12 +70,12 @@ function connectMongo(params) {
                 yield connection.close();
                 yield connection.openUri(MONGOLAB_URI, connectOptions);
                 debug('MongoDB reconnected!');
-                yield ttts.service.notification.report2developers(`[${process.env.PROJECT_ID}] api:connectMongo`, 'MongoDB connection reestablished!')();
+                // tslint:disable-next-line:no-console
+                console.error('MongoDB connection reestablished!');
             }
             catch (error) {
                 // tslint:disable-next-line:no-console
-                console.error('mongoose.connect:', error);
-                yield ttts.service.notification.report2developers(`[${process.env.PROJECT_ID}] api:connectMongo`, `MongoDB connection error: ${error.stack}`)();
+                console.error('MongoDB connection error:', error);
             }
         }), PING_INTERVAL);
         return connection;
