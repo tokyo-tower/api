@@ -176,6 +176,7 @@ reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.c
                 project: { id: project.id }
             });
             const useResult = yield reservationService.useByToken(Object.assign({ object: { id: req.params.id }, instrument: { token }, location: { identifier: req.body.where } }, {
+                agent: { identifier: [{ name: 'when', value: String(req.body.when) }] },
                 includesActionId: '1'
             }));
             if (useResult !== undefined) {

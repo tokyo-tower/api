@@ -212,6 +212,7 @@ reservationsRouter.post(
                     instrument: { token },
                     location: { identifier: req.body.where },
                     ...{
+                        agent: { identifier: [{ name: 'when', value: String(req.body.when) }] },
                         includesActionId: '1'
                     }
                 });
