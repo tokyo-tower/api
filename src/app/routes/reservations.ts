@@ -14,8 +14,6 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-const DISABLE_UPDATE_ORDER_REPORT_TASK = process.env.DISABLE_UPDATE_ORDER_REPORT_TASK === '1';
-
 const project = {
     typeOf: <cinerinoapi.factory.chevre.organizationType.Project>cinerinoapi.factory.chevre.organizationType.Project,
     id: <string>process.env.PROJECT_ID
@@ -223,7 +221,6 @@ reservationsRouter.post(
             }
 
             const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
-            const taskRepo = new ttts.repository.Task(mongoose.connection);
 
             const checkin: ttts.factory.reservation.event.ICheckin = {
                 when: moment(req.body.when)
@@ -234,25 +231,10 @@ reservationsRouter.post(
                 // ChevreアクションIDを連携
                 ...(typeof chevreUseActionId === 'string') ? { id: chevreUseActionId } : undefined
             };
-            const reservation = await reservationRepo.checkIn({
+            await reservationRepo.checkIn({
                 id: req.params.id,
                 checkin: checkin
             });
-
-            if (!DISABLE_UPDATE_ORDER_REPORT_TASK) {
-                // レポート更新タスク作成
-                const taskAttributes: ttts.factory.task.updateOrderReportByReservation.IAttributes = {
-                    name: <any>ttts.factory.taskName.UpdateOrderReportByReservation,
-                    project: req.project,
-                    status: ttts.factory.taskStatus.Ready,
-                    runsAt: new Date(),
-                    remainingNumberOfTries: 3,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: { reservation: reservation }
-                };
-                await taskRepo.save(<any>taskAttributes);
-            }
 
             res.status(NO_CONTENT)
                 .end();
@@ -273,7 +255,6 @@ reservationsRouter.delete(
     async (req, res, next) => {
         try {
             const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
-            const taskRepo = new ttts.repository.Task(mongoose.connection);
 
             let reservation = await reservationRepo.findById({ id: req.params.id });
             const deletingCheckin = reservation.checkins?.find((c) => {
@@ -320,21 +301,6 @@ reservationsRouter.delete(
                     id: req.params.id,
                     checkin: checkin
                 });
-            }
-
-            if (!DISABLE_UPDATE_ORDER_REPORT_TASK) {
-                // レポート更新タスク作成
-                const taskAttributes: ttts.factory.task.updateOrderReportByReservation.IAttributes = {
-                    name: <any>ttts.factory.taskName.UpdateOrderReportByReservation,
-                    project: req.project,
-                    status: ttts.factory.taskStatus.Ready,
-                    runsAt: new Date(),
-                    remainingNumberOfTries: 3,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: { reservation: reservation }
-                };
-                await taskRepo.save(<any>taskAttributes);
             }
 
             res.status(NO_CONTENT)
