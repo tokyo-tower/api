@@ -212,7 +212,17 @@ reservationsRouter.post(
                     instrument: { token },
                     location: { identifier: req.body.where },
                     ...{
-                        agent: { identifier: [{ name: 'when', value: String(req.body.when) }] },
+                        agent: {
+                            identifier: [
+                                { name: 'how', value: String(req.body.how) },
+                                { name: 'when', value: String(req.body.when) },
+                                { name: 'where', value: String(req.body.where) },
+                                { name: 'why', value: String(req.body.why) }
+                            ]
+                        },
+                        // how: "motionpicture"
+                        // when: "2021-01-06T23:51:18.293Z"
+                        // where: "Staff"
                         includesActionId: '1'
                     }
                 });

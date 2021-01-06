@@ -176,7 +176,17 @@ reservationsRouter.post('/:id/checkins', permitScopes_1.default(['reservations.c
                 project: { id: project.id }
             });
             const useResult = yield reservationService.useByToken(Object.assign({ object: { id: req.params.id }, instrument: { token }, location: { identifier: req.body.where } }, {
-                agent: { identifier: [{ name: 'when', value: String(req.body.when) }] },
+                agent: {
+                    identifier: [
+                        { name: 'how', value: String(req.body.how) },
+                        { name: 'when', value: String(req.body.when) },
+                        { name: 'where', value: String(req.body.where) },
+                        { name: 'why', value: String(req.body.why) }
+                    ]
+                },
+                // how: "motionpicture"
+                // when: "2021-01-06T23:51:18.293Z"
+                // where: "Staff"
                 includesActionId: '1'
             }));
             if (useResult !== undefined) {
