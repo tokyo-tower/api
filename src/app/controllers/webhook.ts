@@ -2,6 +2,23 @@ import * as cinerinoapi from '@cinerino/sdk';
 import * as ttts from '@tokyotower/domain';
 import * as moment from 'moment-timezone';
 
+interface ICheckin {
+    when: Date; // いつ
+    where: string; // どこで
+    why: string; // 何のために
+    how: string; // どうやって
+    /**
+     * アクションID
+     */
+    id?: string;
+    instrument?: {
+        /**
+         * 入場に使用するトークン
+         */
+        token?: string;
+    };
+}
+
 /**
  * イベント変更検知時の処理
  */
@@ -175,6 +192,7 @@ export function onActionStatusChanged(
 ) {
     return async (repos: {
         report: ttts.repository.Report;
+        reservation: ttts.repository.Reservation;
     }) => {
         const action = params;
 
@@ -192,6 +210,28 @@ export function onActionStatusChanged(
                         .format('YYYY/MM/DD HH:mm:ss')
                     : '';
 
+                const agentIdentifier = action.agent.identifier;
+
+                let when: string = '';
+                let where: string | undefined;
+                let why: string | undefined;
+                let how: string | undefined;
+                if (Array.isArray(agentIdentifier)) {
+                    when = <string>agentIdentifier.find((p) => p.name === 'when')?.value;
+                    where = agentIdentifier.find((p) => p.name === 'where')?.value;
+                    why = agentIdentifier.find((p) => p.name === 'why')?.value;
+                    how = agentIdentifier.find((p) => p.name === 'how')?.value;
+                }
+
+                const checkin: ICheckin = {
+                    when: moment(when)
+                        .toDate(),
+                    where: (typeof where === 'string') ? where : '',
+                    why: (typeof why === 'string') ? why : '',
+                    how: (typeof how === 'string') ? how : '',
+                    id: action.id
+                };
+
                 await Promise.all(reservations.map(async (reservation) => {
                     if (reservation.typeOf === ttts.factory.chevre.reservationType.EventReservation
                         && typeof reservation.id === 'string'
@@ -202,6 +242,30 @@ export function onActionStatusChanged(
                             checkedin: checkedin ? 'TRUE' : 'FALSE',
                             checkinDate: checkinDate
                         });
+
+                        // 入場履歴を反映
+                        if (action.actionStatus === ttts.factory.chevre.actionStatusType.CompletedActionStatus) {
+                            await repos.reservation.reservationModel.findByIdAndUpdate(
+                                reservation.id,
+                                {
+                                    $push: { checkins: checkin },
+                                    $set: {
+                                        checkedIn: true,
+                                        attended: true,
+                                        modifiedTime: new Date()
+                                    }
+                                },
+                                { new: true }
+                            )
+                                .exec();
+                        } else if (action.actionStatus === ttts.factory.chevre.actionStatusType.CanceledActionStatus) {
+                            await repos.reservation.reservationModel.findByIdAndUpdate(
+                                reservation.id,
+                                { $pull: { checkins: { when: checkin.when } } },
+                                { new: true }
+                            )
+                                .exec();
+                        }
                     }
                 }));
             }

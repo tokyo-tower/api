@@ -157,9 +157,10 @@ webhooksRouter.post(
                 req.body.data;
 
             const reportRepo = new ttts.repository.Report(mongoose.connection);
+            const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
 
             if (typeof action?.typeOf === 'string') {
-                await onActionStatusChanged(action)({ report: reportRepo });
+                await onActionStatusChanged(action)({ report: reportRepo, reservation: reservationRepo });
             }
 
             res.status(NO_CONTENT)

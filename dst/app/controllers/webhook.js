@@ -135,6 +135,7 @@ exports.onReservationStatusChanged = onReservationStatusChanged;
  */
 function onActionStatusChanged(params) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
+        var _a, _b, _c, _d;
         const action = params;
         if (action.typeOf === ttts.factory.chevre.actionType.UseAction) {
             const actionObject = action.object;
@@ -146,6 +147,25 @@ function onActionStatusChanged(params) {
                         .tz('Asia/Tokyo')
                         .format('YYYY/MM/DD HH:mm:ss')
                     : '';
+                const agentIdentifier = action.agent.identifier;
+                let when = '';
+                let where;
+                let why;
+                let how;
+                if (Array.isArray(agentIdentifier)) {
+                    when = (_a = agentIdentifier.find((p) => p.name === 'when')) === null || _a === void 0 ? void 0 : _a.value;
+                    where = (_b = agentIdentifier.find((p) => p.name === 'where')) === null || _b === void 0 ? void 0 : _b.value;
+                    why = (_c = agentIdentifier.find((p) => p.name === 'why')) === null || _c === void 0 ? void 0 : _c.value;
+                    how = (_d = agentIdentifier.find((p) => p.name === 'how')) === null || _d === void 0 ? void 0 : _d.value;
+                }
+                const checkin = {
+                    when: moment(when)
+                        .toDate(),
+                    where: (typeof where === 'string') ? where : '',
+                    why: (typeof why === 'string') ? why : '',
+                    how: (typeof how === 'string') ? how : '',
+                    id: action.id
+                };
                 yield Promise.all(reservations.map((reservation) => __awaiter(this, void 0, void 0, function* () {
                     if (reservation.typeOf === ttts.factory.chevre.reservationType.EventReservation
                         && typeof reservation.id === 'string'
@@ -156,6 +176,22 @@ function onActionStatusChanged(params) {
                             checkedin: checkedin ? 'TRUE' : 'FALSE',
                             checkinDate: checkinDate
                         });
+                        // 入場履歴を反映
+                        if (action.actionStatus === ttts.factory.chevre.actionStatusType.CompletedActionStatus) {
+                            yield repos.reservation.reservationModel.findByIdAndUpdate(reservation.id, {
+                                $push: { checkins: checkin },
+                                $set: {
+                                    checkedIn: true,
+                                    attended: true,
+                                    modifiedTime: new Date()
+                                }
+                            }, { new: true })
+                                .exec();
+                        }
+                        else if (action.actionStatus === ttts.factory.chevre.actionStatusType.CanceledActionStatus) {
+                            yield repos.reservation.reservationModel.findByIdAndUpdate(reservation.id, { $pull: { checkins: { when: checkin.when } } }, { new: true })
+                                .exec();
+                        }
                     }
                 })));
             }

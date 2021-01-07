@@ -128,8 +128,9 @@ webhooksRouter.post('/onActionStatusChanged', (req, res, next) => __awaiter(void
         // tslint:disable-next-line:max-line-length
         = req.body.data;
         const reportRepo = new ttts.repository.Report(mongoose.connection);
+        const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
         if (typeof (action === null || action === void 0 ? void 0 : action.typeOf) === 'string') {
-            yield webhook_1.onActionStatusChanged(action)({ report: reportRepo });
+            yield webhook_1.onActionStatusChanged(action)({ report: reportRepo, reservation: reservationRepo });
         }
         res.status(http_status_1.NO_CONTENT)
             .end();
