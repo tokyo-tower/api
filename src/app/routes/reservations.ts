@@ -214,10 +214,17 @@ reservationsRouter.post(
                     ...{
                         agent: {
                             identifier: [
-                                { name: 'how', value: String(req.body.how) },
-                                { name: 'when', value: String(req.body.when) },
-                                { name: 'where', value: String(req.body.where) },
-                                { name: 'why', value: String(req.body.why) }
+                                ...(typeof req.body.how === 'string' && req.body.how.length > 0)
+                                    ? [{ name: 'how', value: String(req.body.how) }]
+                                    : [],
+                                ...(typeof req.body.when === 'string' && req.body.when.length > 0)
+                                    ? [{ name: 'when', value: String(req.body.when) }] : [],
+                                ...(typeof req.body.where === 'string' && req.body.where.length > 0)
+                                    ? [{ name: 'where', value: String(req.body.where) }]
+                                    : [],
+                                ...(typeof req.body.why === 'string' && req.body.why.length > 0)
+                                    ? [{ name: 'why', value: String(req.body.why) }]
+                                    : []
                             ]
                         },
                         // how: "motionpicture"
