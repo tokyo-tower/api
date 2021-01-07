@@ -99,17 +99,26 @@ function onReservationStatusChanged(params) {
         switch (reservation.reservationStatus) {
             case cinerinoapi.factory.chevre.reservationStatusType.ReservationCancelled:
                 // 東京タワーDB側の予約もステータス変更
-                yield repos.reservation.cancel({ id: reservation.id });
+                // await repos.reservation.cancel({ id: reservation.id });
+                yield repos.reservation.reservationModel.findOneAndUpdate({ _id: reservation.id }, {
+                    reservationStatus: cinerinoapi.factory.chevre.reservationStatusType.ReservationCancelled,
+                    modifiedTime: new Date()
+                })
+                    .exec();
                 break;
             case cinerinoapi.factory.chevre.reservationStatusType.ReservationConfirmed:
                 // 予約データを作成する
-                const tttsResevation = Object.assign(Object.assign({}, reservation), { reservationFor: Object.assign(Object.assign({}, reservation.reservationFor), { doorTime: (reservation.reservationFor.doorTime !== undefined)
+                const tttsResevation = Object.assign(Object.assign(Object.assign({}, reservation), { reservationFor: Object.assign(Object.assign({}, reservation.reservationFor), { doorTime: (reservation.reservationFor.doorTime !== undefined)
                             ? moment(reservation.reservationFor.doorTime)
                                 .toDate()
                             : undefined, endDate: moment(reservation.reservationFor.endDate)
                             .toDate(), startDate: moment(reservation.reservationFor.startDate)
-                            .toDate() }), checkins: [] });
-                yield repos.reservation.saveEventReservation(tttsResevation);
+                            .toDate() }) }), {
+                    checkins: []
+                });
+                // await repos.reservation.saveEventReservation(tttsResevation);
+                yield repos.reservation.reservationModel.findByIdAndUpdate(tttsResevation.id, { $setOnInsert: tttsResevation }, { upsert: true })
+                    .exec();
                 break;
             case cinerinoapi.factory.chevre.reservationStatusType.ReservationHold:
                 // 車椅子予約であれば、レート制限

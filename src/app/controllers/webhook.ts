@@ -111,13 +111,23 @@ export function onReservationStatusChanged(
         switch (reservation.reservationStatus) {
             case cinerinoapi.factory.chevre.reservationStatusType.ReservationCancelled:
                 // 東京タワーDB側の予約もステータス変更
-                await repos.reservation.cancel({ id: reservation.id });
+                // await repos.reservation.cancel({ id: reservation.id });
+                await repos.reservation.reservationModel.findOneAndUpdate(
+                    { _id: reservation.id },
+                    {
+                        reservationStatus: cinerinoapi.factory.chevre.reservationStatusType.ReservationCancelled,
+                        modifiedTime: new Date()
+                    }
+                )
+                    .exec();
 
                 break;
 
             case cinerinoapi.factory.chevre.reservationStatusType.ReservationConfirmed:
                 // 予約データを作成する
-                const tttsResevation: ttts.factory.reservation.event.IReservation = {
+                const tttsResevation:
+                    cinerinoapi.factory.chevre.reservation.IReservation<cinerinoapi.factory.chevre.reservationType.EventReservation>
+                    = {
                     ...reservation,
                     reservationFor: {
                         ...reservation.reservationFor,
@@ -130,9 +140,17 @@ export function onReservationStatusChanged(
                         startDate: moment(reservation.reservationFor.startDate)
                             .toDate()
                     },
-                    checkins: []
+                    ...{
+                        checkins: []
+                    }
                 };
-                await repos.reservation.saveEventReservation(tttsResevation);
+                // await repos.reservation.saveEventReservation(tttsResevation);
+                await repos.reservation.reservationModel.findByIdAndUpdate(
+                    tttsResevation.id,
+                    { $setOnInsert: tttsResevation },
+                    { upsert: true }
+                )
+                    .exec();
 
                 break;
 
