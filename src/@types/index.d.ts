@@ -2,7 +2,6 @@
  * アプリケーション固有の型
  */
 import * as cinerinoapi from '@cinerino/sdk';
-import * as ttts from '@tokyotower/domain';
 
 declare global {
     namespace Express {
@@ -22,7 +21,7 @@ declare global {
 
         // tslint:disable-next-line:interface-name
         export interface Request {
-            project: ttts.factory.project.IProject;
+            project: cinerinoapi.factory.project.IProject;
             agent: cinerinoapi.factory.person.IPerson;
             user: IUser;
             accessToken: string;

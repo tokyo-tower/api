@@ -17,24 +17,6 @@ performanceRouter.use(authentication);
 performanceRouter.use(rateLimit);
 
 /**
- * IDでパフォーマンス検索
- */
-// performanceRouter.get(
-//     '/:id',
-//     permitScopes(['transactions']),
-//     async (req, res, next) => {
-//         try {
-//             const repo = new ttts.repository.Performance(mongoose.connection);
-//             const performance = await repo.findById(req.params.id);
-
-//             res.json(performance);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
-
-/**
  * 拡張属性更新
  */
 performanceRouter.put(
@@ -46,6 +28,9 @@ performanceRouter.put(
             await performanceRepo.updateOne(
                 { _id: req.params.id },
                 {
+                    ...(Array.isArray(req.body.checkedReservations))
+                        ? { 'ttts_extension.checkedReservations': req.body.checkedReservations }
+                        : undefined,
                     ...(req.body.reservationsAtLastUpdateDate !== undefined)
                         ? { 'ttts_extension.reservationsAtLastUpdateDate': req.body.reservationsAtLastUpdateDate }
                         : undefined,
@@ -91,20 +76,6 @@ performanceRouter.put(
                         : undefined
                 }
             );
-
-            // 集計タスク作成
-            const taskRepo = new ttts.repository.Task(mongoose.connection);
-            const aggregateTask: ttts.factory.task.aggregateEventReservations.IAttributes = {
-                name: <any>ttts.factory.taskName.AggregateEventReservations,
-                project: req.project,
-                status: ttts.factory.taskStatus.Ready,
-                runsAt: new Date(),
-                remainingNumberOfTries: 3,
-                numberOfTried: 0,
-                executionResults: [],
-                data: { id: req.params.id }
-            };
-            await taskRepo.save(<any>aggregateTask);
 
             res.status(NO_CONTENT)
                 .end();

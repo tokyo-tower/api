@@ -15,71 +15,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerinoapi = require("@cinerino/sdk");
 const ttts = require("@tokyotower/domain");
 const express_1 = require("express");
-const moment = require("moment-timezone");
-const mongoose = require("mongoose");
-const performance_1 = require("../service/performance");
+const NEW_PREVIEW_URL = process.env.NEW_PREVIEW_URL;
 const project = {
     typeOf: cinerinoapi.factory.chevre.organizationType.Project,
     id: process.env.PROJECT_ID
 };
 const previewRouter = express_1.Router();
-const cinerinoAuthClient = new cinerinoapi.auth.ClientCredentials({
-    domain: process.env.CINERINO_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.CINERINO_CLIENT_ID,
-    clientSecret: process.env.CINERINO_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
 // 集計データーつきのパフォーマンス検索
 previewRouter.get('/performancesWithAggregation', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const conditions = {
-            // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100,
-            page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1,
-            sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: 1 },
-            startFrom: (typeof req.query.startFrom === 'string')
-                ? moment(req.query.startFrom)
-                    .toDate()
-                : undefined,
-            startThrough: (typeof req.query.startThrough === 'string')
-                ? moment(req.query.startThrough)
-                    .toDate()
-                : undefined
-        };
-        const performanceRepo = new ttts.repository.Performance(mongoose.connection);
-        const searchPerformanceResult = yield performance_1.search(conditions, false)({ performance: performanceRepo });
-        res.json(searchPerformanceResult);
+    if (typeof NEW_PREVIEW_URL === 'string' && NEW_PREVIEW_URL.length > 0) {
+        res.redirect(`${NEW_PREVIEW_URL}/projects/${project.id}${req.originalUrl.replace('/preview', '')}`);
+        return;
     }
-    catch (error) {
-        next(new ttts.factory.errors.ServiceUnavailable(error.message));
-    }
+    next(new ttts.factory.errors.ServiceUnavailable('NEW_PREVIEW_URL undefined'));
 }));
 // 入場場所検索
-previewRouter.get('/places/checkinGate', (__, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        // chevreで取得
-        const placeService = new cinerinoapi.service.Place({
-            auth: cinerinoAuthClient,
-            endpoint: process.env.CINERINO_API_ENDPOINT,
-            project: { id: project.id }
-        });
-        const searchMovieTheatersResult = yield placeService.searchMovieTheaters({});
-        const movieTheater = searchMovieTheatersResult.data.shift();
-        if (movieTheater === undefined) {
-            throw new ttts.factory.errors.NotFound('MovieTheater');
-        }
-        let entranceGates = movieTheater.hasEntranceGate;
-        if (!Array.isArray(entranceGates)) {
-            entranceGates = [];
-        }
-        res.json(entranceGates.map((g) => {
-            var _a;
-            return Object.assign(Object.assign({}, g), { name: (typeof g.name === 'string') ? g.name : String((_a = g.name) === null || _a === void 0 ? void 0 : _a.ja) });
-        }));
+previewRouter.get('/places/checkinGate', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    if (typeof NEW_PREVIEW_URL === 'string' && NEW_PREVIEW_URL.length > 0) {
+        res.redirect(`${NEW_PREVIEW_URL}/projects/${project.id}${req.originalUrl.replace('/preview', '')}`);
+        return;
     }
-    catch (error) {
-        next(new ttts.factory.errors.ServiceUnavailable(error.message));
-    }
+    next(new ttts.factory.errors.ServiceUnavailable('NEW_PREVIEW_URL undefined'));
 }));
 exports.default = previewRouter;

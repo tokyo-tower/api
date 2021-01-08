@@ -24,28 +24,14 @@ const performanceRouter = express.Router();
 performanceRouter.use(authentication_1.default);
 performanceRouter.use(rateLimit_1.default);
 /**
- * IDでパフォーマンス検索
- */
-// performanceRouter.get(
-//     '/:id',
-//     permitScopes(['transactions']),
-//     async (req, res, next) => {
-//         try {
-//             const repo = new ttts.repository.Performance(mongoose.connection);
-//             const performance = await repo.findById(req.params.id);
-//             res.json(performance);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
-/**
  * 拡張属性更新
  */
 performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const performanceRepo = new ttts.repository.Performance(mongoose.connection);
-        yield performanceRepo.updateOne({ _id: req.params.id }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (req.body.reservationsAtLastUpdateDate !== undefined)
+        yield performanceRepo.updateOne({ _id: req.params.id }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (Array.isArray(req.body.checkedReservations))
+            ? { 'ttts_extension.checkedReservations': req.body.checkedReservations }
+            : undefined), (req.body.reservationsAtLastUpdateDate !== undefined)
             ? { 'ttts_extension.reservationsAtLastUpdateDate': req.body.reservationsAtLastUpdateDate }
             : undefined), (req.body.onlineSalesStatusUpdateUser !== undefined)
             ? { 'ttts_extension.online_sales_update_user': req.body.onlineSalesStatusUpdateUser }
@@ -77,19 +63,6 @@ performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']), (req,
                     .toDate()
             }
             : undefined));
-        // 集計タスク作成
-        const taskRepo = new ttts.repository.Task(mongoose.connection);
-        const aggregateTask = {
-            name: ttts.factory.taskName.AggregateEventReservations,
-            project: req.project,
-            status: ttts.factory.taskStatus.Ready,
-            runsAt: new Date(),
-            remainingNumberOfTries: 3,
-            numberOfTried: 0,
-            executionResults: [],
-            data: { id: req.params.id }
-        };
-        yield taskRepo.save(aggregateTask);
         res.status(http_status_1.NO_CONTENT)
             .end();
     }

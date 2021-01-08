@@ -21,7 +21,6 @@ const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
-const performance_1 = require("../service/performance");
 const eventsRouter = express.Router();
 eventsRouter.use(authentication_1.default);
 eventsRouter.use(rateLimit_1.default);
@@ -56,7 +55,7 @@ eventsRouter.get('', permitScopes_1.default(['transactions']), ...[
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const countDocuments = req.query.countDocuments === '1';
-        const useExtension = req.query.useExtension === '1';
+        // const useExtension = req.query.useExtension === '1';
         // 互換性維持
         if (req.query.day !== undefined) {
             if (typeof req.query.day === 'string' && req.query.day.length > 0) {
@@ -76,7 +75,28 @@ eventsRouter.get('', permitScopes_1.default(['transactions']), ...[
         if (countDocuments) {
             totalCount = yield performanceRepo.count(conditions);
         }
-        const performances = yield performance_1.search(conditions, useExtension)({ performance: performanceRepo });
+        // const performances = await search(conditions, useExtension, false)({ performance: performanceRepo });
+        const projection = {
+            __v: 0,
+            created_at: 0,
+            updated_at: 0,
+            location: 0,
+            superEvent: 0,
+            offers: 0,
+            doorTime: 0,
+            duration: 0,
+            maximumAttendeeCapacity: 0,
+            remainingAttendeeCapacity: 0,
+            remainingAttendeeCapacityForWheelchair: 0,
+            reservationCount: 0,
+            reservationCountsByTicketType: 0,
+            aggregateEntranceGate: 0,
+            aggregateOffer: 0,
+            aggregateReservation: 0,
+            checkinCount: 0,
+            checkinCountsByWhere: 0
+        };
+        const performances = yield performanceRepo.search(conditions, projection);
         if (typeof totalCount === 'number') {
             res.set('X-Total-Count', totalCount.toString());
         }

@@ -34,13 +34,14 @@ aggregateSalesRouter.get(
     '/stream',
     permitScopes(['admin']),
     validator,
+    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
             // 集計データにストリーミングcursorを作成する
-            const aggregateSaleRepo = new ttts.repository.AggregateSale(mongoose.connection);
+            const reportRepo = new ttts.repository.Report(mongoose.connection);
             debug('finding aggregateSales...', req.query);
             const andConditions = req.query.$and;
-            const cursor = aggregateSaleRepo.aggregateSaleModel.find(
+            const cursor = reportRepo.aggregateSaleModel.find(
                 (Array.isArray(andConditions) && andConditions.length > 0) ? { $and: andConditions } : {}
             )
                 .sort({
@@ -55,6 +56,36 @@ aggregateSalesRouter.get(
 
             // Mongoドキュメントをcsvデータに変換するtransformer
             const transformer = (doc: any) => {
+                const eventDate = moment(`${doc.performance.startDay} ${doc.performance.startTime}+09:00`, 'YYYYMMDD HHmmZ')
+                    .toDate();
+                const orderDate: string = // 万が一入塔予約日時より明らかに後であれば、間違ったデータなので調整
+                    (moment(doc.orderDate)
+                        .isAfter(moment(eventDate)
+                            .add(1, 'hour')))
+                        ? moment(doc.orderDate)
+                            // tslint:disable-next-line:no-magic-numbers
+                            .add(-9, 'hours')
+                            .tz('Asia/Tokyo')
+                            .format('YYYY/MM/DD HH:mm:ss')
+                        : moment(doc.orderDate)
+                            .tz('Asia/Tokyo')
+                            .format('YYYY/MM/DD HH:mm:ss');
+
+                const attendDate: string = // 万が一入塔予約日時より明らかに後であれば、間違ったデータなので調整
+                    doc.checkedin === 'TRUE'
+                        ? (moment(doc.checkinDate)
+                            .isAfter(moment(eventDate)
+                                .add(1, 'hour')))
+                            ? moment(doc.checkinDate)
+                                // tslint:disable-next-line:no-magic-numbers
+                                .add(-9, 'hours')
+                                .tz('Asia/Tokyo')
+                                .format('YYYY/MM/DD HH:mm:ss')
+                            : moment(doc.checkinDate)
+                                .tz('Asia/Tokyo')
+                                .format('YYYY/MM/DD HH:mm:ss')
+                        : '';
+
                 // Return an object with all fields you need in the CSV
                 return {
                     購入番号: doc.payment_no,
@@ -73,9 +104,7 @@ aggregateSalesRouter.get(
                     '購入者（姓）': doc.customer.familyName,
                     購入者メール: doc.customer.email,
                     購入者電話: doc.customer.telephone,
-                    購入日時: moment(doc.orderDate)
-                        .tz('Asia/Tokyo')
-                        .format('YYYY/MM/DD HH:mm:ss'),
+                    購入日時: orderDate,
                     決済方法: doc.paymentMethod,
                     '---f': '',
                     '---g': '',
@@ -89,11 +118,7 @@ aggregateSalesRouter.get(
                     予約単位料金: doc.price,
                     ユーザーネーム: doc.customer.username,
                     入場フラグ: doc.checkedin,
-                    入場日時: doc.checkedin === 'TRUE'
-                        ? moment(doc.checkinDate)
-                            .tz('Asia/Tokyo')
-                            .format('YYYY/MM/DD HH:mm:ss')
-                        : ''
+                    入場日時: attendDate
                 };
             };
 

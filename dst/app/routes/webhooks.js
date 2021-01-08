@@ -16,6 +16,7 @@ const cinerinoapi = require("@cinerino/sdk");
 const ttts = require("@tokyotower/domain");
 const express = require("express");
 const mongoose = require("mongoose");
+const webhook_1 = require("../controllers/webhook");
 const webhooksRouter = express.Router();
 const http_status_1 = require("http-status");
 /**
@@ -25,11 +26,11 @@ const http_status_1 = require("http-status");
 webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const order = req.body.data;
-        if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
-            const aggregateSalesRepo = new ttts.repository.AggregateSale(mongoose.connection);
-            yield ttts.service.aggregate.report4sales.createRefundOrderReport({
+        if (typeof (order === null || order === void 0 ? void 0 : order.orderNumber) === 'string') {
+            const reportRepo = new ttts.repository.Report(mongoose.connection);
+            yield ttts.service.report.order.createRefundOrderReport({
                 order: order
-            })(aggregateSalesRepo);
+            })({ report: reportRepo });
         }
         res.status(http_status_1.NO_CONTENT)
             .end();
@@ -44,43 +45,23 @@ webhooksRouter.post('/onReturnOrder', (req, res, next) => __awaiter(void 0, void
 webhooksRouter.post('/onOrderStatusChanged', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const order = req.body.data;
-        const taskRepo = new ttts.repository.Task(mongoose.connection);
+        const reportRepo = new ttts.repository.Report(mongoose.connection);
         const performanceRepo = new ttts.repository.Performance(mongoose.connection);
         if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
             switch (order.orderStatus) {
                 case cinerinoapi.factory.orderStatus.OrderProcessing:
-                    const createPlaceOrderReportTask = {
-                        name: ttts.factory.taskName.CreatePlaceOrderReport,
-                        project: { typeOf: order.project.typeOf, id: order.project.id },
-                        status: ttts.factory.taskStatus.Ready,
-                        runsAt: new Date(),
-                        remainingNumberOfTries: 10,
-                        numberOfTried: 0,
-                        executionResults: [],
-                        data: {
-                            order: order
-                        }
-                    };
-                    yield taskRepo.save(createPlaceOrderReportTask);
+                    yield ttts.service.report.order.createPlaceOrderReport({
+                        order: order
+                    })({ report: reportRepo });
                     break;
                 case cinerinoapi.factory.orderStatus.OrderDelivered:
                     break;
                 case cinerinoapi.factory.orderStatus.OrderReturned:
                     // 返品レポート作成
-                    const createReturnOrderReportTask = {
-                        name: ttts.factory.taskName.CreateReturnOrderReport,
-                        project: { typeOf: order.project.typeOf, id: order.project.id },
-                        status: ttts.factory.taskStatus.Ready,
-                        runsAt: new Date(),
-                        remainingNumberOfTries: 10,
-                        numberOfTried: 0,
-                        executionResults: [],
-                        data: {
-                            order: order
-                        }
-                    };
-                    yield taskRepo.save(createReturnOrderReportTask);
-                    yield ttts.service.performance.onOrderReturned(order)({
+                    yield ttts.service.report.order.createReturnOrderReport({
+                        order: order
+                    })({ report: reportRepo });
+                    yield webhook_1.onOrderReturned(order)({
                         performance: performanceRepo
                     });
                     break;
@@ -100,15 +81,10 @@ webhooksRouter.post('/onOrderStatusChanged', (req, res, next) => __awaiter(void 
 webhooksRouter.post('/onReservationStatusChanged', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const reservation = req.body.data;
-        if (reservation !== undefined
-            && reservation !== null
-            && typeof reservation.id === 'string'
-            && typeof reservation.reservationNumber === 'string') {
+        if (typeof (reservation === null || reservation === void 0 ? void 0 : reservation.id) === 'string' && typeof (reservation === null || reservation === void 0 ? void 0 : reservation.reservationNumber) === 'string') {
             const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
-            const taskRepo = new ttts.repository.Task(mongoose.connection);
-            yield ttts.service.reserve.onReservationStatusChanged(reservation)({
-                reservation: reservationRepo,
-                task: taskRepo
+            yield webhook_1.onReservationStatusChanged(reservation)({
+                reservation: reservationRepo
             });
         }
         res.status(http_status_1.NO_CONTENT)
@@ -124,20 +100,32 @@ webhooksRouter.post('/onReservationStatusChanged', (req, res, next) => __awaiter
 webhooksRouter.post('/onEventChanged', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const event = req.body.data;
-        const taskRepo = new ttts.repository.Task(mongoose.connection);
-        if (typeof event.id === 'string' && typeof event.eventStatus === 'string') {
+        const performanceRepo = new ttts.repository.Performance(mongoose.connection);
+        if (typeof (event === null || event === void 0 ? void 0 : event.id) === 'string' && typeof (event === null || event === void 0 ? void 0 : event.eventStatus) === 'string') {
             // イベント更新処理
-            const task = {
-                name: 'importEvent',
-                project: { typeOf: cinerinoapi.factory.chevre.organizationType.Project, id: event.project.id },
-                status: ttts.factory.taskStatus.Ready,
-                runsAt: new Date(),
-                remainingNumberOfTries: 2,
-                numberOfTried: 0,
-                executionResults: [],
-                data: event
-            };
-            yield taskRepo.save(task);
+            yield webhook_1.onEventChanged(event)({
+                performance: performanceRepo
+            });
+        }
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 予約使用アクション変更イベント
+ */
+webhooksRouter.post('/onActionStatusChanged', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const action 
+        // tslint:disable-next-line:max-line-length
+        = req.body.data;
+        const reportRepo = new ttts.repository.Report(mongoose.connection);
+        const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
+        if (typeof (action === null || action === void 0 ? void 0 : action.typeOf) === 'string') {
+            yield webhook_1.onActionStatusChanged(action)({ report: reportRepo, reservation: reservationRepo });
         }
         res.status(http_status_1.NO_CONTENT)
             .end();
