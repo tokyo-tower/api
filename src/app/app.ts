@@ -16,7 +16,6 @@ import eventsRouter from './routes/events';
 import healthRouter from './routes/health';
 import performanceRouter from './routes/performances';
 import previewRouter from './routes/preview';
-import reservationsRouter from './routes/reservations';
 import statsRouter from './routes/stats';
 import webhooksRouter from './routes/webhooks';
 
@@ -70,7 +69,6 @@ app.use('/events', eventsRouter);
 app.use('/health', healthRouter);
 app.use('/preview', previewRouter);
 app.use('/performances', performanceRouter);
-app.use('/reservations', reservationsRouter);
 app.use('/stats', statsRouter);
 app.use('/webhooks', webhooksRouter);
 

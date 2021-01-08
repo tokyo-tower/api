@@ -2,7 +2,6 @@
  * アプリケーション固有の型
  */
 import * as cinerinoapi from '@cinerino/sdk';
-import * as ttts from '@tokyotower/domain';
 
 declare global {
     namespace Express {

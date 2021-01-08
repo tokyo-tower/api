@@ -25,7 +25,6 @@ interface ICheckin {
 export function onEventChanged(params: cinerinoapi.factory.chevre.event.IEvent<cinerinoapi.factory.chevre.eventType.ScreeningEvent>) {
     return async (repos: {
         performance: ttts.repository.Performance;
-        task: ttts.repository.Task;
     }) => {
         const event = params;
 
@@ -121,7 +120,6 @@ export function onReservationStatusChanged(
 ) {
     return async (repos: {
         reservation: ttts.repository.Reservation;
-        task: ttts.repository.Task;
     }) => {
         const reservation = params;
 

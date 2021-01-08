@@ -48,7 +48,6 @@ webhooksRouter.post(
             const order = <cinerinoapi.factory.order.IOrder>req.body.data;
 
             const reportRepo = new ttts.repository.Report(mongoose.connection);
-            // const taskRepo = new ttts.repository.Task(mongoose.connection);
             const performanceRepo = new ttts.repository.Performance(mongoose.connection);
 
             if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
@@ -100,11 +99,9 @@ webhooksRouter.post(
 
             if (typeof reservation?.id === 'string' && typeof reservation?.reservationNumber === 'string') {
                 const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
-                const taskRepo = new ttts.repository.Task(mongoose.connection);
 
                 await onReservationStatusChanged(reservation)({
-                    reservation: reservationRepo,
-                    task: taskRepo
+                    reservation: reservationRepo
                 });
             }
 
@@ -126,13 +123,11 @@ webhooksRouter.post(
             const event = <ttts.factory.chevre.event.IEvent<ttts.factory.chevre.eventType.ScreeningEvent> | undefined>req.body.data;
 
             const performanceRepo = new ttts.repository.Performance(mongoose.connection);
-            const taskRepo = new ttts.repository.Task(mongoose.connection);
 
             if (typeof event?.id === 'string' && typeof event?.eventStatus === 'string') {
                 // イベント更新処理
                 await onEventChanged(event)({
-                    performance: performanceRepo,
-                    task: taskRepo
+                    performance: performanceRepo
                 });
             }
 

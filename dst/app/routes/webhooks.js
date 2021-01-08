@@ -46,7 +46,6 @@ webhooksRouter.post('/onOrderStatusChanged', (req, res, next) => __awaiter(void 
     try {
         const order = req.body.data;
         const reportRepo = new ttts.repository.Report(mongoose.connection);
-        // const taskRepo = new ttts.repository.Task(mongoose.connection);
         const performanceRepo = new ttts.repository.Performance(mongoose.connection);
         if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
             switch (order.orderStatus) {
@@ -84,10 +83,8 @@ webhooksRouter.post('/onReservationStatusChanged', (req, res, next) => __awaiter
         const reservation = req.body.data;
         if (typeof (reservation === null || reservation === void 0 ? void 0 : reservation.id) === 'string' && typeof (reservation === null || reservation === void 0 ? void 0 : reservation.reservationNumber) === 'string') {
             const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
-            const taskRepo = new ttts.repository.Task(mongoose.connection);
             yield webhook_1.onReservationStatusChanged(reservation)({
-                reservation: reservationRepo,
-                task: taskRepo
+                reservation: reservationRepo
             });
         }
         res.status(http_status_1.NO_CONTENT)
@@ -104,12 +101,10 @@ webhooksRouter.post('/onEventChanged', (req, res, next) => __awaiter(void 0, voi
     try {
         const event = req.body.data;
         const performanceRepo = new ttts.repository.Performance(mongoose.connection);
-        const taskRepo = new ttts.repository.Task(mongoose.connection);
         if (typeof (event === null || event === void 0 ? void 0 : event.id) === 'string' && typeof (event === null || event === void 0 ? void 0 : event.eventStatus) === 'string') {
             // イベント更新処理
             yield webhook_1.onEventChanged(event)({
-                performance: performanceRepo,
-                task: taskRepo
+                performance: performanceRepo
             });
         }
         res.status(http_status_1.NO_CONTENT)
