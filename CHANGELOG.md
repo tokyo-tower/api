@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v42.0.0 - 2021-01-08
+
+### Added
+
 - 予約使用アクション通知受信エンドポイントを追加
 
 ### Changed
@@ -26,10 +40,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - イベントの予約集計時、同時刻隊のツアーに関しての集計を実行しないように調整
 - NEW_PREVIEW_URL設定を追加
 - パフォーマンスの拡張属性更新対象にcheckedReservationsを追加
-- DISABLE_ASYNCHRONOUS_CHECKED_RESERVATION設定を追加
-- DISABLE_UPDATE_ORDER_REPORT_TASK設定を追加
-
-### Deprecated
 
 ### Removed
 
@@ -39,10 +49,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Cinerinoイベントインポートタスクを削除
 - タスクの仕組みを削除
 - 予約サービスを削除
-
-### Fixed
-
-### Security
 
 ## v41.0.2 - 2020-12-19
 
