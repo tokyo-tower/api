@@ -18,7 +18,7 @@ const redisClient = new ioredis({
 export default async (req: Request, res: Response, next: NextFunction) => {
     try {
         const routeIdentifier = `${req.baseUrl}${req.path}`;
-        const rateLimitScope = (req.project !== undefined && req.project !== null && typeof req.project.id === 'string')
+        const rateLimitScope = (typeof req.project?.id === 'string')
             ? `ttts-api:${req.project.id}:rateLimit:${routeIdentifier}:${req.method}`
             : `ttts-api:rateLimit:${routeIdentifier}:${req.method}`;
 

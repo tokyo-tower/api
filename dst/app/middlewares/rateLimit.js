@@ -22,9 +22,10 @@ const redisClient = new ioredis({
     tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
 });
 exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const routeIdentifier = `${req.baseUrl}${req.path}`;
-        const rateLimitScope = (req.project !== undefined && req.project !== null && typeof req.project.id === 'string')
+        const rateLimitScope = (typeof ((_a = req.project) === null || _a === void 0 ? void 0 : _a.id) === 'string')
             ? `ttts-api:${req.project.id}:rateLimit:${routeIdentifier}:${req.method}`
             : `ttts-api:rateLimit:${routeIdentifier}:${req.method}`;
         yield middlewares.rateLimit({

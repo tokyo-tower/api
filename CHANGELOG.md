@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v42.1.0 - 2021-01-11
+
+### Changed
+
+- URLでプロジェクトを指定できるように調整
+
 ## v42.0.0 - 2021-01-08
 
 ### Added

@@ -9,13 +9,7 @@ const helmet = require("helmet");
 const connectMongo_1 = require("../connectMongo");
 const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
-const aggregateSales_1 = require("./routes/aggregateSales");
-const events_1 = require("./routes/events");
-const health_1 = require("./routes/health");
-const performances_1 = require("./routes/performances");
-const preview_1 = require("./routes/preview");
-const stats_1 = require("./routes/stats");
-const webhooks_1 = require("./routes/webhooks");
+const router_1 = require("./routes/router");
 const app = express();
 const options = {
     origin: '*',
@@ -55,13 +49,7 @@ app.use(bodyParser.json({ limit: '50mb' }));
 // with the querystring library (when false) or the qs library (when true).
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 // ルーティング
-app.use('/aggregateSales', aggregateSales_1.default);
-app.use('/events', events_1.default);
-app.use('/health', health_1.default);
-app.use('/preview', preview_1.default);
-app.use('/performances', performances_1.default);
-app.use('/stats', stats_1.default);
-app.use('/webhooks', webhooks_1.default);
+app.use(router_1.default);
 // 404
 app.use(notFoundHandler_1.default);
 // error handlers

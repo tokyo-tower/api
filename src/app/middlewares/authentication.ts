@@ -14,8 +14,6 @@ const ISSUERS = (<string>process.env.TOKEN_ISSUERS).split(',');
 /* istanbul ignore next */
 export default async (req: Request, res: Response, next: NextFunction) => {
     try {
-        req.project = { typeOf: cinerinoapi.factory.chevre.organizationType.Project, id: <string>process.env.PROJECT_ID };
-
         await cognitoAuth({
             issuers: ISSUERS,
             authorizedHandler: async (user, token) => {
@@ -52,7 +50,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                 if (user.username !== undefined) {
                     programMembership = {
                         membershipNumber: user.username,
-                        project: { typeOf: req.project.typeOf, id: req.project.id },
+                        project: { typeOf: cinerinoapi.factory.chevre.organizationType.Project, id: <string>req.project?.id },
                         typeOf: cinerinoapi.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership,
                         url: user.iss
                     };
