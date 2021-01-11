@@ -21,7 +21,7 @@ declare global {
 
         // tslint:disable-next-line:interface-name
         export interface Request {
-            project: cinerinoapi.factory.project.IProject;
+            project?: cinerinoapi.factory.project.IProject;
             agent: cinerinoapi.factory.person.IPerson;
             user: IUser;
             accessToken: string;

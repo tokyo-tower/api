@@ -21,10 +21,10 @@ const ISSUERS = process.env.TOKEN_ISSUERS.split(',');
 /* istanbul ignore next */
 exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        req.project = { typeOf: cinerinoapi.factory.chevre.organizationType.Project, id: process.env.PROJECT_ID };
         yield express_middleware_1.cognitoAuth({
             issuers: ISSUERS,
             authorizedHandler: (user, token) => __awaiter(void 0, void 0, void 0, function* () {
+                var _a;
                 const identifier = [
                     {
                         name: 'tokenIssuer',
@@ -57,7 +57,7 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                 if (user.username !== undefined) {
                     programMembership = {
                         membershipNumber: user.username,
-                        project: { typeOf: req.project.typeOf, id: req.project.id },
+                        project: { typeOf: cinerinoapi.factory.chevre.organizationType.Project, id: (_a = req.project) === null || _a === void 0 ? void 0 : _a.id },
                         typeOf: cinerinoapi.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership,
                         url: user.iss
                     };

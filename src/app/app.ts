@@ -11,13 +11,7 @@ import { connectMongo } from '../connectMongo';
 import errorHandler from './middlewares/errorHandler';
 import notFoundHandler from './middlewares/notFoundHandler';
 
-import aggregateSalesRouter from './routes/aggregateSales';
-import eventsRouter from './routes/events';
-import healthRouter from './routes/health';
-import performanceRouter from './routes/performances';
-import previewRouter from './routes/preview';
-import statsRouter from './routes/stats';
-import webhooksRouter from './routes/webhooks';
+import router from './routes/router';
 
 const app = express();
 
@@ -64,13 +58,7 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 
 // ルーティング
-app.use('/aggregateSales', aggregateSalesRouter);
-app.use('/events', eventsRouter);
-app.use('/health', healthRouter);
-app.use('/preview', previewRouter);
-app.use('/performances', performanceRouter);
-app.use('/stats', statsRouter);
-app.use('/webhooks', webhooksRouter);
+app.use(router);
 
 // 404
 app.use(notFoundHandler);
