@@ -2,6 +2,8 @@ import * as cinerinoapi from '@cinerino/sdk';
 import * as ttts from '@tokyotower/domain';
 import * as moment from 'moment-timezone';
 
+const USE_LOCAL_RESERVATION = process.env.USE_LOCAL_RESERVATION === '1';
+
 interface ICheckin {
     when: Date; // いつ
     where: string; // どこで
@@ -121,12 +123,15 @@ export function onReservationStatusChanged(
     return async (repos: {
         reservation: ttts.repository.Reservation;
     }) => {
+        if (!USE_LOCAL_RESERVATION) {
+            return;
+        }
+
         const reservation = params;
 
         switch (reservation.reservationStatus) {
             case cinerinoapi.factory.chevre.reservationStatusType.ReservationCancelled:
                 // 東京タワーDB側の予約もステータス変更
-                // await repos.reservation.cancel({ id: reservation.id });
                 await repos.reservation.reservationModel.findOneAndUpdate(
                     { _id: reservation.id },
                     {
@@ -241,28 +246,30 @@ export function onActionStatusChanged(
                             checkinDate: checkinDate
                         });
 
-                        // 入場履歴を反映
-                        if (action.actionStatus === ttts.factory.chevre.actionStatusType.CompletedActionStatus) {
-                            await repos.reservation.reservationModel.findByIdAndUpdate(
-                                reservation.id,
-                                {
-                                    $push: { checkins: checkin },
-                                    $set: {
-                                        checkedIn: true,
-                                        attended: true,
-                                        modifiedTime: new Date()
-                                    }
-                                },
-                                { new: true }
-                            )
-                                .exec();
-                        } else if (action.actionStatus === ttts.factory.chevre.actionStatusType.CanceledActionStatus) {
-                            await repos.reservation.reservationModel.findByIdAndUpdate(
-                                reservation.id,
-                                { $pull: { checkins: { when: checkin.when } } },
-                                { new: true }
-                            )
-                                .exec();
+                        if (USE_LOCAL_RESERVATION) {
+                            // 入場履歴を反映
+                            if (action.actionStatus === ttts.factory.chevre.actionStatusType.CompletedActionStatus) {
+                                await repos.reservation.reservationModel.findByIdAndUpdate(
+                                    reservation.id,
+                                    {
+                                        $push: { checkins: checkin },
+                                        $set: {
+                                            checkedIn: true,
+                                            attended: true,
+                                            modifiedTime: new Date()
+                                        }
+                                    },
+                                    { new: true }
+                                )
+                                    .exec();
+                            } else if (action.actionStatus === ttts.factory.chevre.actionStatusType.CanceledActionStatus) {
+                                await repos.reservation.reservationModel.findByIdAndUpdate(
+                                    reservation.id,
+                                    { $pull: { checkins: { when: checkin.when } } },
+                                    { new: true }
+                                )
+                                    .exec();
+                            }
                         }
                     }
                 }));

@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- update @cinerino/sdk
+- update @tokyotower/domain
+- USE_LOCAL_RESERVATION設定を追加
+
 ### Deprecated
 
 ### Removed
