@@ -18,6 +18,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v42.2.0 - 2021-01-12
+
+### Changed
+
+- update @cinerino/sdk
+- update @tokyotower/domain
+- USE_LOCAL_RESERVATION設定を追加
+
 ## v42.1.0 - 2021-01-11
 
 ### Changed
