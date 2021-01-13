@@ -24,6 +24,7 @@ const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const debug = createDebug('ttts-api:router');
+const USE_NEW_REPORT_SORT = process.env.USE_NEW_REPORT_SORT === '1';
 // カラム区切り(タブ)
 const CSV_DELIMITER = '\t';
 // 改行コード(CR+LF)
@@ -38,19 +39,23 @@ aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), validator
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // 集計データにストリーミングcursorを作成する
-        const reportRepo = new ttts.repository.Report(mongoose.connection);
-        debug('finding aggregateSales...', req.query);
-        const andConditions = req.query.$and;
-        const cursor = reportRepo.aggregateSaleModel.find((Array.isArray(andConditions) && andConditions.length > 0) ? { $and: andConditions } : {})
-            .sort({
+        let sort = {
             'performance.startDay': 1,
             'performance.startTime': 1,
             payment_no: 1,
             reservationStatus: -1,
             'seat.code': 1,
             status_sort: 1
-        })
+        };
+        if (USE_NEW_REPORT_SORT) {
+            sort = { sortBy: 1 };
+        }
+        // 集計データにストリーミングcursorを作成する
+        const reportRepo = new ttts.repository.Report(mongoose.connection);
+        debug('finding aggregateSales...', req.query);
+        const andConditions = req.query.$and;
+        const cursor = reportRepo.aggregateSaleModel.find((Array.isArray(andConditions) && andConditions.length > 0) ? { $and: andConditions } : {})
+            .sort(sort)
             .cursor();
         // Mongoドキュメントをcsvデータに変換するtransformer
         const transformer = (doc) => {
