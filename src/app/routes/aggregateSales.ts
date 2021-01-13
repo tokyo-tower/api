@@ -93,11 +93,29 @@ aggregateSalesRouter.get(
                                 .format('YYYY/MM/DD HH:mm:ss')
                         : '';
 
+                let seatNumber = doc.reservation?.reservedTicket?.ticketedSeat?.seatNumber;
+                let ticketTypeName = doc.reservation?.reservedTicket?.ticketType?.name?.ja;
+                let csvCode = doc.reservation?.reservedTicket?.ticketType?.csvCode;
+                let unitPrice = (typeof doc.reservation?.reservedTicket?.ticketType?.priceSpecification?.price === 'number')
+                    ? String(doc.reservation?.reservedTicket?.ticketType?.priceSpecification?.price)
+                    : '';
+                let paymentSeatIndex = (typeof doc.payment_seat_index === 'string' || typeof doc.payment_seat_index === 'number')
+                    ? String(doc.payment_seat_index)
+                    : '';
+                // 返品手数料の場合、値を調整
+                if ((<any>doc).category === ttts.factory.report.order.ReportCategory.CancellationFee) {
+                    seatNumber = '';
+                    ticketTypeName = '';
+                    csvCode = '';
+                    unitPrice = String(doc.price);
+                    paymentSeatIndex = '';
+                }
+
                 // Return an object with all fields you need in the CSV
                 return {
                     購入番号: String(doc.confirmationNumber),
                     パフォーマンスID: doc.reservation?.reservationFor?.id,
-                    座席コード: doc.reservation?.reservedTicket?.ticketedSeat?.seatNumber,
+                    座席コード: seatNumber,
                     予約ステータス: (<any>doc).category,
                     入塔予約年月日: moment(doc.reservation.reservationFor.startDate)
                         .tz('Asia/Tokyo')
@@ -119,13 +137,11 @@ aggregateSalesRouter.get(
                     決済方法: doc.paymentMethod,
                     '---f': '',
                     '---g': '',
-                    券種名称: doc.reservation?.reservedTicket?.ticketType?.name?.ja,
-                    チケットコード: doc.reservation?.reservedTicket?.ticketType?.csvCode,
-                    券種料金: doc.reservation?.reservedTicket?.ticketType?.priceSpecification?.price,
+                    券種名称: ticketTypeName,
+                    チケットコード: csvCode,
+                    券種料金: unitPrice,
                     客層: doc.customer.segment,
-                    payment_seat_index: (typeof doc.payment_seat_index === 'string' || typeof doc.payment_seat_index === 'number')
-                        ? String(doc.payment_seat_index)
-                        : '',
+                    payment_seat_index: paymentSeatIndex,
                     予約単位料金: doc.price,
                     ユーザーネーム: doc.customer.username,
                     入場フラグ: doc.checkedin,
