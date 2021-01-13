@@ -59,7 +59,8 @@ aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), validator
             .cursor();
         // Mongoドキュメントをcsvデータに変換するtransformer
         const transformer = (doc) => {
-            const eventDate = moment(`${doc.performance.startDay} ${doc.performance.startTime}+09:00`, 'YYYYMMDD HHmmZ')
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
+            const eventDate = moment(doc.reservation.reservationFor.startDate)
                 .toDate();
             const orderDate = (moment(doc.orderDate)
                 .isAfter(moment(eventDate)
@@ -87,12 +88,16 @@ aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), validator
                 : '';
             // Return an object with all fields you need in the CSV
             return {
-                購入番号: doc.payment_no,
-                パフォーマンスID: doc.performance.id,
-                座席コード: doc.seat.code,
-                予約ステータス: doc.reservationStatus,
-                入塔予約年月日: doc.performance.startDay,
-                入塔予約時刻: doc.performance.startTime,
+                購入番号: String(doc.confirmationNumber),
+                パフォーマンスID: (_b = (_a = doc.reservation) === null || _a === void 0 ? void 0 : _a.reservationFor) === null || _b === void 0 ? void 0 : _b.id,
+                座席コード: (_e = (_d = (_c = doc.reservation) === null || _c === void 0 ? void 0 : _c.reservedTicket) === null || _d === void 0 ? void 0 : _d.ticketedSeat) === null || _e === void 0 ? void 0 : _e.seatNumber,
+                予約ステータス: doc.category,
+                入塔予約年月日: moment(doc.reservation.reservationFor.startDate)
+                    .tz('Asia/Tokyo')
+                    .format('YYYYMMDD'),
+                入塔予約時刻: moment(doc.reservation.reservationFor.startDate)
+                    .tz('Asia/Tokyo')
+                    .format('HHmm'),
                 '---a': '',
                 '---b': '',
                 '---c': '',
@@ -107,11 +112,11 @@ aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), validator
                 決済方法: doc.paymentMethod,
                 '---f': '',
                 '---g': '',
-                券種名称: doc.ticketType.name,
-                チケットコード: doc.ticketType.csvCode,
-                券種料金: doc.ticketType.charge,
+                券種名称: (_j = (_h = (_g = (_f = doc.reservation) === null || _f === void 0 ? void 0 : _f.reservedTicket) === null || _g === void 0 ? void 0 : _g.ticketType) === null || _h === void 0 ? void 0 : _h.name) === null || _j === void 0 ? void 0 : _j.ja,
+                チケットコード: (_m = (_l = (_k = doc.reservation) === null || _k === void 0 ? void 0 : _k.reservedTicket) === null || _l === void 0 ? void 0 : _l.ticketType) === null || _m === void 0 ? void 0 : _m.csvCode,
+                券種料金: (_r = (_q = (_p = (_o = doc.reservation) === null || _o === void 0 ? void 0 : _o.reservedTicket) === null || _p === void 0 ? void 0 : _p.ticketType) === null || _q === void 0 ? void 0 : _q.priceSpecification) === null || _r === void 0 ? void 0 : _r.price,
                 客層: doc.customer.segment,
-                payment_seat_index: (doc.payment_seat_index !== undefined && doc.payment_seat_index !== null)
+                payment_seat_index: (typeof doc.payment_seat_index === 'string' || typeof doc.payment_seat_index === 'number')
                     ? String(doc.payment_seat_index)
                     : '',
                 予約単位料金: doc.price,

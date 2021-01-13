@@ -62,8 +62,8 @@ aggregateSalesRouter.get(
                 .cursor();
 
             // Mongoドキュメントをcsvデータに変換するtransformer
-            const transformer = (doc: any) => {
-                const eventDate = moment(`${doc.performance.startDay} ${doc.performance.startTime}+09:00`, 'YYYYMMDD HHmmZ')
+            const transformer = (doc: ttts.factory.report.order.IReport) => {
+                const eventDate = moment(doc.reservation.reservationFor.startDate)
                     .toDate();
                 const orderDate: string = // 万が一入塔予約日時より明らかに後であれば、間違ったデータなので調整
                     (moment(doc.orderDate)
@@ -95,12 +95,16 @@ aggregateSalesRouter.get(
 
                 // Return an object with all fields you need in the CSV
                 return {
-                    購入番号: doc.payment_no,
-                    パフォーマンスID: doc.performance.id,
-                    座席コード: doc.seat.code,
-                    予約ステータス: doc.reservationStatus,
-                    入塔予約年月日: doc.performance.startDay,
-                    入塔予約時刻: doc.performance.startTime,
+                    購入番号: String(doc.confirmationNumber),
+                    パフォーマンスID: doc.reservation?.reservationFor?.id,
+                    座席コード: doc.reservation?.reservedTicket?.ticketedSeat?.seatNumber,
+                    予約ステータス: (<any>doc).category,
+                    入塔予約年月日: moment(doc.reservation.reservationFor.startDate)
+                        .tz('Asia/Tokyo')
+                        .format('YYYYMMDD'),
+                    入塔予約時刻: moment(doc.reservation.reservationFor.startDate)
+                        .tz('Asia/Tokyo')
+                        .format('HHmm'),
                     '---a': '',
                     '---b': '',
                     '---c': '',
@@ -115,11 +119,11 @@ aggregateSalesRouter.get(
                     決済方法: doc.paymentMethod,
                     '---f': '',
                     '---g': '',
-                    券種名称: doc.ticketType.name,
-                    チケットコード: doc.ticketType.csvCode,
-                    券種料金: doc.ticketType.charge,
+                    券種名称: doc.reservation?.reservedTicket?.ticketType?.name?.ja,
+                    チケットコード: doc.reservation?.reservedTicket?.ticketType?.csvCode,
+                    券種料金: doc.reservation?.reservedTicket?.ticketType?.priceSpecification?.price,
                     客層: doc.customer.segment,
-                    payment_seat_index: (doc.payment_seat_index !== undefined && doc.payment_seat_index !== null)
+                    payment_seat_index: (typeof doc.payment_seat_index === 'string' || typeof doc.payment_seat_index === 'number')
                         ? String(doc.payment_seat_index)
                         : '',
                     予約単位料金: doc.price,

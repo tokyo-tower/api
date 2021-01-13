@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - 注文レポート検索のソーティングを最適化
 - USE_NEW_REPORT_SORT設定を追加
+- 注文レポートを最適化
 
 ### Deprecated
 
