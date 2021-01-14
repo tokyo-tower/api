@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
+- プロジェクト未指定のルーティングを廃止
+
 ### Fixed
 
 ### Security
