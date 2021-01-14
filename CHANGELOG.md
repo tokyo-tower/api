@@ -8,13 +8,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- 注文レポート検索を追加
+- 売上レポート検索を追加
 
 ### Changed
 
-- 注文レポート検索のソーティングを最適化
+- 売上レポート検索のソーティングを最適化
 - USE_NEW_REPORT_SORT設定を追加
-- 注文レポートを最適化
+- 売上レポートを最適化
 
 ### Deprecated
 
