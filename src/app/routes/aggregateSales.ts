@@ -77,6 +77,28 @@ aggregateSalesRouter.get(
 aggregateSalesRouter.get(
     '/stream',
     permitScopes(['admin']),
+    ...[
+        query('$and.*[\'reservation.reservationFor.startDate\'].$exists')
+            .optional()
+            .isBoolean()
+            .toBoolean(),
+        query('$and.*[\'reservation.reservationFor.startDate\'].$gte')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('$and.*[\'reservation.reservationFor.startDate\'].$lt')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('$and.*.orderDate.$gte')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('$and.*.orderDate.$lt')
+            .optional()
+            .isISO8601()
+            .toDate()
+    ],
     validator,
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {

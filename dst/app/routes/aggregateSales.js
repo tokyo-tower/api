@@ -67,7 +67,28 @@ aggregateSalesRouter.get('', permitScopes_1.default(['admin']), ...[
 /**
  * ストリーミング検索
  */
-aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), validator_1.default, 
+aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), ...[
+    express_validator_1.query('$and.*[\'reservation.reservationFor.startDate\'].$exists')
+        .optional()
+        .isBoolean()
+        .toBoolean(),
+    express_validator_1.query('$and.*[\'reservation.reservationFor.startDate\'].$gte')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('$and.*[\'reservation.reservationFor.startDate\'].$lt')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('$and.*.orderDate.$gte')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('$and.*.orderDate.$lt')
+        .optional()
+        .isISO8601()
+        .toDate()
+], validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
