@@ -5,6 +5,7 @@ import * as ttts from '@tokyotower/domain';
 
 import * as createDebug from 'debug';
 import { Router } from 'express';
+import { query } from 'express-validator';
 import * as fastCsv from 'fast-csv';
 import * as iconv from 'iconv-lite';
 import * as moment from 'moment-timezone';
@@ -12,7 +13,6 @@ import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
-import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 const debug = createDebug('ttts-api:router');
@@ -27,7 +27,49 @@ const CSV_LINE_ENDING: string = '\r\n';
 const aggregateSalesRouter = Router();
 
 aggregateSalesRouter.use(authentication);
-aggregateSalesRouter.use(rateLimit);
+
+/**
+ * 検索
+ */
+aggregateSalesRouter.get(
+    '',
+    permitScopes(['admin']),
+    ...[
+        query('limit')
+            .optional()
+            .isInt()
+            .toInt(),
+        query('page')
+            .optional()
+            .isInt()
+            .toInt()
+    ],
+    validator,
+    async (req, res, next) => {
+        try {
+            const sort: any = { sortBy: 1 };
+            // tslint:disable-next-line:no-magic-numbers
+            const limit = (typeof req.query.limit === 'number') ? Math.min(req.query.limit, 100) : 100;
+            const page = (typeof req.query.page === 'number') ? Math.max(req.query.page, 1) : 1;
+
+            const reportRepo = new ttts.repository.Report(mongoose.connection);
+            const andConditions = req.query.$and;
+            const reports = await reportRepo.aggregateSaleModel.find(
+                (Array.isArray(andConditions) && andConditions.length > 0) ? { $and: andConditions } : {}
+            )
+                .sort(sort)
+                .limit(limit)
+                .skip(limit * (page - 1))
+                .setOptions({ maxTimeMS: 10000 })
+                .exec()
+                .then((docs) => docs.map((doc) => doc.toObject()));
+
+            res.json(reports);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
 
 /**
  * ストリーミング検索

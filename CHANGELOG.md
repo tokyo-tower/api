@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 注文レポート検索を追加
+
 ### Changed
 
 - 注文レポート検索のソーティングを最適化

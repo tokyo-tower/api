@@ -9,12 +9,10 @@ import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
-import rateLimit from '../middlewares/rateLimit';
 
 const performanceRouter = express.Router();
 
 performanceRouter.use(authentication);
-performanceRouter.use(rateLimit);
 
 /**
  * 拡張属性更新

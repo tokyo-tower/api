@@ -15,13 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const ttts = require("@tokyotower/domain");
 const createDebug = require("debug");
 const express_1 = require("express");
+const express_validator_1 = require("express-validator");
 const fastCsv = require("fast-csv");
 const iconv = require("iconv-lite");
 const moment = require("moment-timezone");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
-const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const debug = createDebug('ttts-api:router');
 const USE_NEW_REPORT_SORT = process.env.USE_NEW_REPORT_SORT === '1';
@@ -31,7 +31,39 @@ const CSV_DELIMITER = '\t';
 const CSV_LINE_ENDING = '\r\n';
 const aggregateSalesRouter = express_1.Router();
 aggregateSalesRouter.use(authentication_1.default);
-aggregateSalesRouter.use(rateLimit_1.default);
+/**
+ * 検索
+ */
+aggregateSalesRouter.get('', permitScopes_1.default(['admin']), ...[
+    express_validator_1.query('limit')
+        .optional()
+        .isInt()
+        .toInt(),
+    express_validator_1.query('page')
+        .optional()
+        .isInt()
+        .toInt()
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const sort = { sortBy: 1 };
+        // tslint:disable-next-line:no-magic-numbers
+        const limit = (typeof req.query.limit === 'number') ? Math.min(req.query.limit, 100) : 100;
+        const page = (typeof req.query.page === 'number') ? Math.max(req.query.page, 1) : 1;
+        const reportRepo = new ttts.repository.Report(mongoose.connection);
+        const andConditions = req.query.$and;
+        const reports = yield reportRepo.aggregateSaleModel.find((Array.isArray(andConditions) && andConditions.length > 0) ? { $and: andConditions } : {})
+            .sort(sort)
+            .limit(limit)
+            .skip(limit * (page - 1))
+            .setOptions({ maxTimeMS: 10000 })
+            .exec()
+            .then((docs) => docs.map((doc) => doc.toObject()));
+        res.json(reports);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 /**
  * ストリーミング検索
  */

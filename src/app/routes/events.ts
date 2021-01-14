@@ -9,13 +9,11 @@ import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
-import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 const eventsRouter = express.Router();
 
 eventsRouter.use(authentication);
-eventsRouter.use(rateLimit);
 
 /**
  * パフォーマンス検索
