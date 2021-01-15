@@ -7,13 +7,10 @@ import { query } from 'express-validator';
 import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 
-import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
 const eventsRouter = express.Router();
-
-eventsRouter.use(authentication);
 
 /**
  * パフォーマンス検索

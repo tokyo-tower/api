@@ -20,7 +20,6 @@ const fastCsv = require("fast-csv");
 const iconv = require("iconv-lite");
 const moment = require("moment-timezone");
 const mongoose = require("mongoose");
-const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const debug = createDebug('ttts-api:router');
@@ -30,7 +29,6 @@ const CSV_DELIMITER = '\t';
 // 改行コード(CR+LF)
 const CSV_LINE_ENDING = '\r\n';
 const aggregateSalesRouter = express_1.Router();
-aggregateSalesRouter.use(authentication_1.default);
 /**
  * 検索
  */
@@ -42,7 +40,27 @@ aggregateSalesRouter.get('', permitScopes_1.default(['admin']), ...[
     express_validator_1.query('page')
         .optional()
         .isInt()
-        .toInt()
+        .toInt(),
+    express_validator_1.query('$and.*[\'reservation.reservationFor.startDate\'].$exists')
+        .optional()
+        .isBoolean()
+        .toBoolean(),
+    express_validator_1.query('$and.*[\'reservation.reservationFor.startDate\'].$gte')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('$and.*[\'reservation.reservationFor.startDate\'].$lt')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('$and.*.orderDate.$gte')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('$and.*.orderDate.$lt')
+        .optional()
+        .isISO8601()
+        .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const sort = { sortBy: 1 };

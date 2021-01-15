@@ -17,10 +17,8 @@ const express = require("express");
 const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 const mongoose = require("mongoose");
-const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const performanceRouter = express.Router();
-performanceRouter.use(authentication_1.default);
 /**
  * 拡張属性更新
  */

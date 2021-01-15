@@ -17,11 +17,9 @@ const express = require("express");
 const express_validator_1 = require("express-validator");
 const moment = require("moment-timezone");
 const mongoose = require("mongoose");
-const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const eventsRouter = express.Router();
-eventsRouter.use(authentication_1.default);
 /**
  * パフォーマンス検索
  */

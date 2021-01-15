@@ -11,7 +11,6 @@ import * as iconv from 'iconv-lite';
 import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 
-import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
@@ -25,8 +24,6 @@ const CSV_DELIMITER: string = '\t';
 const CSV_LINE_ENDING: string = '\r\n';
 
 const aggregateSalesRouter = Router();
-
-aggregateSalesRouter.use(authentication);
 
 /**
  * 検索
@@ -42,7 +39,27 @@ aggregateSalesRouter.get(
         query('page')
             .optional()
             .isInt()
-            .toInt()
+            .toInt(),
+        query('$and.*[\'reservation.reservationFor.startDate\'].$exists')
+            .optional()
+            .isBoolean()
+            .toBoolean(),
+        query('$and.*[\'reservation.reservationFor.startDate\'].$gte')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('$and.*[\'reservation.reservationFor.startDate\'].$lt')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('$and.*.orderDate.$gte')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('$and.*.orderDate.$lt')
+            .optional()
+            .isISO8601()
+            .toDate()
     ],
     validator,
     async (req, res, next) => {

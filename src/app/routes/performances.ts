@@ -7,12 +7,9 @@ import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 
-import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 
 const performanceRouter = express.Router();
-
-performanceRouter.use(authentication);
 
 /**
  * 拡張属性更新
