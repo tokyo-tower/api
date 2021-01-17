@@ -50,24 +50,14 @@ webhooksRouter.post(
             const reportRepo = new ttts.repository.Report(mongoose.connection);
             const performanceRepo = new ttts.repository.Performance(mongoose.connection);
 
-            if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
+            if (typeof order?.orderNumber === 'string') {
+                // 注文から売上レポート作成
+                await ttts.service.report.order.createOrderReport({
+                    order: order
+                })({ report: reportRepo });
+
                 switch (order.orderStatus) {
-                    case cinerinoapi.factory.orderStatus.OrderProcessing:
-                        await ttts.service.report.order.createPlaceOrderReport({
-                            order: order
-                        })({ report: reportRepo });
-
-                        break;
-
-                    case cinerinoapi.factory.orderStatus.OrderDelivered:
-                        break;
-
                     case cinerinoapi.factory.orderStatus.OrderReturned:
-                        // 返品レポート作成
-                        await ttts.service.report.order.createReturnOrderReport({
-                            order: order
-                        })({ report: reportRepo });
-
                         await onOrderReturned(order)({
                             performance: performanceRepo
                         });

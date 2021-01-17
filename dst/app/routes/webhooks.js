@@ -47,20 +47,13 @@ webhooksRouter.post('/onOrderStatusChanged', (req, res, next) => __awaiter(void 
         const order = req.body.data;
         const reportRepo = new ttts.repository.Report(mongoose.connection);
         const performanceRepo = new ttts.repository.Performance(mongoose.connection);
-        if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
+        if (typeof (order === null || order === void 0 ? void 0 : order.orderNumber) === 'string') {
+            // 注文から売上レポート作成
+            yield ttts.service.report.order.createOrderReport({
+                order: order
+            })({ report: reportRepo });
             switch (order.orderStatus) {
-                case cinerinoapi.factory.orderStatus.OrderProcessing:
-                    yield ttts.service.report.order.createPlaceOrderReport({
-                        order: order
-                    })({ report: reportRepo });
-                    break;
-                case cinerinoapi.factory.orderStatus.OrderDelivered:
-                    break;
                 case cinerinoapi.factory.orderStatus.OrderReturned:
-                    // 返品レポート作成
-                    yield ttts.service.report.order.createReturnOrderReport({
-                        order: order
-                    })({ report: reportRepo });
                     yield webhook_1.onOrderReturned(order)({
                         performance: performanceRepo
                     });
