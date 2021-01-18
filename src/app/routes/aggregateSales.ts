@@ -1,5 +1,5 @@
 /**
- * 売上集計ルーター
+ * 売上レポートルーター
  */
 import * as ttts from '@tokyotower/domain';
 
@@ -15,8 +15,6 @@ import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
 const debug = createDebug('ttts-api:router');
-
-const USE_NEW_REPORT_SORT = process.env.USE_NEW_REPORT_SORT === '1';
 
 // カラム区切り(タブ)
 const CSV_DELIMITER: string = '\t';
@@ -72,7 +70,6 @@ aggregateSalesRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const sort: any = { sortBy: 1 };
             // tslint:disable-next-line:no-magic-numbers
             const limit = (typeof req.query.limit === 'number') ? Math.min(req.query.limit, 100) : 100;
             const page = (typeof req.query.page === 'number') ? Math.max(req.query.page, 1) : 1;
@@ -82,7 +79,7 @@ aggregateSalesRouter.get(
             const reports = await reportRepo.aggregateSaleModel.find(
                 (Array.isArray(andConditions) && andConditions.length > 0) ? { $and: andConditions } : {}
             )
-                .sort(sort)
+                .sort({ sortBy: 1 })
                 .limit(limit)
                 .skip(limit * (page - 1))
                 .setOptions({ maxTimeMS: 10000 })
@@ -136,26 +133,13 @@ aggregateSalesRouter.get(
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
-            let sort: any = {
-                'performance.startDay': 1,
-                'performance.startTime': 1,
-                payment_no: 1,
-                reservationStatus: -1,
-                'seat.code': 1,
-                status_sort: 1
-            };
-            if (USE_NEW_REPORT_SORT) {
-                sort = { sortBy: 1 };
-            }
-
-            // 集計データにストリーミングcursorを作成する
             const reportRepo = new ttts.repository.Report(mongoose.connection);
             debug('finding aggregateSales...', req.query);
             const andConditions = req.query.$and;
             const cursor = reportRepo.aggregateSaleModel.find(
                 (Array.isArray(andConditions) && andConditions.length > 0) ? { $and: andConditions } : {}
             )
-                .sort(sort)
+                .sort({ sortBy: 1 })
                 .cursor();
 
             // Mongoドキュメントをcsvデータに変換するtransformer
@@ -163,15 +147,15 @@ aggregateSalesRouter.get(
                 const eventDate = moment(doc.reservation.reservationFor.startDate)
                     .toDate();
                 const dateRecorded: string = // 万が一入塔予約日時より明らかに後であれば、間違ったデータなので調整
-                    (moment(doc.orderDate)
+                    (moment(doc.dateRecorded)
                         .isAfter(moment(eventDate)
                             .add(1, 'hour')))
-                        ? moment(doc.orderDate)
+                        ? moment(doc.dateRecorded)
                             // tslint:disable-next-line:no-magic-numbers
                             .add(-9, 'hours')
                             .tz('Asia/Tokyo')
                             .format('YYYY/MM/DD HH:mm:ss')
-                        : moment(doc.orderDate)
+                        : moment(doc.dateRecorded)
                             .tz('Asia/Tokyo')
                             .format('YYYY/MM/DD HH:mm:ss');
 
@@ -200,20 +184,20 @@ aggregateSalesRouter.get(
                     ? String(doc.payment_seat_index)
                     : '';
                 // 返品手数料の場合、値を調整
-                if ((<any>doc).category === ttts.factory.report.order.ReportCategory.CancellationFee) {
+                if (doc.category === ttts.factory.report.order.ReportCategory.CancellationFee) {
                     seatNumber = '';
                     ticketTypeName = '';
                     csvCode = '';
-                    unitPrice = String(doc.price);
+                    unitPrice = String(doc.amount);
                     paymentSeatIndex = '';
                 }
 
                 // Return an object with all fields you need in the CSV
                 return {
-                    購入番号: String(doc.confirmationNumber),
+                    購入番号: String(doc.mainEntity?.confirmationNumber),
                     パフォーマンスID: doc.reservation?.reservationFor?.id,
                     座席コード: seatNumber,
-                    予約ステータス: (<any>doc).category,
+                    予約ステータス: doc.category,
                     入塔予約年月日: moment(doc.reservation.reservationFor.startDate)
                         .tz('Asia/Tokyo')
                         .format('YYYYMMDD'),
@@ -225,22 +209,22 @@ aggregateSalesRouter.get(
                     '---c': '',
                     '---d': '',
                     '---e': '',
-                    購入者区分: doc.customer.group,
-                    '購入者（名）': doc.customer.givenName,
-                    '購入者（姓）': doc.customer.familyName,
-                    購入者メール: doc.customer.email,
-                    購入者電話: doc.customer.telephone,
+                    購入者区分: doc.mainEntity?.customer?.group,
+                    '購入者（名）': doc.mainEntity?.customer?.givenName,
+                    '購入者（姓）': doc.mainEntity?.customer?.familyName,
+                    購入者メール: doc.mainEntity?.customer?.email,
+                    購入者電話: doc.mainEntity?.customer?.telephone,
                     購入日時: dateRecorded,
-                    決済方法: doc.paymentMethod,
+                    決済方法: doc.mainEntity?.paymentMethod,
                     '---f': '',
                     '---g': '',
                     券種名称: ticketTypeName,
                     チケットコード: csvCode,
                     券種料金: unitPrice,
-                    客層: doc.customer.segment,
+                    客層: doc.mainEntity?.customer?.segment,
                     payment_seat_index: paymentSeatIndex,
-                    予約単位料金: doc.price,
-                    ユーザーネーム: doc.customer.username,
+                    予約単位料金: String(doc.amount),
+                    ユーザーネーム: doc.mainEntity?.customer?.username,
                     入場フラグ: doc.checkedin,
                     入場日時: attendDate
                 };
