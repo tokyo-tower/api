@@ -52,6 +52,14 @@ aggregateSalesRouter.get(
             .optional()
             .isISO8601()
             .toDate(),
+        query('$and.*.dateRecorded.$gte')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('$and.*.dateRecorded.$lt')
+            .optional()
+            .isISO8601()
+            .toDate(),
         query('$and.*.orderDate.$gte')
             .optional()
             .isISO8601()
@@ -107,6 +115,14 @@ aggregateSalesRouter.get(
             .optional()
             .isISO8601()
             .toDate(),
+        query('$and.*.dateRecorded.$gte')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('$and.*.dateRecorded.$lt')
+            .optional()
+            .isISO8601()
+            .toDate(),
         query('$and.*.orderDate.$gte')
             .optional()
             .isISO8601()
@@ -146,7 +162,7 @@ aggregateSalesRouter.get(
             const transformer = (doc: ttts.factory.report.order.IReport) => {
                 const eventDate = moment(doc.reservation.reservationFor.startDate)
                     .toDate();
-                const orderDate: string = // 万が一入塔予約日時より明らかに後であれば、間違ったデータなので調整
+                const dateRecorded: string = // 万が一入塔予約日時より明らかに後であれば、間違ったデータなので調整
                     (moment(doc.orderDate)
                         .isAfter(moment(eventDate)
                             .add(1, 'hour')))
@@ -214,7 +230,7 @@ aggregateSalesRouter.get(
                     '購入者（姓）': doc.customer.familyName,
                     購入者メール: doc.customer.email,
                     購入者電話: doc.customer.telephone,
-                    購入日時: orderDate,
+                    購入日時: dateRecorded,
                     決済方法: doc.paymentMethod,
                     '---f': '',
                     '---g': '',

@@ -53,6 +53,14 @@ aggregateSalesRouter.get('', permitScopes_1.default(['admin']), ...[
         .optional()
         .isISO8601()
         .toDate(),
+    express_validator_1.query('$and.*.dateRecorded.$gte')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('$and.*.dateRecorded.$lt')
+        .optional()
+        .isISO8601()
+        .toDate(),
     express_validator_1.query('$and.*.orderDate.$gte')
         .optional()
         .isISO8601()
@@ -98,6 +106,14 @@ aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), ...[
         .optional()
         .isISO8601()
         .toDate(),
+    express_validator_1.query('$and.*.dateRecorded.$gte')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('$and.*.dateRecorded.$lt')
+        .optional()
+        .isISO8601()
+        .toDate(),
     express_validator_1.query('$and.*.orderDate.$gte')
         .optional()
         .isISO8601()
@@ -133,7 +149,7 @@ aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), ...[
             var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v;
             const eventDate = moment(doc.reservation.reservationFor.startDate)
                 .toDate();
-            const orderDate = (moment(doc.orderDate)
+            const dateRecorded = (moment(doc.orderDate)
                 .isAfter(moment(eventDate)
                 .add(1, 'hour')))
                 ? moment(doc.orderDate)
@@ -196,7 +212,7 @@ aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), ...[
                 '購入者（姓）': doc.customer.familyName,
                 購入者メール: doc.customer.email,
                 購入者電話: doc.customer.telephone,
-                購入日時: orderDate,
+                購入日時: dateRecorded,
                 決済方法: doc.paymentMethod,
                 '---f': '',
                 '---g': '',
