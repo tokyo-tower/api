@@ -6,7 +6,7 @@ import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
 import * as mongoose from 'mongoose';
 
-import { onActionStatusChanged, onEventChanged, onOrderReturned, onReservationStatusChanged } from '../controllers/webhook';
+import { onActionStatusChanged, onEventChanged, onOrderReturned } from '../controllers/webhook';
 
 const webhooksRouter = express.Router();
 
@@ -88,11 +88,7 @@ webhooksRouter.post(
                 req.body.data;
 
             if (typeof reservation?.id === 'string' && typeof reservation?.reservationNumber === 'string') {
-                const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
-
-                await onReservationStatusChanged(reservation)({
-                    reservation: reservationRepo
-                });
+                // 特に何もしない
             }
 
             res.status(NO_CONTENT)
@@ -142,10 +138,9 @@ webhooksRouter.post(
                 req.body.data;
 
             const reportRepo = new ttts.repository.Report(mongoose.connection);
-            const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
 
             if (typeof action?.typeOf === 'string') {
-                await onActionStatusChanged(action)({ report: reportRepo, reservation: reservationRepo });
+                await onActionStatusChanged(action)({ report: reportRepo });
             }
 
             res.status(NO_CONTENT)

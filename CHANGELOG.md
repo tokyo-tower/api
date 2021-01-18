@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 売上レポート検索のソーティングを最適化
 - USE_NEW_REPORT_SORT設定を追加
 - 売上レポートを最適化
+- 予約リポジトリの使用を廃止
 
 ### Deprecated
 

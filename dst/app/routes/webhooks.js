@@ -75,10 +75,7 @@ webhooksRouter.post('/onReservationStatusChanged', (req, res, next) => __awaiter
     try {
         const reservation = req.body.data;
         if (typeof (reservation === null || reservation === void 0 ? void 0 : reservation.id) === 'string' && typeof (reservation === null || reservation === void 0 ? void 0 : reservation.reservationNumber) === 'string') {
-            const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
-            yield webhook_1.onReservationStatusChanged(reservation)({
-                reservation: reservationRepo
-            });
+            // 特に何もしない
         }
         res.status(http_status_1.NO_CONTENT)
             .end();
@@ -116,9 +113,8 @@ webhooksRouter.post('/onActionStatusChanged', (req, res, next) => __awaiter(void
         // tslint:disable-next-line:max-line-length
         = req.body.data;
         const reportRepo = new ttts.repository.Report(mongoose.connection);
-        const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
         if (typeof (action === null || action === void 0 ? void 0 : action.typeOf) === 'string') {
-            yield webhook_1.onActionStatusChanged(action)({ report: reportRepo, reservation: reservationRepo });
+            yield webhook_1.onActionStatusChanged(action)({ report: reportRepo });
         }
         res.status(http_status_1.NO_CONTENT)
             .end();
