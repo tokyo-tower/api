@@ -146,7 +146,8 @@ aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), ...[
                 : moment(doc.dateRecorded)
                     .tz('Asia/Tokyo')
                     .format('YYYY/MM/DD HH:mm:ss');
-            const attendDate = doc.checkedin === 'TRUE'
+            const attended = typeof doc.checkinDate === 'string' && doc.checkinDate.length > 0;
+            const attendDate = (attended)
                 ? (moment(doc.checkinDate)
                     .isAfter(moment(eventDate)
                     .add(1, 'hour')))
@@ -209,7 +210,7 @@ aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), ...[
                 payment_seat_index: paymentSeatIndex,
                 予約単位料金: String(doc.amount),
                 ユーザーネーム: (_11 = (_10 = doc.mainEntity) === null || _10 === void 0 ? void 0 : _10.customer) === null || _11 === void 0 ? void 0 : _11.username,
-                入場フラグ: doc.checkedin,
+                入場フラグ: (attended) ? 'TRUE' : 'FALSE',
                 入場日時: attendDate
             };
         };

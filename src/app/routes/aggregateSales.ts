@@ -159,8 +159,9 @@ aggregateSalesRouter.get(
                             .tz('Asia/Tokyo')
                             .format('YYYY/MM/DD HH:mm:ss');
 
+                const attended = typeof doc.checkinDate === 'string' && doc.checkinDate.length > 0;
                 const attendDate: string = // 万が一入塔予約日時より明らかに後であれば、間違ったデータなので調整
-                    doc.checkedin === 'TRUE'
+                    (attended)
                         ? (moment(doc.checkinDate)
                             .isAfter(moment(eventDate)
                                 .add(1, 'hour')))
@@ -225,7 +226,7 @@ aggregateSalesRouter.get(
                     payment_seat_index: paymentSeatIndex,
                     予約単位料金: String(doc.amount),
                     ユーザーネーム: doc.mainEntity?.customer?.username,
-                    入場フラグ: doc.checkedin,
+                    入場フラグ: (attended) ? 'TRUE' : 'FALSE',
                     入場日時: attendDate
                 };
             };
