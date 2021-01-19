@@ -22,10 +22,46 @@ const performanceRouter = express.Router();
 /**
  * 拡張属性更新
  */
-performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']), 
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const performanceRepo = new ttts.repository.Performance(mongoose.connection);
-        yield performanceRepo.updateOne({ _id: req.params.id }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (Array.isArray(req.body.checkedReservations))
+        // イベントが存在しなければ作成する
+        const performance = {
+            project: { typeOf: ttts.factory.chevre.organizationType.Project, id: (_a = req.project) === null || _a === void 0 ? void 0 : _a.id },
+            id: req.params.id,
+            eventStatus: ttts.factory.chevre.eventStatusType.EventScheduled,
+            startDate: new Date(),
+            endDate: new Date(),
+            additionalProperty: [],
+            ttts_extension: {
+                ev_service_update_user: '',
+                online_sales_update_user: '',
+                refund_status: ttts.factory.performance.RefundStatus.None,
+                refund_update_user: '',
+                refunded_count: 0
+            }
+        };
+        yield performanceRepo.performanceModel.findByIdAndUpdate(performance.id, { $setOnInsert: performance }, {
+            upsert: true,
+            new: true
+        })
+            .exec();
+        yield performanceRepo.updateOne({ _id: req.params.id }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof req.body.startDate === 'string' && req.body.startDate.length > 0)
+            ? {
+                startDate: moment(req.body.startDate)
+                    .toDate()
+            }
+            : undefined), (typeof req.body.endDate === 'string' && req.body.endDate.length > 0)
+            ? {
+                endDate: moment(req.body.endDate)
+                    .toDate()
+            }
+            : undefined), (Array.isArray(req.body.additionalProperty))
+            ? { additionalProperty: req.body.additionalProperty }
+            : undefined), (Array.isArray(req.body.checkedReservations))
             ? { 'ttts_extension.checkedReservations': req.body.checkedReservations }
             : undefined), (req.body.reservationsAtLastUpdateDate !== undefined)
             ? { 'ttts_extension.reservationsAtLastUpdateDate': req.body.reservationsAtLastUpdateDate }

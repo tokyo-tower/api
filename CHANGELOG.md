@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - USE_NEW_REPORT_SORT設定を追加
 - 売上レポートを最適化
 - 予約リポジトリの使用を廃止
+- 返金対象イベント更新時に、データが存在しなければ作成するように調整
 
 ### Deprecated
 

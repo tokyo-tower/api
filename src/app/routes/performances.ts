@@ -17,12 +17,56 @@ const performanceRouter = express.Router();
 performanceRouter.put(
     '/:id/extension',
     permitScopes(['admin']),
+    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
     async (req, res, next) => {
         try {
             const performanceRepo = new ttts.repository.Performance(mongoose.connection);
+
+            // イベントが存在しなければ作成する
+            const performance: ttts.factory.performance.IPerformance = {
+                project: { typeOf: ttts.factory.chevre.organizationType.Project, id: <string>req.project?.id },
+                id: req.params.id,
+                eventStatus: ttts.factory.chevre.eventStatusType.EventScheduled,
+                startDate: new Date(),
+                endDate: new Date(),
+                additionalProperty: [],
+                ttts_extension: {
+                    ev_service_update_user: '',
+                    online_sales_update_user: '',
+                    refund_status: ttts.factory.performance.RefundStatus.None,
+                    refund_update_user: '',
+                    refunded_count: 0
+                }
+            };
+            await performanceRepo.performanceModel.findByIdAndUpdate(
+                performance.id,
+                { $setOnInsert: performance },
+                {
+                    upsert: true,
+                    new: true
+                }
+            )
+                .exec();
+
             await performanceRepo.updateOne(
                 { _id: req.params.id },
                 {
+                    ...(typeof req.body.startDate === 'string' && req.body.startDate.length > 0)
+                        ? {
+                            startDate: moment(req.body.startDate)
+                                .toDate()
+                        }
+                        : undefined,
+                    ...(typeof req.body.endDate === 'string' && req.body.endDate.length > 0)
+                        ? {
+                            endDate: moment(req.body.endDate)
+                                .toDate()
+                        }
+                        : undefined,
+                    ...(Array.isArray(req.body.additionalProperty))
+                        ? { additionalProperty: req.body.additionalProperty }
+                        : undefined,
+
                     ...(Array.isArray(req.body.checkedReservations))
                         ? { 'ttts_extension.checkedReservations': req.body.checkedReservations }
                         : undefined,
