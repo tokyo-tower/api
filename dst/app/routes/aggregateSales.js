@@ -132,7 +132,7 @@ aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), ...[
             .cursor();
         // Mongoドキュメントをcsvデータに変換するtransformer
         const transformer = (doc) => {
-            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11;
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12;
             const eventDate = moment(doc.reservation.reservationFor.startDate)
                 .toDate();
             const dateRecorded = (moment(doc.dateRecorded)
@@ -146,25 +146,27 @@ aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), ...[
                 : moment(doc.dateRecorded)
                     .tz('Asia/Tokyo')
                     .format('YYYY/MM/DD HH:mm:ss');
-            const attended = typeof doc.checkinDate === 'string' && doc.checkinDate.length > 0;
+            const dateUsed = (_a = doc.reservation.reservedTicket) === null || _a === void 0 ? void 0 : _a.dateUsed;
+            const attended = dateUsed !== undefined && dateUsed !== null;
             const attendDate = (attended)
-                ? (moment(doc.checkinDate)
-                    .isAfter(moment(eventDate)
-                    .add(1, 'hour')))
-                    ? moment(doc.checkinDate)
+                ? (moment(dateUsed)
+                    .isBefore(moment(eventDate)
+                    // tslint:disable-next-line:no-magic-numbers
+                    .add(-3, 'hour')))
+                    ? moment(dateUsed)
                         // tslint:disable-next-line:no-magic-numbers
-                        .add(-9, 'hours')
+                        .add(9, 'hours')
                         .tz('Asia/Tokyo')
                         .format('YYYY/MM/DD HH:mm:ss')
-                    : moment(doc.checkinDate)
+                    : moment(dateUsed)
                         .tz('Asia/Tokyo')
                         .format('YYYY/MM/DD HH:mm:ss')
                 : '';
-            let seatNumber = (_c = (_b = (_a = doc.reservation) === null || _a === void 0 ? void 0 : _a.reservedTicket) === null || _b === void 0 ? void 0 : _b.ticketedSeat) === null || _c === void 0 ? void 0 : _c.seatNumber;
-            let ticketTypeName = (_g = (_f = (_e = (_d = doc.reservation) === null || _d === void 0 ? void 0 : _d.reservedTicket) === null || _e === void 0 ? void 0 : _e.ticketType) === null || _f === void 0 ? void 0 : _f.name) === null || _g === void 0 ? void 0 : _g.ja;
-            let csvCode = (_k = (_j = (_h = doc.reservation) === null || _h === void 0 ? void 0 : _h.reservedTicket) === null || _j === void 0 ? void 0 : _j.ticketType) === null || _k === void 0 ? void 0 : _k.csvCode;
-            let unitPrice = (typeof ((_p = (_o = (_m = (_l = doc.reservation) === null || _l === void 0 ? void 0 : _l.reservedTicket) === null || _m === void 0 ? void 0 : _m.ticketType) === null || _o === void 0 ? void 0 : _o.priceSpecification) === null || _p === void 0 ? void 0 : _p.price) === 'number')
-                ? String((_t = (_s = (_r = (_q = doc.reservation) === null || _q === void 0 ? void 0 : _q.reservedTicket) === null || _r === void 0 ? void 0 : _r.ticketType) === null || _s === void 0 ? void 0 : _s.priceSpecification) === null || _t === void 0 ? void 0 : _t.price)
+            let seatNumber = (_d = (_c = (_b = doc.reservation) === null || _b === void 0 ? void 0 : _b.reservedTicket) === null || _c === void 0 ? void 0 : _c.ticketedSeat) === null || _d === void 0 ? void 0 : _d.seatNumber;
+            let ticketTypeName = (_h = (_g = (_f = (_e = doc.reservation) === null || _e === void 0 ? void 0 : _e.reservedTicket) === null || _f === void 0 ? void 0 : _f.ticketType) === null || _g === void 0 ? void 0 : _g.name) === null || _h === void 0 ? void 0 : _h.ja;
+            let csvCode = (_l = (_k = (_j = doc.reservation) === null || _j === void 0 ? void 0 : _j.reservedTicket) === null || _k === void 0 ? void 0 : _k.ticketType) === null || _l === void 0 ? void 0 : _l.csvCode;
+            let unitPrice = (typeof ((_q = (_p = (_o = (_m = doc.reservation) === null || _m === void 0 ? void 0 : _m.reservedTicket) === null || _o === void 0 ? void 0 : _o.ticketType) === null || _p === void 0 ? void 0 : _p.priceSpecification) === null || _q === void 0 ? void 0 : _q.price) === 'number')
+                ? String((_u = (_t = (_s = (_r = doc.reservation) === null || _r === void 0 ? void 0 : _r.reservedTicket) === null || _s === void 0 ? void 0 : _s.ticketType) === null || _t === void 0 ? void 0 : _t.priceSpecification) === null || _u === void 0 ? void 0 : _u.price)
                 : '';
             let paymentSeatIndex = (typeof doc.payment_seat_index === 'string' || typeof doc.payment_seat_index === 'number')
                 ? String(doc.payment_seat_index)
@@ -179,8 +181,8 @@ aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), ...[
             }
             // Return an object with all fields you need in the CSV
             return {
-                購入番号: String((_u = doc.mainEntity) === null || _u === void 0 ? void 0 : _u.confirmationNumber),
-                パフォーマンスID: (_w = (_v = doc.reservation) === null || _v === void 0 ? void 0 : _v.reservationFor) === null || _w === void 0 ? void 0 : _w.id,
+                購入番号: String((_v = doc.mainEntity) === null || _v === void 0 ? void 0 : _v.confirmationNumber),
+                パフォーマンスID: (_x = (_w = doc.reservation) === null || _w === void 0 ? void 0 : _w.reservationFor) === null || _x === void 0 ? void 0 : _x.id,
                 座席コード: seatNumber,
                 予約ステータス: doc.category,
                 入塔予約年月日: moment(doc.reservation.reservationFor.startDate)
@@ -194,22 +196,22 @@ aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), ...[
                 '---c': '',
                 '---d': '',
                 '---e': '',
-                購入者区分: (_y = (_x = doc.mainEntity) === null || _x === void 0 ? void 0 : _x.customer) === null || _y === void 0 ? void 0 : _y.group,
-                '購入者（名）': (_0 = (_z = doc.mainEntity) === null || _z === void 0 ? void 0 : _z.customer) === null || _0 === void 0 ? void 0 : _0.givenName,
-                '購入者（姓）': (_2 = (_1 = doc.mainEntity) === null || _1 === void 0 ? void 0 : _1.customer) === null || _2 === void 0 ? void 0 : _2.familyName,
-                購入者メール: (_4 = (_3 = doc.mainEntity) === null || _3 === void 0 ? void 0 : _3.customer) === null || _4 === void 0 ? void 0 : _4.email,
-                購入者電話: (_6 = (_5 = doc.mainEntity) === null || _5 === void 0 ? void 0 : _5.customer) === null || _6 === void 0 ? void 0 : _6.telephone,
+                購入者区分: (_z = (_y = doc.mainEntity) === null || _y === void 0 ? void 0 : _y.customer) === null || _z === void 0 ? void 0 : _z.group,
+                '購入者（名）': (_1 = (_0 = doc.mainEntity) === null || _0 === void 0 ? void 0 : _0.customer) === null || _1 === void 0 ? void 0 : _1.givenName,
+                '購入者（姓）': (_3 = (_2 = doc.mainEntity) === null || _2 === void 0 ? void 0 : _2.customer) === null || _3 === void 0 ? void 0 : _3.familyName,
+                購入者メール: (_5 = (_4 = doc.mainEntity) === null || _4 === void 0 ? void 0 : _4.customer) === null || _5 === void 0 ? void 0 : _5.email,
+                購入者電話: (_7 = (_6 = doc.mainEntity) === null || _6 === void 0 ? void 0 : _6.customer) === null || _7 === void 0 ? void 0 : _7.telephone,
                 購入日時: dateRecorded,
-                決済方法: (_7 = doc.mainEntity) === null || _7 === void 0 ? void 0 : _7.paymentMethod,
+                決済方法: (_8 = doc.mainEntity) === null || _8 === void 0 ? void 0 : _8.paymentMethod,
                 '---f': '',
                 '---g': '',
                 券種名称: ticketTypeName,
                 チケットコード: csvCode,
                 券種料金: unitPrice,
-                客層: (_9 = (_8 = doc.mainEntity) === null || _8 === void 0 ? void 0 : _8.customer) === null || _9 === void 0 ? void 0 : _9.segment,
+                客層: (_10 = (_9 = doc.mainEntity) === null || _9 === void 0 ? void 0 : _9.customer) === null || _10 === void 0 ? void 0 : _10.segment,
                 payment_seat_index: paymentSeatIndex,
                 予約単位料金: String(doc.amount),
-                ユーザーネーム: (_11 = (_10 = doc.mainEntity) === null || _10 === void 0 ? void 0 : _10.customer) === null || _11 === void 0 ? void 0 : _11.username,
+                ユーザーネーム: (_12 = (_11 = doc.mainEntity) === null || _11 === void 0 ? void 0 : _11.customer) === null || _12 === void 0 ? void 0 : _12.username,
                 入場フラグ: (attended) ? 'TRUE' : 'FALSE',
                 入場日時: attendDate
             };

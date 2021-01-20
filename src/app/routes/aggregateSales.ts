@@ -159,18 +159,20 @@ aggregateSalesRouter.get(
                             .tz('Asia/Tokyo')
                             .format('YYYY/MM/DD HH:mm:ss');
 
-                const attended = typeof doc.checkinDate === 'string' && doc.checkinDate.length > 0;
-                const attendDate: string = // 万が一入塔予約日時より明らかに後であれば、間違ったデータなので調整
+                const dateUsed = doc.reservation.reservedTicket?.dateUsed;
+                const attended = dateUsed !== undefined && dateUsed !== null;
+                const attendDate: string = // 万が一入塔予約日時より明らかに前であれば、間違ったデータなので調整
                     (attended)
-                        ? (moment(doc.checkinDate)
-                            .isAfter(moment(eventDate)
-                                .add(1, 'hour')))
-                            ? moment(doc.checkinDate)
+                        ? (moment(dateUsed)
+                            .isBefore(moment(eventDate)
                                 // tslint:disable-next-line:no-magic-numbers
-                                .add(-9, 'hours')
+                                .add(-3, 'hour')))
+                            ? moment(dateUsed)
+                                // tslint:disable-next-line:no-magic-numbers
+                                .add(9, 'hours')
                                 .tz('Asia/Tokyo')
                                 .format('YYYY/MM/DD HH:mm:ss')
-                            : moment(doc.checkinDate)
+                            : moment(dateUsed)
                                 .tz('Asia/Tokyo')
                                 .format('YYYY/MM/DD HH:mm:ss')
                         : '';

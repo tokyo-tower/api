@@ -81,25 +81,95 @@ export function onActionStatusChanged(
                     <ttts.factory.chevre.reservation.IReservation<ttts.factory.chevre.reservationType.EventReservation>[]>
                     actionObject;
 
-                const checkedin = action.actionStatus === ttts.factory.chevre.actionStatusType.CompletedActionStatus;
-                const checkinDate: string = checkedin
-                    ? moment(action.startDate)
-                        .tz('Asia/Tokyo')
-                        .format('YYYY/MM/DD HH:mm:ss')
-                    : '';
+                const attended = action.actionStatus === ttts.factory.chevre.actionStatusType.CompletedActionStatus;
+                const dateUsed = moment(action.startDate)
+                    .toDate();
 
                 await Promise.all(reservations.map(async (reservation) => {
                     if (reservation.typeOf === ttts.factory.chevre.reservationType.EventReservation
                         && typeof reservation.id === 'string'
                         && reservation.id.length > 0) {
-                        // レポートに反映
-                        await repos.report.updateAttendStatus({
-                            reservation: { id: reservation.id },
-                            checkedin: checkedin ? 'TRUE' : 'FALSE',
-                            checkinDate: checkinDate
-                        });
+                        await useReservationAction2report({
+                            reservation,
+                            attended,
+                            dateUsed
+                        })(repos);
                     }
                 }));
+            }
+        }
+    };
+}
+
+/**
+ * 予約をレポートに反映する
+ */
+function useReservationAction2report(params: {
+    reservation: ttts.factory.chevre.reservation.IReservation<ttts.factory.chevre.reservationType.EventReservation>;
+    attended: boolean;
+    dateUsed: Date;
+}) {
+    return async (repos: {
+        report: ttts.repository.Report;
+    }) => {
+        const reservation = params.reservation;
+
+        const reportDoc = await repos.report.aggregateSaleModel.findOne({
+            'reservation.id': {
+                $exists: true,
+                $eq: reservation.id
+            }
+        })
+            .exec();
+
+        if (reportDoc !== null) {
+            const report = <ttts.factory.report.order.IReport>reportDoc.toObject();
+            const oldDateUsed = report.reservation.reservedTicket?.dateUsed;
+
+            if (params.attended) {
+                if (oldDateUsed !== undefined) {
+                    // すでにdateUsedがあれば何もしない
+                } else {
+                    await repos.report.aggregateSaleModel.updateMany(
+                        {
+                            'reservation.id': {
+                                $exists: true,
+                                $eq: reservation.id
+                            }
+                        },
+                        {
+                            'reservation.reservedTicket.dateUsed': params.dateUsed,
+                            checkinDate: moment(params.dateUsed)
+                                .tz('Asia/Tokyo')
+                                .format('YYYY/MM/DD HH:mm:ss')
+                        }
+                    )
+                        .exec();
+                }
+            } else {
+                // すでにdateUsedがあれば、比較して同一であればunset
+                if (oldDateUsed !== undefined) {
+                    if (moment(params.dateUsed)
+                        .isSame(moment(oldDateUsed))) {
+                        await repos.report.aggregateSaleModel.updateMany(
+                            {
+                                'reservation.id': {
+                                    $exists: true,
+                                    $eq: reservation.id
+                                }
+                            },
+                            {
+                                $unset: {
+                                    'reservation.reservedTicket.dateUsed': 1,
+                                    checkinDate: 1
+                                }
+                            }
+                        )
+                            .exec();
+                    }
+                } else {
+                    // 同一でなければ何もしない
+                }
             }
         }
     };
