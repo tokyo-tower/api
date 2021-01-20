@@ -75,7 +75,12 @@ aggregateSalesRouter.get(
             const page = (typeof req.query.page === 'number') ? Math.max(req.query.page, 1) : 1;
 
             const reportRepo = new ttts.repository.Report(mongoose.connection);
-            const andConditions = req.query.$and;
+            const andConditions: any[] = [
+                { 'project.id': { $exists: true, $eq: req.project?.id } }
+            ];
+            if (Array.isArray(req.query.$and)) {
+                andConditions.push(...req.query.$and);
+            }
             const reports = await reportRepo.aggregateSaleModel.find(
                 (Array.isArray(andConditions) && andConditions.length > 0) ? { $and: andConditions } : {}
             )
@@ -135,7 +140,12 @@ aggregateSalesRouter.get(
         try {
             const reportRepo = new ttts.repository.Report(mongoose.connection);
             debug('finding aggregateSales...', req.query);
-            const andConditions = req.query.$and;
+            const andConditions: any[] = [
+                { 'project.id': { $exists: true, $eq: req.project?.id } }
+            ];
+            if (Array.isArray(req.query.$and)) {
+                andConditions.push(...req.query.$and);
+            }
             const cursor = reportRepo.aggregateSaleModel.find(
                 (Array.isArray(andConditions) && andConditions.length > 0) ? { $and: andConditions } : {}
             )

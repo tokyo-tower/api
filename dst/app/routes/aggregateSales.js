@@ -69,12 +69,18 @@ aggregateSalesRouter.get('', permitScopes_1.default(['admin']), ...[
         .isISO8601()
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         // tslint:disable-next-line:no-magic-numbers
         const limit = (typeof req.query.limit === 'number') ? Math.min(req.query.limit, 100) : 100;
         const page = (typeof req.query.page === 'number') ? Math.max(req.query.page, 1) : 1;
         const reportRepo = new ttts.repository.Report(mongoose.connection);
-        const andConditions = req.query.$and;
+        const andConditions = [
+            { 'project.id': { $exists: true, $eq: (_a = req.project) === null || _a === void 0 ? void 0 : _a.id } }
+        ];
+        if (Array.isArray(req.query.$and)) {
+            andConditions.push(...req.query.$and);
+        }
         const reports = yield reportRepo.aggregateSaleModel.find((Array.isArray(andConditions) && andConditions.length > 0) ? { $and: andConditions } : {})
             .sort({ sortBy: 1 })
             .limit(limit)
@@ -123,10 +129,16 @@ aggregateSalesRouter.get('/stream', permitScopes_1.default(['admin']), ...[
 ], validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
     try {
         const reportRepo = new ttts.repository.Report(mongoose.connection);
         debug('finding aggregateSales...', req.query);
-        const andConditions = req.query.$and;
+        const andConditions = [
+            { 'project.id': { $exists: true, $eq: (_b = req.project) === null || _b === void 0 ? void 0 : _b.id } }
+        ];
+        if (Array.isArray(req.query.$and)) {
+            andConditions.push(...req.query.$and);
+        }
         const cursor = reportRepo.aggregateSaleModel.find((Array.isArray(andConditions) && andConditions.length > 0) ? { $and: andConditions } : {})
             .sort({ sortBy: 1 })
             .cursor();

@@ -66,6 +66,7 @@ performanceRouter.get(
 
             const conditions: ttts.factory.performance.ISearchConditions = {
                 ...req.query,
+                project: { id: { $eq: req.project?.id } },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100,
                 page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1,

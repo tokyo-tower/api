@@ -50,6 +50,7 @@ performanceRouter.get('', permitScopes_1.default(['transactions']), ...[
         .isISO8601()
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const countDocuments = req.query.countDocuments === '1';
         // const useExtension = req.query.useExtension === '1';
@@ -64,7 +65,7 @@ performanceRouter.get('', permitScopes_1.default(['transactions']), ...[
                 delete req.query.day;
             }
         }
-        const conditions = Object.assign(Object.assign({}, req.query), { 
+        const conditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: (_a = req.project) === null || _a === void 0 ? void 0 : _a.id } }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Number(req.query.limit) : 100, page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: 1 } });
         const performanceRepo = new ttts.repository.Performance(mongoose.connection);
@@ -109,12 +110,12 @@ performanceRouter.get('', permitScopes_1.default(['transactions']), ...[
 performanceRouter.put('/:id/extension', permitScopes_1.default(['admin']), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _b;
     try {
         const performanceRepo = new ttts.repository.Performance(mongoose.connection);
         // イベントが存在しなければ作成する
         const performance = {
-            project: { typeOf: ttts.factory.chevre.organizationType.Project, id: (_a = req.project) === null || _a === void 0 ? void 0 : _a.id },
+            project: { typeOf: ttts.factory.chevre.organizationType.Project, id: (_b = req.project) === null || _b === void 0 ? void 0 : _b.id },
             id: req.params.id,
             eventStatus: ttts.factory.chevre.eventStatusType.EventScheduled,
             startDate: new Date(),
