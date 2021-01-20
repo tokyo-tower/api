@@ -9,38 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onActionStatusChanged = exports.onOrderReturned = exports.onEventChanged = void 0;
+exports.onActionStatusChanged = exports.onOrderReturned = void 0;
 const cinerinoapi = require("@cinerino/sdk");
 const ttts = require("@tokyotower/domain");
 const moment = require("moment-timezone");
-/**
- * イベント変更検知時の処理
- */
-function onEventChanged(params) {
-    return (repos) => __awaiter(this, void 0, void 0, function* () {
-        const event = params;
-        // パフォーマンス登録
-        const performance = {
-            project: params.project,
-            id: event.id,
-            startDate: moment(event.startDate)
-                .toDate(),
-            endDate: moment(event.endDate)
-                .toDate(),
-            eventStatus: event.eventStatus,
-            additionalProperty: event.additionalProperty,
-            ttts_extension: {
-                ev_service_update_user: '',
-                online_sales_update_user: '',
-                refund_status: ttts.factory.performance.RefundStatus.None,
-                refund_update_user: '',
-                refunded_count: 0
-            }
-        };
-        yield repos.performance.saveIfNotExists(performance);
-    });
-}
-exports.onEventChanged = onEventChanged;
 /**
  * 注文返品時の情報連携
  */

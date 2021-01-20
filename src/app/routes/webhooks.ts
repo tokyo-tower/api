@@ -6,7 +6,7 @@ import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
 import * as mongoose from 'mongoose';
 
-import { onActionStatusChanged, onEventChanged, onOrderReturned } from '../controllers/webhook';
+import { onActionStatusChanged, onOrderReturned } from '../controllers/webhook';
 
 const webhooksRouter = express.Router();
 
@@ -66,55 +66,6 @@ webhooksRouter.post(
 
                     default:
                 }
-            }
-
-            res.status(NO_CONTENT)
-                .end();
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-/**
- * 予約ステータス変更イベント
- */
-webhooksRouter.post(
-    '/onReservationStatusChanged',
-    async (req, res, next) => {
-        try {
-            const reservation
-                = <ttts.factory.chevre.reservation.IReservation<ttts.factory.chevre.reservationType.EventReservation> | undefined>
-                req.body.data;
-
-            if (typeof reservation?.id === 'string' && typeof reservation?.reservationNumber === 'string') {
-                // 特に何もしない
-            }
-
-            res.status(NO_CONTENT)
-                .end();
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-/**
- * イベント変更イベント
- */
-webhooksRouter.post(
-    '/onEventChanged',
-    async (req, res, next) => {
-        try {
-            const event = <ttts.factory.chevre.event.IEvent<ttts.factory.chevre.eventType.ScreeningEvent> | undefined>req.body.data;
-
-            const performanceRepo = new ttts.repository.Performance(mongoose.connection);
-
-            if (typeof event?.id === 'string' && typeof event?.eventStatus === 'string') {
-                // イベント更新処理
-                await onEventChanged(event)({
-                    performance: performanceRepo
-                });
             }
 
             res.status(NO_CONTENT)

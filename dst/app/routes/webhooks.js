@@ -69,42 +69,6 @@ webhooksRouter.post('/onOrderStatusChanged', (req, res, next) => __awaiter(void 
     }
 }));
 /**
- * 予約ステータス変更イベント
- */
-webhooksRouter.post('/onReservationStatusChanged', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const reservation = req.body.data;
-        if (typeof (reservation === null || reservation === void 0 ? void 0 : reservation.id) === 'string' && typeof (reservation === null || reservation === void 0 ? void 0 : reservation.reservationNumber) === 'string') {
-            // 特に何もしない
-        }
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * イベント変更イベント
- */
-webhooksRouter.post('/onEventChanged', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const event = req.body.data;
-        const performanceRepo = new ttts.repository.Performance(mongoose.connection);
-        if (typeof (event === null || event === void 0 ? void 0 : event.id) === 'string' && typeof (event === null || event === void 0 ? void 0 : event.eventStatus) === 'string') {
-            // イベント更新処理
-            yield webhook_1.onEventChanged(event)({
-                performance: performanceRepo
-            });
-        }
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
  * 予約使用アクション変更イベント
  */
 webhooksRouter.post('/onActionStatusChanged', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {

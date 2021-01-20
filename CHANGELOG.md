@@ -23,6 +23,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Removed
 
 - プロジェクト未指定のルーティングを廃止
+- 予約変更受信エンドポイントを削除
+- イベント変更受信エンドポイントを削除
 
 ### Fixed
 
