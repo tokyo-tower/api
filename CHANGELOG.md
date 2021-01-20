@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 売上レポートを最適化
 - 予約リポジトリの使用を廃止
 - 返金対象イベント更新時に、データが存在しなければ作成するように調整
+- GET /eventsをGET /performancesへ移行
 
 ### Deprecated
 
