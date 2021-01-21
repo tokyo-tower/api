@@ -80,8 +80,6 @@ performanceRouter.get(
                 totalCount = await performanceRepo.count(conditions);
             }
 
-            // const performances = await search(conditions, useExtension, false)({ performance: performanceRepo });
-
             const projection: any = {
                 __v: 0,
                 created_at: 0,

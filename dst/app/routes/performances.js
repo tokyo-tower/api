@@ -73,7 +73,6 @@ performanceRouter.get('', permitScopes_1.default(['transactions']), ...[
         if (countDocuments) {
             totalCount = yield performanceRepo.count(conditions);
         }
-        // const performances = await search(conditions, useExtension, false)({ performance: performanceRepo });
         const projection = {
             __v: 0,
             created_at: 0,

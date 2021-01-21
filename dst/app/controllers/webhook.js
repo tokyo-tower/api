@@ -119,10 +119,7 @@ function useReservationAction2report(params) {
                             $eq: reservation.id
                         }
                     }, {
-                        'reservation.reservedTicket.dateUsed': params.dateUsed,
-                        checkinDate: moment(params.dateUsed)
-                            .tz('Asia/Tokyo')
-                            .format('YYYY/MM/DD HH:mm:ss')
+                        'reservation.reservedTicket.dateUsed': params.dateUsed
                     })
                         .exec();
                 }
@@ -139,8 +136,7 @@ function useReservationAction2report(params) {
                             }
                         }, {
                             $unset: {
-                                'reservation.reservedTicket.dateUsed': 1,
-                                checkinDate: 1
+                                'reservation.reservedTicket.dateUsed': 1
                             }
                         })
                             .exec();

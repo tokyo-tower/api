@@ -32,7 +32,6 @@ router.use(rateLimit);
 
 // 要認証なルーター↓
 // 以下、プロジェクト指定済の状態でルーティング
-// router.use('', projectDetailRouter);
 router.use('/projects/:id', projectDetailRouter);
 
 export default router;
