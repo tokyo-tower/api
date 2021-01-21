@@ -5,7 +5,6 @@ import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
 
 import aggregateSalesRouter from '../aggregateSales';
-import eventsRouter from '../events';
 import performanceRouter from '../performances';
 
 const projectDetailRouter = express.Router();
@@ -22,7 +21,6 @@ projectDetailRouter.use((req, _, next) => {
 });
 
 projectDetailRouter.use('/aggregateSales', aggregateSalesRouter);
-projectDetailRouter.use('/events', eventsRouter);
 projectDetailRouter.use('/performances', performanceRouter);
 
 export default projectDetailRouter;
