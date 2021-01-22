@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v43.0.0 - 2021-01-22
+
+### Added
+
 - 売上レポート検索を追加
 
 ### Changed
@@ -20,17 +34,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - GET /eventsをGET /performancesへ移行
 - 全リソース検索条件にプロジェクトIDを追加
 
-### Deprecated
-
 ### Removed
 
 - プロジェクト未指定のルーティングを廃止
 - 予約変更受信エンドポイントを削除
 - イベント変更受信エンドポイントを削除
-
-### Fixed
-
-### Security
 
 ## v42.4.0 - 2021-01-13
 
