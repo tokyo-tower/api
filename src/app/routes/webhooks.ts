@@ -6,7 +6,7 @@ import * as ttts from '@tokyotower/domain';
 import * as express from 'express';
 import * as mongoose from 'mongoose';
 
-import { onActionStatusChanged, onEventChanged, onOrderReturned, onReservationStatusChanged } from '../controllers/webhook';
+import { onActionStatusChanged, onOrderReturned } from '../controllers/webhook';
 
 const webhooksRouter = express.Router();
 
@@ -50,24 +50,14 @@ webhooksRouter.post(
             const reportRepo = new ttts.repository.Report(mongoose.connection);
             const performanceRepo = new ttts.repository.Performance(mongoose.connection);
 
-            if (order !== undefined && order !== null && typeof order.orderNumber === 'string') {
+            if (typeof order?.orderNumber === 'string') {
+                // 注文から売上レポート作成
+                await ttts.service.report.order.createOrderReport({
+                    order: order
+                })({ report: reportRepo });
+
                 switch (order.orderStatus) {
-                    case cinerinoapi.factory.orderStatus.OrderProcessing:
-                        await ttts.service.report.order.createPlaceOrderReport({
-                            order: order
-                        })({ report: reportRepo });
-
-                        break;
-
-                    case cinerinoapi.factory.orderStatus.OrderDelivered:
-                        break;
-
                     case cinerinoapi.factory.orderStatus.OrderReturned:
-                        // 返品レポート作成
-                        await ttts.service.report.order.createReturnOrderReport({
-                            order: order
-                        })({ report: reportRepo });
-
                         await onOrderReturned(order)({
                             performance: performanceRepo
                         });
@@ -76,59 +66,6 @@ webhooksRouter.post(
 
                     default:
                 }
-            }
-
-            res.status(NO_CONTENT)
-                .end();
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-/**
- * 予約ステータス変更イベント
- */
-webhooksRouter.post(
-    '/onReservationStatusChanged',
-    async (req, res, next) => {
-        try {
-            const reservation
-                = <ttts.factory.chevre.reservation.IReservation<ttts.factory.chevre.reservationType.EventReservation> | undefined>
-                req.body.data;
-
-            if (typeof reservation?.id === 'string' && typeof reservation?.reservationNumber === 'string') {
-                const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
-
-                await onReservationStatusChanged(reservation)({
-                    reservation: reservationRepo
-                });
-            }
-
-            res.status(NO_CONTENT)
-                .end();
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-/**
- * イベント変更イベント
- */
-webhooksRouter.post(
-    '/onEventChanged',
-    async (req, res, next) => {
-        try {
-            const event = <ttts.factory.chevre.event.IEvent<ttts.factory.chevre.eventType.ScreeningEvent> | undefined>req.body.data;
-
-            const performanceRepo = new ttts.repository.Performance(mongoose.connection);
-
-            if (typeof event?.id === 'string' && typeof event?.eventStatus === 'string') {
-                // イベント更新処理
-                await onEventChanged(event)({
-                    performance: performanceRepo
-                });
             }
 
             res.status(NO_CONTENT)
@@ -152,10 +89,9 @@ webhooksRouter.post(
                 req.body.data;
 
             const reportRepo = new ttts.repository.Report(mongoose.connection);
-            const reservationRepo = new ttts.repository.Reservation(mongoose.connection);
 
             if (typeof action?.typeOf === 'string') {
-                await onActionStatusChanged(action)({ report: reportRepo, reservation: reservationRepo });
+                await onActionStatusChanged(action)({ report: reportRepo });
             }
 
             res.status(NO_CONTENT)

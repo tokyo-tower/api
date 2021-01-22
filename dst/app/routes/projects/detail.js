@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const ttts = require("@tokyotower/domain");
 const express = require("express");
 const aggregateSales_1 = require("../aggregateSales");
-const events_1 = require("../events");
 const performances_1 = require("../performances");
 const projectDetailRouter = express.Router();
 projectDetailRouter.use((req, _, next) => {
@@ -19,6 +18,5 @@ projectDetailRouter.use((req, _, next) => {
     next();
 });
 projectDetailRouter.use('/aggregateSales', aggregateSales_1.default);
-projectDetailRouter.use('/events', events_1.default);
 projectDetailRouter.use('/performances', performances_1.default);
 exports.default = projectDetailRouter;

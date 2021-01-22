@@ -18,6 +18,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v43.0.0 - 2021-01-22
+
+### Added
+
+- 売上レポート検索を追加
+
+### Changed
+
+- 売上レポート検索のソーティングを最適化
+- USE_NEW_REPORT_SORT設定を追加
+- 売上レポートを最適化
+- 予約リポジトリの使用を廃止
+- 返金対象イベント更新時に、データが存在しなければ作成するように調整
+- GET /eventsをGET /performancesへ移行
+- 全リソース検索条件にプロジェクトIDを追加
+
+### Removed
+
+- プロジェクト未指定のルーティングを廃止
+- 予約変更受信エンドポイントを削除
+- イベント変更受信エンドポイントを削除
+
 ## v42.4.0 - 2021-01-13
 
 ### Changed
