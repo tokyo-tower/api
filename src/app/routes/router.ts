@@ -4,7 +4,6 @@
 import { Router } from 'express';
 
 import healthRouter from './health';
-import previewRouter from './preview';
 import projectDetailRouter from './projects/detail';
 import statsRouter from './stats';
 import webhooksRouter from './webhooks';
@@ -17,7 +16,6 @@ const router = Router();
 
 // 認証不要なルーター
 router.use('/health', healthRouter);
-router.use('/preview', previewRouter);
 router.use('/stats', statsRouter);
 router.use('/webhooks', webhooksRouter);
 
