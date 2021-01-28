@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- update packages
+- update typescript
+- update mongoose
+
 ### Deprecated
 
 ### Removed

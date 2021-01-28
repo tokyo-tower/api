@@ -15,7 +15,6 @@
 | ----------------------------- | -------- | ---------- | ------------------------------ |
 | `DEBUG`                       | false    | ttts-api:* | Debug                          |
 | `MONGOLAB_URI`                | true     |            | MongoDB connection URI         |
-| `PROJECT_ID`                  | true     |            | Project ID                     |
 | `REDIS_HOST`                  | true     |            | redis host                     |
 | `REDIS_PORT`                  | true     |            | redis port                     |
 | `REDIS_KEY`                   | true     |            | redis key                      |
