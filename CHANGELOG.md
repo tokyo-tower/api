@@ -10,10 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- update packages
-- update typescript
-- update mongoose
-
 ### Deprecated
 
 ### Removed
@@ -21,6 +17,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v43.1.1 - 2021-01-28
+
+### Changed
+
+- update packages
+- update typescript
+- update mongoose
 
 ## v43.1.0 - 2021-01-26
 
