@@ -18,6 +18,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v43.1.1 - 2021-01-28
+
+### Changed
+
+- update packages
+- update typescript
+- update mongoose
+
 ## v43.1.0 - 2021-01-26
 
 ### Removed

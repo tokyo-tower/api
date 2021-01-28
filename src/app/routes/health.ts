@@ -17,7 +17,7 @@ healthRouter.get(
         let timer: NodeJS.Timer | undefined;
 
         try {
-            await new Promise(async (resolve, reject) => {
+            await new Promise<void>(async (resolve, reject) => {
                 let givenUpChecking = false;
 
                 timer = setInterval(
